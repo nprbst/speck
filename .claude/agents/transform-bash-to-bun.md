@@ -343,7 +343,68 @@ For each operation in the bash script:
 7. **Add error handling** with proper exit codes
 8. **Format output** (JSON mode, human-readable mode)
 
-### Step 4: Validate Compatibility
+### Step 4: Generate/Update Tests
+
+**CRITICAL**: You MUST create or update tests for the generated TypeScript implementation.
+
+1. **Determine test file path**: Map `.speck/scripts/<name>.ts` → `tests/.speck-scripts/<name>.test.ts`
+2. **Check for existing tests**: If test file exists, modify it; otherwise create new file
+3. **Write lightweight contract tests** covering:
+   - **CLI flag parsing**: `--help`, `--json`, `--version` (if applicable)
+   - **Exit codes**: Test success (0), user error (1), system error (2) scenarios
+   - **JSON output structure**: Verify `--json` produces valid JSON matching expected schema
+   - **Basic execution**: Script runs without errors for valid inputs
+4. **Test structure example**:
+
+```typescript
+// tests/.speck-scripts/check-prerequisites.test.ts
+import { describe, test, expect } from "bun:test";
+import { spawn } from "bun";
+
+describe("check-prerequisites.ts", () => {
+  const scriptPath = ".speck/scripts/check-prerequisites.ts";
+
+  test("--help flag displays usage", async () => {
+    const proc = spawn(["bun", scriptPath, "--help"]);
+    const exitCode = await proc.exited;
+    expect(exitCode).toBe(0);
+    const output = await new Response(proc.stdout).text();
+    expect(output).toContain("Usage:");
+  });
+
+  test("--json flag outputs valid JSON", async () => {
+    const proc = spawn(["bun", scriptPath, "--json"]);
+    const exitCode = await proc.exited;
+    const output = await new Response(proc.stdout).text();
+    expect(exitCode).toBe(0);
+    expect(() => JSON.parse(output)).not.toThrow();
+  });
+
+  test("exits with code 0 on success", async () => {
+    const proc = spawn(["bun", scriptPath, "valid-arg"]);
+    const exitCode = await proc.exited;
+    expect(exitCode).toBe(0);
+  });
+});
+```
+
+### Step 5: Validate Generated Code
+
+**CRITICAL**: You MUST verify the generated TypeScript compiles, executes, and passes tests before reporting success.
+
+1. **Type check the TypeScript**: Run `bun check <file>.ts` or verify imports and types are valid
+2. **Compile verification**: Ensure there are no syntax errors or type errors
+3. **Basic execution test**: Run the script with `--help` flag: `bun <file>.ts --help`
+   - Verify it executes without errors
+   - Verify exit code is 0
+   - Verify help text is displayed
+4. **Run the test suite**: Execute `bun test tests/.speck-scripts/<name>.test.ts`
+   - All tests must pass
+   - If tests fail, fix the generated code and re-run tests
+   - Iterate until all tests pass
+5. **Fix any errors**: If compilation, execution, or tests fail, fix the generated code before proceeding
+
+### Step 6: Document Compatibility
 
 1. **Document CLI interface** in header comment: flags, exit codes, JSON schema
 2. **Preserve help text** from bash script (same wording, formatting)
@@ -423,11 +484,15 @@ After transformation, generate a markdown report summarizing:
 
 1. **Source file**: Path to bash script in `upstream/<version>/`
 2. **Output file**: Path to generated TypeScript in `.speck/scripts/`
-3. **Strategy used**: Pure TypeScript / Bun Shell API / Bun.spawn() breakdown
-4. **CLI compatibility**: Flags, exit codes, JSON schema preserved
-5. **Extensions preserved**: List of `[SPECK-EXTENSION]` blocks maintained
-6. **Rationale**: Why this transformation approach was chosen
-7. **Testing recommendations**: Which contract tests to write
+3. **Test file**: Path to generated/updated test file in `tests/.speck-scripts/`
+4. **Strategy used**: Pure TypeScript / Bun Shell API / Bun.spawn() breakdown
+5. **CLI compatibility**: Flags, exit codes, JSON schema preserved
+6. **Extensions preserved**: List of `[SPECK-EXTENSION]` blocks maintained
+7. **Rationale**: Why this transformation approach was chosen
+8. **Validation results**:
+   - ✅ Compilation successful (or ❌ with error details)
+   - ✅ Basic execution test passed (or ❌ with error details)
+   - ✅ All tests passed (X/Y tests) (or ❌ with failure details)
 
 **Example Report Section**:
 ```markdown
@@ -435,6 +500,7 @@ After transformation, generate a markdown report summarizing:
 
 **Source**: `upstream/v1.0.0/scripts/bash/check-prerequisites.sh`
 **Output**: `.speck/scripts/check-prerequisites.ts`
+**Test File**: `tests/.speck-scripts/check-prerequisites.test.ts` (3 tests created)
 **Strategy**: 70% Pure TypeScript, 20% Bun Shell API, 10% sourced common functions
 
 **Transformations**:
@@ -449,6 +515,14 @@ After transformation, generate a markdown report summarizing:
 - ✅ JSON output structure identical to bash version
 
 **Extensions Preserved**: None found
+
+**Validation Results**:
+- ✅ Compilation successful (no type errors)
+- ✅ Basic execution test passed (`--help` displays usage)
+- ✅ All tests passed (3/3 tests)
+  - ✅ --help flag displays usage
+  - ✅ --json flag outputs valid JSON
+  - ✅ exits with code 0 on success
 
 **Testing Priority**: HIGH - This is a core prerequisite checker used by all commands
 ```
