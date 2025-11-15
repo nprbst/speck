@@ -31,19 +31,33 @@ export class SymlinkManagerError extends Error {
  * // Creates: upstream/latest -> v1.0.0
  * ```
  */
-export async function createSymlink(
+export function createSymlink(
   target: string,
   linkPath: string
-): Promise<void> {
-  if (existsSync(linkPath)) {
-    throw new SymlinkManagerError(
-      `Symlink already exists at ${linkPath}. Use updateSymlink() to replace.`
-    );
-  }
-
+): void {
   try {
-    symlinkSync(target, linkPath, "dir");
+    // Use lstatSync to check for symlink existence (existsSync returns false for broken symlinks)
+    try {
+      lstatSync(linkPath);
+      throw new SymlinkManagerError(
+        `Symlink already exists at ${linkPath}. Use updateSymlink() to replace.`
+      );
+    } catch (error: any) {
+      if (error instanceof SymlinkManagerError) {
+        throw error;
+      }
+      // ENOENT means path doesn't exist, which is what we want
+      if (error.code !== "ENOENT") {
+        throw error;
+      }
+    }
+
+    // On Unix-like systems, symlink type is ignored, so we can just omit it
+    symlinkSync(target, linkPath);
   } catch (error) {
+    if (error instanceof SymlinkManagerError) {
+      throw error;
+    }
     throw new SymlinkManagerError(
       `Failed to create symlink: ${error instanceof Error ? error.message : "Unknown error"}`
     );
@@ -62,13 +76,13 @@ export async function createSymlink(
  * // Updates: upstream/latest -> v1.1.0
  * ```
  */
-export async function updateSymlink(
+export function updateSymlink(
   target: string,
   linkPath: string
-): Promise<void> {
+): void {
   try {
-    // Remove existing symlink if it exists
-    if (existsSync(linkPath)) {
+    // Remove existing symlink if it exists (use lstatSync for broken symlinks)
+    try {
       const stats = lstatSync(linkPath);
       if (stats.isSymbolicLink()) {
         unlinkSync(linkPath);
@@ -77,10 +91,18 @@ export async function updateSymlink(
           `Path ${linkPath} exists but is not a symlink`
         );
       }
+    } catch (error: any) {
+      if (error instanceof SymlinkManagerError) {
+        throw error;
+      }
+      // ENOENT means path doesn't exist, which is fine for update
+      if (error.code !== "ENOENT") {
+        throw error;
+      }
     }
 
-    // Create new symlink
-    symlinkSync(target, linkPath, "dir");
+    // Create new symlink (type is ignored on Unix-like systems)
+    symlinkSync(target, linkPath);
   } catch (error) {
     if (error instanceof SymlinkManagerError) {
       throw error;
@@ -105,12 +127,9 @@ export async function updateSymlink(
  * console.log(target); // "v1.0.0"
  * ```
  */
-export async function readSymlink(linkPath: string): Promise<string> {
-  if (!existsSync(linkPath)) {
-    throw new SymlinkManagerError(`Symlink not found: ${linkPath}`);
-  }
-
+export function readSymlink(linkPath: string): string {
   try {
+    // Use lstatSync to check for symlink (existsSync returns false for broken symlinks)
     const stats = lstatSync(linkPath);
     if (!stats.isSymbolicLink()) {
       throw new SymlinkManagerError(
@@ -119,9 +138,12 @@ export async function readSymlink(linkPath: string): Promise<string> {
     }
 
     return readlinkSync(linkPath);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof SymlinkManagerError) {
       throw error;
+    }
+    if (error.code === "ENOENT") {
+      throw new SymlinkManagerError(`Symlink not found: ${linkPath}`);
     }
     throw new SymlinkManagerError(
       `Failed to read symlink: ${error instanceof Error ? error.message : "Unknown error"}`
@@ -136,11 +158,8 @@ export async function readSymlink(linkPath: string): Promise<string> {
  * @returns true if path is a symlink, false otherwise
  */
 export function isSymlink(linkPath: string): boolean {
-  if (!existsSync(linkPath)) {
-    return false;
-  }
-
   try {
+    // Use lstatSync to check for symlink (existsSync returns false for broken symlinks)
     const stats = lstatSync(linkPath);
     return stats.isSymbolicLink();
   } catch {
@@ -160,12 +179,9 @@ export function isSymlink(linkPath: string): boolean {
  * await removeSymlink("upstream/latest");
  * ```
  */
-export async function removeSymlink(linkPath: string): Promise<void> {
-  if (!existsSync(linkPath)) {
-    throw new SymlinkManagerError(`Symlink not found: ${linkPath}`);
-  }
-
+export function removeSymlink(linkPath: string): void {
   try {
+    // Use lstatSync to check for symlink (existsSync returns false for broken symlinks)
     const stats = lstatSync(linkPath);
     if (!stats.isSymbolicLink()) {
       throw new SymlinkManagerError(
@@ -174,9 +190,12 @@ export async function removeSymlink(linkPath: string): Promise<void> {
     }
 
     unlinkSync(linkPath);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof SymlinkManagerError) {
       throw error;
+    }
+    if (error.code === "ENOENT") {
+      throw new SymlinkManagerError(`Symlink not found: ${linkPath}`);
     }
     throw new SymlinkManagerError(
       `Failed to remove symlink: ${error instanceof Error ? error.message : "Unknown error"}`
