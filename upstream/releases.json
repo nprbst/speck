@@ -1,12 +1,26 @@
 {
-  "latest": "v0.0.83",
+  "latest": "v0.0.85",
   "releases": [
+    {
+      "version": "v0.0.85",
+      "commit": "f205fa3b58ab3a409bf0432dbafc9d2713b4b9bb",
+      "pullDate": "2025-11-15T22:29:48.182Z",
+      "releaseNotesUrl": "https://github.com/github/spec-kit/releases/tag/v0.0.85",
+      "status": "pulled"
+    },
+    {
+      "version": "v0.0.84",
+      "commit": "4767d77ab5dbd788f07343ccd6ed8598586ad205",
+      "pullDate": "2025-11-15T22:28:34.190Z",
+      "releaseNotesUrl": "https://github.com/github/spec-kit/releases/tag/v0.0.84",
+      "status": "pulled"
+    },
     {
       "version": "v0.0.83",
       "commit": "cf8b67e18744b27a11edcd780d43d0b67732f5ab",
       "pullDate": "2025-11-15T22:24:21.198Z",
       "releaseNotesUrl": "https://github.com/github/spec-kit/releases/tag/v0.0.83",
-      "status": "pulled"
+      "status": "transformed"
     }
   ]
 }
