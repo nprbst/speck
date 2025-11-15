@@ -113,31 +113,31 @@ description: "Task list for Upstream Sync & Transformation Pipeline implementati
 
 #### Tests First (Medium-Weight) ⚠️
 
-- [ ] T029 [P] [US1] Contract test: `--json` flag outputs valid JSON schema in `tests/.speck-scripts/pull-upstream.test.ts`
-- [ ] T030 [P] [US1] Contract test: exit code 0 on successful pull in `tests/.speck-scripts/pull-upstream.test.ts`
-- [ ] T031 [P] [US1] Contract test: exit code 1 on invalid version format in `tests/.speck-scripts/pull-upstream.test.ts`
-- [ ] T032 [P] [US1] Contract test: exit code 2 on network error in `tests/.speck-scripts/pull-upstream.test.ts`
-- [ ] T033 [P] [US1] Edge case test: creates `upstream/<version>/` directory in `tests/.speck-scripts/pull-upstream.test.ts`
-- [ ] T034 [P] [US1] Edge case test: updates `upstream/releases.json` with release metadata in `tests/.speck-scripts/pull-upstream.test.ts`
-- [ ] T035 [P] [US1] Edge case test: creates/updates `upstream/latest` symlink in `tests/.speck-scripts/pull-upstream.test.ts`
-- [ ] T036 [P] [US1] Edge case test: handles first-time pull (no existing `upstream/` directory) in `tests/.speck-scripts/pull-upstream.test.ts`
-- [ ] T037 [P] [US1] Edge case test: network failure leaves existing state unchanged in `tests/.speck-scripts/pull-upstream.test.ts`
+- [X] T029 [P] [US1] Contract test: `--json` flag outputs valid JSON schema in `tests/.speck-scripts/pull-upstream.test.ts`
+- [X] T030 [P] [US1] Contract test: exit code 0 on successful pull in `tests/.speck-scripts/pull-upstream.test.ts`
+- [X] T031 [P] [US1] Contract test: exit code 1 on invalid version format in `tests/.speck-scripts/pull-upstream.test.ts`
+- [X] T032 [P] [US1] Contract test: exit code 2 on network error in `tests/.speck-scripts/pull-upstream.test.ts`
+- [X] T033 [P] [US1] Edge case test: creates `upstream/<version>/` directory in `tests/.speck-scripts/pull-upstream.test.ts`
+- [X] T034 [P] [US1] Edge case test: updates `upstream/releases.json` with release metadata in `tests/.speck-scripts/pull-upstream.test.ts`
+- [X] T035 [P] [US1] Edge case test: creates/updates `upstream/latest` symlink in `tests/.speck-scripts/pull-upstream.test.ts`
+- [X] T036 [P] [US1] Edge case test: handles first-time pull (no existing `upstream/` directory) in `tests/.speck-scripts/pull-upstream.test.ts`
+- [X] T037 [P] [US1] Edge case test: network failure leaves existing state unchanged in `tests/.speck-scripts/pull-upstream.test.ts`
 
 #### Implementation
 
-- [ ] T038 [US1] Implement `pull-upstream.ts` in `.speck/scripts/` (fetches tarball from GitHub, extracts to `upstream/<version>/`)
-- [ ] T039 [US1] Implement version argument parsing and validation in `.speck/scripts/pull-upstream.ts` (semantic versioning pattern check)
-- [ ] T040 [US1] Implement tarball download logic in `.speck/scripts/pull-upstream.ts` (uses GitHub API tarball_url)
-- [ ] T041 [US1] Implement tarball extraction to `upstream/<version>/` in `.speck/scripts/pull-upstream.ts` (pristine upstream content)
-- [ ] T042 [US1] Implement release registry update in `.speck/scripts/pull-upstream.ts` (calls `common/json-tracker.ts` to add release with status "pulled")
-- [ ] T043 [US1] Implement symlink update in `.speck/scripts/pull-upstream.ts` (calls `common/symlink-manager.ts` to update `upstream/latest`)
-- [ ] T044 [US1] Implement atomic operations in `.speck/scripts/pull-upstream.ts` (uses `common/file-ops.ts` for rollback on failure)
-- [ ] T045 [US1] Implement JSON and human-readable output formatters in `.speck/scripts/pull-upstream.ts` (matches `PullUpstreamOutput` schema)
-- [ ] T046 [US1] Add error handling with proper exit codes in `.speck/scripts/pull-upstream.ts` (0=success, 1=user error, 2=system error)
+- [X] T038 [US1] Implement `pull-upstream.ts` in `.speck/scripts/` (fetches tarball from GitHub, extracts to `upstream/<version>/`)
+- [X] T039 [US1] Implement version argument parsing and validation in `.speck/scripts/pull-upstream.ts` (semantic versioning pattern check)
+- [X] T040 [US1] Implement tarball download logic in `.speck/scripts/pull-upstream.ts` (uses GitHub API tarball_url)
+- [X] T041 [US1] Implement tarball extraction to `upstream/<version>/` in `.speck/scripts/pull-upstream.ts` (pristine upstream content)
+- [X] T042 [US1] Implement release registry update in `.speck/scripts/pull-upstream.ts` (calls `common/json-tracker.ts` to add release with status "pulled")
+- [X] T043 [US1] Implement symlink update in `.speck/scripts/pull-upstream.ts` (calls `common/symlink-manager.ts` to update `upstream/latest`)
+- [X] T044 [US1] Implement atomic operations in `.speck/scripts/pull-upstream.ts` (uses `common/file-ops.ts` for rollback on failure)
+- [X] T045 [US1] Implement JSON and human-readable output formatters in `.speck/scripts/pull-upstream.ts` (matches `PullUpstreamOutput` schema)
+- [X] T046 [US1] Add error handling with proper exit codes in `.speck/scripts/pull-upstream.ts` (0=success, 1=user error, 2=system error)
 
 #### Slash Command Integration
 
-- [ ] T047 [US1] Create `/speck.pull-upstream` command file in `.claude/commands/speck.pull-upstream.md` (calls `.speck/scripts/pull-upstream.ts <version>`)
+- [X] T047 [US1] Create `/speck.pull-upstream` command file in `.claude/commands/speck.pull-upstream.md` (calls `.speck/scripts/pull-upstream.ts <version>`)
 
 **Checkpoint**: Command 2 complete - can pull pristine spec-kit releases via `/speck.pull-upstream <version>`
 
