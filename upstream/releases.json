@@ -1,0 +1,12 @@
+{
+  "latest": "v0.0.83",
+  "releases": [
+    {
+      "version": "v0.0.83",
+      "commit": "cf8b67e18744b27a11edcd780d43d0b67732f5ab",
+      "pullDate": "2025-11-15T22:24:21.198Z",
+      "releaseNotesUrl": "https://github.com/github/spec-kit/releases/tag/v0.0.83",
+      "status": "pulled"
+    }
+  ]
+}

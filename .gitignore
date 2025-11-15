@@ -21,8 +21,6 @@ coverage/
 
 # Speck-specific
 .speck/sync-reports/
-upstream/  # Pristine upstream content (can be re-pulled via /speck.pull-upstream)
-!upstream/releases.json
 
 # IDE
 .vscode/

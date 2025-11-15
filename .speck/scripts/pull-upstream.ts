@@ -93,12 +93,12 @@ Exit codes:
 }
 
 /**
- * Extract tarball to directory
+ * Extract ZIP file to directory
  *
- * Uses Bun Shell API for tarball extraction
+ * Uses Bun Shell API for ZIP extraction
  */
-async function extractTarball(
-  tarballPath: string,
+async function extractZip(
+  zipPath: string,
   destDir: string
 ): Promise<void> {
   try {
@@ -107,12 +107,11 @@ async function extractTarball(
     // Create destination directory
     mkdirSync(destDir, { recursive: true });
 
-    // Extract tarball using tar command
-    // --strip-components=1 removes the top-level directory from the tarball
-    await $`tar -xzf ${tarballPath} -C ${destDir} --strip-components=1`.quiet();
+    // Extract ZIP file using unzip command
+    await $`unzip -q ${zipPath} -d ${destDir}`.quiet();
   } catch (error) {
     throw new Error(
-      `Failed to extract tarball: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to extract ZIP file: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
@@ -160,8 +159,32 @@ async function fetchReleaseMetadata(
 
     const data = await response.json();
 
+    // Resolve tag to commit SHA if target_commitish is not a valid SHA
+    let commit = data.target_commitish;
+
+    // Check if target_commitish is a valid 40-char hex SHA
+    if (!/^[0-9a-f]{40}$/.test(commit)) {
+      // Fetch the actual commit SHA for this tag
+      const tagResponse = await fetch(
+        `https://api.github.com/repos/${UPSTREAM_OWNER}/${UPSTREAM_REPO}/git/refs/tags/${version}`,
+        {
+          headers: {
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "speck-upstream-sync",
+          },
+        }
+      );
+
+      if (!tagResponse.ok) {
+        throw new Error(`Failed to resolve tag ${version} to commit SHA`);
+      }
+
+      const tagData = await tagResponse.json();
+      commit = tagData.object.sha;
+    }
+
     return {
-      commit: data.target_commitish,
+      commit,
       releaseNotesUrl: data.html_url,
     };
   } catch (error) {
@@ -350,15 +373,41 @@ export async function pullUpstream(
     const tempDir = await createTempDir(`speck-pull-${version}-`);
 
     try {
-      // Download tarball to temp directory
-      const tarballUrl = `https://api.github.com/repos/${UPSTREAM_OWNER}/${UPSTREAM_REPO}/tarball/${version}`;
-      const tarballPath = join(tempDir, "release.tar.gz");
+      // Fetch release to get the artifact download URL
+      const releaseResponse = await fetch(
+        `https://api.github.com/repos/${UPSTREAM_OWNER}/${UPSTREAM_REPO}/releases/tags/${version}`,
+        {
+          headers: {
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "speck-upstream-sync",
+          },
+        }
+      );
 
-      await downloadTarball(tarballUrl, tarballPath);
+      if (!releaseResponse.ok) {
+        throw new Error(`Failed to fetch release ${version}: ${releaseResponse.statusText}`);
+      }
+
+      const releaseData = await releaseResponse.json();
+
+      // Find the spec-kit-template-claude-sh artifact
+      const artifactName = `spec-kit-template-claude-sh-${version}.zip`;
+      const asset = releaseData.assets?.find((a: any) => a.name === artifactName);
+
+      if (!asset) {
+        throw new Error(
+          `Release artifact not found: ${artifactName}\n` +
+          `Available assets: ${releaseData.assets?.map((a: any) => a.name).join(', ') || 'none'}`
+        );
+      }
+
+      // Download artifact to temp directory
+      const artifactPath = join(tempDir, artifactName);
+      await downloadTarball(asset.browser_download_url, artifactPath);
 
       // Extract to temp directory
       const extractDir = join(tempDir, "extracted");
-      await extractTarball(tarballPath, extractDir);
+      await extractZip(artifactPath, extractDir);
 
       // Ensure upstream directory exists
       if (!existsSync(UPSTREAM_DIR)) {
