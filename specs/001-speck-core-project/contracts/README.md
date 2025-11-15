@@ -1,63 +1,63 @@
-# API Contracts
+# API Contracts for Speck
 
-This directory contains JSON Schema contracts for all Speck CLI commands and Claude Code slash commands.
+This directory contains JSON Schema definitions for Speck's command interfaces and data structures.
 
-## Contract Files
+## Schemas
 
-| Command | Schema File | Description |
-|---------|-------------|-------------|
-| `/speck.specify` | [specify.schema.json](./specify.schema.json) | Create feature specification from natural language description |
-| `/speck.clarify` | [clarify.schema.json](./clarify.schema.json) | Resolve specification ambiguities through Q&A |
-| `/speck.plan` | [plan.schema.json](./plan.schema.json) | Generate implementation plan with technical context |
-| `/speck.tasks` | [tasks.schema.json](./tasks.schema.json) | Generate actionable task list with dependencies |
-| `/speck.transform-upstream` | [transform-upstream.schema.json](./transform-upstream.schema.json) | Sync upstream spec-kit changes via Claude agent |
+### `specify.schema.json`
+Contract for the `/speck.specify` command - creates a new feature specification from a natural language description.
+
+**Key Operations**:
+- Input validation for feature descriptions
+- Output structure for created features and specifications
+- Error contracts for git validation, duplicate detection, and branch name length handling
+
+**Related Entities**: Feature, Specification
+
+---
+
+### `transform-upstream.schema.json`
+Contract for the `/speck.transform-upstream` command - syncs upstream spec-kit changes via AI-driven semantic transformation.
+
+**Key Operations**:
+- Input validation for sync parameters (target commit, dry-run mode)
+- Output structure for sync reports, applied changes, and conflicts
+- Error contracts for type check failures, test failures, extension violations, and breaking changes
+
+**Related Entities**: UpstreamTracker, SyncedFile, ExtensionMarker
+
+---
 
 ## Usage
 
-### CLI (TypeScript)
+These schemas serve multiple purposes:
 
-```typescript
-import { SpecifyInputSchema } from './contracts/specify.schema.json';
-
-// Validate user input
-const validated = SpecifyInputSchema.parse(userInput);
-
-// Execute command with validated input
-const result = await specifyCommand.execute(validated);
-```
-
-### Claude Code (Slash Commands)
-
-Slash commands use the same contracts but accept natural language input that is parsed into the structured format.
-
-Example:
-```
-User: /speck.specify "Add user authentication with OAuth2"
-
-Claude parses to:
-{
-  "command": "specify",
-  "input": {
-    "description": "Add user authentication with OAuth2"
-  }
-}
-```
-
-## Contract Structure
-
-Each command contract defines:
-
-1. **Input**: User-provided parameters (arguments, options, flags)
-2. **Output**: Success response with generated artifacts
-3. **Errors**: Typed error responses with error codes
-4. **Examples**: Sample usage with real data
+1. **Documentation**: Define expected inputs, outputs, and error cases for each command
+2. **Validation**: Can be used with JSON Schema validators to ensure contract compliance
+3. **Type Generation**: Can generate TypeScript types for implementation (e.g., via `json-schema-to-typescript`)
+4. **Testing**: Provide contract test fixtures for validating command behavior
 
 ## Validation
 
-All contracts use JSON Schema Draft 7 for validation:
-- TypeScript: Validated via Zod (schemas derived from JSON Schema)
-- JSON output: Validated via AJV or equivalent JSON Schema validator
+To validate data against these schemas:
 
-## Behavioral Parity
+```bash
+# Using Bun with a JSON Schema validator
+bun install ajv ajv-cli
+bunx ajv validate -s specify.schema.json -d example-specify-output.json
+```
 
-CLI and Claude Code slash commands share identical contracts, ensuring <1% behavioral deviation (SC-005).
+## Schema Evolution
+
+When modifying schemas:
+1. Follow semantic versioning for breaking changes
+2. Update the `$id` field version if breaking changes occur
+3. Document changes in the schema's `description` fields
+4. Ensure backward compatibility where possible
+5. Update corresponding TypeScript types in implementation
+
+## Related Documentation
+
+- [Data Model](../data-model.md): Full entity definitions with fields, relationships, and validation rules
+- [Specification](../spec.md): Feature requirements and user scenarios
+- [Implementation Plan](../plan.md): Technical context and architecture decisions

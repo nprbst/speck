@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-11-14
 
 ## Active Technologies
+- File-based (markdown specs, JSON tracking files in `.speck/` directory) (001-speck-core-project)
+- TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary) + Bun runtime, Git 2.30+, Claude Code (slash command + agent support) (001-speck-core-project)
 
 - TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary) (001-speck-core-project)
 
@@ -22,6 +24,8 @@ npm test && npm run lint
 TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary): Follow standard conventions
 
 ## Recent Changes
+- 001-speck-core-project: Added TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary) + Bun runtime, Git 2.30+, Claude Code (slash command + agent support)
+- 001-speck-core-project: Added TypeScript 5.3+
 
 - 001-speck-core-project: Added TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary)
 

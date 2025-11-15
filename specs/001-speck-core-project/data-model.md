@@ -1,841 +1,356 @@
-# Data Model
+# Data Model: Speck - Claude Code-Optimized Specification Framework
 
-**Feature**: Speck - Claude Code-Optimized Specification Framework
-**Branch**: `001-speck-core-project`
-**Date**: 2025-11-14
-**Phase**: Phase 1 (Design & Contracts)
+**Branch**: `001-speck-core-project` | **Date**: 2025-11-15 | **Plan**: [plan.md](plan.md)
 
-## Overview
-
-This document defines the domain models and entities for Speck's TypeScript implementation. All models are TypeScript interfaces/classes with Zod schema validation for runtime safety.
+This document defines the core entities, their fields, relationships, validation rules, and state transitions for the Speck system.
 
 ---
 
-## Core Domain Entities
+## Entity: Feature
 
-### 1. Feature
+Represents a development feature with associated metadata for tracking and organization.
 
-Represents a development feature with associated metadata and directory structure.
+### Fields
 
-**Entity Definition**:
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `number` | integer | Yes | 3-digit zero-padded feature number (e.g., 001, 042) | Must be unique, auto-incremented, range: 001-999 |
+| `shortName` | string | Yes | Kebab-case short name (2-4 words) extracted from description | Max length: adjusted to keep branch name ≤244 chars; auto-append collision counter if duplicate; truncate at word boundaries with hash suffix if needed |
+| `branchName` | string | Yes | Git branch name: `{number}-{shortName}` | Format: `\d{3}-[a-z0-9-]+`; max 244 characters (git limit) |
+| `description` | string | Yes | Full natural language feature description | Min 10 characters, max 1000 characters |
+| `directoryPath` | string | Yes | Absolute path to feature's specs directory | Format: `specs/{number}-{shortName}/` |
+| `createdAt` | timestamp | Yes | ISO 8601 timestamp of feature creation | ISO 8601 format (e.g., 2025-11-15T14:30:00Z) |
+| `status` | enum | Yes | Current feature lifecycle status | One of: `draft`, `clarifying`, `planning`, `ready_for_implementation`, `implementing`, `completed` |
+| `worktreePath` | string | No | Absolute path to worktree directory (if worktree mode used) | Must be valid directory path outside main repo |
 
-```typescript
-// src/core/models/Feature.ts
+### Relationships
+- **One Feature** has **one Specification** (1:1)
+- **One Feature** has **zero or one ImplementationPlan** (1:0..1)
+- **One Feature** has **zero or more Clarifications** (1:*)
 
-export interface Feature {
-  /** Feature number (3-digit zero-padded in branch name) */
-  number: number;
-
-  /** Short feature name (2-4 words, kebab-case) */
-  shortName: string;
-
-  /** Full branch name: {number}-{shortName} (e.g., "001-user-auth") */
-  branchName: string;
-
-  /** Original feature description from user input */
-  description: string;
-
-  /** Absolute path to feature specs directory */
-  directory: string;
-
-  /** Timestamp of feature creation */
-  createdAt: Date;
-
-  /** Optional worktree path (if created as worktree) */
-  worktreePath?: string;
-
-  /** Creation mode: branch | worktree | non-git */
-  mode: 'branch' | 'worktree' | 'non-git';
-}
+### State Transitions
+```
+draft → clarifying → planning → ready_for_implementation → implementing → completed
+  ↓         ↓           ↓              ↓                      ↓
+  └─────────┴───────────┴──────────────┴──────────────────────┘
+         (can transition back to earlier states for rework)
 ```
 
-**Zod Schema**:
-
-```typescript
-import { z } from 'zod';
-
-export const FeatureSchema = z.object({
-  number: z.number().int().positive().max(999),
-  shortName: z.string()
-    .min(3)
-    .max(50)
-    .regex(/^[a-z0-9-]+$/, 'Short name must be kebab-case'),
-  branchName: z.string()
-    .regex(/^\d{3}-[a-z0-9-]+$/, 'Branch name must match format: 001-feature-name'),
-  description: z.string().min(10).max(1000),
-  directory: z.string().min(1),
-  createdAt: z.date(),
-  worktreePath: z.string().optional(),
-  mode: z.enum(['branch', 'worktree', 'non-git']),
-});
-
-export type Feature = z.infer<typeof FeatureSchema>;
-```
-
-**Validation Rules**:
-- `number`: 1-999 (3-digit zero-padded)
-- `shortName`: Lowercase, numbers, hyphens only (kebab-case)
-- `branchName`: Must match `^\d{3}-[a-z0-9-]+$` pattern
-- `description`: 10-1000 characters
-- `branchName` length: ≤244 characters (git limitation)
-
-**State Transitions**:
-```
-[User Input] → Feature.create() → [Created] → Feature.activate() → [Active]
-```
-
-**Relationships**:
-- Has one Specification (in `{directory}/spec.md`)
-- Has one Plan (in `{directory}/plan.md`)
-- Has many Tasks (in `{directory}/tasks.md`)
-- Has many Checklists (in `{directory}/checklists/`)
+**Transition Rules**:
+- `draft → clarifying`: When `/speck.clarify` is invoked
+- `clarifying → planning`: When all `[NEEDS CLARIFICATION]` markers resolved
+- `planning → ready_for_implementation`: When plan.md generated and Constitution Check passes
+- `ready_for_implementation → implementing`: When `/speck.implement` begins
+- `implementing → completed`: When all tasks in tasks.md marked complete
 
 ---
 
-### 2. Specification
+## Entity: Specification
 
-Represents a feature specification document describing what users need and why (technology-agnostic).
+A structured markdown document describing what users need and why, without implementation details.
 
-**Entity Definition**:
+### Fields
 
-```typescript
-// src/core/models/Specification.ts
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `featureNumber` | integer | Yes | Reference to parent Feature | Must match existing Feature.number |
+| `filePath` | string | Yes | Absolute path to spec.md file | Format: `specs/{number}-{shortName}/spec.md` |
+| `createdAt` | timestamp | Yes | ISO 8601 timestamp of spec creation | ISO 8601 format |
+| `lastModifiedAt` | timestamp | Yes | ISO 8601 timestamp of last modification | ISO 8601 format; must be ≥ createdAt |
+| `userScenarios` | array[UserScenario] | Yes | Prioritized list of user stories | Min 1 scenario; each must have priority (P1, P2, etc.) |
+| `requirements` | object | Yes | Functional and non-functional requirements | Must contain `functional` array and optional `nonFunctional` array |
+| `successCriteria` | array[SuccessCriterion] | Yes | Measurable, technology-agnostic success metrics | Min 3 criteria; each must be measurable and user-focused |
+| `clarificationMarkers` | array[string] | No | Locations of `[NEEDS CLARIFICATION]` markers | Max 3 markers; extracted via regex `\[NEEDS CLARIFICATION\]` |
+| `assumptions` | array[string] | Yes | Documented assumptions about environment, users, or constraints | Min 1 assumption |
+| `dependencies` | array[Dependency] | No | External dependencies required for feature | Each must specify type (upstream, runtime, version) |
+| `outOfScope` | array[string] | Yes | Explicitly excluded features or capabilities | Min 1 out-of-scope item |
+| `qualityCheckPassed` | boolean | Yes | Whether spec passed automated quality validation | Defaults to `false`; set to `true` when validation succeeds |
 
-export interface Specification {
-  /** Associated feature */
-  feature: Feature;
+### Validation Rules (Quality Gates)
+- **No implementation details**: Spec content must NOT mention frameworks, languages, databases, or specific APIs (SC-002)
+- **Testable requirements**: Each functional requirement must have corresponding acceptance scenario
+- **Technology-agnostic success criteria**: Success criteria must focus on user outcomes, not system internals
+- **Mandatory sections**: Must include User Scenarios, Requirements, Success Criteria, Assumptions, Out of Scope
+- **Clarification limit**: Max 3 `[NEEDS CLARIFICATION]` markers (FR-006)
 
-  /** File path to spec.md */
-  filePath: string;
-
-  /** Markdown content of specification */
-  content: string;
-
-  /** Parsed sections */
-  sections: {
-    userScenarios: UserScenario[];
-    requirements: Requirement[];
-    successCriteria: SuccessCriterion[];
-    assumptions: string[];
-    dependencies: string[];
-    outOfScope: string[];
-    edgeCases: string[];
-  };
-
-  /** Clarifications (Q&A pairs) */
-  clarifications: Clarification[];
-
-  /** Validation status */
-  validation: {
-    isValid: boolean;
-    errors: ValidationError[];
-    warnings: ValidationWarning[];
-  };
-
-  /** Clarification markers count */
-  clarificationMarkersCount: number;
-
-  /** Last modified timestamp */
-  lastModified: Date;
-}
-
-export interface UserScenario {
-  title: string;
-  priority: 'P1' | 'P2' | 'P3';
-  description: string;
-  rationale: string;
-  independentTest: string;
-  acceptanceScenarios: AcceptanceScenario[];
-}
-
-export interface AcceptanceScenario {
-  given: string;
-  when: string;
-  then: string;
-}
-
-export interface Requirement {
-  id: string;            // e.g., "FR-001", "NFR-001"
-  type: 'functional' | 'non-functional' | 'quality';
-  description: string;
-  testable: boolean;
-}
-
-export interface SuccessCriterion {
-  id: string;            // e.g., "SC-001"
-  description: string;
-  measurable: boolean;
-  technologyAgnostic: boolean;
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const SpecificationSchema = z.object({
-  feature: FeatureSchema,
-  filePath: z.string(),
-  content: z.string().min(100),
-  sections: z.object({
-    userScenarios: z.array(UserScenarioSchema).min(1),
-    requirements: z.array(RequirementSchema).min(1),
-    successCriteria: z.array(SuccessCriterionSchema).min(1),
-    assumptions: z.array(z.string()),
-    dependencies: z.array(z.string()),
-    outOfScope: z.array(z.string()),
-    edgeCases: z.array(z.string()),
-  }),
-  clarifications: z.array(ClarificationSchema),
-  validation: z.object({
-    isValid: z.boolean(),
-    errors: z.array(ValidationErrorSchema),
-    warnings: z.array(ValidationWarningSchema),
-  }),
-  clarificationMarkersCount: z.number().int().min(0).max(3), // Max 3 per spec
-  lastModified: z.date(),
-});
-```
-
-**Validation Rules** (Constitution-Enforced):
-- Must have ≥1 user scenario (mandatory section)
-- Must have ≥1 functional requirement (mandatory section)
-- Must have ≥1 success criterion (mandatory section)
-- Clarification markers: Max 3 during generation (FR-006)
-- Zero implementation details (SC-002: validated via SpecValidator)
-- Technology-agnostic success criteria (Principle VI)
-
-**State Transitions**:
-```
-[Generated] → validate() → [Validation Failed/Passed] → clarify() → [Clarified] → finalize() → [Ready for Planning]
-```
+### Relationships
+- **One Specification** belongs to **one Feature** (1:1)
+- **One Specification** has **zero or more Clarifications** (1:*)
 
 ---
 
-### 3. Plan
+## Entity: UserScenario
 
-Represents an implementation plan with technical context, phase breakdowns, and design artifacts.
+Represents an independently testable user story or journey.
 
-**Entity Definition**:
+### Fields
 
-```typescript
-// src/core/models/Plan.ts
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `title` | string | Yes | User story title | Max 100 characters |
+| `description` | string | Yes | Full user story narrative | Min 50 characters |
+| `priority` | enum | Yes | Priority level | One of: `P1` (critical), `P2` (important), `P3` (nice-to-have), `P4` (future) |
+| `whyThisPriority` | string | Yes | Rationale for priority assignment | Min 20 characters |
+| `independentTest` | string | Yes | How to test this story independently | Must describe standalone test scenario |
+| `acceptanceScenarios` | array[AcceptanceScenario] | Yes | Given-When-Then acceptance criteria | Min 1 scenario |
 
-export interface Plan {
-  /** Associated feature */
-  feature: Feature;
+### Validation Rules
+- Each scenario must be independently implementable as viable MVP
+- Priority must reflect importance (P1 = highest)
+- Independent test must demonstrate standalone value
 
-  /** File path to plan.md */
-  filePath: string;
+---
 
-  /** Markdown content */
-  content: string;
+## Entity: AcceptanceScenario
 
-  /** Technical context */
-  technicalContext: {
-    language: string;
-    dependencies: string[];
-    storage: string;
-    testing: string;
-    targetPlatform: string;
-    projectType: 'single' | 'web' | 'mobile';
-    performanceGoals: string[];
-    constraints: string[];
-    scale: string;
-  };
+Given-When-Then format acceptance criteria for a user scenario.
 
-  /** Constitution check results */
-  constitutionCheck: {
-    passed: boolean;
-    violations: ConstitutionViolation[];
-    summary: string;
-  };
+### Fields
 
-  /** Project structure definition */
-  projectStructure: {
-    documentation: string[];  // Paths in specs/ dir
-    sourceCode: string[];     // Paths in src/ dir
-    structureDecision: string;
-  };
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `given` | string | Yes | Precondition/context | Starts with "Given"; min 10 characters |
+| `when` | string | Yes | User action/trigger | Starts with "When"; min 10 characters |
+| `then` | string | Yes | Expected outcome | Starts with "Then"; min 10 characters |
 
-  /** Complexity justifications (if violations exist) */
-  complexityTracking: ComplexityJustification[];
+---
 
-  /** Phases (from research.md, data-model.md, etc.) */
-  phases: {
-    phase0Research: boolean;      // research.md exists
-    phase1Design: boolean;         // data-model.md, contracts/, quickstart.md exist
-    phase2Tasks: boolean;          // tasks.md exists (generated via /speckit.tasks)
-  };
+## Entity: Clarification
 
-  /** Last modified timestamp */
-  lastModified: Date;
-}
+A question-answer pair resolving ambiguous requirements in a specification.
 
-export interface ConstitutionViolation {
-  principle: string;              // e.g., "Principle IV: Quality Gates"
-  severity: 'error' | 'warning';
-  description: string;
-  justification?: string;         // If violation is acceptable
-}
+### Fields
 
-export interface ComplexityJustification {
-  violation: string;              // What rule was broken
-  whyNeeded: string;              // Business justification
-  simplerAlternativeRejected: string; // Why simpler approach insufficient
-}
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `featureNumber` | integer | Yes | Reference to parent Feature | Must match existing Feature.number |
+| `sessionDate` | date | Yes | Date of clarification session | Format: YYYY-MM-DD |
+| `question` | string | Yes | Clarification question asked by system | Min 20 characters; must end with `?` |
+| `answer` | string | Yes | User-provided or selected answer | Min 10 characters |
+| `resolvedMarkerLocation` | string | No | Location in spec where marker was resolved | File path + line number (e.g., "spec.md:42") |
+
+### Validation Rules
+- Max 5 questions per clarification session (SC-007)
+- 90% of specs should require only 1 session (SC-007)
+
+### Relationships
+- **One Clarification** belongs to **one Feature** (1:1)
+- **One Clarification** resolves **one Specification** ambiguity (1:1)
+
+---
+
+## Entity: ImplementationPlan
+
+The plan.md artifact generated by `/speck.plan` command.
+
+### Fields
+
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `featureNumber` | integer | Yes | Reference to parent Feature | Must match existing Feature.number |
+| `filePath` | string | Yes | Absolute path to plan.md file | Format: `specs/{number}-{shortName}/plan.md` |
+| `createdAt` | timestamp | Yes | ISO 8601 timestamp of plan creation | ISO 8601 format |
+| `technicalContext` | object | Yes | Technology choices and constraints | Must NOT have any "NEEDS CLARIFICATION" values after research.md generated |
+| `constitutionCheckResult` | enum | Yes | Result of constitutional principle validation | One of: `PASS`, `PASS_WITH_JUSTIFICATION`, `FAIL` |
+| `researchFilePath` | string | Yes | Path to research.md (Phase 0 output) | Format: `specs/{number}-{shortName}/research.md` |
+| `dataModelFilePath` | string | Yes | Path to data-model.md (Phase 1 output) | Format: `specs/{number}-{shortName}/data-model.md` |
+| `contractsDirectoryPath` | string | Yes | Path to contracts/ directory (Phase 1 output) | Format: `specs/{number}-{shortName}/contracts/` |
+| `quickstartFilePath` | string | Yes | Path to quickstart.md (Phase 1 output) | Format: `specs/{number}-{shortName}/quickstart.md` |
+
+### Validation Rules (Quality Gates)
+- Constitution Check must PASS before proceeding to Phase 0
+- All NEEDS CLARIFICATION items in Technical Context must be resolved before Phase 1
+- Phase 1 artifacts must be generated before Phase 2 (tasks.md)
+
+### Relationships
+- **One ImplementationPlan** belongs to **one Feature** (1:1)
+
+---
+
+## Entity: UpstreamTracker
+
+Tracks synchronization state with upstream spec-kit repository.
+
+### Fields
+
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `lastSyncedCommit` | string | Yes | SHA of last synced upstream commit | Must be valid git SHA (40 hex characters) |
+| `lastSyncDate` | timestamp | Yes | ISO 8601 timestamp of last successful sync | ISO 8601 format |
+| `upstreamRepo` | string | Yes | URL of upstream repository | Must be valid git URL; default: `https://github.com/github/spec-kit` |
+| `upstreamBranch` | string | Yes | Tracked upstream branch name | Default: `main` |
+| `currentVersion` | string | Yes | Semantic version of last synced release | Format: `vX.Y.Z` (semver) |
+| `syncedFiles` | array[SyncedFile] | Yes | Per-file sync tracking | Min 1 file |
+| `status` | enum | Yes | Overall sync status | One of: `synced`, `out_of_sync`, `syncing`, `conflict` |
+
+### Validation Rules
+- File stored at `.speck/upstream-tracker.json`
+- lastSyncedCommit must be verifiable against upstream repo
+- syncedFiles array must include all tracked files
+
+---
+
+## Entity: SyncedFile
+
+Tracks synchronization state for a single file from upstream.
+
+### Fields
+
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `upstreamPath` | string | Yes | Path in upstream spec-kit repo | Relative path from repo root |
+| `speckPaths` | array[string] | Yes | Corresponding paths in Speck | Min 1 path; relative from repo root |
+| `lastUpstreamHash` | string | Yes | SHA256 hash of last synced upstream file content | Must be valid SHA256 (64 hex characters) |
+| `syncStatus` | enum | Yes | File-level sync status | One of: `synced`, `modified`, `conflict`, `skipped` |
+| `lastSyncDate` | timestamp | Yes | ISO 8601 timestamp of last sync for this file | ISO 8601 format |
+
+---
+
+## Entity: ExtensionMarker
+
+Identifies and protects Speck-specific code blocks during upstream sync.
+
+### Fields
+
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `name` | string | Yes | Unique identifier for extension | Kebab-case; max 50 characters |
+| `filePath` | string | Yes | Path to file containing extension | Relative from repo root |
+| `startLine` | integer | Yes | Line number of `[SPECK-EXTENSION:START]` marker | Must be > 0 |
+| `endLine` | integer | Yes | Line number of `[SPECK-EXTENSION:END]` marker | Must be > startLine |
+| `description` | string | No | Optional description of extension purpose | Max 200 characters |
+| `preservationStatus` | enum | Yes | Whether extension was preserved in last sync | One of: `preserved`, `modified`, `removed`, `conflict` |
+
+### Validation Rules (NON-NEGOTIABLE)
+- Extension markers MUST use format: `<!-- [SPECK-EXTENSION:START] {name} -->` and `<!-- [SPECK-EXTENSION:END] {name} -->`
+- Markers must be balanced (every START has corresponding END)
+- Nested markers are prohibited
+- Content within markers MUST NOT be modified by upstream sync transformations (Constitution II)
+
+---
+
+## Entity: Worktree
+
+An isolated git working directory for parallel feature development.
+
+### Fields
+
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `featureNumber` | integer | Yes | Reference to parent Feature | Must match existing Feature.number |
+| `path` | string | Yes | Absolute path to worktree directory | Must be outside main repo; must be valid directory |
+| `branchName` | string | Yes | Git branch name for this worktree | Format: `\d{3}-[a-z0-9-]+` |
+| `createdAt` | timestamp | Yes | ISO 8601 timestamp of worktree creation | ISO 8601 format |
+| `specsAccessMode` | enum | Yes | How worktree accesses specs directory | One of: `shared_git_tracked` (naturally shared via git), `symlinked` (symlink from main repo if specs/ is gitignored) |
+
+### Validation Rules
+- Worktree path must not overlap with other worktrees
+- Worktree must have dedicated feature branch
+- Specs access mode determined by checking if `specs/` is git-tracked (FR-017)
+
+### Relationships
+- **One Worktree** belongs to **one Feature** (1:1)
+
+---
+
+## Entity: BashScriptReimplementation
+
+TypeScript CLI equivalent of infrastructure bash scripts.
+
+### Fields
+
+| Field | Type | Required | Description | Validation Rules |
+|-------|------|----------|-------------|------------------|
+| `scriptName` | string | Yes | Original bash script filename | One of: `check-prerequisites.sh`, `setup-plan.sh`, `update-agent-context.sh`, `create-new-feature.sh` |
+| `cliCommand` | string | Yes | Bun CLI equivalent command | Format: `bun run cli.ts {command}` |
+| `wrapperPath` | string | Yes | Path to bash wrapper script | Format: `.specify/scripts/bash/{scriptName}` |
+| `implementationPath` | string | Yes | Path to TypeScript implementation | Format: `src/cli/{command}.ts` or similar |
+| `compatibilityStatus` | enum | Yes | Behavioral compatibility with bash version | One of: `100%_compatible`, `partial`, `not_implemented` |
+| `startupTime` | integer | No | Measured CLI startup time in milliseconds | Must be ≤100ms (SC-005) |
+
+### Validation Rules
+- Bash wrapper must pass all arguments transparently to Bun CLI
+- JSON output (--json flag) must be byte-for-byte identical to bash version (SC-005)
+- Exit codes must match bash version exactly (FR-021)
+- Slash commands require zero modifications (FR-019)
+
+---
+
+## Entity Relationship Diagram (Summary)
+
 ```
+Feature (1) ──── (1) Specification
+   │                    │
+   │                    └─── (*) Clarification
+   │
+   ├─── (0..1) ImplementationPlan
+   │              │
+   │              ├─── (1) research.md
+   │              ├─── (1) data-model.md
+   │              ├─── (1) contracts/
+   │              └─── (1) quickstart.md
+   │
+   └─── (0..1) Worktree
 
-**Zod Schema**:
+UpstreamTracker (1) ──── (*) SyncedFile
 
-```typescript
-export const PlanSchema = z.object({
-  feature: FeatureSchema,
-  filePath: z.string(),
-  content: z.string().min(500),
-  technicalContext: z.object({
-    language: z.string(),
-    dependencies: z.array(z.string()),
-    storage: z.string(),
-    testing: z.string(),
-    targetPlatform: z.string(),
-    projectType: z.enum(['single', 'web', 'mobile']),
-    performanceGoals: z.array(z.string()),
-    constraints: z.array(z.string()),
-    scale: z.string(),
-  }),
-  constitutionCheck: z.object({
-    passed: z.boolean(),
-    violations: z.array(ConstitutionViolationSchema),
-    summary: z.string(),
-  }),
-  projectStructure: z.object({
-    documentation: z.array(z.string()),
-    sourceCode: z.array(z.string()),
-    structureDecision: z.string(),
-  }),
-  complexityTracking: z.array(ComplexityJustificationSchema),
-  phases: z.object({
-    phase0Research: z.boolean(),
-    phase1Design: z.boolean(),
-    phase2Tasks: z.boolean(),
-  }),
-  lastModified: z.date(),
-});
-```
+ExtensionMarker (global collection, file-based detection)
 
-**Validation Rules**:
-- Constitution check must pass before Phase 0 research
-- Re-check required after Phase 1 design
-- Complexity justifications required ONLY if violations exist
-- Technical context must have all required fields filled (no "NEEDS CLARIFICATION" in final plan)
-
-**State Transitions**:
-```
-[Specification Ready] → generatePlan() → [Draft] → constitutionCheck() → [Approved] → executePhase0() → [Researched] → executePhase1() → [Designed]
+BashScriptReimplementation (4 fixed scripts)
 ```
 
 ---
 
-### 4. Task
+## Storage & Persistence
 
-Represents an actionable implementation task with dependencies and status tracking.
-
-**Entity Definition**:
-
-```typescript
-// src/core/models/Task.ts
-
-export interface Task {
-  /** Task ID (e.g., "T001", "T002") */
-  id: string;
-
-  /** Task title (imperative form) */
-  title: string;
-
-  /** Detailed description */
-  description: string;
-
-  /** Type of task */
-  type: 'implementation' | 'testing' | 'documentation' | 'research' | 'review';
-
-  /** Status */
-  status: 'pending' | 'in-progress' | 'completed' | 'blocked';
-
-  /** Priority */
-  priority: 'P0' | 'P1' | 'P2' | 'P3';
-
-  /** Task dependencies (task IDs that must complete first) */
-  dependencies: string[];
-
-  /** Estimated effort (in story points or hours) */
-  estimatedEffort?: number;
-
-  /** Acceptance criteria */
-  acceptanceCriteria: string[];
-
-  /** Related files/components */
-  relatedFiles: string[];
-
-  /** Created date */
-  createdAt: Date;
-
-  /** Last updated date */
-  updatedAt: Date;
-}
-
-export interface TaskList {
-  /** Associated feature */
-  feature: Feature;
-
-  /** File path to tasks.md */
-  filePath: string;
-
-  /** All tasks */
-  tasks: Task[];
-
-  /** Dependency graph */
-  dependencyGraph: Map<string, string[]>; // taskId → dependent taskIds
-
-  /** Execution order (topological sort of tasks) */
-  executionOrder: string[];
-
-  /** Summary statistics */
-  summary: {
-    total: number;
-    completed: number;
-    inProgress: number;
-    blocked: number;
-    pending: number;
-  };
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const TaskSchema = z.object({
-  id: z.string().regex(/^T\d{3}$/, 'Task ID must match format: T001'),
-  title: z.string().min(5).max(200),
-  description: z.string().min(10),
-  type: z.enum(['implementation', 'testing', 'documentation', 'research', 'review']),
-  status: z.enum(['pending', 'in-progress', 'completed', 'blocked']),
-  priority: z.enum(['P0', 'P1', 'P2', 'P3']),
-  dependencies: z.array(z.string()),
-  estimatedEffort: z.number().positive().optional(),
-  acceptanceCriteria: z.array(z.string()).min(1),
-  relatedFiles: z.array(z.string()),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-export const TaskListSchema = z.object({
-  feature: FeatureSchema,
-  filePath: z.string(),
-  tasks: z.array(TaskSchema).min(1),
-  dependencyGraph: z.map(z.string(), z.array(z.string())),
-  executionOrder: z.array(z.string()),
-  summary: z.object({
-    total: z.number().int().min(0),
-    completed: z.number().int().min(0),
-    inProgress: z.number().int().min(0),
-    blocked: z.number().int().min(0),
-    pending: z.number().int().min(0),
-  }),
-});
-```
-
-**Validation Rules**:
-- Task ID must be unique within feature
-- Dependency cycles not allowed (validated via topological sort)
-- Blocked tasks must have reason documented
-- At least 1 acceptance criterion per task
-
-**State Transitions**:
-```
-[Pending] → startTask() → [In Progress] → completeTask() → [Completed]
-          ↓
-     blockTask() → [Blocked] → unblockTask() → [Pending]
-```
-
----
-
-### 5. Checklist
-
-Represents a quality checklist for validation gates (requirements, constitution, etc.).
-
-**Entity Definition**:
-
-```typescript
-// src/core/models/Checklist.ts
-
-export interface Checklist {
-  /** Associated feature */
-  feature: Feature;
-
-  /** Checklist type */
-  type: 'requirements' | 'constitution' | 'quality' | 'deployment';
-
-  /** File path (in checklists/ directory) */
-  filePath: string;
-
-  /** Checklist items */
-  items: ChecklistItem[];
-
-  /** Completion status */
-  status: {
-    total: number;
-    completed: number;
-    percentComplete: number;
-  };
-
-  /** Last updated timestamp */
-  lastUpdated: Date;
-}
-
-export interface ChecklistItem {
-  /** Item ID (e.g., "REQ-001", "CON-001") */
-  id: string;
-
-  /** Item description */
-  description: string;
-
-  /** Completion status */
-  completed: boolean;
-
-  /** Optional notes */
-  notes?: string;
-
-  /** Linked requirement/criterion */
-  linkedTo?: string; // e.g., "FR-001", "SC-002"
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const ChecklistSchema = z.object({
-  feature: FeatureSchema,
-  type: z.enum(['requirements', 'constitution', 'quality', 'deployment']),
-  filePath: z.string(),
-  items: z.array(ChecklistItemSchema).min(1),
-  status: z.object({
-    total: z.number().int().positive(),
-    completed: z.number().int().min(0),
-    percentComplete: z.number().min(0).max(100),
-  }),
-  lastUpdated: z.date(),
-});
-
-export const ChecklistItemSchema = z.object({
-  id: z.string().regex(/^[A-Z]+-\d{3}$/, 'Item ID must match format: REQ-001'),
-  description: z.string().min(5),
-  completed: z.boolean(),
-  notes: z.string().optional(),
-  linkedTo: z.string().optional(),
-});
-```
-
-**Validation Rules**:
-- At least 1 checklist item
-- Percent complete must match `(completed / total) * 100`
-- Linked items must exist in spec/plan
-
----
-
-### 6. Constitution
-
-Represents the project's governance document with principles and compliance tracking.
-
-**Entity Definition**:
-
-```typescript
-// src/core/models/Constitution.ts
-
-export interface Constitution {
-  /** Constitution version (semantic versioning) */
-  version: string;
-
-  /** Ratified date */
-  ratifiedDate: Date;
-
-  /** Last amended date */
-  lastAmendedDate: Date;
-
-  /** Core principles */
-  principles: Principle[];
-
-  /** Compliance rules */
-  complianceRules: ComplianceRule[];
-
-  /** Amendment history */
-  amendments: Amendment[];
-}
-
-export interface Principle {
-  /** Principle ID (e.g., "I", "II", "VII") */
-  id: string;
-
-  /** Principle title */
-  title: string;
-
-  /** Is this principle non-negotiable? */
-  nonNegotiable: boolean;
-
-  /** Rationale */
-  rationale: string;
-
-  /** Implementation requirements */
-  implementationRequirements: string[];
-}
-
-export interface ComplianceRule {
-  /** Rule ID */
-  id: string;
-
-  /** Linked principle */
-  principleId: string;
-
-  /** Validation type */
-  validationType: 'automated' | 'manual' | 'hybrid';
-
-  /** Validation command/process */
-  validationProcess: string;
-}
-
-export interface Amendment {
-  /** Amendment version */
-  version: string;
-
-  /** Amendment date */
-  date: Date;
-
-  /** Amendment type */
-  type: 'MAJOR' | 'MINOR' | 'PATCH';
-
-  /** Changes summary */
-  changes: string;
-
-  /** Rationale */
-  rationale: string;
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const ConstitutionSchema = z.object({
-  version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Version must be semantic: X.Y.Z'),
-  ratifiedDate: z.date(),
-  lastAmendedDate: z.date(),
-  principles: z.array(PrincipleSchema).min(1),
-  complianceRules: z.array(ComplianceRuleSchema),
-  amendments: z.array(AmendmentSchema),
-});
-```
-
-**Validation Rules**:
-- Version must follow semantic versioning
-- Non-negotiable principles cannot be removed (only amended)
-- Amendments must document rationale
-
----
-
-### 7. Upstream Tracker
-
-Tracks synchronization state with upstream spec-kit releases.
-
-**Entity Definition**:
-
-```typescript
-// src/core/models/UpstreamTracker.ts
-
-export interface UpstreamTracker {
-  /** Last synced commit SHA from upstream */
-  lastSyncedCommit: string;
-
-  /** Last sync date */
-  lastSyncDate: Date;
-
-  /** Upstream repository URL */
-  upstreamRepo: string;
-
-  /** Upstream branch */
-  upstreamBranch: string;
-
-  /** Current upstream release version */
-  currentVersion: string;
-
-  /** Synced files mapping */
-  syncedFiles: SyncedFile[];
-
-  /** Sync status */
-  status: 'synced' | 'pending' | 'conflicted';
-}
-
-export interface SyncedFile {
-  /** Upstream file path */
-  upstreamPath: string;
-
-  /** Speck artifact paths (one upstream file → many Speck artifacts) */
-  speckPaths: string[];
-
-  /** Last upstream file hash */
-  lastUpstreamHash: string;
-
-  /** Sync status for this file */
-  syncStatus: 'synced' | 'modified' | 'conflicted';
-
-  /** Last sync date */
-  lastSyncDate: Date;
-}
-
-export interface ReleaseInfo {
-  /** Release version tag */
-  version: string;
-
-  /** Download URL */
-  downloadUrl: string;
-
-  /** Downloaded at timestamp */
-  downloadedAt: Date;
-
-  /** SHA256 checksum */
-  sha256: string;
-
-  /** Release date */
-  releaseDate: Date;
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const UpstreamTrackerSchema = z.object({
-  lastSyncedCommit: z.string().length(40), // Git SHA
-  lastSyncDate: z.date(),
-  upstreamRepo: z.string().url(),
-  upstreamBranch: z.string().default('main'),
-  currentVersion: z.string().regex(/^v\d+\.\d+\.\d+$/),
-  syncedFiles: z.array(SyncedFileSchema),
-  status: z.enum(['synced', 'pending', 'conflicted']),
-});
-
-export const ReleaseInfoSchema = z.object({
-  version: z.string().regex(/^v\d+\.\d+\.\d+$/),
-  downloadUrl: z.string().url(),
-  downloadedAt: z.date(),
-  sha256: z.string().length(64),
-  releaseDate: z.date(),
-});
-```
-
----
-
-### 8. Clarification
-
-Represents a question-answer pair resolving specification ambiguities.
-
-**Entity Definition**:
-
-```typescript
-// src/core/models/Clarification.ts
-
-export interface Clarification {
-  /** Session ID (timestamp-based) */
-  sessionId: string;
-
-  /** Session date */
-  sessionDate: Date;
-
-  /** Question */
-  question: string;
-
-  /** Answer */
-  answer: string;
-
-  /** Related section in spec (e.g., "Requirements", "User Scenarios") */
-  relatedSection: string;
-
-  /** Clarification type */
-  type: 'explicit-marker' | 'detected-gap' | 'edge-case';
-
-  /** Resolution status */
-  resolved: boolean;
-
-  /** Spec update applied */
-  specUpdateApplied: boolean;
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const ClarificationSchema = z.object({
-  sessionId: z.string(),
-  sessionDate: z.date(),
-  question: z.string().min(10),
-  answer: z.string().min(5),
-  relatedSection: z.string(),
-  type: z.enum(['explicit-marker', 'detected-gap', 'edge-case']),
-  resolved: z.boolean(),
-  specUpdateApplied: z.boolean(),
-});
-```
-
-**Validation Rules**:
-- Max 5 questions per clarification session (FR-006)
-- Resolved clarifications must have `specUpdateApplied: true`
-- 90% of specs should resolve in 1 session (SC-007)
-
----
-
-## Entity Relationships
+All entities are stored as **file-based artifacts** (markdown and JSON) in the following structure:
 
 ```
-Feature (1) ─────┬───── (1) Specification
-                 │
-                 ├───── (1) Plan
-                 │
-                 ├───── (1) TaskList ─── (n) Task
-                 │
-                 └───── (n) Checklist ─── (n) ChecklistItem
+specs/{number}-{shortName}/
+├── spec.md                    # Specification entity
+├── plan.md                    # ImplementationPlan entity
+├── research.md                # Phase 0 research output
+├── data-model.md              # Phase 1 data model output (this file)
+├── quickstart.md              # Phase 1 quickstart guide
+├── contracts/                 # Phase 1 API contracts (JSON schemas)
+│   ├── specify.schema.json
+│   └── transform-upstream.schema.json
+└── tasks.md                   # Phase 2 tasks (generated by /speckit.tasks, not /speckit.plan)
 
-Specification (1) ─── (n) Clarification
+.speck/
+├── upstream-tracker.json      # UpstreamTracker entity
+└── sync-reports/
+    └── {date}-report.md       # Sync reports
 
-Plan (1) ─── (n) ConstitutionViolation
-         ─── (n) ComplexityJustification
-
-Constitution (1) ─── (n) Principle
-                 ─── (n) ComplianceRule
-                 ─── (n) Amendment
-
-UpstreamTracker (1) ─── (n) SyncedFile
-                    ─── (n) ReleaseInfo
+.specify/
+├── memory/
+│   └── constitution.md        # Constitutional principles
+├── scripts/
+│   └── bash/                  # BashScriptReimplementation wrappers
+└── templates/                 # Markdown templates
 ```
+
+**Persistence Strategy**:
+- **Features**: Tracked via git branches + directory existence in `specs/`
+- **Specifications**: Markdown files (`spec.md`) with frontmatter metadata
+- **Clarifications**: Embedded in spec.md under `## Clarifications` section
+- **ImplementationPlans**: Markdown files (`plan.md`)
+- **UpstreamTracker**: JSON file (`.speck/upstream-tracker.json`)
+- **ExtensionMarkers**: Detected dynamically via marker comments in markdown/code files
+- **Worktrees**: Managed via git worktree commands; metadata tracked in git's worktree state
 
 ---
 
 ## Validation Summary
 
-| Entity | Zod Schema | Constitution-Enforced | Key Constraints |
-|--------|------------|----------------------|-----------------|
-| Feature | ✅ | Principle VII (File Format Compatibility) | 3-digit numbering, kebab-case short names, ≤244 char branch names |
-| Specification | ✅ | Principles III, VI (Spec-first, Tech-agnostic) | Zero implementation details, ≥1 mandatory section each, max 3 clarification markers |
-| Plan | ✅ | Principle IV (Quality Gates) | Constitution check must pass, no NEEDS CLARIFICATION in final |
-| Task | ✅ | Development Workflow (Feature Isolation) | Unique IDs, no dependency cycles, ≥1 acceptance criterion |
-| Checklist | ✅ | Principle IV (Quality Gates) | Linked to requirements/criteria, completion tracking |
-| Constitution | ✅ | Governance (Amendment Process) | Semantic versioning, documented rationale |
-| UpstreamTracker | ✅ | Principle I (Upstream Fidelity) | Release-based sync, file-level tracking |
-| Clarification | ✅ | FR-006 (Max 5 questions) | Session-based, 90% resolve in 1 session |
+| Entity | Gate Type | Trigger | Success Criteria |
+|--------|-----------|---------|------------------|
+| Specification | Quality Gate | Before planning | No implementation details, testable requirements, ≤3 clarification markers, 95% first-pass success (SC-003) |
+| ImplementationPlan | Constitution Check | Before Phase 0 research | All 7 constitutional principles PASS or PASS_WITH_JUSTIFICATION |
+| UpstreamTracker | Sync Validation | After transformation | 100% extension preservation (SC-004), type checks pass, tests pass |
+| ExtensionMarker | Preservation Validation | During sync | 100% of markers preserved (Constitution II, non-negotiable) |
+| BashScriptReimplementation | Compatibility Validation | Before wrapper deployment | Byte-for-byte JSON output match, identical exit codes, <100ms startup (SC-005) |
 
 ---
 
-## Next Steps
-
-**Phase 1 continues with**:
-1. Generate API contracts (`contracts/`) for CLI commands
-2. Generate `quickstart.md` for getting started guide
-3. Update agent context files with new technology stack
-4. Re-evaluate Constitution Check post-design
-
-All entities defined. Proceed to contracts generation.
+This data model provides the foundation for Phase 1 contract generation and Phase 2 task planning.

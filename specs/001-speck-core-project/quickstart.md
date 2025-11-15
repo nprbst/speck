@@ -1,500 +1,377 @@
-# Speck Quickstart Guide
+# Quickstart Guide: Speck - Claude Code-Optimized Specification Framework
 
-**Version**: 1.0.0
-**Last Updated**: 2025-11-14
+**Branch**: `001-speck-core-project` | **Date**: 2025-11-15 | **Plan**: [plan.md](plan.md)
 
-Welcome to Speck, the Claude Code-optimized specification framework! This guide will get you up and running in under 10 minutes.
-
----
-
-## What is Speck?
-
-Speck is a living derivative of GitHub's spec-kit methodology, designed specifically for Claude Code with:
-- **Native slash commands**: `/speck.specify`, `/speck.clarify`, `/speck.plan`, etc.
-- **Autonomous agents**: Delegated Q&A loops, research, and transformation
-- **Upstream sync**: Continuous synchronization with spec-kit releases
-- **Bun-powered CLI**: Fast TypeScript CLI for non-Claude Code workflows
-- **100% file format compatibility**: Drop-in replacement for spec-kit
+This guide provides a step-by-step walkthrough for getting started with Speck, from installation to creating your first feature specification.
 
 ---
 
 ## Prerequisites
 
-- **Claude Code** (recommended) or **Bun 1.0+** (for CLI-only usage)
-- **Git 2.30+** (for worktree support)
-- **macOS, Linux, or Windows** (Bun is cross-platform)
+Before using Speck, ensure you have:
+
+1. **Git 2.30+** installed and initialized in your project directory
+   ```bash
+   git --version  # Should show 2.30 or higher
+   git status     # Should not error (if it does, run 'git init')
+   ```
+
+2. **Bun 1.0+** installed (for TypeScript CLI functionality)
+   ```bash
+   bun --version  # Should show 1.0 or higher
+   # If not installed: curl -fsSL https://bun.sh/install | bash
+   ```
+
+3. **Claude Code** with slash command and agent support
+   - Verify by checking for `.claude/` directory in your project
+   - Slash commands should be available in the Claude Code interface
+
+4. **Sufficient disk space** for worktrees (if using worktree mode)
+   - Minimum: 100MB per worktree
+   - Recommended: 1GB+ free space for typical projects
 
 ---
 
 ## Installation
 
-### Option 1: Claude Code (Recommended)
+### Step 1: Clone or Initialize Speck
 
-1. **Install Speck templates** in your project:
-   ```bash
-   cd your-project
-   git clone https://github.com/nprbst/speck.git .speck-install
-   cp -r .speck-install/.claude .
-   cp -r .speck-install/.specify .
-   cp -r .speck-install/upstream .
-   rm -rf .speck-install
-   ```
+**For new projects:**
+```bash
+# Initialize Speck in a new git repository
+git init my-project
+cd my-project
 
-2. **Initialize Speck configuration**:
-   ```bash
-   cp .specify/templates/speck.config.ts speck.config.ts
-   ```
+# Install Speck (method TBD - npm, bun install, or manual clone)
+# For now, assume Speck is cloned as .specify/
+git clone https://github.com/github/spec-kit .specify
+```
 
-3. **Verify installation** in Claude Code:
-   ```
-   /help
-   ```
-   You should see `/speck.specify`, `/speck.clarify`, `/speck.plan`, etc.
+**For existing projects:**
+```bash
+# Add Speck to an existing git repository
+cd your-existing-project
+git status  # Verify git is initialized
 
-### Option 2: CLI Only (Bun)
+# Install Speck
+# (installation method TBD)
+```
 
-1. **Install globally**:
-   ```bash
-   bun install -g speck
-   ```
+### Step 2: Verify Installation
 
-2. **Initialize project**:
-   ```bash
-   cd your-project
-   speck init
-   ```
+Run the prerequisite check to ensure everything is configured correctly:
 
-3. **Verify installation**:
-   ```bash
-   speck --version
-   speck --help
-   ```
+```bash
+.specify/scripts/bash/check-prerequisites.sh --json
+```
+
+**Expected output:**
+```json
+{
+  "git": { "installed": true, "version": "2.30+" },
+  "bun": { "installed": true, "version": "1.0+" },
+  "claudeCode": { "available": true },
+  "diskSpace": { "available": "1.5GB" }
+}
+```
+
+If any prerequisites fail, follow the error messages to install missing dependencies.
 
 ---
 
-## Your First Feature (Claude Code)
+## Your First Feature Specification
 
-Let's create a feature specification in 2 minutes:
+### Step 1: Create a Feature Specification
 
-### Step 1: Specify
+In Claude Code, use the `/speck.specify` slash command with a natural language description:
 
 ```
-/speck.specify "Add user authentication with email and password"
+/speck.specify Add user authentication with email and password
 ```
 
-Claude will:
-1. Create a feature branch (`001-user-authentication`)
-2. Generate a complete specification in `specs/001-user-authentication/spec.md`
-3. Generate a requirements checklist in `checklists/requirements.md`
-4. Mark up to 3 areas needing clarification
+**What happens:**
+1. Speck generates a feature number (e.g., `001`)
+2. Extracts a short name from your description (e.g., `user-auth`)
+3. Creates a git branch: `001-user-auth`
+4. Generates a specification at `specs/001-user-auth/spec.md`
+5. Validates the spec against quality criteria
 
-**Output**:
+**Output:**
 ```
-✓ Feature created: 001-user-authentication
-✓ Specification generated: specs/001-user-authentication/spec.md
-✓ Checklist generated: checklists/requirements.md
-
-Next steps:
-  1. Review and clarify: /speck.clarify
-  2. Create implementation plan: /speck.plan
+✓ Feature created: 001-user-auth
+✓ Branch created: 001-user-auth
+✓ Specification generated: specs/001-user-auth/spec.md
+⚠ 2 clarification markers detected - run /speck.clarify to resolve
 ```
 
-### Step 2: Clarify (Optional)
+### Step 2: Review the Generated Specification
 
-If your spec has `[NEEDS CLARIFICATION]` markers or ambiguous requirements:
+Open the generated specification:
+
+```bash
+cat specs/001-user-auth/spec.md
+```
+
+**What to look for:**
+- **User Scenarios & Testing**: Prioritized user stories (P1, P2, etc.)
+- **Requirements**: Functional requirements without implementation details
+- **Success Criteria**: Measurable, technology-agnostic outcomes
+- **[NEEDS CLARIFICATION]** markers: Areas requiring further definition (max 3)
+
+**Example snippet:**
+```markdown
+## User Scenarios & Testing
+
+### User Story 1 - User Creates Account (Priority: P1)
+A new user wants to create an account using their email and password...
+
+**Acceptance Scenarios**:
+1. Given a user visits the signup page, When they submit valid credentials, Then an account is created and they are logged in
+2. [NEEDS CLARIFICATION: Password strength requirements - minimum length, special characters?]
+```
+
+### Step 3: Clarify Ambiguous Requirements (If Needed)
+
+If your spec contains `[NEEDS CLARIFICATION]` markers, run the clarification workflow:
 
 ```
 /speck.clarify
 ```
 
-Claude's clarification agent will:
-1. Scan for ambiguities (both explicit markers and detected gaps)
-2. Ask up to 5 targeted questions
-3. Update the spec with your answers
-4. Validate that all requirements are now unambiguous
+**What happens:**
+1. Speck scans the spec for ambiguities (both explicit markers and detected gaps)
+2. Presents up to 5 structured questions with suggested answers
+3. You select answers or provide custom input
+4. Speck updates the spec with resolved clarifications
 
-**90% of specs resolve in 1 session** (SC-007)
+**Example interaction:**
+```
+Question 1/3: Password strength requirements - minimum length, special characters?
+Suggested answers:
+  A) Min 8 characters, at least one uppercase, one lowercase, one number, one special character
+  B) Min 10 characters, no complexity requirements
+  C) Custom (provide your answer)
 
-### Step 3: Plan
+Your choice: A
+
+✓ Clarification 1 resolved and written to spec.md
+```
+
+**After clarification:**
+```markdown
+2. Given a user submits a password, When the password is less than 8 characters or missing required character types (uppercase, lowercase, number, special character), Then an error message is displayed
+```
+
+### Step 4: Generate an Implementation Plan
+
+Once your spec is clarified (or if no clarifications are needed), create an implementation plan:
 
 ```
 /speck.plan
 ```
 
-Claude will:
-1. Generate `plan.md` with technical context
-2. Run constitution check (validate principles compliance)
-3. Execute Phase 0: Create `research.md` (architecture decisions)
-4. Execute Phase 1: Create `data-model.md`, `contracts/`, `quickstart.md`
-5. Prepare for Phase 2 (tasks generation)
+**What happens:**
+1. **Phase 0**: Generates `research.md` with technical decisions (testing framework, CLI patterns, etc.)
+2. **Phase 1**: Generates `data-model.md`, `contracts/`, and `quickstart.md`
+3. **Constitution Check**: Validates plan against Speck's constitutional principles
+4. **Agent context update**: Runs `.specify/scripts/bash/update-agent-context.sh` to refresh Claude Code context
 
-**Output**: Complete implementation plan ready for task breakdown
+**Output:**
+```
+✓ Phase 0: Research complete (research.md)
+✓ Phase 1: Data model generated (data-model.md)
+✓ Phase 1: Contracts generated (contracts/)
+✓ Phase 1: Quickstart guide generated (quickstart.md)
+✓ Constitution Check: PASS (all 7 principles satisfied)
+✓ Agent context updated
 
-### Step 4: Tasks
+Plan ready at: specs/001-user-auth/plan.md
+```
+
+### Step 5: Review the Implementation Plan
+
+Open the generated plan:
+
+```bash
+cat specs/001-user-auth/plan.md
+```
+
+**Key sections:**
+- **Summary**: High-level feature overview + technical approach
+- **Technical Context**: Language, dependencies, storage, testing choices (all NEEDS CLARIFICATION items resolved)
+- **Constitution Check**: Validation against all 7 constitutional principles
+- **Project Structure**: Source code layout and documentation paths
+- **Complexity Tracking** (if applicable): Justifications for any constitutional violations
+
+---
+
+## Next Steps: Generating Tasks
+
+After planning, you can generate an actionable task list:
 
 ```
 /speck.tasks
 ```
 
-Claude will:
-1. Generate dependency-ordered task list in `tasks.md`
-2. Assign priorities (P0, P1, P2, P3)
-3. Define acceptance criteria for each task
-4. Create execution order via topological sort
+**Note**: Task generation is NOT part of the `/speck.plan` command. It's a separate Phase 2 operation.
+
+**Output:**
+- `specs/001-user-auth/tasks.md`: Dependency-ordered task list with checklists
 
 ---
 
-## Your First Feature (CLI)
+## Advanced Workflows
 
-Same workflow, different interface:
+### Using Worktree Mode for Parallel Development
 
-```bash
-# Step 1: Specify
-speck specify "Add user authentication with email and password"
-
-# Step 2: Clarify (if needed)
-speck clarify
-
-# Step 3: Plan
-speck plan
-
-# Step 4: Tasks
-speck tasks
-```
-
-**JSON output** (for automation):
-```bash
-speck specify "Add feature" --json | jq '.feature.branchName'
-# Output: "001-feature-name"
-```
-
----
-
-## Working with Worktrees (Parallel Features)
-
-Worktrees enable true isolation for multiple parallel features.
-
-### Creating a Worktree Feature
-
-**Claude Code**:
-```
-/speck.specify "Add search functionality" --worktree
-```
-
-**CLI**:
-```bash
-speck specify "Add search functionality" --worktree
-```
-
-Speck will:
-1. Create a new git worktree in `../worktrees/002-search-functionality/`
-2. Create feature branch `002-search-functionality`
-3. Set up isolated or shared `specs/` directory (auto-detected based on git tracking)
-
-### Specs Directory Modes
-
-Speck auto-detects the appropriate mode:
-
-| Git Tracking | Behavior | Use Case |
-|--------------|----------|----------|
-| **specs/ is git-tracked** | Worktrees naturally share specs/ (git manages it) | Team environments, shared spec visibility |
-| **specs/ is gitignored** | Speck creates symlink: `worktree/specs → main-repo/specs` | Solo development, central spec collection |
-
-**Recommendation**:
-- **Team**: Git-track `specs/` (add to repo)
-- **Solo**: Gitignore `specs/` (Speck symlinks automatically)
-
-### Working in a Worktree
-
-```bash
-# Navigate to worktree
-cd ../worktrees/002-search-functionality
-
-# Open in your IDE
-code .
-
-# Develop feature in isolation
-# (Changes don't affect main repo until you merge)
-
-# When done, remove worktree
-git worktree remove ../worktrees/002-search-functionality
-```
-
----
-
-## Syncing with Upstream (spec-kit Updates)
-
-Speck maintains continuous sync with upstream spec-kit releases.
-
-### Checking for Updates
-
-**Claude Code**:
-```
-/speck.check-upstream-releases
-```
-
-**Output**:
-```
-📦 Checking spec-kit releases...
-
-Current version: v0.0.85
-Latest release:  v0.0.86 (released 2025-11-13)
-
-📋 Release Notes (v0.0.86):
-- Improved clarify command with better ambiguity detection
-- Updated plan template with success criteria format
-
-New release available! Would you like to download it? [y/n]
-```
-
-### Downloading New Release
+If you want to work on multiple features simultaneously without branch-switching:
 
 ```
-/speck.download-upstream v0.0.86
+/speck.specify --worktree Add OAuth social login integration
 ```
 
-Speck will:
-1. Download `spec-kit-template-claude-sh-v0.0.86.zip`
-2. Extract to `upstream/spec-kit/v0.0.86/`
-3. Update symlink: `current → v0.0.86/`
-4. Keep previous version (`v0.0.85`) for diffing
+**What happens:**
+1. Creates a new git worktree in a separate directory (e.g., `../my-project-002-oauth-login/`)
+2. Feature branch `002-oauth-login` is checked out in the worktree
+3. Specs are shared (if git-tracked) or symlinked (if gitignored) for central collection
+4. You can open the worktree in a separate IDE window for isolated development
 
-### Comparing Versions
+**Benefits:**
+- No context switching between branches
+- True isolation (10+ parallel features supported)
+- No cross-contamination of artifacts
 
-```
-/speck.diff-upstream-releases v0.0.85 v0.0.86
-```
+### Syncing Upstream Spec-Kit Changes
 
-**Output**:
-```
-📊 Comparing spec-kit v0.0.85 → v0.0.86
-
-Changed Files (3):
-├── templates/commands/clarify.md       (+45, -12 lines)
-│   └── Impact: .claude/commands/speck.clarify.md
-│                .claude/agents/clarification-agent.md
-├── templates/commands/plan.md          (+8, -3 lines)
-│   └── Impact: .claude/commands/speck.plan.md
-└── templates/constitution-template.md  (+1, -1 lines)
-    └── Impact: .claude/commands/speck.constitution.md
-
-Recommended transformations:
-  /speck.transform-upstream clarify
-  /speck.transform-upstream plan
-```
-
-### Transforming Commands (Claude Agent-Powered)
+To benefit from upstream spec-kit improvements:
 
 ```
-/speck.transform-upstream clarify
+/speck.transform-upstream
 ```
 
-Claude will:
-1. Analyze upstream bash changes semantically
-2. Apply equivalent changes to Speck's TypeScript + Claude Code artifacts
-3. Preserve all `[SPECK-EXTENSION:START/END]` blocks
-4. Run type checking and tests
-5. Generate sync report
-6. Present changes for review
+**What happens:**
+1. Fetches latest upstream spec-kit commits
+2. Analyzes diffs using Claude for semantic transformation
+3. Preserves all `[SPECK-EXTENSION]` markers (100% preservation guaranteed)
+4. Generates a sync report showing changes, conflicts, and transformation reasoning
+5. If conflicts detected, presents options: skip, manual merge, or abort
 
-**After review**:
-```bash
-# Review changes in your IDE
-git diff .claude/
-
-# Commit if satisfied
-git commit -m "sync: transform clarify from spec-kit v0.0.86"
+**Example output:**
 ```
+✓ Fetched upstream commits: 15 new commits since last sync
+✓ Analyzed diffs: 8 files modified
+✓ Extensions preserved: 5/5 (100%)
+⚠ Conflicts detected: 2 files require manual resolution
 
----
+Sync report: .speck/sync-reports/2025-11-15-report.md
 
-## Configuration
-
-Edit `speck.config.ts` in your project root:
-
-```typescript
-import { defineConfig } from 'speck';
-
-export default defineConfig({
-  // Worktree configuration
-  worktree: {
-    baseDir: '../worktrees',       // Where worktrees are created
-    specsMode: 'isolated',         // 'isolated' | 'shared' (auto-detected if omitted)
-    shareSpecify: true,            // Share .specify/ directory across worktrees
-  },
-
-  // Agent context mode
-  agentContextMode: 'per-worktree', // 'shared' | 'per-worktree'
-
-  // Validation rules
-  validation: {
-    maxClarifications: 3,          // Max [NEEDS CLARIFICATION] markers
-    requireChecklist: true,        // Generate checklists automatically
-    enforceConstitution: true,     // Run constitution checks
-  },
-});
-```
-
----
-
-## Complete Workflow Example
-
-Here's a full end-to-end example:
-
-```
-# 1. Create feature
-/speck.specify "Add real-time notifications"
-
-# Claude creates:
-# - Branch: 003-realtime-notifications
-# - specs/003-realtime-notifications/spec.md
-# - specs/003-realtime-notifications/checklists/requirements.md
-
-# 2. Clarify ambiguities
-/speck.clarify
-
-# Claude asks 5 questions, updates spec
-
-# 3. Generate implementation plan
-/speck.plan
-
-# Claude creates:
-# - specs/003-realtime-notifications/plan.md
-# - specs/003-realtime-notifications/research.md
-# - specs/003-realtime-notifications/data-model.md
-# - specs/003-realtime-notifications/contracts/
-# - specs/003-realtime-notifications/quickstart.md
-
-# 4. Generate tasks
-/speck.tasks
-
-# Claude creates:
-# - specs/003-realtime-notifications/tasks.md (dependency-ordered)
-
-# 5. Implement tasks
-/speck.implement
-
-# Claude executes task-by-task implementation
-
-# 6. Analyze consistency
-/speck.analyze
-
-# Claude validates cross-artifact consistency (spec ↔ plan ↔ tasks)
-
-# 7. Create pull request
-git push origin 003-realtime-notifications
-gh pr create --title "Add real-time notifications"
+Conflicts requiring resolution:
+1. .claude/commands/speckit.specify.md
+   Options: [Skip] [Manual Merge] [Abort Sync]
 ```
 
 ---
 
 ## Troubleshooting
 
-### "Branch name too long" Error
+### Error: "Speck requires git. Please run 'git init'..."
 
-**Problem**: Generated branch name exceeds git's 244-character limit.
+**Cause**: You're in a directory without git initialization.
 
-**Solution**: Provide a shorter description or explicit short name:
-```
-/speck.specify "Add feature" --short-name "custom-short-name"
-```
-
-### Duplicate Short Name Warning
-
-**Problem**: Generated short name matches existing feature.
-
-**Solution**: Speck auto-appends collision counter (e.g., `user-auth-2`). Review existing feature before proceeding:
+**Solution**:
 ```bash
-git checkout 002-user-auth  # Review existing feature
-git checkout 003-user-auth-2  # Return to new feature
+git init
+git add .
+git commit -m "Initial commit"
 ```
 
-### Upstream Sync Conflict
+### Error: "Feature '002-user-auth' already exists. Created '003-user-auth-2'..."
 
-**Problem**: Upstream changes conflict with Speck extension.
+**Cause**: Duplicate short-name collision.
 
-**Solution**: Claude will halt and request manual resolution:
-```
-⚠️  Extension conflict detected:
-File: .claude/commands/speck.clarify.md
-Extension: Clarification agent integration
-Conflict: Upstream renamed section "## Outline" to "## Overview"
-
-Options:
-1. Keep Speck extension (recommended)
-2. Apply upstream change (may break agent)
-3. Manually merge in IDE
+**Solution**: Speck auto-appends a collision counter (`-2`). Review the existing feature to ensure you're not duplicating work:
+```bash
+cat specs/002-user-auth/spec.md
 ```
 
-Choose option 1 (preserve extension), then manually review upstream intent.
+### Warning: "Branch name truncated from ... to ... (244 character limit)"
+
+**Cause**: Feature description too long, resulting in branch name exceeding git's limit.
+
+**Solution**: This is handled automatically. Speck truncates at word boundaries and appends a hash suffix for uniqueness. Review the truncated name and proceed.
+
+### Error: "Transformed code failed type checking. Sync aborted."
+
+**Cause**: Upstream sync generated invalid TypeScript code.
+
+**Solution**: Review the type errors in the output. This is a safeguard to prevent breaking your codebase. You can manually fix the issue or skip the conflicting upstream change.
 
 ---
 
-## Next Steps
+## File Structure Reference
 
-- **Read the Constitution**: `.specify/memory/constitution.md`
-- **Explore Templates**: `.specify/templates/`
-- **Review Architecture**: `specs/001-speck-core-project/research.md`
-- **Join Community**: [GitHub Discussions](https://github.com/nprbst/speck/discussions)
+After running `/speck.specify` and `/speck.plan`, your project structure will look like this:
+
+```
+my-project/
+├── specs/
+│   └── 001-user-auth/
+│       ├── spec.md              # Feature specification (Phase 0)
+│       ├── plan.md              # Implementation plan (Phase 1)
+│       ├── research.md          # Technical research (Phase 0)
+│       ├── data-model.md        # Entity definitions (Phase 1)
+│       ├── quickstart.md        # This guide (Phase 1)
+│       ├── contracts/           # API contracts (Phase 1)
+│       │   ├── README.md
+│       │   └── *.schema.json
+│       └── tasks.md             # Task list (Phase 2, generated separately)
+├── .speck/
+│   ├── upstream-tracker.json   # Upstream sync tracking
+│   └── sync-reports/           # Sync reports
+├── .specify/
+│   ├── memory/
+│   │   └── constitution.md     # Constitutional principles
+│   ├── scripts/
+│   │   └── bash/               # Infrastructure scripts (becoming Bun CLI wrappers)
+│   └── templates/              # Markdown templates
+└── .claude/
+    └── commands/               # Slash command definitions
+```
+
+---
+
+## Command Reference
+
+| Command | Description | Phase | Output |
+|---------|-------------|-------|--------|
+| `/speck.specify <description>` | Create feature specification | Initial | `spec.md` |
+| `/speck.clarify` | Resolve ambiguities in spec | After specify | Updated `spec.md` |
+| `/speck.plan` | Generate implementation plan | After clarify | `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md` |
+| `/speck.tasks` | Generate actionable task list | After plan | `tasks.md` |
+| `/speck.implement` | Execute implementation plan | After tasks | Implemented code |
+| `/speck.analyze` | Cross-artifact consistency check | After tasks | Analysis report |
+| `/speck.transform-upstream` | Sync upstream spec-kit changes | Anytime | Sync report + updated files |
+| `/speck.constitution` | Update constitutional principles | Anytime | Updated `constitution.md` |
+| `/speck.checklist` | Generate custom feature checklist | Anytime | `checklists/requirements.md` |
 
 ---
 
 ## Getting Help
 
-- **Documentation**: https://speck.dev/docs
-- **GitHub Issues**: https://github.com/nprbst/speck/issues
-- **Discussions**: https://github.com/nprbst/speck/discussions
-- **X/Twitter**: @speckdev
+- **Documentation**: See the [specification](spec.md) for full feature details
+- **Issues**: Report bugs or request features at [GitHub Issues](https://github.com/[your-org]/speck/issues)
+- **Constitution**: Review Speck's design principles in [`.specify/memory/constitution.md`](.specify/memory/constitution.md)
+- **Examples**: Check `specs/` directory for real-world examples from this project's own features
 
 ---
 
-## Comparison: Speck vs spec-kit
+## Success Metrics
 
-| Feature | spec-kit | Speck |
-|---------|----------|-------|
-| **Methodology** | Spec-first development | Same (100% compatible) |
-| **IDE Integration** | Manual bash scripts | Native Claude Code slash commands |
-| **Agents** | None | Clarification, Research, Transformation agents |
-| **Skills** | None | Template-renderer, Spec-analyzer, Constitution-validator |
-| **CLI** | Bash scripts | Bun-powered TypeScript CLI (<100ms startup) |
-| **Upstream Sync** | Manual copy-paste | Automated Claude agent-powered transformation |
-| **Worktree Support** | Basic | Advanced (auto-detect specs mode, per-worktree config) |
-| **Validation** | Manual checklist | Automated Zod validation + quality gates |
-| **File Format** | specs/ directory structure | Identical (drop-in replacement) |
+After completing your first feature, verify you've achieved these success criteria:
 
----
+- ✅ **SC-001**: Specification created in under 2 minutes
+- ✅ **SC-002**: Spec contains zero implementation details
+- ✅ **SC-003**: Spec passed quality validation on first generation
+- ✅ **SC-007**: Clarifications resolved in 1-3 sessions (90% require only 1)
 
-## FAQ
-
-### Q: Can I use Speck without Claude Code?
-
-**A**: Yes! The Bun CLI (`speck` command) provides identical functionality. However, Claude Code integration is the primary use case and provides the best experience.
-
-### Q: Is Speck compatible with existing spec-kit projects?
-
-**A**: Yes, 100%. Speck maintains file format compatibility (Constitution Principle VII). You can:
-- Adopt Speck in an existing spec-kit project (no migration)
-- Switch between spec-kit and Speck freely
-- Fallback to spec-kit without data loss
-
-### Q: How often should I sync with upstream?
-
-**A**: Monthly recommended (spec-kit releases monthly). Check for updates:
-```
-/speck.check-upstream-releases
-```
-
-### Q: What happens if I edit a generated file in `.claude/`?
-
-**A**: Generated files (marked with `<!-- GENERATED FILE - DO NOT EDIT -->`) will be overwritten on next upstream sync. Instead:
-- **Modify upstream**: Contribute changes to spec-kit repository
-- **Modify enhancements**: Edit `enhancements/rules/*.json` (future compiler-based sync)
-- **For now**: Edits survive until next `/speck.transform-upstream` run
-
-### Q: Can I customize templates?
-
-**A**: Yes, edit templates in `.specify/templates/`. Changes persist across Speck updates (templates are project-specific, not generated).
-
----
-
-**Happy Specifying!** 🚀
+**Next**: Proceed to implementation using `/speck.tasks` and `/speck.implement` to turn your specification into working code.

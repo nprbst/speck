@@ -31,6 +31,14 @@ optimized for Claude Code."
   runtime? → A: Bun-only: Focus exclusively on Bun runtime to simplify
   implementation and reduce maintenance overhead
 
+### Session 2025-11-15
+
+- Q: Given that the Bun CLI reimplements bash scripts (not Claude Code commands), which specific bash scripts should it provide? → A: All existing bash scripts: check-prerequisites.sh, setup-plan.sh, update-agent-context.sh, create-new-feature.sh
+- Q: How should the Bun CLI scripts be invoked by slash commands? → A: Backward-compatible wrapper: Each bash script becomes a thin wrapper calling the Bun equivalent, so slash commands don't need modification during gradual migration
+- Q: How should the system handle extremely long feature descriptions that would create branch names exceeding git's 244-character limit? → A: Truncate short-name intelligently at word boundaries to fit within limits while preserving readability, then append hash suffix for uniqueness
+- Q: What happens when upstream sync detects breaking changes that fundamentally conflict with Speck's architecture? → A: Pause sync and present conflict analysis to user with three options: skip conflicting changes, apply with manual merge, or abort sync entirely
+- Q: How does the system handle non-git repositories (developers who don't use version control)? → A: Require git: Fail with clear error message directing users to initialize git repository first
+
 ## User Scenarios & Testing _(mandatory)_
 
 <!--
@@ -100,8 +108,9 @@ with upstream changes while preserving all [SPECK-EXTENSION] blocks.
    Code commands
 2. **Given** upstream changes affect areas with Speck extensions, **When** sync
    is performed, **Then** Claude preserves Speck-specific enhancements marked
-   with [SPECK-EXTENSION] boundaries and requests developer guidance only for
-   ambiguous conflicts
+   with [SPECK-EXTENSION] boundaries; if breaking conflicts are detected, sync
+   pauses and presents conflict analysis with options to skip, manually merge,
+   or abort
 3. **Given** sync is complete, **When** developer reviews changes, **Then** a
    detailed sync report shows which files were modified, what upstream changes
    were applied, which extensions were preserved, and Claude's transformation
@@ -111,30 +120,38 @@ with upstream changes while preserving all [SPECK-EXTENSION] blocks.
 
 ### User Story 3 - Developer Uses Bun-Powered TypeScript CLI (Priority: P3)
 
-A developer prefers using command-line tools directly rather than Claude Code
-slash commands, and wants a fast, type-safe CLI powered by Bun for creating
-specs, plans, and tasks with near-instant startup times.
+Speck's slash commands delegate infrastructure tasks (git operations, file
+generation, validation) to bash scripts. A developer wants these scripts
+reimplemented in TypeScript with Bun for better performance, maintainability,
+and type safety, while Claude Code slash commands remain the primary user
+interface.
 
-**Why this priority**: Provides flexibility for developers who want to use Speck
-outside Claude Code or integrate it into automated workflows. Lower priority
-because Claude Code integration is the primary use case. Bun-only focus
-simplifies implementation and leverages Bun's superior performance.
+**Why this priority**: Replaces bash scripts with maintainable TypeScript
+implementation, improving performance and enabling better error handling. Lower
+priority because it's an internal infrastructure improvement that doesn't change
+user-facing workflows. Bun-only focus simplifies implementation and leverages
+Bun's superior performance.
 
-**Independent Test**: Can be tested by running `speck specify "Add feature"` in
-a terminal (without Claude Code) and verifying that feature creation, spec
-generation, and validation work identically to the slash command version.
+**Independent Test**: Can be tested by converting a bash script to a thin
+wrapper that calls the Bun equivalent (e.g., `check-prerequisites.sh` internally
+calls `bun run cli.ts check-prerequisites`), verifying slash commands require no
+modifications, and confirming identical behavior and output format.
 
 **Acceptance Scenarios**:
 
-1. **Given** a developer has installed Speck's Bun-powered CLI, **When** they
-   run `speck specify "feature description"`, **Then** the CLI creates a feature
-   with the same behavior as the Claude Code slash command with sub-100ms
-   startup time
-2. **Given** a developer runs CLI commands, **When** errors occur, **Then** the
-   CLI provides structured error messages with actionable guidance
-3. **Given** a developer wants JSON output for automation, **When** they add the
-   `--json` flag, **Then** the CLI outputs machine-readable JSON instead of
-   interactive prompts
+1. **Given** a slash command needs to check prerequisites, **When** it invokes
+   `check-prerequisites.sh --json --paths-only` (which internally calls the Bun
+   CLI), **Then** the wrapper returns identical JSON output to the original bash
+   implementation with sub-100ms startup time and slash commands require zero
+   modifications
+2. **Given** a bash script operation fails (e.g., missing git repo), **When**
+   the Bun CLI equivalent runs via the bash wrapper, **Then** it provides the
+   same error codes and structured error messages as the original bash version
+3. **Given** all four bash scripts (check-prerequisites.sh, setup-plan.sh,
+   update-agent-context.sh, create-new-feature.sh) are converted to thin
+   wrappers calling Bun equivalents, **When** slash commands invoke them,
+   **Then** behavior remains 100% backward compatible with no slash command
+   modifications required
 
 ---
 
@@ -202,12 +219,24 @@ verifying the spec is updated with resolved answers replacing the markers.
   short-name matching an existing feature (e.g., `002-user-auth` exists), system
   auto-appends collision counter (`003-user-auth-2`) and warns developer to
   review existing similar feature before proceeding
-- How does the system handle extremely long feature descriptions that would
-  create branch names exceeding git's 244-character limit?
-- What happens when upstream sync detects breaking changes that fundamentally
-  conflict with Speck's architecture?
-- How does the system handle non-git repositories (developers who don't use
-  version control)?
+- **Branch name length overflow**: When a feature description would create a
+  branch name exceeding git's 244-character limit, system intelligently
+  truncates the short-name at word boundaries to preserve readability (e.g.,
+  `003-implement-comprehensive-user-authentication-with-...` becomes
+  `003-implement-comprehensive-user-auth-a1b2c3`), appending a 6-character hash
+  suffix derived from the full description for uniqueness
+- **Upstream sync breaking changes**: When upstream sync detects breaking
+  changes that fundamentally conflict with Speck's architecture (e.g., spec-kit
+  removes a workflow that Speck extends), system pauses sync, presents Claude's
+  conflict analysis showing which changes conflict and why, and offers three
+  options: (1) skip conflicting changes and apply only safe updates, (2) apply
+  with manual merge requiring developer intervention, or (3) abort sync entirely
+  and preserve current state
+- **Non-git repository usage**: When a developer attempts to use Speck commands
+  in a directory without git initialization, system fails immediately with clear
+  error message: "Speck requires git. Please run 'git init' to initialize a
+  repository, or use 'git clone' if working with an existing project." Provides
+  helpful next steps for git setup
 - What happens when a worktree creation fails due to disk space or permission
   issues?
 - How does the system handle spec template corruption or missing required
@@ -229,8 +258,9 @@ verifying the spec is updated with resolved answers replacing the markers.
   criteria)
 - **FR-004**: System MUST support creating specifications in git repositories
   with automatic branch creation
-- **FR-005**: System MUST support creating specifications in non-git directories
-  with environment-based feature tracking
+- **FR-005**: System MUST require git initialization and fail with clear,
+  actionable error message when invoked in non-git directories, directing users
+  to run 'git init' or 'git clone'
 - **FR-006**: System MUST limit [NEEDS CLARIFICATION] markers to a maximum of 3
   per specification during generation phase, prioritized by impact;
   clarification workflow may ask up to 5 questions total by scanning beyond
@@ -253,6 +283,10 @@ verifying the spec is updated with resolved answers replacing the markers.
   and Claude's transformation rationale
 - **FR-012**: System MUST validate that AI-transformed sync changes pass type
   checking and tests before updating tracking files
+- **FR-012a**: System MUST detect breaking changes that conflict with Speck's
+  architecture during upstream sync, pause the operation, present conflict
+  analysis, and offer three options: skip conflicting changes, apply with manual
+  merge, or abort sync entirely
 
 #### Feature Isolation & Workflow
 
@@ -265,6 +299,10 @@ verifying the spec is updated with resolved answers replacing the markers.
 - **FR-015a**: System MUST detect duplicate short-names and auto-append
   collision counter (e.g., `-2`, `-3`) while warning user about similar existing
   features
+- **FR-015b**: System MUST intelligently truncate short-names at word boundaries
+  when branch names would exceed 244 characters, appending a 6-character hash
+  suffix derived from the full description to ensure uniqueness while preserving
+  readability
 - **FR-016**: System MUST create feature directory structures under
   `specs/<number>-<short-name>/`
 - **FR-017**: System MUST auto-detect worktree specs directory handling: if
@@ -272,18 +310,23 @@ verifying the spec is updated with resolved answers replacing the markers.
   system creates symlink to main repo's specs/ directory in each worktree to
   maintain central spec collection
 
-#### TypeScript CLI
+#### TypeScript CLI (Bash Script Reimplementation)
 
-- **FR-018**: System MUST provide a Bun-powered TypeScript CLI (`speck` command)
-  with sub-100ms startup time
-- **FR-019**: System MUST provide the same functionality via CLI as via Claude
-  Code slash commands
-- **FR-020**: System MUST support `--json` flag for machine-readable output in
-  all CLI commands
-- **FR-021**: System MUST provide interactive prompts for CLI users when
-  required information is missing
+- **FR-018**: System MUST provide a Bun-powered TypeScript CLI that reimplements
+  all four existing bash scripts (check-prerequisites.sh, setup-plan.sh,
+  update-agent-context.sh, create-new-feature.sh) with sub-100ms startup time
+- **FR-019**: System MUST convert bash scripts to thin wrappers that delegate to
+  Bun CLI equivalents, maintaining 100% behavioral and output format
+  compatibility without requiring slash command modifications
+- **FR-020**: System MUST support `--json` and `--paths-only` flags for
+  machine-readable output matching bash script conventions
+- **FR-021**: System MUST return identical exit codes and error message formats
+  as bash script equivalents for consistent error handling
 - **FR-022**: System MUST leverage Bun-specific APIs and features for optimal
-  performance (native TypeScript execution, fast file I/O, optimized subprocess execution)
+  performance (native TypeScript execution, fast file I/O, optimized subprocess
+  execution)
+- **FR-022a**: System MUST ensure bash wrapper scripts pass through all
+  arguments and flags to Bun CLI equivalents transparently
 
 #### Quality & Validation
 
@@ -311,6 +354,11 @@ verifying the spec is updated with resolved answers replacing the markers.
   development
 - **Clarification**: A question-answer pair resolving ambiguous requirements in
   a specification
+- **Bash Script Reimplementation**: TypeScript equivalents of infrastructure
+  bash scripts (check-prerequisites.sh, setup-plan.sh, update-agent-context.sh,
+  create-new-feature.sh) invoked via thin bash wrapper scripts that delegate to
+  Bun CLI, maintaining identical CLI interfaces and output formats while
+  requiring no slash command modifications
 
 ## Success Criteria _(mandatory)_
 
@@ -324,9 +372,9 @@ verifying the spec is updated with resolved answers replacing the markers.
   without requiring manual fixes
 - **SC-004**: Upstream sync operations complete in under 5 minutes and preserve
   100% of Speck-specific extensions
-- **SC-005**: Bun-powered CLI provides identical functionality to Claude Code
-  slash commands with less than 1% behavioral deviation and sub-100ms startup
-  time
+- **SC-005**: Bun-powered CLI reimplementations of bash scripts produce
+  byte-for-byte identical output to bash versions for --json mode, with 100%
+  exit code compatibility and sub-100ms startup time
 - **SC-006**: Feature isolation via worktrees allows 10+ parallel features
   without cross-contamination of specs or artifacts
 - **SC-007**: Clarification workflow fully resolves spec ambiguities in 1-3
@@ -334,10 +382,13 @@ verifying the spec is updated with resolved answers replacing the markers.
   session (5 questions or fewer)
 - **SC-008**: Developers can sync monthly upstream spec-kit updates without
   manual conflict resolution in 80% of cases
-- **SC-009**: System detects and prevents branch name length violations (>244
-  chars) with clear error messages before git operations
-- **SC-010**: Non-git workflows function identically to git workflows for all
-  core specification operations (specify, clarify, plan)
+- **SC-009**: System automatically handles branch names approaching git's
+  244-character limit by intelligently truncating at word boundaries and
+  appending hash suffixes, ensuring 100% of feature creations succeed without
+  manual intervention
+- **SC-010**: System detects non-git directories in under 50ms and provides
+  clear, actionable error messages with git initialization guidance, preventing
+  user confusion
 
 ## Assumptions
 
@@ -394,3 +445,7 @@ The following are explicitly **not** included in this feature:
   only, never Speck → spec-kit)
 - **Legacy Bash Script Support**: No support for running original spec-kit bash
   scripts alongside Speck
+- **Standalone CLI User Interface**: The Bun TypeScript CLI does NOT provide a
+  user-facing command interface with commands like `speck specify` or `speck
+  plan`. It only reimplements the four internal bash scripts that slash commands
+  delegate to. Claude Code slash commands remain the sole user interface.

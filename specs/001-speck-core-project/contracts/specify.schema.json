@@ -1,204 +1,163 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://speck.dev/schemas/commands/specify.json",
+  "$id": "https://speck.dev/schemas/specify.json",
   "title": "Specify Command Contract",
-  "description": "Contract for the /speck.specify command and `speck specify` CLI command",
+  "description": "Contract for the /speck.specify command - creates a new feature specification from a natural language description",
   "type": "object",
   "properties": {
-    "command": {
-      "type": "string",
-      "const": "specify",
-      "description": "Command name"
-    },
     "input": {
       "type": "object",
+      "description": "Input parameters for specification creation",
       "properties": {
         "description": {
           "type": "string",
+          "description": "Natural language feature description",
           "minLength": 10,
-          "maxLength": 1000,
-          "description": "Natural language feature description"
+          "maxLength": 1000
         },
-        "shortName": {
-          "type": "string",
-          "pattern": "^[a-z0-9-]+$",
-          "minLength": 3,
-          "maxLength": 50,
-          "description": "Optional short name (auto-generated if omitted)"
-        },
-        "number": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 999,
-          "description": "Optional feature number (auto-assigned if omitted)"
-        },
-        "useWorktree": {
+        "worktreeMode": {
           "type": "boolean",
-          "default": false,
-          "description": "Create feature as git worktree"
-        },
-        "worktreePath": {
-          "type": "string",
-          "description": "Custom worktree path (optional, defaults to config.worktree.baseDir)"
-        },
-        "json": {
-          "type": "boolean",
-          "default": false,
-          "description": "Output JSON instead of interactive prompts (CLI only)"
+          "description": "Whether to create git worktree for isolated development",
+          "default": false
         }
       },
-      "required": ["description"],
-      "additionalProperties": false
+      "required": ["description"]
     },
     "output": {
       "type": "object",
+      "description": "Output from successful specification creation",
       "properties": {
         "feature": {
           "type": "object",
+          "description": "Created feature metadata",
           "properties": {
             "number": {
               "type": "integer",
+              "description": "3-digit zero-padded feature number",
               "minimum": 1,
               "maximum": 999
             },
             "shortName": {
               "type": "string",
-              "pattern": "^[a-z0-9-]+$"
+              "description": "Kebab-case short name (2-4 words)",
+              "pattern": "^[a-z0-9-]+$",
+              "maxLength": 200
             },
             "branchName": {
               "type": "string",
-              "pattern": "^\\d{3}-[a-z0-9-]+$"
+              "description": "Git branch name: {number}-{shortName}",
+              "pattern": "^\\d{3}-[a-z0-9-]+$",
+              "maxLength": 244
             },
-            "description": {
-              "type": "string"
-            },
-            "directory": {
-              "type": "string"
-            },
-            "mode": {
+            "directoryPath": {
               "type": "string",
-              "enum": ["branch", "worktree", "non-git"]
+              "description": "Absolute path to feature's specs directory",
+              "pattern": "^/.*specs/\\d{3}-[a-z0-9-]+/$"
+            },
+            "status": {
+              "type": "string",
+              "description": "Initial feature status",
+              "enum": ["draft"]
             },
             "worktreePath": {
-              "type": "string"
+              "type": ["string", "null"],
+              "description": "Absolute path to worktree directory (if worktree mode used)"
             }
           },
-          "required": ["number", "shortName", "branchName", "description", "directory", "mode"]
+          "required": ["number", "shortName", "branchName", "directoryPath", "status"]
         },
         "specification": {
           "type": "object",
+          "description": "Generated specification metadata",
           "properties": {
             "filePath": {
-              "type": "string"
+              "type": "string",
+              "description": "Absolute path to spec.md file",
+              "pattern": "^/.*specs/\\d{3}-[a-z0-9-]+/spec\\.md$"
             },
             "clarificationMarkersCount": {
               "type": "integer",
+              "description": "Number of [NEEDS CLARIFICATION] markers",
               "minimum": 0,
               "maximum": 3
             },
-            "validation": {
-              "type": "object",
-              "properties": {
-                "isValid": { "type": "boolean" },
-                "errors": { "type": "array", "items": { "type": "object" } },
-                "warnings": { "type": "array", "items": { "type": "object" } }
-              },
-              "required": ["isValid", "errors", "warnings"]
+            "qualityCheckPassed": {
+              "type": "boolean",
+              "description": "Whether spec passed automated quality validation"
             }
           },
-          "required": ["filePath", "clarificationMarkersCount", "validation"]
-        },
-        "checklist": {
-          "type": "object",
-          "properties": {
-            "filePath": {
-              "type": "string"
-            },
-            "itemCount": {
-              "type": "integer",
-              "minimum": 1
-            }
-          },
-          "required": ["filePath", "itemCount"]
-        },
-        "nextSteps": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Suggested next commands"
+          "required": ["filePath", "clarificationMarkersCount", "qualityCheckPassed"]
         }
       },
-      "required": ["feature", "specification", "checklist", "nextSteps"]
+      "required": ["feature", "specification"]
     },
     "errors": {
       "type": "object",
+      "description": "Possible error cases",
       "properties": {
-        "branchNameTooLong": {
+        "NOT_GIT_REPO": {
           "type": "object",
+          "description": "Error when invoked in non-git directory",
           "properties": {
-            "code": { "type": "string", "const": "BRANCH_NAME_TOO_LONG" },
-            "message": { "type": "string" },
-            "branchName": { "type": "string" },
-            "length": { "type": "integer" },
-            "maxLength": { "type": "integer", "const": 244 }
+            "code": {
+              "type": "string",
+              "const": "NOT_GIT_REPO"
+            },
+            "message": {
+              "type": "string",
+              "const": "Speck requires git. Please run 'git init' to initialize a repository, or use 'git clone' if working with an existing project."
+            },
+            "exitCode": {
+              "type": "integer",
+              "const": 1
+            }
           }
         },
-        "duplicateShortName": {
+        "DUPLICATE_SHORT_NAME": {
           "type": "object",
+          "description": "Warning when short-name collides with existing feature",
           "properties": {
-            "code": { "type": "string", "const": "DUPLICATE_SHORT_NAME" },
-            "message": { "type": "string" },
-            "shortName": { "type": "string" },
-            "existingBranch": { "type": "string" },
-            "resolvedName": { "type": "string" }
+            "code": {
+              "type": "string",
+              "const": "DUPLICATE_SHORT_NAME"
+            },
+            "message": {
+              "type": "string",
+              "pattern": "^Feature '.*' already exists\\. Created '.*' with collision counter\\. Review existing feature before proceeding\\.$"
+            },
+            "existingFeature": {
+              "type": "string",
+              "description": "Existing feature identifier"
+            },
+            "newFeature": {
+              "type": "string",
+              "description": "New feature identifier with collision counter"
+            }
           }
         },
-        "invalidDescription": {
+        "BRANCH_NAME_TOO_LONG": {
           "type": "object",
+          "description": "Error when branch name would exceed git's 244-character limit",
           "properties": {
-            "code": { "type": "string", "const": "INVALID_DESCRIPTION" },
-            "message": { "type": "string" }
+            "code": {
+              "type": "string",
+              "const": "BRANCH_NAME_TOO_LONG"
+            },
+            "message": {
+              "type": "string",
+              "pattern": "^Branch name truncated from .* to .* to fit git's 244-character limit\\.$"
+            },
+            "originalLength": {
+              "type": "integer"
+            },
+            "truncatedName": {
+              "type": "string",
+              "maxLength": 244
+            }
           }
         }
       }
     }
   },
-  "required": ["command", "input", "output"],
-  "examples": [
-    {
-      "command": "specify",
-      "input": {
-        "description": "Add user authentication with email and password",
-        "json": true
-      },
-      "output": {
-        "feature": {
-          "number": 1,
-          "shortName": "user-authentication",
-          "branchName": "001-user-authentication",
-          "description": "Add user authentication with email and password",
-          "directory": "/path/to/repo/specs/001-user-authentication",
-          "mode": "branch"
-        },
-        "specification": {
-          "filePath": "/path/to/repo/specs/001-user-authentication/spec.md",
-          "clarificationMarkersCount": 2,
-          "validation": {
-            "isValid": true,
-            "errors": [],
-            "warnings": []
-          }
-        },
-        "checklist": {
-          "filePath": "/path/to/repo/specs/001-user-authentication/checklists/requirements.md",
-          "itemCount": 15
-        },
-        "nextSteps": [
-          "speck clarify",
-          "speck plan"
-        ]
-      }
-    }
-  ]
+  "required": ["input", "output", "errors"]
 }
