@@ -169,12 +169,28 @@ process.exit(1);
 
 ## Extension Marker Preservation
 
-**CRITICAL**: If the bash script contains `[SPECK-EXTENSION:START]` and `[SPECK-EXTENSION:END]` markers, you MUST:
+**CRITICAL**: SPECK-EXTENSION blocks take priority over upstream changes.
 
-1. **Detect markers** in the source bash script
-2. **Preserve content** between markers in the generated TypeScript
-3. **Adapt syntax** to TypeScript while maintaining functionality
-4. **Document** what was preserved and why
+### Priority Order (Highest to Lowest)
+
+1. **Existing TypeScript file extensions** (`.speck/scripts/<name>.ts`)
+   - These are Speck-specific customizations and MUST be preserved
+   - Copy verbatim into new transformation
+2. **Source bash script extensions** (if no existing TypeScript file)
+   - Adapt syntax from bash to TypeScript if this is first transformation
+3. **Never merge or modify extension content** - preserve exactly as-is
+
+### Handling Extension Blocks
+
+When you find `[SPECK-EXTENSION:START]` and `[SPECK-EXTENSION:END]` markers:
+
+1. **Detect markers** in both existing TypeScript (if exists) and source bash script
+2. **Preserve content**:
+   - If existing TypeScript has extension block → use that version verbatim
+   - If only bash has extension block → adapt syntax to TypeScript
+   - If both have different blocks → prefer TypeScript version, note conflict
+3. **Adapt syntax** only when converting from bash (first transformation)
+4. **Document** what was preserved and from which source
 
 **Example**:
 ```bash
@@ -334,14 +350,28 @@ For each operation in the bash script:
 
 ### Step 3: Generate TypeScript Implementation
 
-1. **Create file** in `.speck/scripts/` with same base name (e.g., `check-prerequisites.sh` → `check-prerequisites.ts`)
-2. **Add header comment** documenting transformation rationale
-3. **Import dependencies** (Bun APIs, Node.js modules)
-4. **Implement CLI parsing** (flags, arguments, help text)
-5. **Implement core logic** using chosen transformation strategy
-6. **Preserve extension markers** with adapted syntax
-7. **Add error handling** with proper exit codes
-8. **Format output** (JSON mode, human-readable mode)
+**CRITICAL**: Check for existing TypeScript file first to preserve SPECK-EXTENSION blocks and minimize changes.
+
+1. **Check for existing file**: Determine target path `.speck/scripts/<name>.ts` (e.g., `check-prerequisites.sh` → `check-prerequisites.ts`)
+2. **Read existing file if present**:
+   - Extract all `[SPECK-EXTENSION:START]` ... `[SPECK-EXTENSION:END]` blocks
+   - Note existing implementation patterns and structure
+   - Identify what actually needs to change vs. what can stay the same
+3. **Generate new implementation**:
+   - **Add header comment** documenting transformation rationale and what changed from previous version (if applicable)
+   - **Import dependencies** (Bun APIs, Node.js modules)
+   - **Implement CLI parsing** (flags, arguments, help text)
+   - **Implement core logic** using chosen transformation strategy
+   - **Preserve SPECK-EXTENSION blocks**:
+     - First, copy any extension blocks from the **existing TypeScript file** (if it exists)
+     - Second, adapt any extension blocks from the **source bash script**
+     - If both exist and conflict, preserve TypeScript version and note the conflict
+   - **Add error handling** with proper exit codes
+   - **Format output** (JSON mode, human-readable mode)
+4. **Minimize changes**: If existing file has same functionality, only update:
+   - Parts affected by upstream changes
+   - Bug fixes or compatibility improvements
+   - Keep existing code structure, variable names, and patterns where possible
 
 ### Step 4: Generate/Update Tests
 
@@ -500,7 +530,8 @@ After transformation, generate a markdown report summarizing:
 
 **Source**: `upstream/v1.0.0/scripts/bash/check-prerequisites.sh`
 **Output**: `.speck/scripts/check-prerequisites.ts`
-**Test File**: `tests/.speck-scripts/check-prerequisites.test.ts` (3 tests created)
+**Existing File**: Yes (updated) / No (created new)
+**Test File**: `tests/.speck-scripts/check-prerequisites.test.ts` (3 tests updated)
 **Strategy**: 70% Pure TypeScript, 20% Bun Shell API, 10% sourced common functions
 
 **Transformations**:
@@ -509,19 +540,26 @@ After transformation, generate a markdown report summarizing:
 - Git commands → Bun Shell API (`$\`git ...\``)
 - Bash functions from common.sh → TypeScript imports from `common/utils.ts`
 
+**Changes Made** (if existing file):
+- Updated git command error handling (upstream added retry logic)
+- Added new `--version` flag support
+- Preserved existing SPECK-EXTENSION block (lines 78-85) for custom validation
+- Kept existing code structure and variable names
+
 **CLI Compatibility**:
-- ✅ All flags preserved: --json, --require-tasks, --include-tasks, --paths-only, --help
+- ✅ All flags preserved: --json, --require-tasks, --include-tasks, --paths-only, --help, --version
 - ✅ Exit codes match: 0 (success), 1 (invalid args), 2 (missing files)
 - ✅ JSON output structure identical to bash version
 
-**Extensions Preserved**: None found
+**Extensions Preserved**: 1 block from existing TypeScript (lines 78-85) - custom feature name validation
 
 **Validation Results**:
 - ✅ Compilation successful (no type errors)
 - ✅ Basic execution test passed (`--help` displays usage)
-- ✅ All tests passed (3/3 tests)
+- ✅ All tests passed (4/4 tests) - added 1 new test for --version flag
   - ✅ --help flag displays usage
   - ✅ --json flag outputs valid JSON
+  - ✅ --version flag displays version
   - ✅ exits with code 0 on success
 
 **Testing Priority**: HIGH - This is a core prerequisite checker used by all commands
