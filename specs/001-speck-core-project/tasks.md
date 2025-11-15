@@ -147,37 +147,37 @@ description: "Task list for Upstream Sync & Transformation Pipeline implementati
 
 #### Transformation Agents (Core Logic)
 
-- [ ] T048 [P] [US1] Create bash-to-Bun transformation agent in `.claude/agents/transform-bash-to-bun.md` (analyzes bash scripts, generates Bun TypeScript equivalents)
-- [ ] T049 [P] [US1] Create command transformation agent in `.claude/agents/transform-commands.md` (transforms `/speckit.*` to `/speck.*`, factors agents/skills)
+- [X] T048 [P] [US1] Create bash-to-Bun transformation agent in `.claude/agents/transform-bash-to-bun.md` (analyzes bash scripts, generates Bun TypeScript equivalents)
+- [X] T049 [P] [US1] Create command transformation agent in `.claude/agents/transform-commands.md` (transforms `/speckit.*` to `/speck.*`, factors agents/skills)
 
 #### Tests First (Medium-Weight) ⚠️
 
-- [ ] T050 [P] [US1] Contract test: `--json` flag outputs valid JSON schema in `tests/.speck-scripts/transform-upstream.test.ts`
-- [ ] T051 [P] [US1] Contract test: exit code 0 on successful transformation in `tests/.speck-scripts/transform-upstream.test.ts`
-- [ ] T052 [P] [US1] Contract test: exit code 2 on transformation failure in `tests/.speck-scripts/transform-upstream.test.ts`
-- [ ] T053 [P] [US1] Contract test: defaults to `upstream/latest` when no version specified in `tests/.speck-scripts/transform-upstream.test.ts`
-- [ ] T054 [P] [US1] Contract test: accepts `--version` flag to target specific release in `tests/.speck-scripts/transform-upstream.test.ts`
-- [ ] T055 [P] [US1] Edge case test: updates status to "transformed" on success in `tests/.speck-scripts/transform-upstream.test.ts`
-- [ ] T056 [P] [US1] Edge case test: updates status to "failed" with error details on failure in `tests/.speck-scripts/transform-upstream.test.ts`
-- [ ] T057 [P] [US1] Edge case test: preserves existing `.speck/scripts/` on transformation failure in `tests/.speck-scripts/transform-upstream.test.ts`
-- [ ] T058 [P] [US1] Edge case test: fails early with clear message if Bun not installed in `tests/.speck-scripts/transform-upstream.test.ts`
+- [X] T050 [P] [US1] Contract test: `--json` flag outputs valid JSON schema in `tests/.speck-scripts/transform-upstream.test.ts`
+- [X] T051 [P] [US1] Contract test: exit code 0 on successful transformation in `tests/.speck-scripts/transform-upstream.test.ts`
+- [X] T052 [P] [US1] Contract test: exit code 2 on transformation failure in `tests/.speck-scripts/transform-upstream.test.ts`
+- [X] T053 [P] [US1] Contract test: defaults to `upstream/latest` when no version specified in `tests/.speck-scripts/transform-upstream.test.ts`
+- [X] T054 [P] [US1] Contract test: accepts `--version` flag to target specific release in `tests/.speck-scripts/transform-upstream.test.ts`
+- [X] T055 [P] [US1] Edge case test: updates status to "transformed" on success in `tests/.speck-scripts/transform-upstream.test.ts`
+- [X] T056 [P] [US1] Edge case test: updates status to "failed" with error details on failure in `tests/.speck-scripts/transform-upstream.test.ts`
+- [X] T057 [P] [US1] Edge case test: preserves existing `.speck/scripts/` on transformation failure in `tests/.speck-scripts/transform-upstream.test.ts`
+- [X] T058 [P] [US1] Edge case test: fails early with clear message if Bun not installed in `tests/.speck-scripts/transform-upstream.test.ts`
 
 #### Implementation
 
-- [ ] T059 [US1] Implement `transform-upstream.ts` in `.speck/scripts/` (orchestrates two transformation agents in sequence)
-- [ ] T060 [US1] Implement version resolution logic in `.speck/scripts/transform-upstream.ts` (defaults to `upstream/latest` symlink target, accepts `--version` flag)
-- [ ] T061 [US1] Implement Bun runtime check in `.speck/scripts/transform-upstream.ts` (fails early if `bun --version` fails)
-- [ ] T062 [US1] Implement bash-to-Bun agent invocation in `.speck/scripts/transform-upstream.ts` (launches `.claude/agents/transform-bash-to-bun.md` with source bash scripts)
-- [ ] T063 [US1] Implement command transformation agent invocation in `.speck/scripts/transform-upstream.ts` (launches `.claude/agents/transform-commands.md` after bash-to-Bun completes)
-- [ ] T064 [US1] Implement transformation report generation in `.speck/scripts/transform-upstream.ts` (collects agent outputs, creates markdown report)
-- [ ] T065 [US1] Implement release registry status update in `.speck/scripts/transform-upstream.ts` (calls `common/json-tracker.ts` to update status to "transformed" or "failed")
-- [ ] T066 [US1] Implement atomic transformation operations in `.speck/scripts/transform-upstream.ts` (uses temp directories, rollback on agent failure)
-- [ ] T067 [US1] Implement JSON and human-readable output formatters in `.speck/scripts/transform-upstream.ts` (matches `TransformUpstreamOutput` schema)
-- [ ] T068 [US1] Add error handling with proper exit codes in `.speck/scripts/transform-upstream.ts` (0=success, 2=agent failure/system error)
+- [X] T059 [US1] Implement `transform-upstream.ts` in `.speck/scripts/` (orchestrates two transformation agents in sequence)
+- [X] T060 [US1] Implement version resolution logic in `.speck/scripts/transform-upstream.ts` (defaults to `upstream/latest` symlink target, accepts `--version` flag)
+- [X] T061 [US1] Implement Bun runtime check in `.speck/scripts/transform-upstream.ts` (fails early if `bun --version` fails)
+- [X] T062 [US1] Implement bash-to-Bun agent invocation in `.speck/scripts/transform-upstream.ts` (launches `.claude/agents/transform-bash-to-bun.md` with source bash scripts)
+- [X] T063 [US1] Implement command transformation agent invocation in `.speck/scripts/transform-upstream.ts` (launches `.claude/agents/transform-commands.md` after bash-to-Bun completes)
+- [X] T064 [US1] Implement transformation report generation in `.speck/scripts/transform-upstream.ts` (collects agent outputs, creates markdown report)
+- [X] T065 [US1] Implement release registry status update in `.speck/scripts/transform-upstream.ts` (calls `common/json-tracker.ts` to update status to "transformed" or "failed")
+- [X] T066 [US1] Implement atomic transformation operations in `.speck/scripts/transform-upstream.ts` (uses temp directories, rollback on agent failure)
+- [X] T067 [US1] Implement JSON and human-readable output formatters in `.speck/scripts/transform-upstream.ts` (matches `TransformUpstreamOutput` schema)
+- [X] T068 [US1] Add error handling with proper exit codes in `.speck/scripts/transform-upstream.ts` (0=success, 2=agent failure/system error)
 
 #### Slash Command Integration
 
-- [ ] T069 [US1] Create `/speck.transform-upstream` command file in `.claude/commands/speck.transform-upstream.md` (calls `.speck/scripts/transform-upstream.ts`, optional `--version` flag)
+- [X] T069 [US1] Create `/speck.transform-upstream` command file in `.claude/commands/speck.transform-upstream.md` (calls `.speck/scripts/transform-upstream.ts`, optional `--version` flag)
 
 **Checkpoint**: Command 3 complete - can transform upstream releases via `/speck.transform-upstream`
 
