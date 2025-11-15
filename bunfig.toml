@@ -1,6 +1,5 @@
 [test]
 # Test configuration for Bun test runner
-preload = []
 coverage = true
 coverageThreshold = 80
 coverageSkipTestFiles = true
