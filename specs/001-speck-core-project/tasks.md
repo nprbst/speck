@@ -149,6 +149,7 @@ description: "Task list for Upstream Sync & Transformation Pipeline implementati
 
 - [X] T048 [P] [US1] Create bash-to-Bun transformation agent in `.claude/agents/transform-bash-to-bun.md` (analyzes bash scripts, generates Bun TypeScript equivalents)
 - [X] T049 [P] [US1] Create command transformation agent in `.claude/agents/transform-commands.md` (transforms `/speckit.*` to `/speck.*`, factors agents/skills)
+- [ ] T049a [P] [US1] Implement breaking change detection in bash-to-Bun agent (analyzes CLI interface differences: removed/renamed flags, changed exit codes, altered JSON output schemas; pauses transformation and presents conflict analysis when detected)
 
 #### Tests First (Medium-Weight) ⚠️
 
@@ -169,7 +170,7 @@ description: "Task list for Upstream Sync & Transformation Pipeline implementati
 - [X] T061 [US1] Implement Bun runtime check in slash command (fails early if `bun --version` fails)
 - [X] T062 [US1] Implement bash-to-Bun agent invocation in slash command (launches `.claude/agents/transform-bash-to-bun.md` with source bash scripts)
 - [X] T063 [US1] Implement command transformation agent invocation in slash command (launches `.claude/agents/transform-commands.md` after bash-to-Bun completes)
-- [X] T064 [US1] Implement transformation report generation in slash command (collects agent outputs, creates summary)
+- [X] T064 [US1] Implement transformation report generation in slash command (collects agent outputs, creates 9-section report per FR-009: (1) upstream version transformed, (2) file creation/update status, (3) Bun scripts with test paths, (4) `/speck.*` commands created/updated, (5) file-level change summaries, (6) agents/skills factored, (7) SPECK-EXTENSION blocks preserved, (8) validation results, (9) transformation rationale)
 - [X] T065 [US1] Implement release registry status update in slash command (calls `common/json-tracker.ts` to update status to "transformed" or "failed")
 - [X] T066 [US1] Implement atomic transformation operations in slash command (coordinates agents to use temp directories, manages rollback on agent failure)
 - [X] T067 [US1] Implement output formatting in slash command (presents transformation results to user)
@@ -186,7 +187,7 @@ description: "Task list for Upstream Sync & Transformation Pipeline implementati
 ### Integration & End-to-End Validation
 
 - [ ] T070 [US1] Integration test: full pipeline from check → pull → transform in `tests/.speck-scripts/integration.test.ts`
-- [ ] T071 [US1] Validation: verify transformation report structure matches `TransformUpstreamOutput` schema
+- [ ] T071 [US1] Validation: verify transformation report structure matches `TransformUpstreamOutput` schema AND includes all 9 sections from FR-009 (upstream version, file status, Bun scripts, commands, change summaries, agents/skills, SPECK-EXTENSION blocks, validation results, rationale)
 - [ ] T072 [US1] Validation: verify generated Bun scripts have identical CLI interface to bash equivalents (same flags, exit codes, JSON output structure)
 - [ ] T073 [US1] Validation: verify `/speck.*` commands successfully call `.speck/scripts/` implementations
 - [ ] T074 [US1] Run quickstart.md validation scenarios (Prerequisites, Running Tests, Development Workflows)
