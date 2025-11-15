@@ -5,6 +5,32 @@ Draft **Input**: User description: "We are going to create a project named
 Speck. Speck is an opinionated, extensible derivative of GitHub's spec-kit
 optimized for Claude Code."
 
+## Clarifications
+
+### Session 2025-11-14
+
+- Q: Should clarification workflow only address max 3 explicit [NEEDS
+  CLARIFICATION] markers from generation, or scan broadly for up to 5 questions
+  including detected gaps? → A: Comprehensive: Clarification scans broadly and
+  asks up to 5 questions, including but not limited to explicit markers
+- Q: How should worktree specs directory modes (isolated vs shared) work? → A:
+  Auto-detect based on git tracking: if specs/ is git-tracked, worktrees share
+  it naturally; if gitignored, symlink specs/ into worktree for central
+  collection
+- Q: What constitutes an "iteration" in SC-007 clarification metric? → A: One
+  iteration = one /speck.clarify session (max 5 questions); 90% of specs fully
+  resolved in single session
+- Q: What happens when a developer creates a feature with duplicate short-name?
+  → A: Auto-append collision counter (e.g., 003-user-auth-2 if 002-user-auth
+  exists); warn user about similar existing feature
+- Q: How should Enhancement Rules be structured for upstream sync
+  transformations? → A: AI-driven transformation: Claude analyzes upstream diffs
+  and infers appropriate Speck adaptations preserving extension markers; no
+  explicit declarative rules needed
+- Q: Should TypeScript CLI support both Bun and Deno runtimes or focus on single
+  runtime? → A: Bun-only: Focus exclusively on Bun runtime to simplify
+  implementation and reduce maintenance overhead
+
 ## User Scenarios & Testing _(mandatory)_
 
 <!--
@@ -69,38 +95,41 @@ with upstream changes while preserving all [SPECK-EXTENSION] blocks.
 **Acceptance Scenarios**:
 
 1. **Given** upstream spec-kit has new commits since last sync, **When** the
-   developer runs `/speck.transform-upstream`, **Then** the system detects
-   changes, analyzes semantic impact, and proposes updates to Speck's Claude
+   developer runs `/speck.transform-upstream`, **Then** Claude analyzes diffs,
+   infers semantic impact, and proposes AI-transformed updates to Speck's Claude
    Code commands
-2. **Given** upstream changes conflict with Speck extensions, **When** sync is
-   performed, **Then** the system preserves Speck-specific enhancements marked
-   with extension boundaries and asks the developer for conflict resolution
-   guidance
+2. **Given** upstream changes affect areas with Speck extensions, **When** sync
+   is performed, **Then** Claude preserves Speck-specific enhancements marked
+   with [SPECK-EXTENSION] boundaries and requests developer guidance only for
+   ambiguous conflicts
 3. **Given** sync is complete, **When** developer reviews changes, **Then** a
    detailed sync report shows which files were modified, what upstream changes
-   were applied, and which extensions were preserved
+   were applied, which extensions were preserved, and Claude's transformation
+   rationale
 
 ---
 
-### User Story 3 - Developer Uses TypeScript CLI Tools (Priority: P3)
+### User Story 3 - Developer Uses Bun-Powered TypeScript CLI (Priority: P3)
 
 A developer prefers using command-line tools directly rather than Claude Code
-slash commands, and wants a fast, type-safe CLI for creating specs, plans, and
-tasks that works cross-platform.
+slash commands, and wants a fast, type-safe CLI powered by Bun for creating
+specs, plans, and tasks with near-instant startup times.
 
 **Why this priority**: Provides flexibility for developers who want to use Speck
 outside Claude Code or integrate it into automated workflows. Lower priority
-because Claude Code integration is the primary use case.
+because Claude Code integration is the primary use case. Bun-only focus
+simplifies implementation and leverages Bun's superior performance.
 
-**Independent Test**: Can be tested by running `spec-kit specify "Add feature"`
-in a terminal (without Claude Code) and verifying that feature creation, spec
+**Independent Test**: Can be tested by running `speck specify "Add feature"` in
+a terminal (without Claude Code) and verifying that feature creation, spec
 generation, and validation work identically to the slash command version.
 
 **Acceptance Scenarios**:
 
-1. **Given** a developer has installed Speck's TypeScript CLI, **When** they run
-   `spec-kit specify "feature description"`, **Then** the CLI creates a feature
-   with the same behavior as the Claude Code slash command
+1. **Given** a developer has installed Speck's Bun-powered CLI, **When** they
+   run `speck specify "feature description"`, **Then** the CLI creates a feature
+   with the same behavior as the Claude Code slash command with sub-100ms
+   startup time
 2. **Given** a developer runs CLI commands, **When** errors occur, **Then** the
    CLI provides structured error messages with actionable guidance
 3. **Given** a developer wants JSON output for automation, **When** they add the
@@ -133,8 +162,8 @@ confirming that changes in one worktree don't affect the other.
    worktree, **Then** the main repository and other worktrees remain unaffected
    by their changes
 3. **Given** a worktree is created, **When** the developer opens it in their
-   IDE, **Then** they see the full project context with the feature-specific
-   specs directory
+   IDE, **Then** they see the full project context with access to all specs
+   (either via git-tracked shared directory or symlink from main repo)
 
 ---
 
@@ -155,20 +184,24 @@ verifying the spec is updated with resolved answers replacing the markers.
 
 **Acceptance Scenarios**:
 
-1. **Given** a spec contains [NEEDS CLARIFICATION] markers, **When** the
-   developer runs `/speck.clarify`, **Then** the system extracts all markers and
-   presents them as structured questions with suggested answers
+1. **Given** a spec contains [NEEDS CLARIFICATION] markers or ambiguous areas,
+   **When** the developer runs `/speck.clarify`, **Then** the system performs a
+   comprehensive ambiguity scan and presents up to 5 structured questions with
+   suggested answers (including both explicit markers and detected gaps)
 2. **Given** the developer is presented with clarification questions, **When**
    they select answers or provide custom input, **Then** the system updates the
-   spec by replacing markers with the selected answers
+   spec by replacing markers with the selected answers and integrating
+   clarifications into appropriate sections
 3. **Given** all clarifications are resolved, **When** the developer reviews the
    spec, **Then** no [NEEDS CLARIFICATION] markers remain and all requirements
    are testable and unambiguous
 
 ### Edge Cases
 
-- What happens when a developer tries to create a feature with the same
-  short-name as an existing feature?
+- **Duplicate short-name collision**: When a developer creates a feature with a
+  short-name matching an existing feature (e.g., `002-user-auth` exists), system
+  auto-appends collision counter (`003-user-auth-2`) and warns developer to
+  review existing similar feature before proceeding
 - How does the system handle extremely long feature descriptions that would
   create branch names exceeding git's 244-character limit?
 - What happens when upstream sync detects breaking changes that fundamentally
@@ -199,7 +232,9 @@ verifying the spec is updated with resolved answers replacing the markers.
 - **FR-005**: System MUST support creating specifications in non-git directories
   with environment-based feature tracking
 - **FR-006**: System MUST limit [NEEDS CLARIFICATION] markers to a maximum of 3
-  per specification, prioritized by impact
+  per specification during generation phase, prioritized by impact;
+  clarification workflow may ask up to 5 questions total by scanning beyond
+  explicit markers
 - **FR-007**: System MUST generate specifications that include mandatory
   sections: User Scenarios & Testing, Requirements, and Success Criteria
 
@@ -208,13 +243,16 @@ verifying the spec is updated with resolved answers replacing the markers.
 - **FR-008**: System MUST track the last synced commit SHA from upstream
   spec-kit repository
 - **FR-009**: System MUST preserve Speck-specific extensions marked with
-  [SPECK-EXTENSION:START/END] boundaries during upstream sync
+  [SPECK-EXTENSION:START/END] boundaries during AI-driven upstream sync
+  transformations
 - **FR-010**: System MUST provide a sync command (`/speck.transform-upstream`)
-  that detects upstream changes and proposes equivalent updates
+  that uses Claude to analyze upstream diffs and infer appropriate Speck
+  adaptations
 - **FR-011**: System MUST generate sync reports documenting which files were
-  modified, what changes were applied, and which extensions were preserved
-- **FR-012**: System MUST validate that synced changes pass type checking and
-  tests before updating tracking files
+  modified, what upstream changes were applied, which extensions were preserved,
+  and Claude's transformation rationale
+- **FR-012**: System MUST validate that AI-transformed sync changes pass type
+  checking and tests before updating tracking files
 
 #### Feature Isolation & Workflow
 
@@ -224,23 +262,28 @@ verifying the spec is updated with resolved answers replacing the markers.
   feature number based on existing branches, worktrees, and spec directories
 - **FR-015**: System MUST generate short feature names (2-4 words) from feature
   descriptions by extracting meaningful keywords
+- **FR-015a**: System MUST detect duplicate short-names and auto-append
+  collision counter (e.g., `-2`, `-3`) while warning user about similar existing
+  features
 - **FR-016**: System MUST create feature directory structures under
   `specs/<number>-<short-name>/`
-- **FR-017**: System MUST support both isolated and shared specs directory modes
-  for worktrees
+- **FR-017**: System MUST auto-detect worktree specs directory handling: if
+  specs/ is git-tracked, worktrees naturally share it; if specs/ is gitignored,
+  system creates symlink to main repo's specs/ directory in each worktree to
+  maintain central spec collection
 
 #### TypeScript CLI
 
-- **FR-018**: System MUST provide a TypeScript CLI (`spec-kit` command) that
-  works with both Bun and Deno runtimes
+- **FR-018**: System MUST provide a Bun-powered TypeScript CLI (`speck` command)
+  with sub-100ms startup time
 - **FR-019**: System MUST provide the same functionality via CLI as via Claude
   Code slash commands
 - **FR-020**: System MUST support `--json` flag for machine-readable output in
   all CLI commands
 - **FR-021**: System MUST provide interactive prompts for CLI users when
   required information is missing
-- **FR-022**: System MUST use runtime abstraction layer to support both Bun and
-  Deno without code duplication
+- **FR-022**: System MUST leverage Bun-specific APIs and features for optimal
+  performance (native TypeScript execution, fast file I/O, built-in SQLite)
 
 #### Quality & Validation
 
@@ -259,14 +302,11 @@ verifying the spec is updated with resolved answers replacing the markers.
   name, description, directory path, and creation timestamp
 - **Specification**: A structured document describing what users need and why,
   without implementation details
-- **Enhancement Rule**: Defines how upstream spec-kit commands are transformed
-  into Speck's Claude Code-enhanced versions
-- **Sync Manifest**: Maps upstream bash scripts to Speck TypeScript/markdown
-  files for tracking synchronization
 - **Upstream Tracker**: Records the last synced commit SHA, sync date, and
-  file-level sync status
-- **Extension Marker**: Identifies Speck-specific code blocks that must be
-  preserved during upstream sync
+  file-level sync status for spec-kit repository
+- **Extension Marker**: Identifies Speck-specific code blocks (marked with
+  [SPECK-EXTENSION:START/END]) that must be preserved during AI-driven upstream
+  sync transformations
 - **Worktree**: An isolated git working directory for parallel feature
   development
 - **Clarification**: A question-answer pair resolving ambiguous requirements in
@@ -284,12 +324,14 @@ verifying the spec is updated with resolved answers replacing the markers.
   without requiring manual fixes
 - **SC-004**: Upstream sync operations complete in under 5 minutes and preserve
   100% of Speck-specific extensions
-- **SC-005**: TypeScript CLI provides identical functionality to Claude Code
-  slash commands with less than 1% behavioral deviation
+- **SC-005**: Bun-powered CLI provides identical functionality to Claude Code
+  slash commands with less than 1% behavioral deviation and sub-100ms startup
+  time
 - **SC-006**: Feature isolation via worktrees allows 10+ parallel features
   without cross-contamination of specs or artifacts
-- **SC-007**: Clarification workflow resolves all ambiguous requirements in
-  under 3 iterations, with 90% resolved in 1 iteration
+- **SC-007**: Clarification workflow fully resolves spec ambiguities in 1-3
+  `/speck.clarify` sessions (iterations), with 90% of specs requiring only 1
+  session (5 questions or fewer)
 - **SC-008**: Developers can sync monthly upstream spec-kit updates without
   manual conflict resolution in 80% of cases
 - **SC-009**: System detects and prevents branch name length violations (>244
@@ -305,8 +347,8 @@ verifying the spec is updated with resolved answers replacing the markers.
    (branches, commits, repositories)
 3. **Template Availability**: Upstream spec-kit templates remain available and
    structurally stable
-4. **Runtime Availability**: Users can install either Bun or Deno for TypeScript
-   CLI functionality
+4. **Bun Runtime**: Users have Bun 1.0+ installed for TypeScript CLI
+   functionality
 5. **Disk Space**: Sufficient disk space available for worktree creation
    (typically 100MB-1GB per worktree)
 6. **Upstream Stability**: Spec-kit methodology changes are incremental, not
@@ -322,12 +364,11 @@ verifying the spec is updated with resolved answers replacing the markers.
 
 - **Upstream Dependency**: GitHub's spec-kit repository and templates (external,
   ongoing)
-- **Runtime Dependency**: Bun 1.0+ or Deno 1.40+ for TypeScript CLI execution
+- **Runtime Dependency**: Bun 1.0+ for TypeScript CLI execution with native
+  TypeScript support
 - **Claude Code Version**: Compatible Claude Code version with slash command and
   agent support
 - **Git Version**: Git 2.30+ for worktree support and modern porcelain commands
-- **Template Engine**: Handlebars or similar for template rendering in
-  TypeScript CLI
 
 ## Out of Scope
 
