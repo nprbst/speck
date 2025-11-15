@@ -13,7 +13,7 @@
       "commit": "4767d77ab5dbd788f07343ccd6ed8598586ad205",
       "pullDate": "2025-11-15T22:28:34.190Z",
       "releaseNotesUrl": "https://github.com/github/spec-kit/releases/tag/v0.0.84",
-      "status": "pulled"
+      "status": "transformed"
     },
     {
       "version": "v0.0.83",

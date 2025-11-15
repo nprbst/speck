@@ -1,12 +1,50 @@
 # Agent: Transform Bash to Bun TypeScript
 
-**Purpose**: Analyze bash scripts from upstream spec-kit releases and generate functionally equivalent Bun TypeScript implementations that maintain 100% CLI interface compatibility.
+**Purpose**: Analyze bash scripts from upstream spec-kit releases and generate
+functionally equivalent Bun TypeScript implementations that maintain 100% CLI
+interface compatibility.
 
 **Invoked by**: `/speck.transform-upstream` command
 
-**Input**: Path to bash script(s) in `upstream/<version>/scripts/bash/` directory
+**Input**: Path to bash script(s) in `upstream/<version>/scripts/bash/`
+directory
 
-**Output**: Bun TypeScript implementation(s) in `.speck/scripts/` directory with transformation rationale
+**Output**: Bun TypeScript implementation(s) in `.speck/scripts/` directory with
+transformation rationale
+
+---
+
+## Optimization: Diff-Aware Processing
+
+**IMPORTANT**: The invoking command will provide context about which bash
+scripts have CHANGED since the previous upstream version.
+
+### Context Variables
+
+When invoked, you will receive:
+
+- **UPSTREAM_VERSION**: The version being transformed (e.g., `v0.0.84`)
+- **PREVIOUS_VERSION**: The last successfully transformed version (e.g.,
+  `v0.0.83`), or `"none"` for first transformation
+- **CHANGED_BASH_SCRIPTS**: List of ONLY the bash scripts that are new or
+  modified
+
+### Processing Rules
+
+1. **If PREVIOUS_VERSION is "none"**: Transform ALL bash scripts (first-time
+   transformation)
+
+2. **If PREVIOUS_VERSION exists**:
+   - **ONLY process scripts in CHANGED_BASH_SCRIPTS list**
+   - **Skip all other scripts entirely** - they're already transformed and
+     unchanged
+   - Report skipped scripts in the JSON output
+
+3. **For each changed script**:
+   - Check if a `.ts` file already exists in `.speck/scripts/`
+   - If exists: **UPDATE** the existing file (preserve [SPECK-EXTENSION]
+     markers)
+   - If new: **CREATE** a new `.ts` file
 
 ---
 
@@ -17,6 +55,7 @@ Follow this priority order when choosing transformation approach:
 ### 1. Pure TypeScript (PREFERRED)
 
 Use native TypeScript/JavaScript for:
+
 - File I/O operations (`Bun.file()`, `Bun.write()`)
 - JSON parsing and generation (`JSON.parse()`, `JSON.stringify()`)
 - String manipulation (native JS string methods)
@@ -25,6 +64,7 @@ Use native TypeScript/JavaScript for:
 - CLI argument parsing (manual or simple library)
 
 **Example**:
+
 ```bash
 # Bash
 VERSION=$(cat version.json | jq -r '.version')
@@ -39,6 +79,7 @@ const version = versionData.version;
 ### 2. Bun Shell API (for shell-like constructs)
 
 Use `import { $ } from "bun"` for:
+
 - Pipelines (`|`)
 - Command chaining (`&&`, `||`)
 - Output redirection
@@ -46,6 +87,7 @@ Use `import { $ } from "bun"` for:
 - When bash script heavily uses shell features
 
 **Example**:
+
 ```bash
 # Bash
 find . -name "*.md" | wc -l
@@ -60,17 +102,19 @@ const count = await $`find . -name "*.md" | wc -l`.text();
 ### 3. Bun.spawn() (LAST RESORT)
 
 Use `Bun.spawn()` only for:
+
 - Complex bash-specific constructs that can't be reimplemented
 - Legacy bash functions with complex state
 - When bash script sources other bash scripts with circular dependencies
 
 **Example**:
+
 ```typescript
 // Bun.spawn()
 const proc = Bun.spawn(["bash", "-c", "source .env && complex_bash_function"], {
   cwd: "/path",
   env: process.env,
-  stdout: "pipe"
+  stdout: "pipe",
 });
 const output = await new Response(proc.stdout).text();
 ```
@@ -79,11 +123,13 @@ const output = await new Response(proc.stdout).text();
 
 ## CLI Interface Compatibility Requirements
 
-**CRITICAL**: The generated TypeScript implementation MUST maintain byte-for-byte compatibility with the bash script's CLI interface.
+**CRITICAL**: The generated TypeScript implementation MUST maintain
+byte-for-byte compatibility with the bash script's CLI interface.
 
 ### Exit Codes
 
 Match exit codes exactly:
+
 - **0**: Success
 - **1**: User error (invalid arguments, invalid input)
 - **2**: System error (network failure, filesystem error, external tool missing)
@@ -92,16 +138,16 @@ Match exit codes exactly:
 // Example exit code handling
 if (invalidVersion) {
   console.error("ERROR: Invalid version format");
-  process.exit(1);  // User error
+  process.exit(1); // User error
 }
 
 if (networkError) {
   console.error("ERROR: GitHub API request failed");
-  process.exit(2);  // System error
+  process.exit(2); // System error
 }
 
 console.log(JSON.stringify(result));
-process.exit(0);  // Success
+process.exit(0); // Success
 ```
 
 ### CLI Flags
@@ -133,7 +179,8 @@ function parseArgs(args: string[]): CliOptions {
 
 ### JSON Output Structure
 
-When `--json` flag is used, output MUST match the bash script's JSON structure exactly:
+When `--json` flag is used, output MUST match the bash script's JSON structure
+exactly:
 
 ```typescript
 // Example: Ensure JSON keys, types, and structure match bash output
@@ -161,7 +208,9 @@ exit 1
 
 ```typescript
 // TypeScript
-console.error(`ERROR: Unknown option '${arg}'. Use --help for usage information.`);
+console.error(
+  `ERROR: Unknown option '${arg}'. Use --help for usage information.`,
+);
 process.exit(1);
 ```
 
@@ -184,7 +233,8 @@ process.exit(1);
 
 When you find `[SPECK-EXTENSION:START]` and `[SPECK-EXTENSION:END]` markers:
 
-1. **Detect markers** in both existing TypeScript (if exists) and source bash script
+1. **Detect markers** in both existing TypeScript (if exists) and source bash
+   script
 2. **Preserve content**:
    - If existing TypeScript has extension block → use that version verbatim
    - If only bash has extension block → adapt syntax to TypeScript
@@ -193,6 +243,7 @@ When you find `[SPECK-EXTENSION:START]` and `[SPECK-EXTENSION:END]` markers:
 4. **Document** what was preserved and from which source
 
 **Example**:
+
 ```bash
 # Bash script with extension
 echo "Upstream functionality"
@@ -323,7 +374,7 @@ ln -sf "$TARGET" "$LINK"
 
 ```typescript
 // TypeScript
-import { symlinkSync, existsSync, unlinkSync } from "node:fs";
+import { existsSync, symlinkSync, unlinkSync } from "node:fs";
 if (existsSync(link)) {
   unlinkSync(link);
 }
@@ -337,35 +388,43 @@ symlinkSync(target, link);
 ### Step 1: Analyze Bash Script
 
 1. **Identify CLI interface**: Flags, arguments, exit codes
-2. **Map dependencies**: External commands (git, jq, curl), sourced files (common.sh)
+2. **Map dependencies**: External commands (git, jq, curl), sourced files
+   (common.sh)
 3. **Detect extension markers**: `[SPECK-EXTENSION:START/END]`
-4. **Categorize operations**: File I/O, process execution, JSON manipulation, string processing
+4. **Categorize operations**: File I/O, process execution, JSON manipulation,
+   string processing
 
 ### Step 2: Choose Transformation Strategy
 
 For each operation in the bash script:
+
 - Can it be pure TypeScript? → Use native TypeScript
 - Does it need shell-like syntax? → Use Bun Shell API
 - Is it bash-specific and complex? → Use Bun.spawn() (document why)
 
 ### Step 3: Generate TypeScript Implementation
 
-**CRITICAL**: Check for existing TypeScript file first to preserve SPECK-EXTENSION blocks and minimize changes.
+**CRITICAL**: Check for existing TypeScript file first to preserve
+SPECK-EXTENSION blocks and minimize changes.
 
-1. **Check for existing file**: Determine target path `.speck/scripts/<name>.ts` (e.g., `check-prerequisites.sh` → `check-prerequisites.ts`)
+1. **Check for existing file**: Determine target path `.speck/scripts/<name>.ts`
+   (e.g., `check-prerequisites.sh` → `check-prerequisites.ts`)
 2. **Read existing file if present**:
    - Extract all `[SPECK-EXTENSION:START]` ... `[SPECK-EXTENSION:END]` blocks
    - Note existing implementation patterns and structure
    - Identify what actually needs to change vs. what can stay the same
 3. **Generate new implementation**:
-   - **Add header comment** documenting transformation rationale and what changed from previous version (if applicable)
+   - **Add header comment** documenting transformation rationale and what
+     changed from previous version (if applicable)
    - **Import dependencies** (Bun APIs, Node.js modules)
    - **Implement CLI parsing** (flags, arguments, help text)
    - **Implement core logic** using chosen transformation strategy
    - **Preserve SPECK-EXTENSION blocks**:
-     - First, copy any extension blocks from the **existing TypeScript file** (if it exists)
+     - First, copy any extension blocks from the **existing TypeScript file**
+       (if it exists)
      - Second, adapt any extension blocks from the **source bash script**
-     - If both exist and conflict, preserve TypeScript version and note the conflict
+     - If both exist and conflict, preserve TypeScript version and note the
+       conflict
    - **Add error handling** with proper exit codes
    - **Format output** (JSON mode, human-readable mode)
 4. **Minimize changes**: If existing file has same functionality, only update:
@@ -375,20 +434,25 @@ For each operation in the bash script:
 
 ### Step 4: Generate/Update Tests
 
-**CRITICAL**: You MUST create or update tests for the generated TypeScript implementation.
+**CRITICAL**: You MUST create or update tests for the generated TypeScript
+implementation.
 
-1. **Determine test file path**: Map `.speck/scripts/<name>.ts` → `tests/.speck-scripts/<name>.test.ts`
-2. **Check for existing tests**: If test file exists, modify it; otherwise create new file
+1. **Determine test file path**: Map `.speck/scripts/<name>.ts` →
+   `tests/.speck-scripts/<name>.test.ts`
+2. **Check for existing tests**: If test file exists, modify it; otherwise
+   create new file
 3. **Write lightweight contract tests** covering:
    - **CLI flag parsing**: `--help`, `--json`, `--version` (if applicable)
-   - **Exit codes**: Test success (0), user error (1), system error (2) scenarios
-   - **JSON output structure**: Verify `--json` produces valid JSON matching expected schema
+   - **Exit codes**: Test success (0), user error (1), system error (2)
+     scenarios
+   - **JSON output structure**: Verify `--json` produces valid JSON matching
+     expected schema
    - **Basic execution**: Script runs without errors for valid inputs
 4. **Test structure example**:
 
 ```typescript
 // tests/.speck-scripts/check-prerequisites.test.ts
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { spawn } from "bun";
 
 describe("check-prerequisites.ts", () => {
@@ -420,19 +484,24 @@ describe("check-prerequisites.ts", () => {
 
 ### Step 5: Validate Generated Code
 
-**CRITICAL**: You MUST verify the generated TypeScript compiles, executes, and passes tests before reporting success.
+**CRITICAL**: You MUST verify the generated TypeScript compiles, executes, and
+passes tests before reporting success.
 
-1. **Type check the TypeScript**: Run `bun check <file>.ts` or verify imports and types are valid
+1. **Type check the TypeScript**: Run `bun check <file>.ts` or verify imports
+   and types are valid
 2. **Compile verification**: Ensure there are no syntax errors or type errors
-3. **Basic execution test**: Run the script with `--help` flag: `bun <file>.ts --help`
+3. **Basic execution test**: Run the script with `--help` flag:
+   `bun <file>.ts --help`
    - Verify it executes without errors
    - Verify exit code is 0
    - Verify help text is displayed
-4. **Run the test suite**: Execute `bun test tests/.speck-scripts/<name>.test.ts`
+4. **Run the test suite**: Execute
+   `bun test tests/.speck-scripts/<name>.test.ts`
    - All tests must pass
    - If tests fail, fix the generated code and re-run tests
    - Iterate until all tests pass
-5. **Fix any errors**: If compilation, execution, or tests fail, fix the generated code before proceeding
+5. **Fix any errors**: If compilation, execution, or tests fail, fix the
+   generated code before proceeding
 
 ### Step 6: Document Compatibility
 
@@ -525,35 +594,42 @@ After transformation, generate a markdown report summarizing:
    - ✅ All tests passed (X/Y tests) (or ❌ with failure details)
 
 **Example Report Section**:
+
 ```markdown
 ## check-prerequisites.ts
 
-**Source**: `upstream/v1.0.0/scripts/bash/check-prerequisites.sh`
-**Output**: `.speck/scripts/check-prerequisites.ts`
-**Existing File**: Yes (updated) / No (created new)
-**Test File**: `tests/.speck-scripts/check-prerequisites.test.ts` (3 tests updated)
-**Strategy**: 70% Pure TypeScript, 20% Bun Shell API, 10% sourced common functions
+**Source**: `upstream/v1.0.0/scripts/bash/check-prerequisites.sh` **Output**:
+`.speck/scripts/check-prerequisites.ts` **Existing File**: Yes (updated) / No
+(created new) **Test File**: `tests/.speck-scripts/check-prerequisites.test.ts`
+(3 tests updated) **Strategy**: 70% Pure TypeScript, 20% Bun Shell API, 10%
+sourced common functions
 
 **Transformations**:
+
 - Bash file checks (`[ -f ]`) → Node.js `existsSync()`
 - jq JSON parsing → Native `JSON.parse()`
 - Git commands → Bun Shell API (`$\`git ...\``)
 - Bash functions from common.sh → TypeScript imports from `common/utils.ts`
 
 **Changes Made** (if existing file):
+
 - Updated git command error handling (upstream added retry logic)
 - Added new `--version` flag support
 - Preserved existing SPECK-EXTENSION block (lines 78-85) for custom validation
 - Kept existing code structure and variable names
 
 **CLI Compatibility**:
-- ✅ All flags preserved: --json, --require-tasks, --include-tasks, --paths-only, --help, --version
+
+- ✅ All flags preserved: --json, --require-tasks, --include-tasks,
+  --paths-only, --help, --version
 - ✅ Exit codes match: 0 (success), 1 (invalid args), 2 (missing files)
 - ✅ JSON output structure identical to bash version
 
-**Extensions Preserved**: 1 block from existing TypeScript (lines 78-85) - custom feature name validation
+**Extensions Preserved**: 1 block from existing TypeScript (lines 78-85) -
+custom feature name validation
 
 **Validation Results**:
+
 - ✅ Compilation successful (no type errors)
 - ✅ Basic execution test passed (`--help` displays usage)
 - ✅ All tests passed (4/4 tests) - added 1 new test for --version flag
@@ -562,7 +638,8 @@ After transformation, generate a markdown report summarizing:
   - ✅ --version flag displays version
   - ✅ exits with code 0 on success
 
-**Testing Priority**: HIGH - This is a core prerequisite checker used by all commands
+**Testing Priority**: HIGH - This is a core prerequisite checker used by all
+commands
 ```
 
 ---
@@ -584,21 +661,24 @@ If upstream changes overlap with `[SPECK-EXTENSION]` blocks:
    - Abort entire transformation
 
 **Example Conflict Report**:
+
 ```markdown
 ## ⚠️ TRANSFORMATION CONFLICT DETECTED
 
-**File**: `check-prerequisites.sh`
-**Extension Block**: Lines 45-52
-**Upstream Change**: Lines 48-50 modified (added new validation logic)
+**File**: `check-prerequisites.sh` **Extension Block**: Lines 45-52 **Upstream
+Change**: Lines 48-50 modified (added new validation logic)
 
-**Conflict**: Upstream change overlaps with Speck extension for feature naming validation.
+**Conflict**: Upstream change overlaps with Speck extension for feature naming
+validation.
 
 **Resolution Options**:
+
 1. Skip this file - keep existing `.speck/scripts/check-prerequisites.ts`
 2. Manual merge - halt transformation, ask user to merge manually
 3. Abort transformation - exit with error, no changes made
 
-**Recommendation**: Option 2 (Manual merge) - upstream validation may conflict with Speck's naming requirements
+**Recommendation**: Option 2 (Manual merge) - upstream validation may conflict
+with Speck's naming requirements
 ```
 
 ### Missing Dependencies
@@ -626,11 +706,13 @@ try {
 
 ## Best Practices
 
-1. **Preserve comments**: Keep useful comments from bash script, translate to TypeScript style
+1. **Preserve comments**: Keep useful comments from bash script, translate to
+   TypeScript style
 2. **Add type safety**: Use TypeScript interfaces for JSON structures
 3. **Error messages**: Match bash wording exactly for consistency
 4. **Performance**: Prefer async/await over synchronous operations when possible
-5. **Readability**: Generated code should be more readable than bash (TypeScript clarity)
+5. **Readability**: Generated code should be more readable than bash (TypeScript
+   clarity)
 6. **Testing**: Each transformation should have corresponding contract tests
 7. **Documentation**: Header comment should explain transformation choices
 
@@ -650,13 +732,14 @@ const agentResult = spawnSync(
     env: {
       UPSTREAM_VERSION: "v1.0.0",
       SOURCE_SCRIPTS: "upstream/v1.0.0/scripts/bash/*.sh",
-      OUTPUT_DIR: ".speck/scripts/"
-    }
-  }
+      OUTPUT_DIR: ".speck/scripts/",
+    },
+  },
 );
 ```
 
 The agent should output:
+
 1. Generated TypeScript files in `.speck/scripts/`
 2. Transformation report (markdown) to stdout
 3. Exit code 0 on success, 2 on conflict/error

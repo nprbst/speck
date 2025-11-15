@@ -58,35 +58,87 @@ upstream release by sequentially invoking two specialized transformation agents.
      Then run /speck.pull-upstream <version> to download
      ```
 
-### 2. Discovery Phase
+### 2. Discovery and Diff Detection Phase
 
-Find source files to transform:
+Find source files to transform and detect changes from previous version:
 
-1. **Find bash scripts**:
+1. **Detect previous transformed version**:
+   ```bash
+   # Find the most recent transformed version in upstream/releases.json
+   # This will be used as the baseline for diff detection
+   ```
+   - Query `upstream/releases.json` for the latest version with `"status": "transformed"`
+   - If no previous transformed version exists, treat all files as changed (first-time transformation)
+   - Store as `PREV_VERSION`
+
+2. **Find bash scripts**:
    ```bash
    find upstream/<version>/.specify/scripts/bash -name "*.sh" -type f
    ```
    - Count total bash scripts found
 
-2. **Find speckit commands**:
+3. **Find speckit commands**:
    ```bash
    find upstream/<version>/.claude/commands -name "speckit.*.md" -type f
    ```
    - Count total command files found
 
-3. **Report to user**:
+4. **Detect changed bash scripts** (if `PREV_VERSION` exists):
+   ```bash
+   diff -qr upstream/<PREV_VERSION>/.specify/scripts/bash/ upstream/<version>/.specify/scripts/bash/ | grep -E "\.sh$"
+   ```
+   - Parse diff output to identify:
+     - **New files**: `Only in upstream/<version>/...`
+     - **Modified files**: `Files ... and ... differ`
+     - **Deleted files**: `Only in upstream/<PREV_VERSION>/...` (can be ignored - no transformation needed)
+   - Create list of **CHANGED_BASH_SCRIPTS** (new + modified)
+   - If no bash scripts changed, skip Agent 1 entirely
+
+5. **Detect changed speckit commands** (if `PREV_VERSION` exists):
+   ```bash
+   diff -qr upstream/<PREV_VERSION>/.claude/commands/ upstream/<version>/.claude/commands/ | grep -E "speckit\..*\.md$"
+   ```
+   - Parse diff output to identify:
+     - **New files**: `Only in upstream/<version>/...`
+     - **Modified files**: `Files ... and ... differ`
+     - **Deleted files**: `Only in upstream/<PREV_VERSION>/...` (can be ignored - no transformation needed)
+   - Create list of **CHANGED_SPECKIT_COMMANDS** (new + modified)
+   - If no commands changed, skip Agent 2 entirely
+
+6. **Report to user**:
    ```
    Transforming upstream/<version>...
-   Found X bash scripts, Y commands
+
+   Baseline: <PREV_VERSION> (or "none - first transformation")
+
+   Bash scripts:
+     Total: X scripts
+     Changed: Y scripts (N new, M modified)
+     Skipped: X-Y unchanged scripts
+
+   Speckit commands:
+     Total: A commands
+     Changed: B commands (C new, D modified)
+     Skipped: A-B unchanged commands
+   ```
+
+   If no files changed in either category:
+   ```
+   ✓ No changes detected between <PREV_VERSION> and <version>
+
+   All bash scripts and commands are identical.
+   Skipping transformation agents - updating status only.
    ```
 
 ### 3. Agent Invocation Phase
 
-Invoke transformation agents sequentially:
+Invoke transformation agents sequentially (skip agents if no files changed):
 
 #### Agent 1: Bash-to-Bun Transformation
 
-Use the Task tool to launch the transformation agent:
+**IMPORTANT**: Skip this agent entirely if `CHANGED_BASH_SCRIPTS` is empty (no bash scripts changed).
+
+If there are changed bash scripts, use the Task tool to launch the transformation agent:
 
 ```
 Task tool parameters:
@@ -100,24 +152,28 @@ Task tool parameters:
     ## Context
 
     **UPSTREAM_VERSION**: <version>
+    **PREVIOUS_VERSION**: <PREV_VERSION> (or "none" if first transformation)
     **SOURCE_DIR**: upstream/<version>/.specify/scripts/bash/
     **OUTPUT_DIR**: .speck/scripts/
-    **BASH_SCRIPTS**:
-    [List each bash script path found in discovery, one per line]
+    **CHANGED_BASH_SCRIPTS**:
+    [List ONLY the changed bash script paths (new + modified), one per line]
+
+    **OPTIMIZATION**: Only the scripts listed above have changed from <PREV_VERSION>.
+    You MUST ONLY process these changed scripts. Skip all unchanged scripts entirely.
 
     ## Your Task
 
-    Transform each bash script listed above into a Bun TypeScript equivalent in .speck/scripts/.
+    Transform ONLY the changed bash scripts listed above into Bun TypeScript equivalents in .speck/scripts/.
 
     Follow the transformation strategy priorities from the agent file:
     1. Pure TypeScript (PREFERRED)
     2. Bun Shell API (for shell-like constructs)
     3. Bun.spawn() (LAST RESORT)
 
-    For each script:
+    For each CHANGED script:
     1. Read and analyze the bash script
     2. Choose transformation strategy
-    3. Generate .ts file in .speck/scripts/
+    3. Generate/update .ts file in .speck/scripts/
     4. Preserve CLI interface 100%
     5. Document transformation in header comment
     6. Preserve [SPECK-EXTENSION:START/END] markers if present
@@ -131,7 +187,14 @@ Task tool parameters:
         {
           "path": ".speck/scripts/X.ts",
           "bashSource": "upstream/<version>/.specify/scripts/bash/X.sh",
-          "strategy": "pure-typescript | bun-shell | bun-spawn"
+          "strategy": "pure-typescript | bun-shell | bun-spawn",
+          "changeType": "new | modified"
+        }
+      ],
+      "skipped": [
+        {
+          "path": ".speck/scripts/Y.ts",
+          "reason": "No changes in upstream bash script"
         }
       ],
       "errors": [],
@@ -146,12 +209,15 @@ Task tool parameters:
 **Collect results**:
 
 - Parse JSON from agent output
-- Extract list of generated Bun scripts
+- Extract list of generated/updated Bun scripts
+- Extract list of skipped scripts
 - Check for errors or warnings
 
 #### Agent 2: Command Transformation
 
-Use the Task tool to launch the command transformation agent:
+**IMPORTANT**: Skip this agent entirely if `CHANGED_SPECKIT_COMMANDS` is empty (no commands changed).
+
+If there are changed commands, use the Task tool to launch the command transformation agent:
 
 ```
 Task tool parameters:
@@ -165,22 +231,26 @@ Task tool parameters:
     ## Context
 
     **UPSTREAM_VERSION**: <version>
+    **PREVIOUS_VERSION**: <PREV_VERSION> (or "none" if first transformation)
     **SOURCE_DIR**: upstream/<version>/.claude/commands/
     **OUTPUT_DIR**: .claude/commands/
-    **SPECKIT_COMMANDS**:
-    [List each speckit command path found in discovery, one per line]
+    **CHANGED_SPECKIT_COMMANDS**:
+    [List ONLY the changed speckit command paths (new + modified), one per line]
+
+    **OPTIMIZATION**: Only the commands listed above have changed from <PREV_VERSION>.
+    You MUST ONLY process these changed commands. Skip all unchanged commands entirely.
 
     **BASH_TO_BUN_MAPPINGS**:
-    [Provide the mappings from Agent 1 results]
+    [Provide the FULL mappings (not just changed scripts) - commands may reference any script]
     Example format:
-    - scripts/bash/setup-plan.sh → .speck/scripts/setup-plan.ts
-    - scripts/bash/check-prerequisites.sh → .speck/scripts/check-prerequisites.ts
+    - .specify/scripts/bash/setup-plan.sh → .speck/scripts/setup-plan.ts
+    - .specify/scripts/bash/check-prerequisites.sh → .speck/scripts/check-prerequisites.ts
 
     ## Your Task
 
-    Transform each speckit command listed above into a speck command in .claude/commands/.
+    Transform ONLY the changed speckit commands listed above into speck commands in .claude/commands/.
 
-    For each command:
+    For each CHANGED command:
     1. Parse frontmatter (scripts, agent_scripts, handoffs)
     2. Update script references using the bash-to-bun mappings
     3. Remove PowerShell references
@@ -198,7 +268,14 @@ Task tool parameters:
         {
           "commandName": "speck.X",
           "specKitSource": "upstream/<version>/.claude/commands/speckit.X.md",
-          "scriptReference": ".speck/scripts/Y.ts"
+          "scriptReference": ".speck/scripts/Y.ts",
+          "changeType": "new | modified"
+        }
+      ],
+      "skipped": [
+        {
+          "commandName": "speck.Y",
+          "reason": "No changes in upstream speckit command"
         }
       ],
       "errors": [],
@@ -213,7 +290,8 @@ Task tool parameters:
 **Collect results**:
 
 - Parse JSON from agent output
-- Extract list of generated commands
+- Extract list of generated/updated commands
+- Extract list of skipped commands
 - Check for errors or warnings
 
 ### 4. Status Tracking

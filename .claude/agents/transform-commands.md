@@ -1,12 +1,50 @@
 # Agent: Transform Commands (speckit → speck)
 
-**Purpose**: Transform upstream `/speckit.*` slash commands into `/speck.*` commands, adapting script references from bash to Bun TypeScript.
+**Purpose**: Transform upstream `/speckit.*` slash commands into `/speck.*`
+commands, adapting script references from bash to Bun TypeScript.
 
 **Invoked by**: `/speck.transform-upstream` command
 
-**Input**: Path to command markdown files in `upstream/<version>/templates/commands/`
+**Input**: Path to command markdown files in
+`upstream/<version>/templates/commands/`
 
 **Output**: Transformed `/speck.*` command files in `.claude/commands/`
+
+---
+
+## Optimization: Diff-Aware Processing
+
+**IMPORTANT**: The invoking command will provide context about which speckit
+commands have CHANGED since the previous upstream version.
+
+### Context Variables
+
+When invoked, you will receive:
+
+- **UPSTREAM_VERSION**: The version being transformed (e.g., `v0.0.84`)
+- **PREVIOUS_VERSION**: The last successfully transformed version (e.g.,
+  `v0.0.83`), or `"none"` for first transformation
+- **CHANGED_SPECKIT_COMMANDS**: List of ONLY the speckit commands that are new
+  or modified
+- **BASH_TO_BUN_MAPPINGS**: FULL list of all bash→bun script mappings (commands
+  may reference any script)
+
+### Processing Rules
+
+1. **If PREVIOUS_VERSION is "none"**: Transform ALL speckit commands (first-time
+   transformation)
+
+2. **If PREVIOUS_VERSION exists**:
+   - **ONLY process commands in CHANGED_SPECKIT_COMMANDS list**
+   - **Skip all other commands entirely** - they're already transformed and
+     unchanged
+   - Report skipped commands in the JSON output
+
+3. **For each changed command**:
+   - Check if a `/speck.X.md` file already exists in `.claude/commands/`
+   - If exists: **UPDATE** the existing file (preserve [SPECK-EXTENSION]
+     markers)
+   - If new: **CREATE** a new `/speck.X.md` file
 
 ---
 
@@ -20,11 +58,13 @@
 /speckit.implement   → /speck.implement
 ```
 
-**File naming**: `upstream/.../commands/plan.md` → `.claude/commands/speck.plan.md`
+**File naming**: `upstream/.../commands/plan.md` →
+`.claude/commands/speck.plan.md`
 
 ### 2. Script References
 
 **Before**:
+
 ```yaml
 ---
 scripts:
@@ -34,6 +74,7 @@ scripts:
 ```
 
 **After**:
+
 ```yaml
 ---
 scripts:
@@ -42,6 +83,7 @@ scripts:
 ```
 
 **Rules**:
+
 - Remove PowerShell references
 - Update bash paths: `scripts/bash/X.sh` → `.speck/scripts/X.ts`
 - Preserve all CLI flags
@@ -49,12 +91,14 @@ scripts:
 ### 3. Agent Script References
 
 **Before**:
+
 ```yaml
 agent_scripts:
   sh: scripts/bash/update-agent-context.sh __AGENT__
 ```
 
 **After**:
+
 ```yaml
 agent_scripts:
   sh: .speck/scripts/update-agent-context.ts __AGENT__
@@ -63,6 +107,7 @@ agent_scripts:
 ### 4. Handoff References
 
 **Before**:
+
 ```yaml
 handoffs:
   - label: Create Tasks
@@ -71,6 +116,7 @@ handoffs:
 ```
 
 **After**:
+
 ```yaml
 handoffs:
   - label: Create Tasks
@@ -91,9 +137,11 @@ Replace `speckit.` with `speck.` in agent names only.
 
 ## Workflow
 
-**CRITICAL**: Check for existing Speck command files first to preserve SPECK-EXTENSION blocks and minimize changes.
+**CRITICAL**: Check for existing Speck command files first to preserve
+SPECK-EXTENSION blocks and minimize changes.
 
-1. **Check for existing file**: Determine target path `.claude/commands/speck.[NAME].md`
+1. **Check for existing file**: Determine target path
+   `.claude/commands/speck.[NAME].md`
 2. **Read existing Speck command if present**:
    - Extract all `[SPECK-EXTENSION:START]` ... `[SPECK-EXTENSION:END]` blocks
    - Note existing structure, formatting, and customizations
@@ -103,10 +151,12 @@ Replace `speckit.` with `speck.` in agent names only.
 5. **Transform agent references** (speckit → speck)
 6. **Update command body paths** (scripts/bash → .speck/scripts)
 7. **Preserve extension markers**:
-   - First, copy any extension blocks from the **existing Speck command** (if it exists)
+   - First, copy any extension blocks from the **existing Speck command** (if it
+     exists)
    - Second, adapt any extension blocks from the **upstream source command**
    - If both exist and conflict, preserve Speck version and note the conflict
-8. **Minimize changes**: If existing command has same functionality, only update:
+8. **Minimize changes**: If existing command has same functionality, only
+   update:
    - Parts affected by upstream changes
    - Script path references if they changed
    - Keep existing workflow steps, variable names, and patterns where possible
@@ -132,14 +182,16 @@ Replace `speckit.` with `speck.` in agent names only.
 If upstream changes overlap with extension blocks:
 
 1. **Preserve Speck extension** - always keep existing Speck version
-2. **Check for semantic conflicts** - does upstream change break extension logic?
-3. **Report conflict** with line numbers and resolution options if semantic conflict detected
+2. **Check for semantic conflicts** - does upstream change break extension
+   logic?
+3. **Report conflict** with line numbers and resolution options if semantic
+   conflict detected
 
 ---
 
 ## Output Example
 
-```yaml
+````yaml
 ---
 description: Execute the implementation planning workflow
 scripts:
@@ -157,19 +209,20 @@ handoffs:
 
 ```text
 $ARGUMENTS
-```
+````
 
 You **MUST** consider the user input before proceeding (if not empty).
 
 ## Outline
 
-1. **Setup**: Run `{SCRIPT}` from repo root and parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH.
+1. **Setup**: Run `{SCRIPT}` from repo root and parse JSON for FEATURE_SPEC,
+   IMPL_PLAN, SPECS_DIR, BRANCH.
 
 2. **Load context**: Read FEATURE_SPEC and `/memory/constitution.md`.
 
 [Rest of command body with preserved workflow...]
-```
 
+````
 ---
 
 ## Error Handling
@@ -189,7 +242,7 @@ If upstream changes overlap with `[SPECK-EXTENSION]` blocks:
 1. Skip this file (keep existing Speck version)
 2. Manual merge required
 3. Abort transformation
-```
+````
 
 ### Missing Scripts
 
@@ -198,8 +251,7 @@ If command references a script not generated by bash-to-Bun agent:
 ```markdown
 ## ⚠️ INCOMPLETE TRANSFORMATION
 
-**Command**: `speck.custom.md`
-**Missing Script**: `.speck/scripts/custom.ts`
+**Command**: `speck.custom.md` **Missing Script**: `.speck/scripts/custom.ts`
 **Source**: `scripts/bash/custom.sh` (not found)
 
 **Action**: Manual implementation required or exclude command
@@ -212,16 +264,18 @@ If command references a script not generated by bash-to-Bun agent:
 ```markdown
 ## speck.plan.md
 
-**Source**: `upstream/v1.0.0/templates/commands/plan.md`
-**Output**: `.claude/commands/speck.plan.md`
-**Existing File**: Yes (updated) / No (created new)
+**Source**: `upstream/v1.0.0/templates/commands/plan.md` **Output**:
+`.claude/commands/speck.plan.md` **Existing File**: Yes (updated) / No (created
+new)
 
 **Transformations**:
+
 - Script: `scripts/bash/setup-plan.sh` → `.speck/scripts/setup-plan.ts`
 - Agent: `speckit.tasks` → `speck.tasks`
 - Extensions: 1 block preserved from existing Speck command (lines 45-52)
 
 **Changes Made** (if existing file):
+
 - Updated script path in frontmatter (setup-plan.sh → setup-plan.ts)
 - Updated handoff agent reference (speckit.tasks → speck.tasks)
 - Preserved existing workflow steps (no changes needed)
