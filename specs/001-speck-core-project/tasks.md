@@ -164,20 +164,20 @@ description: "Task list for Upstream Sync & Transformation Pipeline implementati
 
 #### Implementation
 
-- [X] T059 [US1] Implement `transform-upstream.ts` in `.speck/scripts/` (orchestrates two transformation agents in sequence)
-- [X] T060 [US1] Implement version resolution logic in `.speck/scripts/transform-upstream.ts` (defaults to `upstream/latest` symlink target, accepts `--version` flag)
-- [X] T061 [US1] Implement Bun runtime check in `.speck/scripts/transform-upstream.ts` (fails early if `bun --version` fails)
-- [X] T062 [US1] Implement bash-to-Bun agent invocation in `.speck/scripts/transform-upstream.ts` (launches `.claude/agents/transform-bash-to-bun.md` with source bash scripts)
-- [X] T063 [US1] Implement command transformation agent invocation in `.speck/scripts/transform-upstream.ts` (launches `.claude/agents/transform-commands.md` after bash-to-Bun completes)
-- [X] T064 [US1] Implement transformation report generation in `.speck/scripts/transform-upstream.ts` (collects agent outputs, creates markdown report)
-- [X] T065 [US1] Implement release registry status update in `.speck/scripts/transform-upstream.ts` (calls `common/json-tracker.ts` to update status to "transformed" or "failed")
-- [X] T066 [US1] Implement atomic transformation operations in `.speck/scripts/transform-upstream.ts` (uses temp directories, rollback on agent failure)
-- [X] T067 [US1] Implement JSON and human-readable output formatters in `.speck/scripts/transform-upstream.ts` (matches `TransformUpstreamOutput` schema)
-- [X] T068 [US1] Add error handling with proper exit codes in `.speck/scripts/transform-upstream.ts` (0=success, 2=agent failure/system error)
+- [X] T059 [US1] Implement `/speck.transform-upstream` slash command orchestration (sequences two transformation agents and manages transformation workflow)
+- [X] T060 [US1] Implement version resolution logic in slash command (defaults to `upstream/latest` symlink target, accepts `--version` arg)
+- [X] T061 [US1] Implement Bun runtime check in slash command (fails early if `bun --version` fails)
+- [X] T062 [US1] Implement bash-to-Bun agent invocation in slash command (launches `.claude/agents/transform-bash-to-bun.md` with source bash scripts)
+- [X] T063 [US1] Implement command transformation agent invocation in slash command (launches `.claude/agents/transform-commands.md` after bash-to-Bun completes)
+- [X] T064 [US1] Implement transformation report generation in slash command (collects agent outputs, creates summary)
+- [X] T065 [US1] Implement release registry status update in slash command (calls `common/json-tracker.ts` to update status to "transformed" or "failed")
+- [X] T066 [US1] Implement atomic transformation operations in slash command (coordinates agents to use temp directories, manages rollback on agent failure)
+- [X] T067 [US1] Implement output formatting in slash command (presents transformation results to user)
+- [X] T068 [US1] Add error handling in slash command (manages agent failures, reports errors to user)
 
 #### Slash Command Integration
 
-- [X] T069 [US1] Create `/speck.transform-upstream` command file in `.claude/commands/speck.transform-upstream.md` (calls `.speck/scripts/transform-upstream.ts`, optional `--version` flag)
+- [X] T069 [US1] Create `/speck.transform-upstream` command file in `.claude/commands/speck.transform-upstream.md` (orchestrates transformation agents, optional `--version` arg)
 
 **Checkpoint**: Command 3 complete - can transform upstream releases via `/speck.transform-upstream`
 

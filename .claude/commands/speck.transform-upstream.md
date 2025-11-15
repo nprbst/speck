@@ -5,209 +5,316 @@ description: Transform upstream spec-kit release into Speck's Bun TypeScript imp
 You are being invoked as a Claude Code slash command to transform an upstream
 spec-kit release into Speck's Bun TypeScript implementation.
 
+## User Input
+
+```text
+$ARGUMENTS
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+
 ## Your Task
 
-Execute the `.speck/scripts/transform-upstream.ts` script to orchestrate the
-transformation of bash scripts and commands from a pulled upstream release.
+Orchestrate the transformation of bash scripts and commands from a pulled upstream
+release by sequentially invoking two specialized transformation agents.
 
 ## Execution Steps
 
-1. Extract any version flag from the user's command (optional)
-2. Run the transform-upstream script:
+### 1. Setup and Validation
+
+1. **Parse user arguments**:
+   - Extract `--version <version>` if provided (optional)
+   - If no version specified, will use `upstream/latest` symlink target
+
+2. **Check Bun runtime**:
    ```bash
-   bun .speck/scripts/transform-upstream.ts
+   bun --version
+   ```
+   - If Bun not found, show error with installation instructions:
+     ```
+     ERROR: Bun runtime not found. Please install Bun:
+
+       curl -fsSL https://bun.sh/install | bash
+
+     Then restart your terminal and try again.
+     ```
+   - Exit with error if Bun missing
+
+3. **Resolve version to transform**:
+   - If `--version <version>` provided: use that version
+   - Otherwise: resolve `upstream/latest` symlink to get version
+   ```bash
+   readlink upstream/latest
+   ```
+   - Example: `upstream/latest` → `v0.0.85`
+
+4. **Validate upstream release exists**:
+   - Check that `upstream/<version>/` directory exists
+   - If not found, show error:
+     ```
+     ERROR: Version <version> not found in upstream/
+
+     Run /speck.check-upstream to see available releases
+     Then run /speck.pull-upstream <version> to download
+     ```
+
+### 2. Discovery Phase
+
+Find source files to transform:
+
+1. **Find bash scripts**:
+   ```bash
+   find upstream/<version>/.specify/scripts/bash -name "*.sh" -type f
+   ```
+   - Count total bash scripts found
+
+2. **Find speckit commands**:
+   ```bash
+   find upstream/<version>/.claude/commands -name "speckit.*.md" -type f
+   ```
+   - Count total command files found
+
+3. **Report to user**:
+   ```
+   Transforming upstream/<version>...
+   Found X bash scripts, Y commands
    ```
 
-3. If the user specified a version, pass it with --version flag:
-   ```bash
-   bun .speck/scripts/transform-upstream.ts --version <version>
-   ```
+### 3. Agent Invocation Phase
 
-4. If the user requested JSON output, add --json flag:
-   ```bash
-   bun .speck/scripts/transform-upstream.ts --json
-   ```
+Invoke transformation agents sequentially:
 
-5. Present the results to the user:
-   - If successful (exit code 0), confirm transformation and show summary
-   - If failed (exit code 2), explain the transformation error with details
+#### Agent 1: Bash-to-Bun Transformation
 
-## Expected Output
+**Launch**: `.claude/agents/transform-bash-to-bun.md`
 
-The script will orchestrate two transformation agents in sequence:
+**Context to provide**:
+- **UPSTREAM_VERSION**: `<version>` being transformed
+- **SOURCE_DIR**: `upstream/<version>/.specify/scripts/bash/`
+- **OUTPUT_DIR**: `.speck/scripts/`
+- **BASH_SCRIPTS**: List of bash script paths found in discovery
 
-1. **transform-bash-to-bun.md** - Converts bash scripts to Bun TypeScript
-   - Input: `upstream/<version>/scripts/bash/*.sh`
-   - Output: `.speck/scripts/*.ts`
-   - Strategy: Pure TypeScript > Bun Shell API > Bun.spawn()
+**Agent task**:
+```
+Transform the following bash scripts from upstream/<version> into Bun TypeScript equivalents:
 
-2. **transform-commands.md** - Converts speckit commands to speck commands
-   - Input: `upstream/<version>/templates/commands/*.md`
-   - Output: `.claude/commands/speck.*.md`
-   - Updates script references from bash to Bun TypeScript
+[List each bash script file]
 
-The transformation will:
+For each script:
+1. Analyze the bash script's CLI interface (flags, exit codes, JSON output)
+2. Choose transformation strategy (pure TypeScript > Bun Shell API > Bun.spawn())
+3. Generate equivalent .ts file in .speck/scripts/
+4. Preserve CLI interface 100% (same flags, exit codes, error messages)
+5. Document transformation rationale in header comment
 
-- Generate Bun TypeScript equivalents of upstream bash scripts
-- Generate /speck.* commands with updated script references
-- Update `upstream/releases.json` status to "transformed"
-- Preserve `[SPECK-EXTENSION:START/END]` markers
-- Use atomic operations (rollback on failure)
+Output directory: .speck/scripts/
+Preserve existing [SPECK-EXTENSION:START/END] markers if present
 
-## Example Usage
+Report back:
+- List of generated .ts files with their transformation strategy
+- Any conflicts or issues encountered
+```
 
-### Transform Latest Release
+**Wait for agent completion** before proceeding to next agent.
 
-User: `/speck.transform-upstream`
+**Collect results**:
+- List of generated Bun scripts: `[{path, bashSource, strategy}]`
+- Any errors or warnings
 
-Expected behavior:
+#### Agent 2: Command Transformation
 
-- Transform the release pointed to by `upstream/latest` symlink
-- Display summary of generated scripts and commands
-- Confirm status updated to "transformed"
+**Launch**: `.claude/agents/transform-commands.md`
 
-### Transform Specific Version
+**Context to provide**:
+- **UPSTREAM_VERSION**: `<version>` being transformed
+- **SOURCE_DIR**: `upstream/<version>/.claude/commands/`
+- **OUTPUT_DIR**: `.claude/commands/`
+- **SPECKIT_COMMANDS**: List of speckit command files found
+- **BASH_TO_BUN_MAPPINGS**: Mappings from Agent 1 (`scripts/bash/X.sh` → `.speck/scripts/X.ts`)
 
-User: `/speck.transform-upstream --version v1.0.0`
+**Agent task**:
+```
+Transform the following /speckit.* commands into /speck.* commands:
 
-Expected behavior:
+[List each speckit command file]
 
-- Transform the v1.0.0 release from `upstream/v1.0.0/`
-- Display summary with version information
+For each command:
+1. Parse frontmatter (scripts, agent_scripts, handoffs)
+2. Update script references:
+   - scripts/bash/X.sh → .speck/scripts/X.ts
+   - Remove PowerShell references
+3. Update agent references:
+   - speckit.* → speck.*
+4. Preserve command body workflow logic
+5. Preserve [SPECK-EXTENSION:START/END] markers if present
 
-### JSON Output
+Bash-to-Bun script mappings:
+[Provide mappings from Agent 1]
 
-User: `/speck.transform-upstream --json`
+Output directory: .claude/commands/
+Naming: speckit.X.md → speck.X.md
 
-Expected behavior:
+Report back:
+- List of generated /speck.* commands with source references
+- Any conflicts or issues encountered
+```
 
-- Execute transformation and output JSON with:
-  - upstreamVersion
-  - transformDate
-  - status ("transformed" or "failed")
-  - bunScriptsGenerated (array of generated Bun scripts)
-  - speckCommandsGenerated (array of generated commands)
-  - agentsFactored (array of agents used)
-  - skillsFactored (array of skills extracted)
-  - errorDetails (if status is "failed")
+**Wait for agent completion**.
+
+**Collect results**:
+- List of generated commands: `[{commandName, specKitSource, scriptReference}]`
+- Any errors or warnings
+
+### 4. Status Tracking
+
+Update `upstream/releases.json` with transformation status:
+
+```bash
+bun .speck/scripts/common/json-tracker.ts update-status <version> transformed
+```
+
+Or if any agent failed:
+```bash
+bun .speck/scripts/common/json-tracker.ts update-status <version> failed "<error message>"
+```
+
+### 5. Report Results
+
+Present transformation summary to user:
+
+#### Success Case
+
+```
+✓ Transformation complete for <version>
+
+Generated:
+  - X Bun TypeScript scripts in .speck/scripts/
+  - Y /speck.* commands in .claude/commands/
+
+Status: transformed
+Date: <ISO 8601 timestamp>
+
+Next steps:
+  1. Review generated files
+  2. Run tests: bun test tests/.speck-scripts/
+  3. Try generated commands (e.g., /speck.plan)
+```
+
+#### Failure Case
+
+```
+✗ Transformation failed for <version>
+
+Error: [Agent error message]
+
+Status: failed (recorded in upstream/releases.json)
+
+Possible causes:
+  - Unsupported bash syntax in scripts
+  - Breaking changes in command structure
+  - [SPECK-EXTENSION] conflict with upstream changes
+
+Next steps:
+  1. Check error details in upstream/releases.json
+  2. Review conflicting files manually
+  3. Fix issues and retry transformation
+```
 
 ## Error Handling
 
-### Exit Code 2 (System Error)
-
-Common failure scenarios:
-
-1. **Missing Bun runtime**:
-   - Error: "Bun runtime not found"
-   - Solution: Install Bun: `curl -fsSL https://bun.sh/install | bash`
-
-2. **No upstream release pulled**:
-   - Error: "No upstream/latest symlink found"
-   - Solution: Run `/speck.pull-upstream <version>` first
-
-3. **Specified version not found**:
-   - Error: "Version vX.Y.Z not found in upstream/"
-   - Solution: Run `/speck.check-upstream` to see available versions
-   - Then run `/speck.pull-upstream <version>` to download it
-
-4. **Agent invocation failure**:
-   - Error: "Transformation agent failed: [details]"
-   - Solution: Check agent error details, may need manual intervention
-   - Existing `.speck/scripts/` preserved (atomic rollback)
-
-5. **Extension marker conflict**:
-   - Error: "Conflict detected: upstream change overlaps [SPECK-EXTENSION]"
-   - Solution: Manual merge required - resolve conflict and re-run
-   - Status updated to "failed" with error details
-
-For all errors:
-
-- Display the error message from stderr
-- Explain possible causes and solutions
-- Note that operation is atomic (no partial state on failure)
-- Check `upstream/releases.json` for status and error details
-
-## Transformation Workflow
-
-The script orchestrates this workflow:
+### Bun Runtime Missing
 
 ```
-1. Check Bun runtime available (fail fast if missing)
-2. Resolve version to transform (default: upstream/latest)
-3. Find bash scripts in upstream/<version>/scripts/bash/
-4. Find commands in upstream/<version>/templates/commands/
-5. Create temp directory for atomic operations
-6. Invoke transform-bash-to-bun agent
-   → Generates .speck/scripts/*.ts files
-7. Invoke transform-commands agent
-   → Generates .claude/commands/speck.*.md files
-8. Atomic move: temp → production directories
-9. Update releases.json status to "transformed"
-10. Generate transformation report
+ERROR: Bun runtime not found
+
+Install Bun:
+  curl -fsSL https://bun.sh/install | bash
+
+Then restart your terminal and try again.
 ```
 
-If any step fails:
-- Rollback (remove temp directory)
-- Update releases.json status to "failed" with error
-- Exit with code 2
+Exit immediately - cannot proceed without Bun.
+
+### Upstream Release Not Found
+
+```
+ERROR: Version <version> not found in upstream/
+
+Available actions:
+  1. Run /speck.check-upstream to see available releases
+  2. Run /speck.pull-upstream <version> to download
+
+Example:
+  /speck.pull-upstream v0.0.85
+```
+
+### Agent Failure
+
+If either transformation agent fails:
+
+1. **Stop immediately** - do not invoke second agent if first fails
+2. **Update status** to "failed" with error details
+3. **Report error** to user with agent name and error message
+4. **Suggest resolution**:
+   - Review agent error output
+   - Check for conflicts manually
+   - Fix issues and retry
+
+### Extension Marker Conflict
+
+If agent reports [SPECK-EXTENSION] conflict:
+
+```
+⚠️  CONFLICT DETECTED
+
+File: <filename>
+Issue: Upstream changes overlap with Speck extensions
+
+Resolution required:
+  1. Review conflicts in <filename>
+  2. Manually merge upstream changes with Speck extensions
+  3. Retry transformation
+
+Status: failed (no changes made - atomic rollback)
+```
+
+## Atomic Operations
+
+**Critical**: Transformation is atomic - either complete success or no changes.
+
+- If Agent 1 fails → no files modified, status updated to "failed"
+- If Agent 2 fails → rollback Agent 1 changes, status updated to "failed"
+- Only on both agents succeeding → commit all changes, status "transformed"
+
+Agents should use temp directories and atomic moves to ensure this property.
 
 ## Notes
 
-- **Default version**: Transforms `upstream/latest` if no version specified
-- **Atomic operations**: All changes committed together or rolled back on failure
-- **Extension preservation**: `[SPECK-EXTENSION:START/END]` blocks never modified
-- **CLI compatibility**: Generated Bun scripts maintain 100% CLI compatibility with bash
-- **Status tracking**: `upstream/releases.json` updated with transformation status
-- **Idempotent**: Can re-run transformation safely (overwrites previous)
+- **No bash script**: This command orchestrates agents directly, no `.speck/scripts/transform-upstream.ts` needed
+- **Version resolution**: `upstream/latest` symlink provides default version
+- **Idempotent**: Can re-run safely - overwrites previous transformation
+- **Status tracking**: `upstream/releases.json` tracks all transformation attempts
+- **CLI compatibility**: Generated Bun scripts must match bash CLI interface exactly
 
-## Follow-up Actions
+## Example Invocations
 
-After successful transformation:
+**Transform latest release**:
+```
+/speck.transform-upstream
+```
 
-1. **Test generated scripts**:
-   ```bash
-   bun test tests/.speck-scripts/
-   ```
+**Transform specific version**:
+```
+/speck.transform-upstream --version v0.0.85
+```
 
-2. **Verify commands work**:
-   - Try running `/speck.plan` or other generated commands
-   - Check that script references resolve correctly
+## Architecture Note
 
-3. **Review transformation report**:
-   - Check which transformation strategies were used
-   - Verify CLI interfaces match bash equivalents
-   - Review any factoring opportunities for Phase 4
+This slash command directly orchestrates the transformation agents. Unlike `/speck.check-upstream` and `/speck.pull-upstream` which delegate to Bun scripts, `/speck.transform-upstream` handles all orchestration logic inline because:
 
-4. **Commit changes**:
-   - `.speck/scripts/` - Generated Bun TypeScript implementations
-   - `.claude/commands/` - Generated /speck.* commands
-   - `upstream/releases.json` - Updated status
+1. **Agent coordination**: Needs to sequence two agents with dependencies
+2. **Context preparation**: Must prepare agent-specific context from discovery phase
+3. **Result aggregation**: Must collect and present results from multiple agents
+4. **Atomic semantics**: Must coordinate rollback across agent boundaries
 
-## Troubleshooting
-
-### "Agent invocation not yet implemented in MVP"
-
-This is expected in the current MVP implementation. The script creates the
-infrastructure but agent invocation requires Claude Code integration.
-
-For now, the script will:
-- Validate prerequisites (Bun runtime, upstream release)
-- Create directory structure
-- Return placeholder transformation results
-- Update status tracking
-
-Full agent invocation will be implemented in a future phase.
-
-### Transformation takes longer than expected
-
-Transformation time depends on:
-- Number of bash scripts to convert
-- Number of commands to transform
-- Complexity of bash constructs (more complex = more time)
-
-Expected times:
-- Small release (5-10 scripts): <2 minutes
-- Medium release (10-20 scripts): 2-5 minutes
-- Large release (20+ scripts): 5-10 minutes
-
-Success Criterion SC-003: Should complete in <5 minutes for typical releases
+This is the intended architecture - transformation orchestration happens at the slash command level, not in a Bun script.
