@@ -87,23 +87,23 @@ description: "Task list for Upstream Sync & Transformation Pipeline implementati
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T018 [P] [US1] Contract test: `--json` flag outputs valid JSON schema in `tests/.speck-scripts/check-upstream.test.ts`
-- [ ] T019 [P] [US1] Contract test: exit code 0 on success in `tests/.speck-scripts/check-upstream.test.ts`
-- [ ] T020 [P] [US1] Contract test: exit code 2 on network error in `tests/.speck-scripts/check-upstream.test.ts`
-- [ ] T021 [P] [US1] Contract test: `--help` flag shows usage information in `tests/.speck-scripts/check-upstream.test.ts`
-- [ ] T022 [P] [US1] Edge case test: handles GitHub rate limiting gracefully in `tests/.speck-scripts/check-upstream.test.ts`
+- [X] T018 [P] [US1] Contract test: `--json` flag outputs valid JSON schema in `tests/.speck-scripts/check-upstream.test.ts`
+- [X] T019 [P] [US1] Contract test: exit code 0 on success in `tests/.speck-scripts/check-upstream.test.ts`
+- [X] T020 [P] [US1] Contract test: exit code 2 on network error in `tests/.speck-scripts/check-upstream.test.ts`
+- [X] T021 [P] [US1] Contract test: `--help` flag shows usage information in `tests/.speck-scripts/check-upstream.test.ts`
+- [X] T022 [P] [US1] Edge case test: handles GitHub rate limiting gracefully in `tests/.speck-scripts/check-upstream.test.ts`
 
 #### Implementation
 
-- [ ] T023 [US1] Implement `check-upstream.ts` in `.speck/scripts/` (uses `common/github-api.ts`, outputs release list with versions, dates, summaries)
-- [ ] T024 [US1] Implement CLI flag parsing in `.speck/scripts/check-upstream.ts` (--json, --help, --version flags)
-- [ ] T025 [US1] Implement JSON output formatter in `.speck/scripts/check-upstream.ts` (matches `CheckUpstreamOutput` schema from `contracts/cli-interface.ts`)
-- [ ] T026 [US1] Implement human-readable output formatter in `.speck/scripts/check-upstream.ts` (table format with version, date, summary)
-- [ ] T027 [US1] Add error handling with proper exit codes in `.speck/scripts/check-upstream.ts` (0=success, 2=network/system error)
+- [X] T023 [US1] Implement `check-upstream.ts` in `.speck/scripts/` (uses `common/github-api.ts`, outputs release list with versions, dates, summaries)
+- [X] T024 [US1] Implement CLI flag parsing in `.speck/scripts/check-upstream.ts` (--json, --help, --version flags)
+- [X] T025 [US1] Implement JSON output formatter in `.speck/scripts/check-upstream.ts` (matches `CheckUpstreamOutput` schema from `contracts/cli-interface.ts`)
+- [X] T026 [US1] Implement human-readable output formatter in `.speck/scripts/check-upstream.ts` (table format with version, date, summary)
+- [X] T027 [US1] Add error handling with proper exit codes in `.speck/scripts/check-upstream.ts` (0=success, 2=network/system error)
 
 #### Slash Command Integration
 
-- [ ] T028 [US1] Create `/speck.check-upstream` command file in `.claude/commands/speck.check-upstream.md` (calls `.speck/scripts/check-upstream.ts`)
+- [X] T028 [US1] Create `/speck.check-upstream` command file in `.claude/commands/speck.check-upstream.md` (calls `.speck/scripts/check-upstream.ts`)
 
 **Checkpoint**: Command 1 complete - can discover available spec-kit releases via `/speck.check-upstream`
 
