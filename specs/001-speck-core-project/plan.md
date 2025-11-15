@@ -11,7 +11,7 @@ Speck is a living derivative of GitHub's spec-kit methodology, optimized for Cla
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary)
+**Language/Version**: TypeScript 5.3+ with Bun 1.0+ runtime
 **Primary Dependencies**:
 - Bun runtime (native TypeScript execution, fast I/O, built-in test runner)
 - Commander.js (CLI framework)

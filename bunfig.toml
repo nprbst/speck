@@ -1,0 +1,18 @@
+[test]
+# Test configuration for Bun test runner
+preload = []
+coverage = true
+coverageThreshold = 80
+coverageSkipTestFiles = true
+
+[install]
+# Lockfile configuration (Bun-only, no compatibility lockfiles)
+lockfile.save = true
+
+# Performance optimizations
+cache = true
+auto = "auto"
+
+[run]
+# Shell configuration for Bun.$
+shell = "system"

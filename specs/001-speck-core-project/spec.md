@@ -283,7 +283,7 @@ verifying the spec is updated with resolved answers replacing the markers.
 - **FR-021**: System MUST provide interactive prompts for CLI users when
   required information is missing
 - **FR-022**: System MUST leverage Bun-specific APIs and features for optimal
-  performance (native TypeScript execution, fast file I/O, built-in SQLite)
+  performance (native TypeScript execution, fast file I/O, optimized subprocess execution)
 
 #### Quality & Validation
 

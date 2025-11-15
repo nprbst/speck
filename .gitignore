@@ -1,0 +1,38 @@
+# Node.js / TypeScript / Bun
+node_modules/
+dist/
+build/
+*.log
+.env*
+!.env.example
+
+# Bun
+.bun/
+bun.lockb
+yarn.lock  # Compatibility lockfile not needed (Bun-only)
+
+# TypeScript
+*.tsbuildinfo
+.tsconfig.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+
+# Speck-specific
+.speck/sync-reports/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Build artifacts
+*.js.map
