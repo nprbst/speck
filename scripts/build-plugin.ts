@@ -277,16 +277,18 @@ async function copyPluginFiles(): Promise<FileCounts> {
   }
 
   // T015: Copy templates
+  // Copy to .specify/templates/ to maintain script compatibility
   if (existsSync(config.templatesSourceDir)) {
-    const templatesDestDir = join(config.outputDir, 'templates');
+    const templatesDestDir = join(config.outputDir, '.specify/templates');
     await copyDir(config.templatesSourceDir, templatesDestDir);
     const files = await readdir(templatesDestDir, { recursive: true });
     counts.templates = files.filter(f => typeof f === 'string').length;
   }
 
   // T016: Copy scripts (only scripts needed by published commands/agents)
+  // Copy to .speck/scripts/ to maintain command compatibility
   if (existsSync(config.scriptsSourceDir)) {
-    const scriptsDestDir = join(config.outputDir, 'scripts');
+    const scriptsDestDir = join(config.outputDir, '.speck/scripts');
     await ensureDir(scriptsDestDir);
 
     // Scripts needed by published commands
@@ -318,9 +320,10 @@ async function copyPluginFiles(): Promise<FileCounts> {
   }
 
   // T016a: Copy memory/constitution if exists
+  // Copy to .specify/memory/ to maintain script compatibility
   const constitutionPath = join(config.memorySourceDir, 'constitution.md');
   if (existsSync(constitutionPath)) {
-    const memoryDestDir = join(config.outputDir, 'memory');
+    const memoryDestDir = join(config.outputDir, '.specify/memory');
     await ensureDir(memoryDestDir);
     await copyFile(constitutionPath, join(memoryDestDir, 'constitution.md'));
     counts.memory = 1;
