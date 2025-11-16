@@ -80,6 +80,14 @@ export interface PersistedTheme {
   timestamp: number;
 }
 
+/**
+ * localStorage Configuration:
+ * - Key name: "speck-theme"
+ * - Value: JSON.stringify(PersistedTheme)
+ * - Example: localStorage.setItem("speck-theme", JSON.stringify({ theme: "dark", timestamp: Date.now() }))
+ */
+export const THEME_STORAGE_KEY = 'speck-theme';
+
 // ============================================================================
 // FeatureCard Component
 // ============================================================================
@@ -180,6 +188,12 @@ export interface DocSidebarItem {
 export interface DocSidebarCategory {
   category: string;
   docs: DocSidebarItem[];
+  /**
+   * Optional subcategories for nested navigation.
+   * Maximum nesting depth: 3 levels (category → subcategory → page).
+   * Per FR-002, hierarchical navigation must remain manageable.
+   */
+  subcategories?: DocSidebarCategory[];
 }
 
 export interface Breadcrumb {
@@ -239,6 +253,13 @@ export interface ComparisonPageData {
 // ============================================================================
 
 export type DocCategory = 'getting-started' | 'commands' | 'concepts' | 'examples';
+
+/**
+ * Navigation Depth Limit:
+ * - Maximum 3 levels: Category → Subcategory → Page
+ * - Rationale: Mobile navigation becomes unwieldy beyond 3 levels
+ * - Example: "Getting Started" → "Installation" → "Prerequisites"
+ */
 
 export interface DocFrontmatter {
   title: string;

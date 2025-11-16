@@ -349,6 +349,28 @@ bunx playwright test tests/accessibility/
 4. Toggle dark mode and verify contrast still passes
 ```
 
+**WCAG 2.1 AA Compliance Scope**:
+
+Per spec.md Assumption A9, targeting WCAG 2.1 AA with pragmatic flexibility. The following criteria apply:
+
+✅ **Included** (strictly enforced):
+- 1.4.3 Contrast (Minimum) - 4.5:1 for text, 3:1 for UI components
+- 2.1.1 Keyboard - All functionality via keyboard
+- 2.4.1 Bypass Blocks - Skip-to-content link
+- 2.4.6 Headings and Labels - Descriptive headings
+- 3.1.1 Language of Page - `lang="en"` on `<html>`
+- 4.1.2 Name, Role, Value - Proper ARIA labels
+
+⚠️ **Excluded** (acceptable to fall short if overly burdensome):
+- 1.2.2 Captions (Prerecorded) - No video content in MVP
+- 1.2.3 Audio Description - No video content in MVP
+- 2.2.1 Timing Adjustable - No timed interactions
+- 2.2.2 Pause, Stop, Hide - No auto-playing content
+
+**Definition of "overly burdensome"**: Implementation would require >8 hours of work OR introduce dependency on paid service OR significantly degrade performance (<80 Lighthouse score).
+
+**Validation**: Run Axe-core audits. If violations found in Excluded criteria, document rationale. If violations in Included criteria, fix immediately.
+
 **Alternatives Considered**:
 - **Manual-only testing (rejected)**: Not scalable, easy to miss regressions
 - **WAVE browser extension (supplementary)**: Good for spot-checks but doesn't integrate into CI

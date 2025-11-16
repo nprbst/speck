@@ -25,7 +25,9 @@ Build a static marketing and documentation website for Speck that blends the aes
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-**Note**: No constitution.md file found. Applying standard static website best practices gates:
+**Constitution**: `.specify/memory/constitution.md` (v1.1.0)
+
+Applying relevant constitutional principles to this feature:
 
 ### Pre-Research Gates
 
@@ -107,7 +109,7 @@ website/                           # Astro static site project
 │   ├── images/                    # SVG icons, logo
 │   └── fonts/                     # Web fonts (if needed)
 ├── scripts/                       # Build-time scripts
-│   └── sync-docs.ts               # Bun script: sparse checkout docs from main repo
+│   └── sync-docs.ts               # Bun script: copy docs from repository /docs directory
 └── astro.config.mjs               # Astro configuration
 
 tests/                             # Test suite
@@ -119,7 +121,7 @@ tests/                             # Test suite
     └── pages.spec.ts              # Axe-core accessibility tests
 ```
 
-**Structure Decision**: Standard Astro static site structure with content collections for documentation. Build-time `scripts/sync-docs.ts` runs during Cloudflare Pages build to clone `/docs` from main repo using sparse checkout, then copies to `src/content/docs/`. File-based routing in `pages/` directory. Component-based UI with `.astro` files for zero-JS-by-default rendering.
+**Structure Decision**: Standard Astro static site structure with content collections for documentation. Build-time `scripts/sync-docs.ts` runs during Cloudflare Pages build to copy files from repository's `/docs` directory to `src/content/docs/`. Monorepo structure eliminates need for Git operations. File-based routing in `pages/` directory. Component-based UI with `.astro` files for zero-JS-by-default rendering.
 
 ## Complexity Tracking
 
@@ -139,7 +141,7 @@ No constitution violations. All gates pass without justification needed.
 3. **Dark Mode**: CSS custom properties with localStorage persistence, no FOUC
 4. **Deployment**: Cloudflare Pages with custom build command, GitHub webhook integration
 5. **Performance**: SVG-first, critical CSS inlining, <10KB JavaScript budget
-6. **Doc Sync**: Git sparse checkout in Bun script with error handling and fallback
+6. **Doc Sync**: Direct filesystem copy from `/docs` directory in Bun script with error handling and fallback
 7. **Accessibility**: WCAG 2.1 AA compliance, automated Axe testing
 
 ### Phase 1: Design & Contracts (Complete)

@@ -15,6 +15,11 @@
 - Q: When/how is documentation sync from main repo triggered (manual, webhook, scheduled)? → A: Webhook from main repo triggers Cloudflare Pages rebuild
 - Q: What is the analytics privacy posture (cookieless, cookie-based with consent, no analytics)? → A: Cookieless analytics (no consent banner needed)
 - Q: How is documentation synced from main repo at build time (submodule, sparse checkout script, or manual)? → A: During Cloudflare Pages build, execute a Bun script that clones only the /docs subdirectory from main repo using sparse checkout and copies files to Astro content collections
+- Q: Should the website be in a separate repository (speck-website) or monorepo section (website/ directory) considering build and deploy choices? → A: Monorepo with website/ directory in current speck repository
+- Q: When should Cloudflare Pages rebuild be triggered (any push to main, only /docs or website/ changes, or manual)? → A: Rebuild on push to main branch (any changes in repository)
+- Q: What site structure approach (single-page app, component-based with shared layout, or fully independent pages)? → A: Component-based with shared layout (Header/Footer/Nav components + per-page content)
+- Q: How should theme preference be persisted (localStorage, cookie-based, or no persistence)? → A: localStorage (client-side persistence without cookies)
+- Q: What accessibility compliance level should be targeted (WCAG 2.1 AA, AAA, or basic only)? → A: WCAG 2.1 AA compliance level, with flexibility to fall short if full compliance is overly burdensome
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -106,10 +111,10 @@ A developer ready to try Speck follows installation instructions. They successfu
 - **FR-004**: Website MUST display all `/speck.*` commands in a Commands Reference section with: command syntax, available flags, usage examples, and common use cases
 - **FR-005**: Website MUST include a comparison page contrasting Speck vs spec-kit across: runtime environment, command style, workflow philosophy, and use case suitability
 - **FR-006**: Website MUST be fully responsive with breakpoints at 30em (mobile), 48em (tablet), and 62em (desktop), ensuring readable content and accessible CTAs on all devices
-- **FR-007**: Website MUST support dark mode as default with manual theme toggle, using color palette inspired by claude.com/product/claude-code (charcoal background, clay accents, subtle gray borders)
+- **FR-007**: Website MUST support dark mode as default with manual theme toggle persisted via localStorage (no cookies), using color palette inspired by claude.com/product/claude-code (charcoal background, clay accents, subtle gray borders)
 - **FR-008**: Website MUST provide copy-to-clipboard functionality for all code blocks and command examples
 - **FR-009**: Website MUST be deployable as static files to Cloudflare Pages with build process generating optimized HTML/CSS/JS
-- **FR-010**: Website MUST load core content (hero + navigation + primary CTA) within 2 seconds on 3G connection, using SVG-first approach for icons/diagrams and Cloudflare Images with responsive formats (WebP/AVIF with PNG fallback) for raster images
+- **FR-010**: Website MUST load core content (hero + navigation + primary CTA) within 2 seconds on 3G connection (measured as Largest Contentful Paint <2.5s under Lighthouse slow 4G throttling), using SVG-first approach for icons/diagrams and Cloudflare Images with responsive formats (WebP/AVIF with PNG fallback) for raster images
 - **FR-011**: Website MUST degrade gracefully when JavaScript disabled, maintaining navigation, content readability, and basic functionality
 - **FR-012**: Website MUST include meta tags for SEO (title, description, Open Graph) and social sharing with relevant keywords (Claude Code, spec-kit, feature specification, workflow automation)
 - **FR-013**: Website MUST provide a "Speck vs Spec-Kit" migration guide with step-by-step instructions for converting existing spec-kit projects
@@ -123,11 +128,12 @@ A developer ready to try Speck follows installation instructions. They successfu
 - **Quick Start Guide**: Step-by-step installation and first-run tutorial covering prerequisites, setup, first command, and verification
 - **Commands Reference**: Comprehensive documentation for all `/speck.*` commands (specify, clarify, plan, tasks, implement, check-upstream, pull-upstream, transform-upstream) with syntax, flags, examples
 - **Comparison Page**: Side-by-side Speck vs spec-kit comparison covering runtime, philosophy, use cases, and migration guidance
-- **Theme System**: Dark/light mode toggle with persistence, inspired by claude.com color palette (charcoal/clay) and hono.dev structure
+- **Theme System**: Dark/light mode toggle with localStorage-based persistence (no cookies), inspired by claude.com color palette (charcoal/clay) and hono.dev structure. Theme preference stored client-side and persists across page loads and sessions
 - **Code Block Component**: Syntax-highlighted code examples with copy-to-clipboard button, line numbers, and language labels
-- **Navigation System**: Responsive header with dropdown menus (Docs, Examples, GitHub), mobile hamburger menu, and breadcrumb trails
-- **Static Build Pipeline**: Astro build process converting markdown content collections and component islands to optimized static HTML/CSS/JS for Cloudflare Pages deployment. Build-time import pulls markdown documentation from main Speck repository to ensure single source of truth while allowing independent website deployment. GitHub webhook from main repo triggers automatic rebuild when documentation changes
-- **Documentation Content Source**: During Cloudflare Pages build, a Bun script clones only the /docs subdirectory from main Speck repository using Git sparse checkout and copies files to Astro content collections, ensuring latest command documentation, specs, and examples are included in static build
+- **Navigation System**: Shared responsive header component used across all pages with dropdown menus (Docs, Examples, GitHub), mobile hamburger menu, and breadcrumb trails in documentation section
+- **Layout Components**: Shared layout architecture with reusable Header, Footer, and Navigation components ensuring consistent branding, navigation, and styling across all pages while allowing per-page content customization
+- **Static Build Pipeline**: Astro build process (located in `website/` directory of monorepo) converting markdown content collections and component islands to optimized static HTML/CSS/JS for Cloudflare Pages deployment. Build script copies documentation directly from repository's `/docs` directory (no sparse checkout needed) to Astro content collections, ensuring single source of truth for documentation
+- **Documentation Content Source**: During Cloudflare Pages build from `website/` subdirectory, a Bun script copies files from repository's `/docs` directory to Astro content collections, ensuring latest command documentation, specs, and examples are included in static build. Monorepo structure eliminates need for external repository cloning or sparse checkout
 
 ## Success Criteria *(mandatory)*
 
@@ -142,27 +148,28 @@ A developer ready to try Speck follows installation instructions. They successfu
 - **SC-007**: Site remains fully functional (navigation, content readable, links work) when JavaScript disabled
 - **SC-008**: Comparison page visit-to-GitHub-click conversion rate is 30%+ (developers who read comparison page then visit Speck GitHub repo)
 - **SC-009**: Monthly hosting cost on Cloudflare Pages is under $5 for up to 10,000 monthly visitors
-- **SC-010**: Lighthouse accessibility score is 95+ with proper heading hierarchy, ARIA labels, and keyboard navigation support
+- **SC-010**: Lighthouse accessibility score is 95+ with proper heading hierarchy, ARIA labels, and keyboard navigation support, targeting WCAG 2.1 AA compliance (with pragmatic flexibility if full compliance becomes overly burdensome)
 
 ## Assumptions
 
-1. **Static Site Generator**: Using Astro for static site generation with content collections for markdown documentation, component islands for interactive elements, and framework-agnostic component support (can integrate React/Vue/Svelte as needed)
-2. **Cloudflare Pages**: Deployment target is Cloudflare Pages with standard free tier limits (500 builds/month, 100 custom domains)
-3. **Content Updates**: Documentation content will be maintained via markdown files in the main Speck repository; GitHub webhook from main repo triggers Cloudflare Pages rebuild when documentation changes, ensuring automatic updates with single source of truth
-4. **Search**: If search functionality needed, using client-side search (no server required) via tools like Algolia DocSearch (free for open source) or local search index
-5. **Analytics**: Cookieless analytics using Cloudflare Web Analytics (free, privacy-friendly, GDPR/CCPA compliant without consent banner) tracking basic metrics (page views, popular pages) without personally identifiable information
-6. **Code Syntax Highlighting**: Using Shiki syntax highlighter (chosen for better TypeScript support over Prism) supporting TypeScript, bash, markdown, and JSON
-7. **Browser Support**: Modern browsers (Chrome/Edge 90+, Firefox 88+, Safari 14+) with graceful degradation for older browsers
-8. **Content Migration**: Initial content based on existing documentation in specs/001-speck-core-project and README files
-9. **Image Optimization**: Icons and diagrams as SVG where practical; raster images (screenshots, photos) served via Cloudflare Images with automatic WebP/AVIF conversion and PNG fallback for older browsers
+1. **Repository Structure**: Monorepo architecture with website code in `website/` directory within current speck repository, simplifying documentation sync (docs already on disk), unified version control, and single CI/CD pipeline
+2. **Static Site Generator**: Using Astro for static site generation with component-based architecture (shared Header/Footer/Navigation components across pages), content collections for markdown documentation, component islands for interactive elements, and framework-agnostic component support (can integrate React/Vue/Svelte as needed)
+3. **Cloudflare Pages**: Deployment target is Cloudflare Pages configured to build from `website/` subdirectory with automatic rebuild on any push to main branch, using standard free tier limits (500 builds/month, 100 custom domains)
+4. **Content Updates**: Documentation content maintained in main repository's `/docs` directory; Cloudflare Pages automatically rebuilds website on any push to main branch, and build process copies docs directly from repository filesystem to Astro content collections
+5. **Search**: If search functionality needed, using client-side search (no server required) via tools like Algolia DocSearch (free for open source) or local search index
+6. **Analytics**: Cookieless analytics using Cloudflare Web Analytics (free, privacy-friendly, GDPR/CCPA compliant without consent banner) tracking basic metrics (page views, popular pages) without personally identifiable information
+7. **Code Syntax Highlighting**: Using Shiki syntax highlighter (chosen for better TypeScript support over Prism) supporting TypeScript, bash, markdown, and JSON
+8. **Browser Support**: Modern browsers (Chrome/Edge 90+, Firefox 88+, Safari 14+) with graceful degradation for older browsers
+9. **Accessibility Standard**: Targeting WCAG 2.1 AA compliance for accessibility (color contrast ratios, keyboard navigation, ARIA labels, semantic HTML) with pragmatic flexibility to fall short if full compliance becomes overly burdensome during implementation
+10. **Content Migration**: Initial content based on existing documentation in specs/001-speck-core-project and README files
+11. **Image Optimization**: Icons and diagrams as SVG where practical; raster images (screenshots, photos) served via Cloudflare Images with automatic WebP/AVIF conversion and PNG fallback for older browsers
 
 ## Dependencies
 
-- **Static Site Generator**: Astro (framework-agnostic, content-focused static site generator)
-- **Build Environment**: Node.js/Bun for running build scripts and dependency management
-- **Hosting Platform**: Cloudflare Pages with Git integration for automatic deployments
-- **Webhook Integration**: GitHub webhook from main Speck repository to trigger Cloudflare Pages rebuild on documentation changes
-- **Content Source**: Existing Speck documentation (001 spec, README, command documentation)
+- **Static Site Generator**: Astro (framework-agnostic, content-focused static site generator) installed in `website/` directory
+- **Build Environment**: Bun for running build scripts and dependency management (aligns with Speck's core runtime choice)
+- **Hosting Platform**: Cloudflare Pages with Git integration configured to build from `website/` subdirectory with automatic rebuild triggered on any push to main branch
+- **Content Source**: Existing Speck documentation in `/docs` directory of monorepo (001 spec, README, command documentation) copied to Astro content collections during build
 - **Design Assets**: Logo/branding for Speck (if not yet created, simple text-based logo acceptable for MVP); icons and diagrams preferably as SVG
 - **Image Service**: Cloudflare Images for serving raster images with automatic format optimization (WebP/AVIF)
 - **Domain**: speck.dev or similar domain (assumption: domain will be registered separately)

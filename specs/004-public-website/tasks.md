@@ -250,7 +250,7 @@
 - [ ] T096 Run Lighthouse audit on homepage (target: Performance 90+, Accessibility 95+, Best Practices 95+, SEO 90+)
 - [ ] T097 Run Lighthouse audit on docs page (same targets as homepage)
 - [ ] T098 Run Lighthouse audit on comparison page (same targets)
-- [ ] T099 Test 3G load time using Lighthouse slow 4G throttling (target: <2s core content load, FCP <1.5s)
+- [ ] T099 Test 3G load time using Lighthouse slow 4G throttling (target: LCP <2.5s, FCP <1.8s per Web Vitals "good" thresholds)
 - [ ] T100 Verify JavaScript bundle size (target: <10KB compressed for theme.js + clipboard.js)
 - [ ] T101 Verify total page weight (target: <500KB compressed for homepage)
 - [ ] T102 Test mobile usability with Google PageSpeed Insights (target: 95+ score, zero horizontal scrolling)
