@@ -15,9 +15,5 @@
     "workflow",
     "feature-management",
     "development-tools"
-  ],
-  "dependencies": {
-    "git": ">=2.30.0",
-    "shell": "bash"
-  }
+  ]
 }

@@ -163,10 +163,6 @@ async function generatePluginManifest(): Promise<void> {
       'feature-management',
       'development-tools',
     ],
-    dependencies: {
-      git: '>=2.30.0',
-      shell: 'bash',
-    },
   };
 
   const manifestDir = join(config.outputDir, '.claude-plugin');
@@ -183,7 +179,7 @@ async function generatePluginManifest(): Promise<void> {
  */
 async function generateMarketplaceManifest(): Promise<void> {
   const marketplace = {
-    name: 'speck-marketplace',
+    name: 'speck-market',
     owner: {
       name: 'Nathan Prabst',
       email: 'nathan@example.com',
@@ -195,9 +191,7 @@ async function generateMarketplaceManifest(): Promise<void> {
     plugins: [
       {
         name: 'speck',
-        source: {
-          url: 'https://github.com/nprbst/speck',
-        },
+        source: './',
         description: 'Specification and planning workflow framework for Claude Code',
         version: config.version,
         author: {

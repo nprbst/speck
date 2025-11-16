@@ -1,6 +1,6 @@
 {
   "name": "speck",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Claude Code-Optimized Specification Framework",
   "type": "module",
   "engines": {
@@ -15,6 +15,9 @@
     "build:standalone": "bun build src/cli/index.ts --compile --outfile speck",
     "build-plugin": "bun run scripts/build-plugin.ts",
     "publish-plugin": "bun run scripts/publish-plugin.ts",
+    "version:patch": "bun run scripts/version.ts patch",
+    "version:minor": "bun run scripts/version.ts minor",
+    "version:major": "bun run scripts/version.ts major",
     "test": "bun test",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\""

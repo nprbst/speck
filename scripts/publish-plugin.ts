@@ -17,7 +17,7 @@ import { readFile, rm, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { $ } from 'bun';
 
-const MARKET_REPO = 'git@github.com:nprbst/speck-market.git';
+const MARKET_REPO = 'https://github.com/nprbst/speck-market.git';
 const MARKET_DIR = join(process.cwd(), '.market-temp');
 const PLUGIN_DIR = join(process.cwd(), 'dist/plugin');
 
