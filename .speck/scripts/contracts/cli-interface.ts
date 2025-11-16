@@ -164,3 +164,68 @@ export function formatCliSuccess(message: string, details?: string): string {
   }
   return output;
 }
+
+/**
+ * CLI options for create-worktree
+ */
+export interface CreateWorktreeOptions extends BaseCliOptions {
+  /** Branch name for the worktree (required) */
+  branchName: string;
+
+  /** Create a new branch instead of checking out existing */
+  createNew?: boolean;
+
+  /** Skip dependency installation */
+  skipInstall?: boolean;
+
+  /** Skip opening in VS Code */
+  skipVscode?: boolean;
+
+  /** Auto-confirm all prompts (non-interactive mode for Claude) */
+  autoConfirm?: boolean;
+}
+
+/**
+ * JSON output schema for create-worktree --json
+ */
+export interface CreateWorktreeOutput {
+  worktreePath: string;
+  branchName: string;
+  isNewBranch: boolean;
+  itemsCopied: string[];
+  itemsSymlinked: string[];
+  dependenciesInstalled: boolean;
+  vscodeOpened: boolean;
+}
+
+/**
+ * CLI options for remove-worktree
+ */
+export interface RemoveWorktreeOptions extends BaseCliOptions {
+  /** Path to worktree to remove (required) */
+  worktreePath: string;
+
+  /** Force removal even with uncommitted changes */
+  force?: boolean;
+
+  /** Delete the branch after removing worktree */
+  deleteBranch?: boolean;
+
+  /** Auto-confirm all prompts (non-interactive mode for Claude) */
+  autoConfirm?: boolean;
+
+  /** Skip push prompt for unpushed commits */
+  skipPush?: boolean;
+}
+
+/**
+ * JSON output schema for remove-worktree --json
+ */
+export interface RemoveWorktreeOutput {
+  worktreePath: string;
+  branchName: string;
+  hadUncommittedChanges: boolean;
+  hadUnpushedCommits: boolean;
+  branchDeleted: boolean;
+  warnings: string[];
+}
