@@ -16,6 +16,7 @@ Marketplace."
 - Q: When the build process encounters missing required files (templates, documentation, changelog), what should happen? → A: Fail build with error - Stop build process and report missing files to prevent incomplete package publication
 - Q: What should the official plugin name be in the Claude Marketplace? → A: Speck (note: Claude Plugin identifiers are git repositories)
 - Q: What version number should the initial Speck plugin release use? → A: 0.1.0
+- Q: When the Claude Plugin format specification is unknown, incomplete, or changes during development, what should the build system do? → A: Claude Plugin format is published and stable. Research it during the plan stage.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -140,7 +141,7 @@ accurate.
 ### Edge Cases
 
 **Build-time concerns:**
-- **Size limit exceeded**: If packaged files exceed 5MB, build fails with error listing total size and suggesting content reduction
+- **Size limit exceeded**: If packaged files exceed 5MB, build fails with error listing total size, breakdown by component (commands: X MB, agents: Y MB, templates: Z MB, scripts: W MB), and suggesting removal of non-essential documentation or compression of assets
 - **Missing required files**: If templates, documentation, or changelog files are missing, build fails with error listing missing files
 - **Invalid version format**: If version doesn't follow semantic versioning (e.g., "1.2.3"), build fails with error specifying correct format
 - **Incomplete command definitions**: If slash command files are missing or malformed, build fails with error identifying problematic commands
@@ -152,9 +153,9 @@ accurate.
 ### Functional Requirements
 
 **Build & Packaging**
-- **FR-001**: The build system MUST generate a plugin package containing all Speck slash commands (/speck.specify, /speck.plan, /speck.clarify, /speck.tasks, /speck.implement, /speck.analyze, /speck.constitution, /speck.checklist, /speck.taskstoissues)
-- **FR-002**: The build system MUST include all Speck agent definitions in the plugin package
-- **FR-003**: The build system MUST include the Speck skill in the plugin package
+- **FR-001**: The build system MUST generate a plugin package containing all Speck slash commands from .claude/commands/ directory (including but not limited to: /speck.specify, /speck.plan, /speck.clarify, /speck.tasks, /speck.implement, /speck.analyze, /speck.constitution, /speck.checklist, /speck.taskstoissues)
+- **FR-002**: The build system MUST include all Speck agent definitions in the plugin package (agents discovered in `.claude/agents/`: speck.transform-bash-to-bun.md, speck.transform-commands.md)
+- **FR-003**: The build system MUST include all Speck skills in the plugin package (skills to be enumerated during implementation)
 - **FR-004**: The build system MUST include all required templates (.specify/templates/*) in the plugin package
 - **FR-005**: The build system MUST include all required scripts (.specify/scripts/*) in the plugin package
 - **FR-006**: The build system MUST include all constitution templates and principles in the plugin package
@@ -167,8 +168,8 @@ accurate.
 - **FR-011**: The plugin manifest MUST declare shell/bash access as a required dependency
 - **FR-012**: The plugin manifest MUST include version information following semantic versioning format
 - **FR-013**: The plugin manifest MUST include comprehensive metadata: description, author, license, keywords
-- **FR-014**: The plugin manifest MUST specify compatible Claude Code version requirements
-- **FR-015**: The plugin manifest MUST declare that user project files (specs/, plans, tasks) are preserved during uninstall
+- **FR-014**: The plugin manifest MUST specify compatible Claude Code version requirements (minimum version: Claude Code 2.0+ per plan.md technical context)
+- **FR-015**: The plugin manifest MUST declare that user project files (specs/, plans, tasks) are preserved during uninstall (verification handled by Claude Plugin system - out of scope for build process)
 
 **Documentation & Marketplace Content**
 - **FR-016**: The plugin package MUST include usage documentation for marketplace display
@@ -178,7 +179,7 @@ accurate.
 - **FR-020**: The marketplace listing content MUST include compatibility and dependency information
 
 **Build Output Format**
-- **FR-021**: The build output MUST conform to Claude Marketplace plugin package format specifications
+- **FR-021**: The build output MUST conform to Claude Marketplace plugin package format specifications (see research.md for format details discovered during Phase 0)
 - **FR-022**: The plugin package size MUST be under 5MB
 - **FR-023**: The build system MUST assume target users are working in a git-initialized repository
 
@@ -259,7 +260,7 @@ accurate.
 
 ## Assumptions
 
-1. Claude Marketplace has a defined plugin package format specification that Speck must conform to
+1. Claude Marketplace has a published and stable plugin package format specification that will be researched during the planning phase
 2. Claude Plugin identifiers are based on git repositories (per Claude Plugin conventions)
 3. Plugin packages can include shell scripts and declare git/bash as dependencies
 4. Users who install Speck are working in git-initialized repositories

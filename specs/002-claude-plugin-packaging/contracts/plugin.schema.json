@@ -1,0 +1,220 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://code.claude.com/schemas/plugin.json",
+  "title": "Claude Code Plugin Manifest",
+  "description": "Schema for .claude-plugin/plugin.json manifest file",
+  "type": "object",
+  "required": [
+    "name",
+    "description",
+    "version",
+    "author"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Plugin identifier using lowercase letters, numbers, and hyphens",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 64,
+      "examples": [
+        "speck",
+        "my-plugin",
+        "claude-tools"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief explanation of plugin purpose and features",
+      "minLength": 10,
+      "maxLength": 1024,
+      "examples": [
+        "Specification and planning workflow framework for Claude Code"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version number (MAJOR.MINOR.PATCH)",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": [
+        "0.1.0",
+        "1.0.0",
+        "2.3.1"
+      ]
+    },
+    "author": {
+      "type": "object",
+      "description": "Plugin author information",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Author's full name or organization",
+          "minLength": 1,
+          "examples": [
+            "Nathan Prabst",
+            "Acme Corporation"
+          ]
+        },
+        "email": {
+          "type": "string",
+          "description": "Author's contact email",
+          "format": "email",
+          "examples": [
+            "nathan@example.com"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "description": "Author's website or profile URL",
+          "format": "uri",
+          "examples": [
+            "https://github.com/nprbst"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "homepage": {
+      "type": "string",
+      "description": "Plugin homepage or documentation URL",
+      "format": "uri",
+      "examples": [
+        "https://github.com/nprbst/speck"
+      ]
+    },
+    "repository": {
+      "type": "string",
+      "description": "Source code repository URL",
+      "pattern": "^(https?://|git@)",
+      "examples": [
+        "https://github.com/nprbst/speck",
+        "git@github.com:nprbst/speck.git"
+      ]
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier",
+      "examples": [
+        "MIT",
+        "Apache-2.0",
+        "GPL-3.0",
+        "ISC"
+      ]
+    },
+    "keywords": {
+      "type": "array",
+      "description": "Keywords for plugin discovery and search",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "minItems": 0,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "examples": [
+        [
+          "specification",
+          "planning",
+          "workflow",
+          "feature-management"
+        ]
+      ]
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Required system dependencies with version constraints",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Version constraint (e.g., '>=2.30.0', 'bash', '^1.0.0')"
+      },
+      "examples": [
+        {
+          "git": ">=2.30.0",
+          "shell": "bash"
+        }
+      ]
+    },
+    "components": {
+      "type": "object",
+      "description": "Custom paths for plugin components",
+      "properties": {
+        "commands": {
+          "type": "string",
+          "description": "Path to slash commands directory",
+          "default": "commands/",
+          "examples": [
+            "commands/",
+            "src/commands/"
+          ]
+        },
+        "agents": {
+          "type": "string",
+          "description": "Path to subagents directory",
+          "default": "agents/",
+          "examples": [
+            "agents/",
+            "src/agents/"
+          ]
+        },
+        "skills": {
+          "type": "string",
+          "description": "Path to skills directory",
+          "default": "skills/",
+          "examples": [
+            "skills/",
+            "src/skills/"
+          ]
+        },
+        "hooks": {
+          "type": "string",
+          "description": "Path to hooks configuration file",
+          "default": "hooks.json",
+          "examples": [
+            "hooks.json",
+            "config/hooks.json"
+          ]
+        },
+        "mcp": {
+          "type": "string",
+          "description": "Path to MCP servers configuration",
+          "default": ".mcp.json",
+          "examples": [
+            ".mcp.json",
+            "config/mcp.json"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "name": "speck",
+      "description": "Specification and planning workflow framework for Claude Code",
+      "version": "0.1.0",
+      "author": {
+        "name": "Nathan Prabst",
+        "email": "nathan@example.com"
+      },
+      "homepage": "https://github.com/nprbst/speck",
+      "repository": "https://github.com/nprbst/speck",
+      "license": "MIT",
+      "keywords": [
+        "specification",
+        "planning",
+        "workflow",
+        "feature-management",
+        "development-tools"
+      ],
+      "dependencies": {
+        "git": ">=2.30.0",
+        "shell": "bash"
+      }
+    }
+  ]
+}
