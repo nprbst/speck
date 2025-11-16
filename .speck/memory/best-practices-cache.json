@@ -1,32 +1,58 @@
 {
   "version": "1.0.0",
-  "lastUpdated": null,
-  "sources": [],
+  "lastUpdated": "2025-11-16T05:40:50.516Z",
+  "sources": [
+    "https://code.claude.com/docs/en/skills.md",
+    "https://code.claude.com/docs/en/sub-agents.md",
+    "https://code.claude.com/docs/en/slash-commands.md",
+    "https://code.claude.com/docs/en/common-workflows.md"
+  ],
   "practices": {
     "skills": {
-      "description": "Skills best practices will be cached here",
+      "description": "Skills best practices from Claude Code documentation",
       "maxDescriptionLength": 1024,
       "warnDescriptionLength": 1200,
       "minTriggers": 3,
       "requireThirdPerson": true,
-      "references": []
+      "references": [
+        "https://code.claude.com/docs/en/skills.md",
+        "specs/003-refactor-transform-commands/research.md#section-4.1"
+      ]
     },
     "agents": {
-      "description": "Agent best practices will be cached here",
+      "description": "Agent best practices from Claude Code documentation",
       "minPhases": 3,
       "maxPhases": 5,
       "fragilityLevels": {
-        "high": ["Read", "Grep", "Glob"],
-        "medium": ["Read", "Write", "Edit", "Grep", "Glob"],
-        "low": ["*"]
+        "high": [
+          "Read",
+          "Grep",
+          "Glob"
+        ],
+        "medium": [
+          "Read",
+          "Write",
+          "Edit",
+          "Grep",
+          "Glob"
+        ],
+        "low": [
+          "*"
+        ]
       },
-      "references": []
+      "references": [
+        "https://code.claude.com/docs/en/sub-agents.md",
+        "specs/003-refactor-transform-commands/research.md#section-4.2"
+      ]
     },
     "commands": {
-      "description": "Command best practices will be cached here",
-      "references": []
+      "description": "Command best practices from Claude Code documentation",
+      "references": [
+        "https://code.claude.com/docs/en/slash-commands.md",
+        "https://code.claude.com/docs/en/common-workflows.md"
+      ]
     }
   },
   "staleDays": 30,
-  "notes": "This cache stores Claude Code best practices documentation. Refresh when older than staleDays."
+  "notes": "Cache refreshed from Claude Code documentation and research.md"
 }

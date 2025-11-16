@@ -110,14 +110,14 @@ description: "Task list for refactoring transform commands agent"
 
 ### Implementation for User Story 3
 
-- [ ] T031 [P] [US3] Create best practices cache script in .speck/scripts/cache-best-practices.ts to fetch and cache Claude Code documentation
-- [ ] T032 [P] [US3] Implement cache refresh logic in .speck/scripts/cache-best-practices.ts (30-day staleness check)
-- [ ] T033 [US3] Add best practices reference loader to agent in .claude/agents/speck.transform-commands.md (depends on T031, T032)
-- [ ] T034 [P] [US3] Enhance validateExtractedFile to verify best practices citations are valid URLs/sections in .speck/scripts/validate-extracted-files.ts
-- [ ] T035 [US3] Update agent extraction logic to cite specific best practices in rationale fields in .claude/agents/speck.transform-commands.md (depends on T033)
-- [ ] T036 [US3] Add progressive disclosure detection to agent in .claude/agents/speck.transform-commands.md using criteria from research.md section 4.3 (3+ complexity levels, 500+ token reference docs, 2+ supporting scripts)
-- [ ] T037 [US3] Implement skill description quality checks in .speck/scripts/validate-extracted-files.ts (warn above 300 tokens ~1200 chars, enforce 1024 char limit)
-- [ ] T038 [US3] Add tool permission fragility validation in .speck/scripts/validate-extracted-files.ts (high/medium/low mappings from research.md)
+- [X] T031 [P] [US3] Create best practices cache script in .speck/scripts/cache-best-practices.ts to fetch and cache Claude Code documentation
+- [X] T032 [P] [US3] Implement cache refresh logic in .speck/scripts/cache-best-practices.ts (30-day staleness check)
+- [X] T033 [US3] Add best practices reference loader to agent in .claude/agents/speck.transform-commands.md (depends on T031, T032)
+- [X] T034 [P] [US3] Enhance validateExtractedFile to verify best practices citations are valid URLs/sections in .speck/scripts/validate-extracted-files.ts
+- [X] T035 [US3] Update agent extraction logic to cite specific best practices in rationale fields in .claude/agents/speck.transform-commands.md (depends on T033)
+- [X] T036 [US3] Add progressive disclosure detection to agent in .claude/agents/speck.transform-commands.md using criteria from research.md section 4.3 (3+ complexity levels, 500+ token reference docs, 2+ supporting scripts)
+- [X] T037 [US3] Implement skill description quality checks in .speck/scripts/validate-extracted-files.ts (warn above 300 tokens ~1200 chars, enforce 1024 char limit)
+- [X] T038 [US3] Add tool permission fragility validation in .speck/scripts/validate-extracted-files.ts (high/medium/low mappings from research.md)
 
 **Checkpoint**: All user stories should now be independently functional - best practices fully integrated into transformation pipeline
 
