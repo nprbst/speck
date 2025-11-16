@@ -1,0 +1,6 @@
+{
+  "version": "1.0.0",
+  "schema": "enhanced-with-extraction-decisions",
+  "transformations": [],
+  "notes": "This file tracks all transformation operations from upstream spec-kit commands to Speck commands. Enhanced schema includes extraction decision tracking for skills and agents."
+}

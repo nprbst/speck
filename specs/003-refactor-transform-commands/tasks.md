@@ -31,10 +31,10 @@ description: "Task list for refactoring transform commands agent"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create directory structure for feature 003 in .speck/scripts/ for preprocessing, validation, and transformation modules
-- [ ] T002 [P] Initialize TypeScript types for preprocessing in .speck/scripts/types/preprocessing.ts
-- [ ] T003 [P] Initialize TypeScript types for validation in .speck/scripts/types/validation.ts
-- [ ] T004 [P] Initialize TypeScript types for extraction in .speck/scripts/types/extraction.ts
+- [X] T001 Create directory structure for feature 003 in .speck/scripts/ for preprocessing, validation, and transformation modules
+- [X] T002 [P] Initialize TypeScript types for preprocessing in .speck/scripts/types/preprocessing.ts
+- [X] T003 [P] Initialize TypeScript types for validation in .speck/scripts/types/validation.ts
+- [X] T004 [P] Initialize TypeScript types for extraction in .speck/scripts/types/extraction.ts
 
 ---
 
@@ -44,11 +44,11 @@ description: "Task list for refactoring transform commands agent"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Setup preprocessing rules infrastructure in .speck/scripts/preprocess-commands.ts with STANDARD_PREPROCESSING_RULES export
-- [ ] T006 [P] Setup validation infrastructure in .speck/scripts/validate-extracted-files.ts with ValidationResult types
-- [ ] T007 [P] Setup best practices cache mechanism in .speck/memory/best-practices-cache.json
-- [ ] T008 Create transformation history schema enhancement in .speck/memory/transformation-history.json for extraction decisions
-- [ ] T009 [P] Setup error reporting structure in .speck/scripts/types/error-reporting.ts
+- [X] T005 Setup preprocessing rules infrastructure in .speck/scripts/preprocess-commands.ts with STANDARD_PREPROCESSING_RULES export
+- [X] T006 [P] Setup validation infrastructure in .speck/scripts/validate-extracted-files.ts with ValidationResult types
+- [X] T007 [P] Setup best practices cache mechanism in .speck/memory/best-practices-cache.json
+- [X] T008 Create transformation history schema enhancement in .speck/memory/transformation-history.json for extraction decisions
+- [X] T009 [P] Setup error reporting structure in .speck/scripts/types/error-reporting.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -62,15 +62,15 @@ description: "Task list for refactoring transform commands agent"
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Implement add-speck-prefix preprocessing rule in .speck/scripts/preprocess-commands.ts (replaces /speckit. with /speck. in content)
-- [ ] T011 [P] [US1] Implement normalize-paths preprocessing rule in .speck/scripts/preprocess-commands.ts (replaces .specify/ with .speck/ in content)
-- [ ] T012 [P] [US1] Implement update-command-refs preprocessing rule in .speck/scripts/preprocess-commands.ts (replaces speckit.taskname with speck.taskname in references)
-- [ ] T013 [P] [US1] Implement update-filename preprocessing rule in .speck/scripts/preprocess-commands.ts (renames file from speckit.* to speck.*)
-- [ ] T014 [US1] Implement preprocessCommandFile function in .speck/scripts/preprocess-commands.ts applying all rules sequentially (depends on T010-T013)
-- [ ] T015 [US1] Implement preprocessBatch function in .speck/scripts/preprocess-commands.ts for batch file processing (depends on T014)
-- [ ] T016 [P] [US1] Implement validatePreprocessedFile function in .speck/scripts/preprocess-commands.ts checking prefixes, paths, references
-- [ ] T017 [US1] Add error handling and logging for preprocessing in .speck/scripts/preprocess-commands.ts (depends on T014, T015)
-- [ ] T018 [US1] Update /speck.transform-upstream command in .claude/commands/speck.transform-upstream.md to call preprocessing before agent invocation
+- [X] T010 [P] [US1] Implement add-speck-prefix preprocessing rule in .speck/scripts/preprocess-commands.ts (replaces /speckit. with /speck. in content)
+- [X] T011 [P] [US1] Implement normalize-paths preprocessing rule in .speck/scripts/preprocess-commands.ts (replaces .specify/ with .speck/ in content)
+- [X] T012 [P] [US1] Implement update-command-refs preprocessing rule in .speck/scripts/preprocess-commands.ts (replaces speckit.taskname with speck.taskname in references)
+- [X] T013 [P] [US1] Implement update-filename preprocessing rule in .speck/scripts/preprocess-commands.ts (renames file from speckit.* to speck.*)
+- [X] T014 [US1] Implement preprocessCommandFile function in .speck/scripts/preprocess-commands.ts applying all rules sequentially (depends on T010-T013)
+- [X] T015 [US1] Implement preprocessBatch function in .speck/scripts/preprocess-commands.ts for batch file processing (depends on T014)
+- [X] T016 [P] [US1] Implement validatePreprocessedFile function in .speck/scripts/preprocess-commands.ts checking prefixes, paths, references
+- [X] T017 [US1] Add error handling and logging for preprocessing in .speck/scripts/preprocess-commands.ts (depends on T014, T015)
+- [X] T018 [US1] Update /speck.transform-upstream command in .claude/commands/speck.transform-upstream.md to call preprocessing before agent invocation
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently - preprocessing works reliably with all text replacements applied correctly
 

@@ -236,7 +236,28 @@ Task tool parameters:
 **IMPORTANT**: Skip this agent entirely if `CHANGED_SPECKIT_COMMANDS` is empty
 (no commands changed).
 
-If there are changed commands, use the Task tool to launch the command
+**PREPROCESSING STEP** (NEW - Feature 003):
+
+Before invoking the transform-commands agent, preprocess all changed command files
+using the TypeScript preprocessing infrastructure:
+
+```bash
+bun .speck/scripts/preprocess-commands.ts --files <CHANGED_SPECKIT_COMMANDS>
+```
+
+This applies deterministic text replacements:
+- Add `speck.` prefix to command names
+- Change `.specify/` paths to `.speck/`
+- Update command references (`speckit.*` → `speck.*`)
+- Rename files (`speckit.*.md` → `speck.*.md`)
+
+The preprocessing script outputs preprocessed files to a temporary directory
+and validates that all transformations completed successfully.
+
+**VALIDATION**: Check that preprocessing succeeded before proceeding to agent invocation.
+If preprocessing fails, stop and report errors.
+
+If there are changed commands after preprocessing, use the Task tool to launch the command
 transformation agent:
 
 ```
@@ -252,10 +273,18 @@ Task tool parameters:
 
     **UPSTREAM_VERSION**: <version>
     **PREVIOUS_VERSION**: <PREV_VERSION> (or "none" if first transformation)
-    **SOURCE_DIR**: upstream/<version>/.claude/commands/
+    **SOURCE_DIR**: upstream/<version>/.claude/commands/ (PREPROCESSED)
     **OUTPUT_DIR**: .claude/commands/
     **CHANGED_SPECKIT_COMMANDS**:
     [List ONLY the changed speckit command paths (new + modified), one per line]
+
+    **IMPORTANT**: These files have been PREPROCESSED by the TypeScript preprocessing layer.
+    All deterministic text replacements (prefix changes, path normalization, reference updates)
+    have already been applied. Your job is to focus on EXTRACTION DECISIONS ONLY:
+    - Identify patterns suitable for skills (auto-invoke, reusable logic)
+    - Identify workflows suitable for agents (complex multi-step, delegated work)
+    - Record ALL extraction decisions (both positive and negative) with rationale
+    - Validate extracted files before writing
 
     **OPTIMIZATION**: Only the commands listed above have changed from <PREV_VERSION>.
     You MUST ONLY process these changed commands. Skip all unchanged commands entirely.

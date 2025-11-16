@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": null,
+  "sources": [],
+  "practices": {
+    "skills": {
+      "description": "Skills best practices will be cached here",
+      "maxDescriptionLength": 1024,
+      "warnDescriptionLength": 1200,
+      "minTriggers": 3,
+      "requireThirdPerson": true,
+      "references": []
+    },
+    "agents": {
+      "description": "Agent best practices will be cached here",
+      "minPhases": 3,
+      "maxPhases": 5,
+      "fragilityLevels": {
+        "high": ["Read", "Grep", "Glob"],
+        "medium": ["Read", "Write", "Edit", "Grep", "Glob"],
+        "low": ["*"]
+      },
+      "references": []
+    },
+    "commands": {
+      "description": "Command best practices will be cached here",
+      "references": []
+    }
+  },
+  "staleDays": 30,
+  "notes": "This cache stores Claude Code best practices documentation. Refresh when older than staleDays."
+}
