@@ -128,10 +128,94 @@ const output = await new Response(proc.stdout).text();
 
 ---
 
+## Breaking Change Detection
+
+**CRITICAL**: Before transforming, analyze the upstream bash script for breaking changes compared to the existing TypeScript implementation (if one exists).
+
+### Breaking Changes Defined
+
+A **breaking change** is any modification that would cause existing users or integrations to fail:
+
+- **Removed CLI flags**: Flag present in old version but missing in new version
+- **Renamed CLI flags**: Flag name changed (e.g., `--json` → `--json-output`)
+- **Changed exit code semantics**: Exit code values or meanings altered (e.g., 1 was "user error" now means "system error")
+- **Altered JSON output schema**: JSON structure changed (keys added/removed/renamed, value types changed)
+- **Incompatible behavioral changes**: Function that previously succeeded now fails, or vice versa
+
+### Detection Workflow
+
+**For each bash script being transformed**:
+
+1. **Check for existing TypeScript file**: If `.speck/scripts/<name>.ts` exists, this is an UPDATE
+2. **If UPDATE**: Compare the OLD upstream bash (from PREVIOUS_VERSION) with NEW upstream bash (from UPSTREAM_VERSION)
+   - If PREVIOUS_VERSION is "none", skip breaking change detection (first transformation)
+   - Read both versions and analyze differences
+3. **Detect breaking changes**:
+   - **CLI flags**: Parse both versions for flag definitions (e.g., `--json`, `--help`, `--version`)
+     - Missing flags = breaking
+     - New required positional arguments = breaking
+   - **Exit codes**: Analyze exit code usage patterns
+     - Changed exit code for same error condition = breaking
+   - **JSON output**: If `--json` flag exists, compare JSON structure
+     - Missing keys in new version = breaking
+     - Changed key names = breaking
+     - Changed value types (string → number) = breaking
+   - **Behavioral changes**: Look for fundamental logic changes
+     - Function removed or made unavailable = breaking
+
+4. **If breaking changes detected**:
+   - **PAUSE transformation immediately**
+   - **Generate conflict analysis report** with:
+     - File name and path
+     - List of specific breaking changes detected
+     - Old vs. new comparison for each breaking change
+     - Impact assessment (which users/integrations affected)
+   - **Present options to user**:
+     - **Option 1**: Skip this script (keep existing `.speck/scripts/<name>.ts` unchanged)
+     - **Option 2**: Attempt best-effort transformation with warnings (update code but document breaking changes)
+     - **Option 3**: Abort entire transformation (exit without changes)
+   - **Wait for user decision** before proceeding
+
+### Example Breaking Change Detection
+
+```markdown
+## ⚠️ BREAKING CHANGES DETECTED
+
+**Script**: `check-prerequisites.sh` → `check-prerequisites.ts`
+**Upstream Version**: v0.0.83 → v0.0.84
+
+**Breaking Changes Found**:
+
+1. **Removed CLI Flag**: `--paths-only`
+   - **Old**: `--paths-only` flag returned only paths without validation
+   - **New**: Flag removed, no equivalent functionality
+   - **Impact**: Users relying on `--paths-only` will get "Unknown option" error
+
+2. **Changed Exit Code Semantics**: Missing Bun runtime
+   - **Old**: Exit code 1 (user error)
+   - **New**: Exit code 2 (system error)
+   - **Impact**: Scripts checking for exit code 1 will misinterpret failures
+
+3. **Altered JSON Output Schema**: `--json` flag
+   - **Old**: `{ FEATURE_DIR: string, AVAILABLE_DOCS: string[] }`
+   - **New**: `{ feature_dir: string, docs: string[] }` (keys renamed, snake_case)
+   - **Impact**: Parsers expecting `FEATURE_DIR` key will fail
+
+**Resolution Options**:
+
+1. **Skip this script** - Keep existing `check-prerequisites.ts` unchanged (preserves compatibility but misses upstream fixes)
+2. **Best-effort transform** - Update TypeScript implementation, document breaking changes, add migration guide
+3. **Abort transformation** - Exit without making any changes, resolve conflicts manually
+
+**Recommendation**: Option 2 (Best-effort) - The breaking changes appear intentional (upstream standardizing on snake_case). Generate migration guide for users.
+```
+
+---
+
 ## CLI Interface Compatibility Requirements
 
 **CRITICAL**: The generated TypeScript implementation MUST maintain
-byte-for-byte compatibility with the bash script's CLI interface.
+byte-for-byte compatibility with the bash script's CLI interface (unless breaking changes were approved via conflict resolution above).
 
 ### Exit Codes
 

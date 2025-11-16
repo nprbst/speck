@@ -71,6 +71,8 @@ converting bash scripts to Bun TypeScript in `.speck/scripts/`, and generating
   Task tool for agents (e.g.,
   `Task(subagent_type: "general-purpose", prompt: "Execute .claude/agents/X.md...")`),
   use Skill tool for skills (e.g., `Skill(skill: "skill-name")`)
+- Q: Where should transformation factoring decisions be stored for incremental transformations? → A: Create separate `.speck/transformation-history.json` file mapping source → generated artifacts
+- Q: Should extracted agents and skills be prefixed to avoid naming conflicts? → A: Prefix all extracted agents and skills with `speck.` (e.g., `.claude/agents/speck.plan-workflow.md`, `.claude/skills/speck.load-context.md`)
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -241,7 +243,8 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
   simple sequential procedures inline in command body
 - **FR-007a**: Command transformation agent MUST extract identified workflow
   sections into separate agent files in `.claude/agents/` or skill files in
-  `.claude/skills/`, then update the command body to invoke the new
+  `.claude/skills/` with `speck.` prefix (e.g., `speck.plan-workflow.md`,
+  `speck.load-context.md`), then update the command body to invoke the new
   agents/skills instead of containing the logic inline
 - **FR-007b**: Command transformation agent MUST update script references in
   transformed `/speck.*` commands from `.specify/scripts/bash/` paths to
@@ -255,11 +258,12 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
   (4) `/speck.*` commands created/updated in `.claude/commands/`, (5) file-level
   summary of specific changes made (e.g., "Added --version flag", "Updated error
   handling") not line-by-line diffs, (6) agents/skills factored out in
-  `.claude/agents/` or `.claude/skills/` with extraction completeness (all
-  workflow sections >3 steps with branching logic extracted per FR-007
-  criteria), (7) SPECK-EXTENSION blocks preserved with line numbers, (8)
-  validation results (compilation, execution, tests passed), (9) Claude's
-  transformation rationale for all changes
+  `.claude/agents/speck.*.md` or `.claude/skills/speck.*.md` with extraction
+  completeness (all workflow sections >3 steps with branching logic extracted
+  per FR-007 criteria) and factoring decisions persisted to
+  `.speck/transformation-history.json` per FR-013, (7) SPECK-EXTENSION blocks
+  preserved with line numbers, (8) validation results (compilation, execution,
+  tests passed), (9) Claude's transformation rationale for all changes
 - **FR-010**: System MUST detect breaking changes in upstream bash scripts via
   Claude analysis (breaking changes defined as: removed/renamed CLI flags,
   changed exit code semantics, altered JSON output schema structure, or
@@ -270,6 +274,7 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
   failures, invalid tags, missing Bun runtime, or transformation conflicts
 - **FR-012**: System MUST perform atomic operations - either full command
   succeeds or nothing changes (no partial state)
+- **FR-013**: System MUST record transformation factoring decisions in `.speck/transformation-history.json` tracking which upstream source commands/scripts map to which generated Speck commands, agents, and skills, enabling incremental transformation to reference previous factoring decisions
 
 ### Key Entities
 
@@ -294,9 +299,10 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
   (`.claude/agents/transform-commands.md`) that converts upstream `/speckit.*`
   command files to `/speck.*` commands by: (1) updating script references from
   `.specify/scripts/bash/` to `.speck/scripts/`, (2) applying factoring criteria
-  to identify and extract sections as `.claude/agents/` (multi-step autonomous
-  workflows >3 steps) or `.claude/skills/` (reusable cross-command
-  capabilities), (3) preserving command structure and workflow intent
+  to identify and extract sections as `.claude/agents/speck.*.md` (multi-step
+  autonomous workflows >3 steps) or `.claude/skills/speck.*.md` (reusable
+  cross-command capabilities), (3) preserving command structure and workflow
+  intent
 - **Upstream Directory**: Read-only `upstream/<version>/` tree containing
   pristine spec-kit release content (templates, bash scripts, `/speckit.*`
   commands, docs) for transformation source material
@@ -306,6 +312,7 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
   transformation rationale for all changes
 - **Bun Script**: TypeScript implementation in `.speck/scripts/` that replicates
   bash script behavior with identical CLI interface
+- **Transformation History**: JSON file (`.speck/transformation-history.json`) recording factoring decisions mapping upstream source commands/scripts to generated Speck commands, agents, and skills, enabling incremental transformations to reference previous decisions and maintain consistency across versions
 
 ## Success Criteria _(mandatory)_
 

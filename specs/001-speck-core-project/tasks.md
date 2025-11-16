@@ -225,19 +225,30 @@ via `/speck.check-upstream`
 - [x] T049 [P] [US1] Create command transformation agent in
       `.claude/agents/transform-commands.md` (transforms `/speckit.*` to
       `/speck.*`, factors agents/skills)
-- [ ] T049a [P] [US1] Implement breaking change detection in bash-to-Bun agent
+- [x] T049a [P] [US1] Implement breaking change detection in bash-to-Bun agent
       (analyzes CLI interface differences: removed/renamed flags, changed exit
       codes, altered JSON output schemas; pauses transformation and presents
       conflict analysis when detected)
-- [ ] T049b [P] [US1] Implement command body parser in transform-commands agent
+- [x] T049b [P] [US1] Implement command body parser in transform-commands agent
       (parse markdown structure, identify workflow sections, count steps, detect
       branching logic)
-- [ ] T049c [P] [US1] Implement workflow section extraction logic in
+- [x] T049c [P] [US1] Implement workflow section extraction logic in
       transform-commands agent (create agent/skill files with appropriate
       content, apply factoring criteria from FR-007)
-- [ ] T049d [P] [US1] Implement command body updater in transform-commands agent
+- [x] T049d [P] [US1] Implement command body updater in transform-commands agent
       (replace extracted sections with Task tool invocations, preserve
       non-extracted content)
+- [x] T049e [P] [US1] Create transformation-history.json schema contract in
+      `specs/001-speck-core-project/contracts/transformation-history.ts`
+      (structure: version, timestamp, mappings array with source/generated/type
+      fields per FR-013)
+- [x] T049f [P] [US1] Implement transformation history manager in
+      `.speck/scripts/common/transformation-history.ts` (read existing history,
+      append new mappings, write atomically to
+      `.speck/transformation-history.json`)
+- [x] T049g [P] [US1] Test transformation history manager in
+      `tests/.speck-scripts/common/transformation-history.test.ts` (add
+      mappings, read history, incremental updates)
 
 #### Tests First (Medium-Weight) ⚠️
 
@@ -280,8 +291,9 @@ via `/speck.check-upstream`
       (collects agent outputs, creates 9-section report per FR-009: (1) upstream
       version transformed, (2) file creation/update status, (3) Bun scripts with
       test paths, (4) `/speck.*` commands created/updated, (5) file-level change
-      summaries, (6) agents/skills factored, (7) SPECK-EXTENSION blocks
-      preserved, (8) validation results, (9) transformation rationale)
+      summaries, (6) agents/skills factored with mappings persisted to
+      `.speck/transformation-history.json` per FR-013, (7) SPECK-EXTENSION
+      blocks preserved, (8) validation results, (9) transformation rationale)
 - [x] T065 [US1] Implement release registry status update in slash command
       (calls `common/json-tracker.ts` to update status to "transformed" or
       "failed")
@@ -311,7 +323,8 @@ via `/speck.check-upstream`
 - [x] T071 [US1] Validation: verify transformation report structure matches
       `TransformUpstreamOutput` schema AND includes all 9 sections from FR-009
       (upstream version, file status, Bun scripts, commands, change summaries,
-      agents/skills, SPECK-EXTENSION blocks, validation results, rationale)
+      agents/skills with transformation-history.json reference, SPECK-EXTENSION
+      blocks, validation results, rationale)
 - [x] T072 [US1] Validation: verify generated Bun scripts have identical CLI
       interface to bash equivalents (same flags, exit codes, JSON output
       structure)
