@@ -84,19 +84,19 @@ description: "Task list for refactoring transform commands agent"
 
 ### Implementation for User Story 2
 
-- [ ] T019 [P] [US2] Implement validateExtractedFile function in .speck/scripts/validate-extracted-files.ts for skill files (description, triggers, structure checks)
-- [ ] T020 [P] [US2] Implement validateExtractedFile function in .speck/scripts/validate-extracted-files.ts for agent files (objective, tool permissions, phase count checks)
-- [ ] T021 [P] [US2] Implement validateSkillDescription function in .speck/scripts/validate-extracted-files.ts (third person, length, triggers validation)
-- [ ] T022 [P] [US2] Implement validateAgentToolPermissions function in .speck/scripts/validate-extracted-files.ts (fragility level matching)
-- [ ] T023 [P] [US2] Implement validateMarkdownStructure function in .speck/scripts/validate-extracted-files.ts (balanced code blocks, valid links, section requirements)
-- [ ] T024 [US2] Implement validateAndWrite function in .speck/scripts/validate-extracted-files.ts combining validation and file writes (depends on T019-T023)
-- [ ] T024a [US2] Implement quality gate enforcement in .speck/scripts/validate-extracted-files.ts that blocks file writes when validation fails (constitutional requirement - Principle IV)
-- [ ] T025 [US2] Refactor transform-commands agent in .claude/agents/speck.transform-commands.md to focus ONLY on extraction decisions using holistic semantic understanding (depends on T019-T024)
-- [ ] T026 [US2] Add skill extraction logic to agent in .claude/agents/speck.transform-commands.md using extraction criteria from research.md
-- [ ] T027 [US2] Add agent extraction logic to agent in .claude/agents/speck.transform-commands.md using extraction criteria from research.md
-- [ ] T028 [US2] Implement extraction decision recording in agent to update transformation-history.json with rationale for ALL decisions (positive and negative)
-- [ ] T029 [US2] Add validation retry loop to agent (up to 3 attempts) with error correction based on validation feedback
-- [ ] T030 [US2] Implement file reference updates in transformed command files to point to extracted skills/agents
+- [X] T019 [P] [US2] Implement validateExtractedFile function in .speck/scripts/validate-extracted-files.ts for skill files (description, triggers, structure checks)
+- [X] T020 [P] [US2] Implement validateExtractedFile function in .speck/scripts/validate-extracted-files.ts for agent files (objective, tool permissions, phase count checks)
+- [X] T021 [P] [US2] Implement validateSkillDescription function in .speck/scripts/validate-extracted-files.ts (third person, length, triggers validation)
+- [X] T022 [P] [US2] Implement validateAgentToolPermissions function in .speck/scripts/validate-extracted-files.ts (fragility level matching)
+- [X] T023 [P] [US2] Implement validateMarkdownStructure function in .speck/scripts/validate-extracted-files.ts (balanced code blocks, valid links, section requirements)
+- [X] T024 [US2] Implement validateAndWrite function in .speck/scripts/validate-extracted-files.ts combining validation and file writes (depends on T019-T023)
+- [X] T024a [US2] Implement quality gate enforcement in .speck/scripts/validate-extracted-files.ts that blocks file writes when validation fails (constitutional requirement - Principle IV)
+- [X] T025 [US2] Refactor transform-commands agent in .claude/agents/speck.transform-commands.md to focus ONLY on extraction decisions using holistic semantic understanding (depends on T019-T024)
+- [X] T026 [US2] Add skill extraction logic to agent in .claude/agents/speck.transform-commands.md using extraction criteria from research.md
+- [X] T027 [US2] Add agent extraction logic to agent in .claude/agents/speck.transform-commands.md using extraction criteria from research.md
+- [X] T028 [US2] Implement extraction decision recording in agent to update transformation-history.json with rationale for ALL decisions (positive and negative)
+- [X] T029 [US2] Add validation retry loop to agent (up to 3 attempts) with error correction based on validation feedback
+- [X] T030 [US2] Implement file reference updates in transformed command files to point to extracted skills/agents
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - transformation pipeline extracts skills/agents automatically with validation
 
