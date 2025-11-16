@@ -39,19 +39,19 @@ story (US1: Transform Spec-Kit Release to Speck)
 **Purpose**: Project initialization, directory structure, and development
 tooling
 
-- [ ] T001 Create `.speck/` directory structure with `scripts/` and
+- [x] T001 Create `.speck/` directory structure with `scripts/` and
       `scripts/common/` subdirectories
-- [ ] T002 Create `upstream/` directory for storing pristine spec-kit releases
-- [ ] T003 Create `.claude/commands/` directory for Speck slash commands
-- [ ] T004 Create `.claude/agents/` directory for transformation agents
-- [ ] T005 Create `tests/.speck-scripts/` directory structure mirroring
+- [x] T002 Create `upstream/` directory for storing pristine spec-kit releases
+- [x] T003 Create `.claude/commands/` directory for Speck slash commands
+- [x] T004 Create `.claude/agents/` directory for transformation agents
+- [x] T005 Create `tests/.speck-scripts/` directory structure mirroring
       `.speck/scripts/`
-- [ ] T006 Create `tests/fixtures/` directory for test fixtures
-- [ ] T007 [P] Copy contract files from
+- [x] T006 Create `tests/fixtures/` directory for test fixtures
+- [x] T007 [P] Copy contract files from
       `specs/001-speck-core-project/contracts/` to `.speck/scripts/contracts/`
       for TypeScript imports
-- [ ] T008 [P] Configure Bun test framework (verify `bun test` command works)
-- [ ] T009 [P] Create `.gitignore` entries for `upstream/` directory (pristine
+- [x] T008 [P] Configure Bun test framework (verify `bun test` command works)
+- [x] T009 [P] Create `.gitignore` entries for `upstream/` directory (pristine
       upstream content, can be re-pulled)
 
 ---
@@ -65,31 +65,31 @@ depend on
 
 ### Common Utilities (Shared Across All Commands)
 
-- [ ] T010 [P] Implement GitHub API client in
+- [x] T010 [P] Implement GitHub API client in
       `.speck/scripts/common/github-api.ts` (fetch releases, rate limiting,
       error handling)
-- [ ] T011 [P] Implement release registry manager in
+- [x] T011 [P] Implement release registry manager in
       `.speck/scripts/common/json-tracker.ts` (read/write/validate
       `upstream/releases.json`)
-- [ ] T012 [P] Implement symlink manager in
+- [x] T012 [P] Implement symlink manager in
       `.speck/scripts/common/symlink-manager.ts` (create/update
       `upstream/latest` symlink)
-- [ ] T013 [P] Implement atomic file operations in
+- [x] T013 [P] Implement atomic file operations in
       `.speck/scripts/common/file-ops.ts` (temp directories, atomic rename,
       rollback)
 
 ### Tests for Common Utilities (Medium-Weight)
 
-- [ ] T014 [P] Test GitHub API client in
+- [x] T014 [P] Test GitHub API client in
       `tests/.speck-scripts/common/github-api.test.ts` (mock responses, rate
       limiting, error cases)
-- [ ] T015 [P] Test release registry manager in
+- [x] T015 [P] Test release registry manager in
       `tests/.speck-scripts/common/json-tracker.test.ts` (add release, update
       status, validation)
-- [ ] T016 [P] Test symlink manager in
+- [x] T016 [P] Test symlink manager in
       `tests/.speck-scripts/common/symlink-manager.test.ts` (create/update
       symlinks, error handling)
-- [ ] T017 [P] Test atomic file operations in
+- [x] T017 [P] Test atomic file operations in
       `tests/.speck-scripts/common/file-ops.test.ts` (temp directories, atomic
       operations, rollback)
 
@@ -306,18 +306,18 @@ via `/speck.check-upstream`
 
 ### Integration & End-to-End Validation
 
-- [ ] T070 [US1] Integration test: full pipeline from check → pull → transform
+- [x] T070 [US1] Integration test: full pipeline from check → pull → transform
       in `tests/.speck-scripts/integration.test.ts`
-- [ ] T071 [US1] Validation: verify transformation report structure matches
+- [x] T071 [US1] Validation: verify transformation report structure matches
       `TransformUpstreamOutput` schema AND includes all 9 sections from FR-009
       (upstream version, file status, Bun scripts, commands, change summaries,
       agents/skills, SPECK-EXTENSION blocks, validation results, rationale)
-- [ ] T072 [US1] Validation: verify generated Bun scripts have identical CLI
+- [x] T072 [US1] Validation: verify generated Bun scripts have identical CLI
       interface to bash equivalents (same flags, exit codes, JSON output
       structure)
-- [ ] T073 [US1] Validation: verify `/speck.*` commands successfully call
+- [x] T073 [US1] Validation: verify `/speck.*` commands successfully call
       `.speck/scripts/` implementations
-- [ ] T074 [US1] Run quickstart.md validation scenarios (Prerequisites, Running
+- [x] T074 [US1] Run quickstart.md validation scenarios (Prerequisites, Running
       Tests, Development Workflows)
 
 **Checkpoint**: User Story 1 complete - upstream sync and transformation
@@ -330,29 +330,29 @@ pipeline fully functional and independently testable
 **Purpose**: Improvements that affect multiple commands and overall developer
 experience
 
-- [ ] T075 [P] Add JSDoc comments to all public functions in `.speck/scripts/`
+- [x] T075 [P] Add JSDoc comments to all public functions in `.speck/scripts/`
       and `.speck/scripts/common/`
-- [ ] T076 [P] Add inline comments explaining transformation strategy decisions
+- [x] T076 [P] Add inline comments explaining transformation strategy decisions
       in transformation agents
-- [ ] T077 [P] Code cleanup: remove unused imports, enforce consistent
+- [x] T077 [P] Code cleanup: remove unused imports, enforce consistent
       formatting with `prettier`
-- [ ] T078 [P] Performance validation: verify `/speck.check-upstream` completes
+- [x] T078 [P] Performance validation: verify `/speck.check-upstream` completes
       in <10s (SC-001)
-- [ ] T079 [P] Performance validation: verify `/speck.pull-upstream` completes
+- [x] T079 [P] Performance validation: verify `/speck.pull-upstream` completes
       in <2min for typical releases (SC-002)
-- [ ] T080 [P] Performance validation: verify `/speck.transform-upstream`
+- [x] T080 [P] Performance validation: verify `/speck.transform-upstream`
       completes in <5min for typical releases (SC-003)
-- [ ] T081 [P] Performance validation: verify Bun script startup time <100ms
+- [x] T081 [P] Performance validation: verify Bun script startup time <100ms
       (SC-006)
-- [ ] T082 Run full test suite with coverage: `bun test --coverage` (target 80%+
+- [x] T082 Run full test suite with coverage: `bun test --coverage` (target 80%+
       coverage per research.md)
-- [ ] T083 Verify coverage threshold: ensure 80%+ coverage for `.speck/scripts/`
+- [x] T083 Verify coverage threshold: ensure 80%+ coverage for `.speck/scripts/`
       and `common/` utilities (SC-007 transformation success rate validation)
-- [ ] T084 Security review: ensure no secrets in `.speck/scripts/` (GitHub
+- [x] T084 Security review: ensure no secrets in `.speck/scripts/` (GitHub
       tokens, credentials)
-- [ ] T085 Documentation: add troubleshooting section to quickstart.md based on
+- [x] T085 Documentation: add troubleshooting section to quickstart.md based on
       common test failures
-- [ ] T086 Final validation: run all quickstart.md scenarios end-to-end on clean
+- [x] T086 Final validation: run all quickstart.md scenarios end-to-end on clean
       repository clone
 
 ---
