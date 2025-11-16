@@ -37,13 +37,21 @@ interface WorktreeConfig {
 
 /**
  * Items to copy (independent per worktree)
+ * These files are gitignored and should be independent per worktree
  */
-const ITEMS_TO_COPY = [".env", ".envrc", ".claude/settings.local.json"];
+const ITEMS_TO_COPY = [
+  ".env",
+  ".envrc",
+];
 
 /**
  * Items to symlink (shared across worktrees)
+ * These are gitignored directories that should be shared
+ * Note: .claude/ is checked into git, so it's copied by git worktree automatically
  */
-const ITEMS_TO_LINK = [".vscode", ".claude/tasks"];
+const ITEMS_TO_LINK = [
+  ".vscode",
+];
 
 /**
  * Parse command line arguments
@@ -134,8 +142,9 @@ Examples:
 Notes:
   - Slashes in branch names are converted to dashes in directory names
   - The worktree will be created as a peer directory
-  - Copies: .env, .envrc (independent per worktree)
-  - Symlinks: .vscode, .claude/tasks (shared across worktrees)
+  - Copies: .env, .envrc (if found, independent per worktree)
+  - Symlinks: .vscode (shared, gitignored)
+  - .claude/ is checked into git and copied automatically by git worktree
 `);
 }
 
@@ -411,32 +420,38 @@ async function createSymlinks(
 
   for (const item of ITEMS_TO_LINK) {
     const sourcePath = path.join(currentDir, item);
+    const destPath = path.join(worktreePath, item);
 
-    if (existsSync(sourcePath)) {
-      // Calculate relative path depth
-      const itemDepth = (item.match(/\//g) || []).length;
-      const upLevels = itemDepth + 1;
-
-      let relativePrefix = "";
-      for (let i = 0; i < upLevels; i++) {
-        relativePrefix += "../";
-      }
-
-      const relativePath = `${relativePrefix}${currentDirName}/${item}`;
-      const destPath = path.join(worktreePath, item);
-
-      // Create parent directory if needed
-      const destDir = path.dirname(destPath);
-      if (!existsSync(destDir)) {
-        mkdirSync(destDir, { recursive: true });
-      }
-
-      await $`ln -s ${relativePath} ${destPath}`;
-      console.log(`  Symlinked: ${item} -> ${relativePath}`);
-      symlinked.push(item);
-    } else {
-      console.log(`  Skipped: ${item} (not found)`);
+    if (!existsSync(sourcePath)) {
+      console.log(`  Skipped: ${item} (not found in source)`);
+      continue;
     }
+
+    if (existsSync(destPath)) {
+      console.log(`  Skipped: ${item} (already exists in worktree)`);
+      continue;
+    }
+
+    // Calculate relative path depth
+    const itemDepth = (item.match(/\//g) || []).length;
+    const upLevels = itemDepth + 1;
+
+    let relativePrefix = "";
+    for (let i = 0; i < upLevels; i++) {
+      relativePrefix += "../";
+    }
+
+    const relativePath = `${relativePrefix}${currentDirName}/${item}`;
+
+    // Create parent directory if needed
+    const destDir = path.dirname(destPath);
+    if (!existsSync(destDir)) {
+      mkdirSync(destDir, { recursive: true });
+    }
+
+    await $`ln -s ${relativePath} ${destPath}`;
+    console.log(`  Symlinked: ${item} -> ${relativePath}`);
+    symlinked.push(item);
   }
 
   return { symlinked };
