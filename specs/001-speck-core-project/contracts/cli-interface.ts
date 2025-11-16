@@ -117,6 +117,10 @@ export interface TransformUpstreamOutput {
     path: string;
     purpose: string;
   }>;
+  /** Path to transformation history file (FR-013) */
+  transformationHistoryPath?: string;
+  /** Number of factoring mappings recorded in this transformation (FR-013) */
+  factoringMappingsCount?: number;
   errorDetails?: string;
 }
 

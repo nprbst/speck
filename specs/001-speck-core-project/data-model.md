@@ -65,7 +65,72 @@ The `upstream/releases.json` file tracking all pulled releases.
 
 ---
 
-### 3. TransformationReport
+### 3. TransformationHistory (FR-013)
+
+The `.speck/transformation-history.json` file tracking factoring decisions across all upstream transformations.
+
+**Purpose**: Enable incremental transformations to reference previous factoring decisions and maintain consistency across versions.
+
+**Fields**:
+- `schemaVersion: string` - Schema version for forward compatibility (currently "1.0.0")
+- `latestVersion: string` - Most recently transformed version (for quick access)
+- `entries: TransformationHistoryEntry[]` - Array of all transformation history entries, newest first
+
+**TransformationHistoryEntry**:
+- `version: string` - Upstream version transformed (e.g., "v1.0.0")
+- `timestamp: string` - ISO 8601 timestamp of transformation
+- `commitSha: string` - Git commit SHA of the upstream release
+- `status: "transformed" | "failed" | "partial"` - Transformation status
+- `mappings: FactoringMapping[]` - Array of factoring decisions made during this transformation
+- `errorDetails?: string` - Optional error details if transformation failed
+
+**FactoringMapping**:
+- `source: string` - Upstream source file path (relative to `upstream/<version>/`)
+- `generated: string` - Generated artifact path (relative to repo root)
+- `type: "command" | "agent" | "skill" | "script"` - Type of generated artifact
+- `description?: string` - Optional description of what was extracted/transformed
+- `rationale?: string` - Optional rationale for factoring decision (e.g., "Multi-step workflow >3 steps per FR-007")
+
+**Operations**:
+- `addTransformationEntry(version, commitSha, status, mappings)` - Add new transformation
+- `updateTransformationStatus(version, status, errorDetails?)` - Update status
+- `addFactoringMapping(version, mapping)` - Record factoring decision
+- `getPreviousFactoringDecision(source): FactoringMapping | undefined` - Query previous decisions
+- `getLatestTransformedVersion(): string | undefined` - Get most recent successful transformation
+
+**Validation Rules**:
+- `schemaVersion` must be "1.0.0"
+- `latestVersion` must be non-empty string
+- `entries` must be sorted newest first (by timestamp)
+- Each `mapping.type` must be one of: "command", "agent", "skill", "script"
+- Each `mapping.source` and `mapping.generated` must be non-empty strings
+
+**State Transitions**:
+```
+Initial → "partial" (transformation started)
+"partial" → "transformed" (transformation succeeded)
+"partial" → "failed" (transformation failed)
+"failed" → "transformed" (retry after fixing issues)
+```
+
+**Example Usage**:
+```typescript
+// Query previous decision during incremental transformation
+const previousMapping = await getPreviousFactoringDecision(
+  ".speck/transformation-history.json",
+  ".claude/commands/plan.md"
+);
+
+if (previousMapping) {
+  // Use same factoring decision for consistency
+  console.log(`Previously factored to: ${previousMapping.generated}`);
+  console.log(`Rationale: ${previousMapping.rationale}`);
+}
+```
+
+---
+
+### 4. TransformationReport
 
 Markdown document generated after `/speck.transform-upstream` completes, documenting all changes.
 
@@ -76,6 +141,8 @@ Markdown document generated after `/speck.transform-upstream` completes, documen
 - `speckCommandsGenerated: SpeckCommand[]` - List of /speck.* commands created/updated
 - `agentsFactored: Agent[]` - List of .claude/agents/ extracted
 - `skillsFactored: Skill[]` - List of .claude/skills/ extracted
+- `transformationHistoryPath: string` - Path to `.speck/transformation-history.json` (FR-013)
+- `factoringMappingsCount: number` - Number of factoring mappings recorded (FR-013)
 - `transformationRationale: string` - Claude's explanation of transformation decisions
 
 **Sub-Entities**:

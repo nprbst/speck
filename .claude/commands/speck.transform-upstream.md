@@ -267,9 +267,12 @@ Task tool parameters:
     2. Update script references using the bash-to-bun mappings
     3. Remove PowerShell references
     4. Update agent references (speckit.* → speck.*)
-    5. Preserve command body workflow logic
-    6. Preserve [SPECK-EXTENSION:START/END] markers if present
-    7. Save as .claude/commands/speck.X.md
+    5. Analyze command body for workflow sections to factor per FR-007 criteria
+    6. Extract agents/skills with speck. prefix per FR-007a
+    7. Record factoring decisions in .speck/transformation-history.json per FR-013
+    8. Preserve command body workflow logic
+    9. Preserve [SPECK-EXTENSION:START/END] markers if present
+    10. Save as .claude/commands/speck.X.md
 
     ## Report Format
 
@@ -284,6 +287,21 @@ Task tool parameters:
           "changeType": "new | modified"
         }
       ],
+      "agentsFactored": [
+        {
+          "path": ".claude/agents/speck.plan-workflow.md",
+          "purpose": "Multi-step planning workflow",
+          "extractedFrom": "speckit.plan.md"
+        }
+      ],
+      "skillsFactored": [
+        {
+          "path": ".claude/skills/speck.load-context.md",
+          "purpose": "Load feature context for analysis",
+          "extractedFrom": "Multiple commands"
+        }
+      ],
+      "factoringMappingsCount": 15,
       "skipped": [
         {
           "commandName": "speck.Y",
@@ -306,7 +324,63 @@ Task tool parameters:
 - Extract list of skipped commands
 - Check for errors or warnings
 
-### 4. Status Tracking
+### 4. Transformation History Tracking (FR-013)
+
+Record factoring decisions in `.speck/transformation-history.json`:
+
+1. **Initialize transformation entry** (at start of transformation):
+   ```typescript
+   import { addTransformationEntry } from ".speck/scripts/common/transformation-history";
+
+   await addTransformationEntry(
+     ".speck/transformation-history.json",
+     version,
+     commitSha, // from upstream/releases.json
+     "partial",  // Will update to "transformed" or "failed" later
+     []          // Mappings will be added by agents
+   );
+   ```
+
+2. **Agents record factoring decisions**:
+   - When Agent 2 (transform-commands) extracts agents/skills, it should call:
+     ```typescript
+     import { addFactoringMapping } from ".speck/scripts/common/transformation-history";
+
+     await addFactoringMapping(
+       ".speck/transformation-history.json",
+       version,
+       {
+         source: ".claude/commands/plan.md",
+         generated: ".claude/agents/speck.plan-workflow.md",
+         type: "agent",
+         description: "Extracted planning workflow",
+         rationale: ">3 steps with branching logic per FR-007"
+       }
+     );
+     ```
+   - Record all command → command, command → agent, and command → skill mappings
+
+3. **Update transformation status on completion**:
+   ```typescript
+   import { updateTransformationStatus } from ".speck/scripts/common/transformation-history";
+
+   // On success:
+   await updateTransformationStatus(
+     ".speck/transformation-history.json",
+     version,
+     "transformed"
+   );
+
+   // On failure:
+   await updateTransformationStatus(
+     ".speck/transformation-history.json",
+     version,
+     "failed",
+     errorMessage
+   );
+   ```
+
+### 5. Status Tracking
 
 Update `upstream/releases.json` with transformation status:
 
@@ -320,7 +394,7 @@ Or if any agent failed:
 bun .speck/scripts/common/json-tracker.ts update-status <version> failed "<error message>"
 ```
 
-### 5. Report Results
+### 6. Report Results
 
 Present transformation summary to user:
 
@@ -332,6 +406,7 @@ Present transformation summary to user:
 Generated:
   - X Bun TypeScript scripts in .speck/scripts/
   - Y /speck.* commands in .claude/commands/
+  - Z factoring mappings recorded in .speck/transformation-history.json
 
 Status: transformed
 Date: <ISO 8601 timestamp>
@@ -340,6 +415,7 @@ Next steps:
   1. Review generated files
   2. Run tests: bun test tests/.speck-scripts/
   3. Try generated commands (e.g., /speck.plan)
+  4. Check transformation history: .speck/transformation-history.json
 ```
 
 #### Failure Case

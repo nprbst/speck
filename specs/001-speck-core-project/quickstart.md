@@ -145,7 +145,63 @@ touch tests/.speck-scripts/common/github-api.test.ts
 bun test tests/.speck-scripts/common/github-api.test.ts
 ```
 
-### Workflow 3: Validate CLI Interface Compatibility
+### Workflow 3: Work with Transformation History (FR-013)
+
+```bash
+# 1. Query previous factoring decisions
+bun --eval '
+import { getPreviousFactoringDecision } from "./.speck/scripts/common/transformation-history.ts";
+
+const mapping = await getPreviousFactoringDecision(
+  ".speck/transformation-history.json",
+  ".claude/commands/plan.md"
+);
+
+console.log(mapping);
+'
+
+# 2. Add transformation entry
+bun --eval '
+import { addTransformationEntry } from "./.speck/scripts/common/transformation-history.ts";
+
+await addTransformationEntry(
+  ".speck/transformation-history.json",
+  "v1.0.0",
+  "abc123def456",
+  "transformed",
+  []
+);
+'
+
+# 3. Record factoring mapping
+bun --eval '
+import { addFactoringMapping } from "./.speck/scripts/common/transformation-history.ts";
+
+await addFactoringMapping(
+  ".speck/transformation-history.json",
+  "v1.0.0",
+  {
+    source: ".claude/commands/plan.md",
+    generated: ".claude/agents/speck.plan-workflow.md",
+    type: "agent",
+    rationale: "Multi-step workflow >3 steps per FR-007"
+  }
+);
+'
+
+# 4. View transformation history
+cat .speck/transformation-history.json | jq '.'
+
+# 5. Get latest transformed version
+bun --eval '
+import { getLatestTransformedVersion } from "./.speck/scripts/common/transformation-history.ts";
+
+const version = await getLatestTransformedVersion(".speck/transformation-history.json");
+console.log(`Latest: ${version}`);
+'
+```
+
+### Workflow 4: Validate CLI Interface Compatibility
 
 ```bash
 # 1. Identify bash script to transform
