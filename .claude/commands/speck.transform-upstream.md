@@ -67,8 +67,10 @@ Find source files to transform and detect changes from previous version:
    # Find the most recent transformed version in upstream/releases.json
    # This will be used as the baseline for diff detection
    ```
-   - Query `upstream/releases.json` for the latest version with `"status": "transformed"`
-   - If no previous transformed version exists, treat all files as changed (first-time transformation)
+   - Query `upstream/releases.json` for the latest version with
+     `"status": "transformed"`
+   - If no previous transformed version exists, treat all files as changed
+     (first-time transformation)
    - Store as `PREV_VERSION`
 
 2. **Find bash scripts**:
@@ -90,7 +92,8 @@ Find source files to transform and detect changes from previous version:
    - Parse diff output to identify:
      - **New files**: `Only in upstream/<version>/...`
      - **Modified files**: `Files ... and ... differ`
-     - **Deleted files**: `Only in upstream/<PREV_VERSION>/...` (can be ignored - no transformation needed)
+     - **Deleted files**: `Only in upstream/<PREV_VERSION>/...` (can be
+       ignored - no transformation needed)
    - Create list of **CHANGED_BASH_SCRIPTS** (new + modified)
    - If no bash scripts changed, skip Agent 1 entirely
 
@@ -101,7 +104,8 @@ Find source files to transform and detect changes from previous version:
    - Parse diff output to identify:
      - **New files**: `Only in upstream/<version>/...`
      - **Modified files**: `Files ... and ... differ`
-     - **Deleted files**: `Only in upstream/<PREV_VERSION>/...` (can be ignored - no transformation needed)
+     - **Deleted files**: `Only in upstream/<PREV_VERSION>/...` (can be
+       ignored - no transformation needed)
    - Create list of **CHANGED_SPECKIT_COMMANDS** (new + modified)
    - If no commands changed, skip Agent 2 entirely
 
@@ -136,16 +140,18 @@ Invoke transformation agents sequentially (skip agents if no files changed):
 
 #### Agent 1: Bash-to-Bun Transformation
 
-**IMPORTANT**: Skip this agent entirely if `CHANGED_BASH_SCRIPTS` is empty (no bash scripts changed).
+**IMPORTANT**: Skip this agent entirely if `CHANGED_BASH_SCRIPTS` is empty (no
+bash scripts changed).
 
-If there are changed bash scripts, use the Task tool to launch the transformation agent:
+If there are changed bash scripts, use the Task tool to launch the
+transformation agent:
 
 ```
 Task tool parameters:
   subagent_type: "general-purpose"
   description: "Transform bash scripts to Bun TypeScript"
   prompt: |
-    You are executing the agent defined in .claude/agents/transform-bash-to-bun.md
+    You are executing the agent defined in .claude/agents/speck.transform-bash-to-bun.md
 
     Read and follow ALL instructions in that agent file.
 
@@ -227,16 +233,18 @@ Task tool parameters:
 
 #### Agent 2: Command Transformation
 
-**IMPORTANT**: Skip this agent entirely if `CHANGED_SPECKIT_COMMANDS` is empty (no commands changed).
+**IMPORTANT**: Skip this agent entirely if `CHANGED_SPECKIT_COMMANDS` is empty
+(no commands changed).
 
-If there are changed commands, use the Task tool to launch the command transformation agent:
+If there are changed commands, use the Task tool to launch the command
+transformation agent:
 
 ```
 Task tool parameters:
   subagent_type: "general-purpose"
   description: "Transform speckit commands to speck commands"
   prompt: |
-    You are executing the agent defined in .claude/agents/transform-commands.md
+    You are executing the agent defined in .claude/agents/speck.transform-commands.md
 
     Read and follow ALL instructions in that agent file.
 
@@ -336,8 +344,8 @@ Record factoring decisions in `.speck/transformation-history.json`:
      ".speck/transformation-history.json",
      version,
      commitSha, // from upstream/releases.json
-     "partial",  // Will update to "transformed" or "failed" later
-     []          // Mappings will be added by agents
+     "partial", // Will update to "transformed" or "failed" later
+     [], // Mappings will be added by agents
    );
    ```
 
@@ -354,8 +362,8 @@ Record factoring decisions in `.speck/transformation-history.json`:
          generated: ".claude/agents/speck.plan-workflow.md",
          type: "agent",
          description: "Extracted planning workflow",
-         rationale: ">3 steps with branching logic per FR-007"
-       }
+         rationale: ">3 steps with branching logic per FR-007",
+       },
      );
      ```
    - Record all command → command, command → agent, and command → skill mappings
@@ -368,7 +376,7 @@ Record factoring decisions in `.speck/transformation-history.json`:
    await updateTransformationStatus(
      ".speck/transformation-history.json",
      version,
-     "transformed"
+     "transformed",
    );
 
    // On failure:
@@ -376,7 +384,7 @@ Record factoring decisions in `.speck/transformation-history.json`:
      ".speck/transformation-history.json",
      version,
      "failed",
-     errorMessage
+     errorMessage,
    );
    ```
 

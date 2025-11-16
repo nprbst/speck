@@ -220,10 +220,10 @@ via `/speck.check-upstream`
 #### Transformation Agents (Core Logic)
 
 - [x] T048 [P] [US1] Create bash-to-Bun transformation agent in
-      `.claude/agents/transform-bash-to-bun.md` (analyzes bash scripts,
+      `.claude/agents/speck.transform-bash-to-bun.md` (analyzes bash scripts,
       generates Bun TypeScript equivalents)
 - [x] T049 [P] [US1] Create command transformation agent in
-      `.claude/agents/transform-commands.md` (transforms `/speckit.*` to
+      `.claude/agents/speck.transform-commands.md` (transforms `/speckit.*` to
       `/speck.*`, factors agents/skills)
 - [x] T049a [P] [US1] Implement breaking change detection in bash-to-Bun agent
       (analyzes CLI interface differences: removed/renamed flags, changed exit
@@ -282,11 +282,11 @@ via `/speck.check-upstream`
 - [x] T061 [US1] Implement Bun runtime check in slash command (fails early if
       `bun --version` fails)
 - [x] T062 [US1] Implement bash-to-Bun agent invocation in slash command
-      (launches `.claude/agents/transform-bash-to-bun.md` with source bash
+      (launches `.claude/agents/speck.transform-bash-to-bun.md` with source bash
       scripts)
 - [x] T063 [US1] Implement command transformation agent invocation in slash
-      command (launches `.claude/agents/transform-commands.md` after bash-to-Bun
-      completes)
+      command (launches `.claude/agents/speck.transform-commands.md` after
+      bash-to-Bun completes)
 - [x] T064 [US1] Implement transformation report generation in slash command
       (collects agent outputs, creates 9-section report per FR-009: (1) upstream
       version transformed, (2) file creation/update status, (3) Bun scripts with

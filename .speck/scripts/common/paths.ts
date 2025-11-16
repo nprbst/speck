@@ -1,38 +1,32 @@
 /**
+ * Common path resolution and feature detection utilities
+ *
  * Bun TypeScript implementation of common.sh
  *
- * Transformation Date: 2025-11-15 (updated from v0.0.85)
+ * Transformation Date: 2025-11-15
  * Source: upstream/v0.0.85/.specify/scripts/bash/common.sh
- * Strategy: Pure TypeScript (file I/O, path operations) + Bun Shell API (git commands)
- *
- * This module provides common functions and variables for all Speck scripts.
- * It replaces the bash sourcing pattern with TypeScript exports.
- *
- * Transformation Rationale:
- * - Replaced bash functions with TypeScript exported functions
- * - Replaced git commands with Bun Shell API for consistency
- * - Replaced directory traversal with Node.js path operations
- * - Replaced environment variable access with process.env
- * - Replaced string matching with native JS regex
- * - Replaced file checks with Node.js fs.existsSync()
+ * Strategy: Pure TypeScript (native path/fs operations)
  *
  * Changes from v0.0.84 to v0.0.85:
- * - Upstream added CDPATH="" before cd commands for security
+ * - Upstream added CDPATH="" to cd commands (security fix for bash path traversal)
  * - TypeScript implementation already immune: uses import.meta.dir and path.resolve()
- * - No code changes needed; documented for transparency
+ * - No code changes needed, only documentation updated to track v0.0.85
+ *
+ * All functions use pure TypeScript/Node.js APIs for maximum maintainability.
  */
 
-import { $ } from "bun";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import path from "node:path";
+import { $ } from "bun";
 
 /**
- * Feature paths structure returned by getFeaturePaths()
+ * Feature paths returned by getFeaturePaths()
  */
 export interface FeaturePaths {
   REPO_ROOT: string;
   CURRENT_BRANCH: string;
-  HAS_GIT: boolean;
+  HAS_GIT: string;
   FEATURE_DIR: string;
   FEATURE_SPEC: string;
   IMPL_PLAN: string;
@@ -44,7 +38,9 @@ export interface FeaturePaths {
 }
 
 /**
- * Get repository root, with fallback for non-git repositories
+ * Get repository root directory
+ *
+ * Attempts to use git first, falls back to script location for non-git repos.
  */
 export async function getRepoRoot(): Promise<string> {
   try {
@@ -52,27 +48,33 @@ export async function getRepoRoot(): Promise<string> {
     return result.text().trim();
   } catch {
     // Fall back to script location for non-git repos
-    // Navigate up from .speck/scripts/ to repo root
     const scriptDir = import.meta.dir;
-    return path.resolve(scriptDir, "../../");
+    // Navigate up from .speck/scripts/common to repo root
+    return path.resolve(scriptDir, "../../..");
   }
 }
 
 /**
- * Get current branch, with fallback for non-git repositories
+ * Get current branch name
+ *
+ * Priority:
+ * 1. SPECIFY_FEATURE environment variable
+ * 2. Git branch (if git repo)
+ * 3. Latest feature directory in specs/
+ * 4. "main" as final fallback
  */
 export async function getCurrentBranch(repoRoot: string): Promise<string> {
-  // First check if SPECIFY_FEATURE environment variable is set
+  // Check environment variable first
   if (process.env.SPECIFY_FEATURE) {
     return process.env.SPECIFY_FEATURE;
   }
 
-  // Then check git if available
+  // Try git
   try {
     const result = await $`git rev-parse --abbrev-ref HEAD`.quiet();
     return result.text().trim();
   } catch {
-    // For non-git repos, try to find the latest feature directory
+    // For non-git repos, find latest feature directory
     const specsDir = path.join(repoRoot, "specs");
 
     if (existsSync(specsDir)) {
@@ -82,13 +84,12 @@ export async function getCurrentBranch(repoRoot: string): Promise<string> {
       const dirs = readdirSync(specsDir, { withFileTypes: true });
       for (const dir of dirs) {
         if (dir.isDirectory()) {
-          const dirname = dir.name;
-          const match = dirname.match(/^(\d{3})-/);
+          const match = dir.name.match(/^(\d{3})-/);
           if (match) {
             const number = parseInt(match[1], 10);
             if (number > highest) {
               highest = number;
-              latestFeature = dirname;
+              latestFeature = dir.name;
             }
           }
         }
@@ -99,12 +100,12 @@ export async function getCurrentBranch(repoRoot: string): Promise<string> {
       }
     }
 
-    return "main"; // Final fallback
+    return "main";
   }
 }
 
 /**
- * Check if we have git available
+ * Check if we have a git repository
  */
 export async function hasGit(): Promise<boolean> {
   try {
@@ -116,15 +117,20 @@ export async function hasGit(): Promise<boolean> {
 }
 
 /**
- * Check if current branch follows feature naming convention
+ * Check if on a valid feature branch
+ *
+ * @param branch - Branch name to check
+ * @param hasGitRepo - Whether we have a git repo
+ * @returns true if valid, false otherwise (prints error to stderr)
  */
 export function checkFeatureBranch(branch: string, hasGitRepo: boolean): boolean {
-  // For non-git repos, we can't enforce branch naming but still provide output
+  // For non-git repos, we can't enforce branch naming
   if (!hasGitRepo) {
     console.error("[specify] Warning: Git repository not detected; skipped branch validation");
     return true;
   }
 
+  // Check if branch matches pattern: ###-feature-name
   if (!/^\d{3}-/.test(branch)) {
     console.error(`ERROR: Not on a feature branch. Current branch: ${branch}`);
     console.error("Feature branches should be named like: 001-feature-name");
@@ -135,15 +141,19 @@ export function checkFeatureBranch(branch: string, hasGitRepo: boolean): boolean
 }
 
 /**
- * Get feature directory path
+ * Get feature directory for a branch name
+ *
+ * Simple helper that joins repo root and specs directory
  */
 export function getFeatureDir(repoRoot: string, branchName: string): string {
   return path.join(repoRoot, "specs", branchName);
 }
 
 /**
- * Find feature directory by numeric prefix instead of exact branch match
- * This allows multiple branches to work on the same spec (e.g., 004-fix-bug, 004-add-feature)
+ * Find feature directory by numeric prefix
+ *
+ * Allows multiple branches to work on the same spec (e.g., 004-fix-bug, 004-add-feature)
+ * Both would map to the first directory found starting with "004-"
  */
 export function findFeatureDirByPrefix(repoRoot: string, branchName: string): string {
   const specsDir = path.join(repoRoot, "specs");
@@ -157,7 +167,7 @@ export function findFeatureDirByPrefix(repoRoot: string, branchName: string): st
 
   const prefix = match[1];
 
-  // Search for directories in specs/ that start with this prefix
+  // Search for directories starting with this prefix
   const matches: string[] = [];
   if (existsSync(specsDir)) {
     const dirs = readdirSync(specsDir, { withFileTypes: true });
@@ -179,12 +189,14 @@ export function findFeatureDirByPrefix(repoRoot: string, branchName: string): st
     // Multiple matches - this shouldn't happen with proper naming convention
     console.error(`ERROR: Multiple spec directories found with prefix '${prefix}': ${matches.join(", ")}`);
     console.error("Please ensure only one spec directory exists per numeric prefix.");
-    return path.join(specsDir, branchName); // Return something to avoid breaking the script
+    return path.join(specsDir, branchName);
   }
 }
 
 /**
  * Get all feature-related paths
+ *
+ * This is the main function used by other scripts to get their working environment.
  */
 export async function getFeaturePaths(): Promise<FeaturePaths> {
   const repoRoot = await getRepoRoot();
@@ -197,7 +209,7 @@ export async function getFeaturePaths(): Promise<FeaturePaths> {
   return {
     REPO_ROOT: repoRoot,
     CURRENT_BRANCH: currentBranch,
-    HAS_GIT: hasGitRepo,
+    HAS_GIT: hasGitRepo ? "true" : "false",
     FEATURE_DIR: featureDir,
     FEATURE_SPEC: path.join(featureDir, "spec.md"),
     IMPL_PLAN: path.join(featureDir, "plan.md"),
@@ -210,26 +222,26 @@ export async function getFeaturePaths(): Promise<FeaturePaths> {
 }
 
 /**
- * Check if file exists and output status
+ * Check if a file exists and print status
+ * Used for human-readable output
  */
-export function checkFile(filePath: string, displayName: string): void {
-  if (existsSync(filePath)) {
-    console.log(`  ✓ ${displayName}`);
-  } else {
-    console.log(`  ✗ ${displayName}`);
-  }
+export function checkFile(filePath: string, label: string): string {
+  return existsSync(filePath) ? `  ✓ ${label}` : `  ✗ ${label}`;
 }
 
 /**
- * Check if directory exists and is non-empty
+ * Check if a directory exists and has files
+ * Used for human-readable output
  */
-export function checkDir(dirPath: string, displayName: string): void {
-  if (existsSync(dirPath)) {
-    const files = readdirSync(dirPath);
-    if (files.length > 0) {
-      console.log(`  ✓ ${displayName}`);
-      return;
-    }
+export function checkDir(dirPath: string, label: string): string {
+  if (!existsSync(dirPath)) {
+    return `  ✗ ${label}`;
   }
-  console.log(`  ✗ ${displayName}`);
+
+  try {
+    const files = readdirSync(dirPath);
+    return files.length > 0 ? `  ✓ ${label}` : `  ✗ ${label}`;
+  } catch {
+    return `  ✗ ${label}`;
+  }
 }

@@ -71,8 +71,13 @@ converting bash scripts to Bun TypeScript in `.speck/scripts/`, and generating
   Task tool for agents (e.g.,
   `Task(subagent_type: "general-purpose", prompt: "Execute .claude/agents/X.md...")`),
   use Skill tool for skills (e.g., `Skill(skill: "skill-name")`)
-- Q: Where should transformation factoring decisions be stored for incremental transformations? → A: Create separate `.speck/transformation-history.json` file mapping source → generated artifacts
-- Q: Should extracted agents and skills be prefixed to avoid naming conflicts? → A: Prefix all extracted agents and skills with `speck.` (e.g., `.claude/agents/speck.plan-workflow.md`, `.claude/skills/speck.load-context.md`)
+- Q: Where should transformation factoring decisions be stored for incremental
+  transformations? → A: Create separate `.speck/transformation-history.json`
+  file mapping source → generated artifacts
+- Q: Should extracted agents and skills be prefixed to avoid naming conflicts? →
+  A: Prefix all extracted agents and skills with `speck.` (e.g.,
+  `.claude/agents/speck.plan-workflow.md`,
+  `.claude/skills/speck.load-context.md`)
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -203,8 +208,8 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
   orchestrates dual transformation by launching two specialized agents in
   sequence
 - **FR-005a**: System MUST provide bash-to-Bun transformation agent
-  (`.claude/agents/transform-bash-to-bun.md`) that analyzes bash scripts from
-  `upstream/<version>/.specify/scripts/bash/` and generates semantically
+  (`.claude/agents/speck.transform-bash-to-bun.md`) that analyzes bash scripts
+  from `upstream/<version>/.specify/scripts/bash/` and generates semantically
   equivalent Bun TypeScript in `.speck/scripts/` using transformation strategy:
   prefer pure TypeScript equivalents, use Bun Shell API for shell-like
   constructs, fall back to `Bun.spawn()` for complex bash-specific patterns
@@ -223,9 +228,9 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
   without errors and passes all tests before reporting success (tests MUST be
   run for all files regardless of whether file was created or updated)
 - **FR-005b**: System MUST provide command transformation agent
-  (`.claude/agents/transform-commands.md`) that transforms upstream `/speckit.*`
-  command files from `upstream/<version>/.claude/commands/` into `/speck.*`
-  commands in `.claude/commands/`
+  (`.claude/agents/speck.transform-commands.md`) that transforms upstream
+  `/speckit.*` command files from `upstream/<version>/.claude/commands/` into
+  `/speck.*` commands in `.claude/commands/`
 - **FR-005b.1**: Command transformation agent MUST check for existing Speck
   command files in `.claude/commands/` before transformation and preserve
   SPECK-EXTENSION blocks from existing commands with absolute priority (never
@@ -274,7 +279,10 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
   failures, invalid tags, missing Bun runtime, or transformation conflicts
 - **FR-012**: System MUST perform atomic operations - either full command
   succeeds or nothing changes (no partial state)
-- **FR-013**: System MUST record transformation factoring decisions in `.speck/transformation-history.json` tracking which upstream source commands/scripts map to which generated Speck commands, agents, and skills, enabling incremental transformation to reference previous factoring decisions
+- **FR-013**: System MUST record transformation factoring decisions in
+  `.speck/transformation-history.json` tracking which upstream source
+  commands/scripts map to which generated Speck commands, agents, and skills,
+  enabling incremental transformation to reference previous factoring decisions
 
 ### Key Entities
 
@@ -292,17 +300,17 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
   `upstream/<version>/`, update symlink) → `/speck.transform-upstream`
   (orchestrates two-agent dual transformation)
 - **Bash-to-Bun Transformation Agent**: Specialized agent
-  (`.claude/agents/transform-bash-to-bun.md`) that analyzes bash scripts from
-  `upstream/<version>/scripts/bash/` and generates semantically equivalent Bun
-  TypeScript in `.speck/scripts/` with identical CLI interfaces
+  (`.claude/agents/speck.transform-bash-to-bun.md`) that analyzes bash scripts
+  from `upstream/<version>/scripts/bash/` and generates semantically equivalent
+  Bun TypeScript in `.speck/scripts/` with identical CLI interfaces
 - **Command Transformation Agent**: Specialized agent
-  (`.claude/agents/transform-commands.md`) that converts upstream `/speckit.*`
-  command files to `/speck.*` commands by: (1) updating script references from
-  `.specify/scripts/bash/` to `.speck/scripts/`, (2) applying factoring criteria
-  to identify and extract sections as `.claude/agents/speck.*.md` (multi-step
-  autonomous workflows >3 steps) or `.claude/skills/speck.*.md` (reusable
-  cross-command capabilities), (3) preserving command structure and workflow
-  intent
+  (`.claude/agents/speck.transform-commands.md`) that converts upstream
+  `/speckit.*` command files to `/speck.*` commands by: (1) updating script
+  references from `.specify/scripts/bash/` to `.speck/scripts/`, (2) applying
+  factoring criteria to identify and extract sections as
+  `.claude/agents/speck.*.md` (multi-step autonomous workflows >3 steps) or
+  `.claude/skills/speck.*.md` (reusable cross-command capabilities), (3)
+  preserving command structure and workflow intent
 - **Upstream Directory**: Read-only `upstream/<version>/` tree containing
   pristine spec-kit release content (templates, bash scripts, `/speckit.*`
   commands, docs) for transformation source material
@@ -312,7 +320,11 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
   transformation rationale for all changes
 - **Bun Script**: TypeScript implementation in `.speck/scripts/` that replicates
   bash script behavior with identical CLI interface
-- **Transformation History**: JSON file (`.speck/transformation-history.json`) recording factoring decisions mapping upstream source commands/scripts to generated Speck commands, agents, and skills, enabling incremental transformations to reference previous decisions and maintain consistency across versions
+- **Transformation History**: JSON file (`.speck/transformation-history.json`)
+  recording factoring decisions mapping upstream source commands/scripts to
+  generated Speck commands, agents, and skills, enabling incremental
+  transformations to reference previous decisions and maintain consistency
+  across versions
 
 ## Success Criteria _(mandatory)_
 
@@ -359,8 +371,8 @@ it, there's no Speck - just manually maintained forks of spec-kit files.
 - **Runtime**: Bun 1.0+ for TypeScript execution
 - **Claude**: Claude Code with slash command support for
   `/speck.check-upstream`, `/speck.pull-upstream`, `/speck.transform-upstream`,
-  and agent support for `.claude/agents/transform-bash-to-bun.md` and
-  `.claude/agents/transform-commands.md`
+  and agent support for `.claude/agents/speck.transform-bash-to-bun.md` and
+  `.claude/agents/speck.transform-commands.md`
 - **Network**: HTTPS access to GitHub for fetching releases
 
 ## Out of Scope

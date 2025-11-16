@@ -1,0 +1,267 @@
+{
+  "version": "1.0",
+  "lastTransformation": "2025-11-16T02:50:00Z",
+  "upstreamVersion": "v0.0.85",
+  "previousVersion": "v0.0.84",
+  "transformations": [
+    {
+      "timestamp": "2025-11-15T00:00:00Z",
+      "upstreamVersion": "v0.0.83",
+      "previousVersion": null,
+      "commands": [
+        {
+          "source": "upstream/v0.0.83/.claude/commands/speckit.analyze.md",
+          "target": ".claude/commands/speck.analyze.md",
+          "changeType": "new",
+          "scriptReferences": [
+            {
+              "original": ".specify/scripts/bash/check-prerequisites.sh",
+              "transformed": ".speck/scripts/check-prerequisites.ts"
+            }
+          ],
+          "agentReferences": [],
+          "factoringDecisions": []
+        },
+        {
+          "source": "upstream/v0.0.83/.claude/commands/speckit.checklist.md",
+          "target": ".claude/commands/speck.checklist.md",
+          "changeType": "new",
+          "scriptReferences": [
+            {
+              "original": ".specify/scripts/bash/check-prerequisites.sh",
+              "transformed": ".speck/scripts/check-prerequisites.ts"
+            }
+          ],
+          "agentReferences": [],
+          "factoringDecisions": []
+        },
+        {
+          "source": "upstream/v0.0.83/.claude/commands/speckit.clarify.md",
+          "target": ".claude/commands/speck.clarify.md",
+          "changeType": "new",
+          "scriptReferences": [
+            {
+              "original": ".specify/scripts/bash/check-prerequisites.sh",
+              "transformed": ".speck/scripts/check-prerequisites.ts"
+            }
+          ],
+          "agentReferences": [
+            {
+              "original": "speckit.plan",
+              "transformed": "speck.plan"
+            }
+          ],
+          "factoringDecisions": []
+        },
+        {
+          "source": "upstream/v0.0.83/.claude/commands/speckit.constitution.md",
+          "target": ".claude/commands/speck.constitution.md",
+          "changeType": "new",
+          "scriptReferences": [],
+          "agentReferences": [
+            {
+              "original": "speckit.specify",
+              "transformed": "speck.specify"
+            }
+          ],
+          "factoringDecisions": []
+        },
+        {
+          "source": "upstream/v0.0.83/.claude/commands/speckit.implement.md",
+          "target": ".claude/commands/speck.implement.md",
+          "changeType": "new",
+          "scriptReferences": [
+            {
+              "original": ".specify/scripts/bash/check-prerequisites.sh",
+              "transformed": ".speck/scripts/check-prerequisites.ts"
+            }
+          ],
+          "agentReferences": [],
+          "factoringDecisions": []
+        },
+        {
+          "source": "upstream/v0.0.83/.claude/commands/speckit.plan.md",
+          "target": ".claude/commands/speck.plan.md",
+          "changeType": "new",
+          "scriptReferences": [
+            {
+              "original": ".specify/scripts/bash/setup-plan.sh",
+              "transformed": ".speck/scripts/setup-plan.ts"
+            },
+            {
+              "original": ".specify/scripts/bash/update-agent-context.sh",
+              "transformed": ".speck/scripts/update-agent-context.ts"
+            }
+          ],
+          "agentReferences": [
+            {
+              "original": "speckit.tasks",
+              "transformed": "speck.tasks"
+            },
+            {
+              "original": "speckit.checklist",
+              "transformed": "speck.checklist"
+            }
+          ],
+          "factoringDecisions": []
+        },
+        {
+          "source": "upstream/v0.0.83/.claude/commands/speckit.specify.md",
+          "target": ".claude/commands/speck.specify.md",
+          "changeType": "new",
+          "scriptReferences": [
+            {
+              "original": ".specify/scripts/bash/create-new-feature.sh",
+              "transformed": ".speck/scripts/create-new-feature.ts"
+            }
+          ],
+          "agentReferences": [
+            {
+              "original": "speckit.plan",
+              "transformed": "speck.plan"
+            },
+            {
+              "original": "speckit.clarify",
+              "transformed": "speck.clarify"
+            }
+          ],
+          "factoringDecisions": []
+        },
+        {
+          "source": "upstream/v0.0.83/.claude/commands/speckit.tasks.md",
+          "target": ".claude/commands/speck.tasks.md",
+          "changeType": "new",
+          "scriptReferences": [
+            {
+              "original": ".specify/scripts/bash/check-prerequisites.sh",
+              "transformed": ".speck/scripts/check-prerequisites.ts"
+            }
+          ],
+          "agentReferences": [
+            {
+              "original": "speckit.analyze",
+              "transformed": "speck.analyze"
+            },
+            {
+              "original": "speckit.implement",
+              "transformed": "speck.implement"
+            }
+          ],
+          "factoringDecisions": []
+        },
+        {
+          "source": "upstream/v0.0.83/.claude/commands/speckit.taskstoissues.md",
+          "target": ".claude/commands/speck.taskstoissues.md",
+          "changeType": "new",
+          "scriptReferences": [
+            {
+              "original": ".specify/scripts/bash/check-prerequisites.sh",
+              "transformed": ".speck/scripts/check-prerequisites.ts"
+            }
+          ],
+          "agentReferences": [],
+          "factoringDecisions": []
+        }
+      ],
+      "summary": {
+        "totalCommands": 9,
+        "newCommands": 9,
+        "modifiedCommands": 0,
+        "scriptMappings": 4,
+        "agentMappings": 6,
+        "factoredAgents": 0,
+        "factoredSkills": 0
+      }
+    },
+    {
+      "timestamp": "2025-11-16T02:46:09Z",
+      "upstreamVersion": "v0.0.84",
+      "previousVersion": "v0.0.83",
+      "commands": [
+        {
+          "source": "upstream/v0.0.84/.claude/commands/speckit.implement.md",
+          "target": ".claude/commands/speck.implement.md",
+          "changeType": "modified",
+          "scriptReferences": [
+            {
+              "original": ".specify/scripts/bash/check-prerequisites.sh",
+              "transformed": ".speck/scripts/check-prerequisites.ts"
+            }
+          ],
+          "agentReferences": [],
+          "factoringDecisions": [],
+          "changesSummary": "Updated ESLint configuration detection logic: split single line checking for .eslintrc* and eslint.config.* into two separate lines with distinct handling (line 67-68). This improves clarity between .eslintignore file creation and eslint.config.* inline configuration validation."
+        }
+      ],
+      "summary": {
+        "totalCommands": 1,
+        "newCommands": 0,
+        "modifiedCommands": 1,
+        "scriptMappings": 1,
+        "agentMappings": 0,
+        "factoredAgents": 0,
+        "factoredSkills": 0
+      }
+    },
+    {
+      "timestamp": "2025-11-16T02:50:00Z",
+      "upstreamVersion": "v0.0.85",
+      "previousVersion": "v0.0.84",
+      "bashScripts": [
+        {
+          "source": "upstream/v0.0.85/.specify/scripts/bash/check-prerequisites.sh",
+          "target": ".speck/scripts/check-prerequisites.ts",
+          "changeType": "modified",
+          "codeChanged": false,
+          "documentationUpdated": true,
+          "changesSummary": "Added CDPATH=\"\" to cd command (security fix for bash path traversal vulnerability). TypeScript implementation already immune - uses import.meta.dir."
+        },
+        {
+          "source": "upstream/v0.0.85/.specify/scripts/bash/common.sh",
+          "target": ".speck/scripts/common/paths.ts",
+          "changeType": "modified",
+          "codeChanged": false,
+          "documentationUpdated": true,
+          "changesSummary": "Added CDPATH=\"\" to get_repo_root() function (security fix). TypeScript uses path.resolve() - not affected by CDPATH."
+        },
+        {
+          "source": "upstream/v0.0.85/.specify/scripts/bash/create-new-feature.sh",
+          "target": ".speck/scripts/create-new-feature.ts",
+          "changeType": "modified",
+          "codeChanged": false,
+          "documentationUpdated": true,
+          "changesSummary": "Added CDPATH=\"\" to cd command (security fix). TypeScript uses import.meta.dir and path.join() - already immune."
+        },
+        {
+          "source": "upstream/v0.0.85/.specify/scripts/bash/setup-plan.sh",
+          "target": ".speck/scripts/setup-plan.ts",
+          "changeType": "modified",
+          "codeChanged": false,
+          "documentationUpdated": true,
+          "changesSummary": "Added CDPATH=\"\" to cd command (security fix). TypeScript uses import.meta.dir - not affected."
+        },
+        {
+          "source": "upstream/v0.0.85/.specify/scripts/bash/update-agent-context.sh",
+          "target": ".speck/scripts/update-agent-context.ts",
+          "changeType": "modified",
+          "codeChanged": false,
+          "documentationUpdated": true,
+          "changesSummary": "Added CDPATH=\"\" to cd command (security fix). TypeScript uses path-based functions - immune to CDPATH."
+        }
+      ],
+      "commands": [],
+      "summary": {
+        "totalBashScripts": 5,
+        "modifiedBashScripts": 5,
+        "bashScriptsCodeChanged": 0,
+        "totalCommands": 0,
+        "newCommands": 0,
+        "modifiedCommands": 0,
+        "scriptMappings": 5,
+        "agentMappings": 0,
+        "factoredAgents": 0,
+        "factoredSkills": 0
+      }
+    }
+  ]
+}

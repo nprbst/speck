@@ -1,47 +1,49 @@
 #!/usr/bin/env bun
+
 /**
+ * Create New Feature Script
+ *
  * Bun TypeScript implementation of create-new-feature.sh
  *
- * Transformation Date: 2025-11-15 (updated from v0.0.85)
+ * Transformation Date: 2025-11-15
  * Source: upstream/v0.0.85/.specify/scripts/bash/create-new-feature.sh
- * Strategy: Pure TypeScript (file I/O, path operations, string processing) + Bun Shell API (git commands)
- *
- * CLI Interface:
- * - Flags: --json, --short-name <name>, --number N, --help, -h
- * - Arguments: feature_description (required, positional)
- * - Exit Codes: 0 (success), 1 (user error - missing args/invalid input)
- * - JSON Output: {"BRANCH_NAME":"...", "SPEC_FILE":"...", "FEATURE_NUM":"..."}
- *
- * Transformation Rationale:
- * - Replaced bash argument parsing with TypeScript (handles --short-name and --number with values)
- * - Replaced git commands with Bun Shell API
- * - Replaced bash string manipulation with native JS string methods
- * - Replaced directory traversal with Node.js fs operations
- * - Replaced bash regex with native JS regex
- * - Replaced branch number detection logic with TypeScript
+ * Strategy: Pure TypeScript (file ops, string manipulation) + Bun Shell API (git commands)
  *
  * Changes from v0.0.84 to v0.0.85:
- * - Upstream added CDPATH="" before cd commands for security
- * - TypeScript implementation already immune: uses import.meta.dir
- * - No code changes needed; documented for transparency
+ * - Upstream added CDPATH="" to cd command for SCRIPT_DIR (security fix)
+ * - TypeScript implementation already immune: uses import.meta.dir instead of cd
+ * - No code changes needed, only documentation updated to track v0.0.85
+ *
+ * CLI Interface:
+ * - Flags: --json, --short-name <name>, --number N, --help
+ * - Exit Codes: 0 (success), 1 (user error)
+ * - JSON Output: { BRANCH_NAME, SPEC_FILE, FEATURE_NUM }
+ *
+ * Transformation Rationale:
+ * - Replaced bash string manipulation with native TypeScript
+ * - Replaced git commands with Bun Shell API
+ * - Replaced bash loops with TypeScript for...of loops
+ * - Preserved all CLI flags and argument parsing logic
  */
 
-import { $ } from "bun";
-import { existsSync, readdirSync, mkdirSync, copyFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, copyFileSync } from "node:fs";
 import path from "node:path";
+import { $ } from "bun";
+import { ExitCode } from "./contracts/cli-interface";
 
 /**
- * CLI options
+ * CLI options for create-new-feature
  */
-interface CliOptions {
+interface CreateFeatureOptions {
   json: boolean;
   shortName?: string;
   number?: number;
   help: boolean;
+  featureDescription: string;
 }
 
 /**
- * JSON output
+ * JSON output for create-new-feature
  */
 interface CreateFeatureOutput {
   BRANCH_NAME: string;
@@ -52,10 +54,11 @@ interface CreateFeatureOutput {
 /**
  * Parse command line arguments
  */
-function parseArgs(args: string[]): { options: CliOptions; featureDescription: string } {
-  const options: CliOptions = {
+function parseArgs(args: string[]): CreateFeatureOptions {
+  const options: CreateFeatureOptions = {
     json: false,
     help: false,
+    featureDescription: "",
   };
 
   const positionalArgs: string[] = [];
@@ -64,64 +67,47 @@ function parseArgs(args: string[]): { options: CliOptions; featureDescription: s
   while (i < args.length) {
     const arg = args[i];
 
-    switch (arg) {
-      case "--json":
-        options.json = true;
-        i++;
-        break;
-      case "--short-name":
-        if (i + 1 >= args.length) {
-          console.error("Error: --short-name requires a value");
-          process.exit(1);
-        }
-        i++;
-        const shortNameValue = args[i];
-        if (shortNameValue.startsWith("--")) {
-          console.error("Error: --short-name requires a value");
-          process.exit(1);
-        }
-        options.shortName = shortNameValue;
-        i++;
-        break;
-      case "--number":
-        if (i + 1 >= args.length) {
-          console.error("Error: --number requires a value");
-          process.exit(1);
-        }
-        i++;
-        const numberValue = args[i];
-        if (numberValue.startsWith("--")) {
-          console.error("Error: --number requires a value");
-          process.exit(1);
-        }
-        options.number = parseInt(numberValue, 10);
-        if (isNaN(options.number)) {
-          console.error("Error: --number requires a numeric value");
-          process.exit(1);
-        }
-        i++;
-        break;
-      case "--help":
-      case "-h":
-        options.help = true;
-        i++;
-        break;
-      default:
-        positionalArgs.push(arg);
-        i++;
-        break;
+    if (arg === "--json") {
+      options.json = true;
+      i++;
+    } else if (arg === "--short-name") {
+      if (i + 1 >= args.length || args[i + 1].startsWith("--")) {
+        console.error("Error: --short-name requires a value");
+        process.exit(ExitCode.USER_ERROR);
+      }
+      options.shortName = args[i + 1];
+      i += 2;
+    } else if (arg === "--number") {
+      if (i + 1 >= args.length || args[i + 1].startsWith("--")) {
+        console.error("Error: --number requires a value");
+        process.exit(ExitCode.USER_ERROR);
+      }
+      const num = parseInt(args[i + 1], 10);
+      if (isNaN(num)) {
+        console.error("Error: --number requires a numeric value");
+        process.exit(ExitCode.USER_ERROR);
+      }
+      options.number = num;
+      i += 2;
+    } else if (arg === "--help" || arg === "-h") {
+      options.help = true;
+      i++;
+    } else {
+      positionalArgs.push(arg);
+      i++;
     }
   }
 
-  const featureDescription = positionalArgs.join(" ");
-  return { options, featureDescription };
+  options.featureDescription = positionalArgs.join(" ");
+  return options;
 }
 
 /**
- * Print help message
+ * Show help message
  */
-function printHelp(): void {
-  console.log(`Usage: create-new-feature.ts [--json] [--short-name <name>] [--number N] <feature_description>
+function showHelp(): void {
+  const scriptName = path.basename(process.argv[1]);
+  console.log(`Usage: ${scriptName} [--json] [--short-name <name>] [--number N] <feature_description>
 
 Options:
   --json              Output in JSON format
@@ -130,17 +116,17 @@ Options:
   --help, -h          Show this help message
 
 Examples:
-  create-new-feature.ts 'Add user authentication system' --short-name 'user-auth'
-  create-new-feature.ts 'Implement OAuth2 integration for API' --number 5`);
+  ${scriptName} 'Add user authentication system' --short-name 'user-auth'
+  ${scriptName} 'Implement OAuth2 integration for API' --number 5`);
 }
 
 /**
- * Find repository root by searching for markers
+ * Find repository root by searching for project markers
  */
 function findRepoRoot(startDir: string): string | null {
   let dir = startDir;
   while (dir !== "/") {
-    if (existsSync(path.join(dir, ".git")) || existsSync(path.join(dir, ".specify"))) {
+    if (existsSync(path.join(dir, ".git")) || existsSync(path.join(dir, ".specify")) || existsSync(path.join(dir, ".speck"))) {
       return dir;
     }
     dir = path.dirname(dir);
@@ -157,13 +143,13 @@ function getHighestFromSpecs(specsDir: string): number {
   if (existsSync(specsDir)) {
     const dirs = readdirSync(specsDir, { withFileTypes: true });
     for (const dir of dirs) {
-      if (!dir.isDirectory()) continue;
-
-      const match = dir.name.match(/^(\d+)/);
-      if (match) {
-        const number = parseInt(match[1], 10);
-        if (number > highest) {
-          highest = number;
+      if (dir.isDirectory()) {
+        const match = dir.name.match(/^(\d+)/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (num > highest) {
+            highest = num;
+          }
         }
       }
     }
@@ -184,19 +170,21 @@ async function getHighestFromBranches(): Promise<number> {
 
     for (const branch of branches) {
       // Clean branch name: remove leading markers and remote prefixes
-      const cleanBranch = branch.replace(/^[* ]*/, "").replace(/^remotes\/[^/]*\//, "");
+      const cleanBranch = branch
+        .replace(/^[* ]+/, "")
+        .replace(/^remotes\/[^/]+\//, "");
 
       // Extract feature number if branch matches pattern ###-*
       const match = cleanBranch.match(/^(\d{3})-/);
       if (match) {
-        const number = parseInt(match[1], 10);
-        if (number > highest) {
-          highest = number;
+        const num = parseInt(match[1], 10);
+        if (num > highest) {
+          highest = num;
         }
       }
     }
   } catch {
-    // Git command failed, return 0
+    // Git not available or no branches
   }
 
   return highest;
@@ -206,7 +194,7 @@ async function getHighestFromBranches(): Promise<number> {
  * Check existing branches and return next available number
  */
 async function checkExistingBranches(shortName: string, specsDir: string): Promise<number> {
-  // Fetch all remotes to get latest branch info (suppress errors if no remotes)
+  // Fetch all remotes to get latest branch info
   try {
     await $`git fetch --all --prune`.quiet();
   } catch {
@@ -217,36 +205,36 @@ async function checkExistingBranches(shortName: string, specsDir: string): Promi
 
   // Check remote branches
   try {
-    const remoteResult = await $`git ls-remote --heads origin`.quiet();
-    const remoteOutput = remoteResult.text();
-    const remoteMatches = remoteOutput.match(new RegExp(`refs/heads/(\\d+)-${shortName}$`, "gm"));
-    if (remoteMatches) {
-      for (const match of remoteMatches) {
-        const numMatch = match.match(/(\d+)-/);
-        if (numMatch) {
-          const num = parseInt(numMatch[1], 10);
-          if (num > maxNum) maxNum = num;
+    const result = await $`git ls-remote --heads origin`.quiet();
+    const lines = result.text().split("\n");
+    for (const line of lines) {
+      const match = line.match(new RegExp(`refs/heads/(\\d+)-${shortName}$`));
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNum) {
+          maxNum = num;
         }
       }
     }
   } catch {
-    // Ignore remote check errors
+    // No remote or ls-remote failed
   }
 
   // Check local branches
   try {
-    const localResult = await $`git branch`.quiet();
-    const localOutput = localResult.text();
-    const lines = localOutput.split("\n");
-    for (const line of lines) {
-      const match = line.match(new RegExp(`^[* ]*(\\d+)-${shortName}$`));
+    const result = await $`git branch`.quiet();
+    const branches = result.text().split("\n");
+    for (const branch of branches) {
+      const match = branch.match(new RegExp(`^[* ]*?(\\d+)-${shortName}$`));
       if (match) {
         const num = parseInt(match[1], 10);
-        if (num > maxNum) maxNum = num;
+        if (num > maxNum) {
+          maxNum = num;
+        }
       }
     }
   } catch {
-    // Ignore local check errors
+    // Git not available
   }
 
   // Check specs directory
@@ -257,7 +245,9 @@ async function checkExistingBranches(shortName: string, specsDir: string): Promi
         const match = dir.name.match(new RegExp(`^(\\d+)-${shortName}$`));
         if (match) {
           const num = parseInt(match[1], 10);
-          if (num > maxNum) maxNum = num;
+          if (num > maxNum) {
+            maxNum = num;
+          }
         }
       }
     }
@@ -272,85 +262,93 @@ async function checkExistingBranches(shortName: string, specsDir: string): Promi
 function cleanBranchName(name: string): string {
   return name
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, "-")
+    .replace(/[^a-z0-9]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-/, "")
     .replace(/-$/, "");
 }
 
 /**
- * Generate branch name with stop word filtering and length filtering
+ * Generate branch name with stop word filtering
  */
 function generateBranchName(description: string): string {
   // Common stop words to filter out
-  const stopWords =
-    /^(i|a|an|the|to|for|of|in|on|at|by|with|from|is|are|was|were|be|been|being|have|has|had|do|does|did|will|would|should|could|can|may|might|must|shall|this|that|these|those|my|your|our|their|want|need|add|get|set)$/i;
+  const stopWords = new Set([
+    "i", "a", "an", "the", "to", "for", "of", "in", "on", "at", "by",
+    "with", "from", "is", "are", "was", "were", "be", "been", "being",
+    "have", "has", "had", "do", "does", "did", "will", "would", "should",
+    "could", "can", "may", "might", "must", "shall", "this", "that",
+    "these", "those", "my", "your", "our", "their", "want", "need",
+    "add", "get", "set",
+  ]);
 
   // Convert to lowercase and split into words
-  const cleanName = description.toLowerCase().replace(/[^a-z0-9]/g, " ");
+  const cleanName = description.toLowerCase().replace(/[^a-z0-9]+/g, " ");
+  const words = cleanName.split(/\s+/).filter((w) => w.length > 0);
 
-  // Filter words: remove stop words and words shorter than 3 chars (unless they're uppercase acronyms in original)
+  // Filter words: remove stop words and short words (unless they look like acronyms)
   const meaningfulWords: string[] = [];
-  const words = cleanName.split(/\s+/).filter((w) => w);
-
   for (const word of words) {
-    if (!word) continue;
+    if (stopWords.has(word)) {
+      continue;
+    }
 
-    // Keep words that are NOT stop words AND (length >= 3 OR are potential acronyms)
-    if (!stopWords.test(word)) {
-      if (word.length >= 3) {
+    // Keep words that are >= 3 chars OR appear as uppercase in original (likely acronyms)
+    if (word.length >= 3) {
+      meaningfulWords.push(word);
+    } else {
+      const upperWord = word.toUpperCase();
+      if (description.includes(upperWord)) {
         meaningfulWords.push(word);
-      } else {
-        // Keep short words if they appear as uppercase in original (likely acronyms)
-        const upperWord = word.toUpperCase();
-        if (description.includes(upperWord)) {
-          meaningfulWords.push(word);
-        }
       }
     }
   }
 
-  // If we have meaningful words, use first 3-4 of them
+  // Use first 3-4 meaningful words
   if (meaningfulWords.length > 0) {
     const maxWords = meaningfulWords.length === 4 ? 4 : 3;
     return meaningfulWords.slice(0, maxWords).join("-");
-  } else {
-    // Fallback to original logic if no meaningful words found
-    const cleaned = cleanBranchName(description);
-    return cleaned.split("-").filter((w) => w).slice(0, 3).join("-");
   }
+
+  // Fallback: use cleaned description (first 3 words)
+  const cleaned = cleanBranchName(description);
+  return cleaned
+    .split("-")
+    .filter((w) => w.length > 0)
+    .slice(0, 3)
+    .join("-");
 }
 
 /**
  * Main function
  */
 async function main(args: string[]): Promise<number> {
-  const { options, featureDescription } = parseArgs(args);
+  const options = parseArgs(args);
 
   if (options.help) {
-    printHelp();
-    return 0;
+    showHelp();
+    return ExitCode.SUCCESS;
   }
 
-  if (!featureDescription) {
-    console.error("Usage: create-new-feature.ts [--json] [--short-name <name>] [--number N] <feature_description>");
-    return 1;
+  if (!options.featureDescription) {
+    console.error("Usage: create-new-feature [--json] [--short-name <name>] [--number N] <feature_description>");
+    return ExitCode.USER_ERROR;
   }
 
   // Resolve repository root
-  const scriptDir = import.meta.dir;
   let repoRoot: string;
-  let hasGit: boolean;
+  let hasGit = false;
 
   try {
     const result = await $`git rev-parse --show-toplevel`.quiet();
     repoRoot = result.text().trim();
     hasGit = true;
   } catch {
+    const scriptDir = import.meta.dir;
     const foundRoot = findRepoRoot(scriptDir);
     if (!foundRoot) {
       console.error("Error: Could not determine repository root. Please run this script from within the repository.");
-      return 1;
+      return ExitCode.USER_ERROR;
     }
     repoRoot = foundRoot;
     hasGit = false;
@@ -364,20 +362,18 @@ async function main(args: string[]): Promise<number> {
   if (options.shortName) {
     branchSuffix = cleanBranchName(options.shortName);
   } else {
-    branchSuffix = generateBranchName(featureDescription);
+    branchSuffix = generateBranchName(options.featureDescription);
   }
 
   // Determine branch number
   let branchNumber: number;
   if (options.number !== undefined) {
     branchNumber = options.number;
+  } else if (hasGit) {
+    branchNumber = await checkExistingBranches(branchSuffix, specsDir);
   } else {
-    if (hasGit) {
-      branchNumber = await checkExistingBranches(branchSuffix, specsDir);
-    } else {
-      const highest = getHighestFromSpecs(specsDir);
-      branchNumber = highest + 1;
-    }
+    const highest = getHighestFromSpecs(specsDir);
+    branchNumber = highest + 1;
   }
 
   const featureNum = branchNumber.toString().padStart(3, "0");
@@ -386,23 +382,23 @@ async function main(args: string[]): Promise<number> {
   // GitHub enforces a 244-byte limit on branch names
   const maxBranchLength = 244;
   if (branchName.length > maxBranchLength) {
-    const maxSuffixLength = maxBranchLength - 4; // Account for: feature number (3) + hyphen (1)
+    const maxSuffixLength = maxBranchLength - 4; // 3 digits + hyphen
     const truncatedSuffix = branchSuffix.substring(0, maxSuffixLength).replace(/-$/, "");
-    const originalBranchName = branchName;
-    branchName = `${featureNum}-${truncatedSuffix}`;
 
     console.error(`[specify] Warning: Branch name exceeded GitHub's 244-byte limit`);
-    console.error(`[specify] Original: ${originalBranchName} (${originalBranchName.length} bytes)`);
+    console.error(`[specify] Original: ${branchName} (${branchName.length} bytes)`);
+
+    branchName = `${featureNum}-${truncatedSuffix}`;
     console.error(`[specify] Truncated to: ${branchName} (${branchName.length} bytes)`);
   }
 
-  // Create branch if git available
+  // Create git branch if we have git
   if (hasGit) {
     try {
       await $`git checkout -b ${branchName}`;
     } catch (error) {
-      console.error(`Error creating branch: ${error}`);
-      return 1;
+      console.error(`Error: Failed to create git branch: ${error}`);
+      return ExitCode.USER_ERROR;
     }
   } else {
     console.error(`[specify] Warning: Git repository not detected; skipped branch creation for ${branchName}`);
@@ -412,17 +408,17 @@ async function main(args: string[]): Promise<number> {
   const featureDir = path.join(specsDir, branchName);
   mkdirSync(featureDir, { recursive: true });
 
-  // Copy template if exists, otherwise create empty spec file
-  const template = path.join(repoRoot, ".specify", "templates", "spec-template.md");
+  // Copy template if it exists
+  const template = path.join(repoRoot, ".specify/templates/spec-template.md");
   const specFile = path.join(featureDir, "spec.md");
-
   if (existsSync(template)) {
     copyFileSync(template, specFile);
   } else {
-    writeFileSync(specFile, "");
+    // Create empty spec file
+    await Bun.write(specFile, "");
   }
 
-  // Set the SPECIFY_FEATURE environment variable for the current session
+  // Set SPECIFY_FEATURE environment variable (note: this only affects this process)
   process.env.SPECIFY_FEATURE = branchName;
 
   // Output results
@@ -440,9 +436,13 @@ async function main(args: string[]): Promise<number> {
     console.log(`SPECIFY_FEATURE environment variable set to: ${branchName}`);
   }
 
-  return 0;
+  return ExitCode.SUCCESS;
 }
 
-// Entry point
-const exitCode = await main(process.argv.slice(2));
-process.exit(exitCode);
+/**
+ * Entry point
+ */
+if (import.meta.main) {
+  const exitCode = await main(process.argv.slice(2));
+  process.exit(exitCode);
+}

@@ -1,27 +1,30 @@
 #!/usr/bin/env bun
+
 /**
+ * Check Prerequisites Script
+ *
  * Bun TypeScript implementation of check-prerequisites.sh
  *
- * Transformation Date: 2025-11-15 (updated from v0.0.85)
+ * Transformation Date: 2025-11-15
  * Source: upstream/v0.0.85/.specify/scripts/bash/check-prerequisites.sh
- * Strategy: Pure TypeScript (file I/O, JSON generation, path operations)
- *
- * CLI Interface:
- * - Flags: --json, --require-tasks, --include-tasks, --paths-only, --help, -h
- * - Exit Codes: 0 (success), 1 (user error - missing files/invalid args)
- * - JSON Output: {"FEATURE_DIR":"...", "AVAILABLE_DOCS":["..."]} or paths-only variant
- *
- * Transformation Rationale:
- * - Replaced bash argument parsing with native TypeScript
- * - Replaced bash file existence checks with Node.js fs.existsSync()
- * - Replaced sourced common.sh functions with TypeScript imports
- * - Replaced bash directory checks with Node.js fs operations
- * - Replaced bash JSON generation with native JSON.stringify()
+ * Strategy: Pure TypeScript (file I/O, JSON) + imports from common/paths.ts
  *
  * Changes from v0.0.84 to v0.0.85:
- * - Upstream added CDPATH="" before cd commands for security
- * - TypeScript implementation already immune: imports use absolute paths
- * - No code changes needed; documented for transparency
+ * - Upstream added CDPATH="" to cd command for SCRIPT_DIR (security fix)
+ * - TypeScript implementation already immune: uses import.meta.dir instead of cd
+ * - No code changes needed, only documentation updated to track v0.0.85
+ *
+ * CLI Interface:
+ * - Flags: --json, --require-tasks, --include-tasks, --paths-only, --help
+ * - Exit Codes: 0 (success), 1 (user error), 2 (system error)
+ * - JSON Output (paths-only): { REPO_ROOT, BRANCH, FEATURE_DIR, FEATURE_SPEC, IMPL_PLAN, TASKS }
+ * - JSON Output (validation): { FEATURE_DIR, AVAILABLE_DOCS }
+ *
+ * Transformation Rationale:
+ * - Replaced bash file existence checks with Node.js fs.existsSync()
+ * - Replaced eval/source pattern with TypeScript imports
+ * - Replaced bash string manipulation with native TypeScript
+ * - Preserved all CLI flags and exit codes exactly
  */
 
 import { existsSync, readdirSync } from "node:fs";
@@ -31,25 +34,18 @@ import {
   checkFile,
   checkDir,
   type FeaturePaths,
-} from "./common";
+} from "./common/paths";
+import { ExitCode } from "./contracts/cli-interface";
 
 /**
- * CLI options parsed from command line arguments
+ * CLI options for check-prerequisites
  */
-interface CliOptions {
+interface CheckPrerequisitesOptions {
   json: boolean;
   requireTasks: boolean;
   includeTasks: boolean;
   pathsOnly: boolean;
   help: boolean;
-}
-
-/**
- * JSON output for standard mode
- */
-interface CheckPrerequisitesOutput {
-  FEATURE_DIR: string;
-  AVAILABLE_DOCS: string[];
 }
 
 /**
@@ -65,48 +61,30 @@ interface PathsOnlyOutput {
 }
 
 /**
- * Parse command line arguments
+ * JSON output for validation mode
  */
-function parseArgs(args: string[]): CliOptions {
-  const options: CliOptions = {
-    json: false,
-    requireTasks: false,
-    includeTasks: false,
-    pathsOnly: false,
-    help: false,
-  };
-
-  for (const arg of args) {
-    switch (arg) {
-      case "--json":
-        options.json = true;
-        break;
-      case "--require-tasks":
-        options.requireTasks = true;
-        break;
-      case "--include-tasks":
-        options.includeTasks = true;
-        break;
-      case "--paths-only":
-        options.pathsOnly = true;
-        break;
-      case "--help":
-      case "-h":
-        options.help = true;
-        break;
-      default:
-        console.error(`ERROR: Unknown option '${arg}'. Use --help for usage information.`);
-        process.exit(1);
-    }
-  }
-
-  return options;
+interface ValidationOutput {
+  FEATURE_DIR: string;
+  AVAILABLE_DOCS: string[];
 }
 
 /**
- * Print help message
+ * Parse command line arguments
  */
-function printHelp(): void {
+function parseArgs(args: string[]): CheckPrerequisitesOptions {
+  return {
+    json: args.includes("--json"),
+    requireTasks: args.includes("--require-tasks"),
+    includeTasks: args.includes("--include-tasks"),
+    pathsOnly: args.includes("--paths-only"),
+    help: args.includes("--help") || args.includes("-h"),
+  };
+}
+
+/**
+ * Show help message
+ */
+function showHelp(): void {
   console.log(`Usage: check-prerequisites.sh [OPTIONS]
 
 Consolidated prerequisite checking for Spec-Driven Development workflow.
@@ -127,68 +105,94 @@ EXAMPLES:
 
   # Get feature paths only (no validation)
   ./check-prerequisites.sh --paths-only
-  `);
+`);
+}
+
+/**
+ * Output paths only (no validation)
+ */
+function outputPathsOnly(paths: FeaturePaths, jsonMode: boolean): void {
+  if (jsonMode) {
+    const output: PathsOnlyOutput = {
+      REPO_ROOT: paths.REPO_ROOT,
+      BRANCH: paths.CURRENT_BRANCH,
+      FEATURE_DIR: paths.FEATURE_DIR,
+      FEATURE_SPEC: paths.FEATURE_SPEC,
+      IMPL_PLAN: paths.IMPL_PLAN,
+      TASKS: paths.TASKS,
+    };
+    console.log(JSON.stringify(output));
+  } else {
+    console.log(`REPO_ROOT: ${paths.REPO_ROOT}`);
+    console.log(`BRANCH: ${paths.CURRENT_BRANCH}`);
+    console.log(`FEATURE_DIR: ${paths.FEATURE_DIR}`);
+    console.log(`FEATURE_SPEC: ${paths.FEATURE_SPEC}`);
+    console.log(`IMPL_PLAN: ${paths.IMPL_PLAN}`);
+    console.log(`TASKS: ${paths.TASKS}`);
+  }
+}
+
+/**
+ * Check for unknown options
+ */
+function checkForUnknownOptions(args: string[]): void {
+  const validOptions = ["--json", "--require-tasks", "--include-tasks", "--paths-only", "--help", "-h"];
+  for (const arg of args) {
+    if (arg.startsWith("--") || arg.startsWith("-")) {
+      if (!validOptions.includes(arg)) {
+        console.error(`ERROR: Unknown option '${arg}'. Use --help for usage information.`);
+        process.exit(ExitCode.USER_ERROR);
+      }
+    }
+  }
 }
 
 /**
  * Main function
  */
 async function main(args: string[]): Promise<number> {
+  // Check for unknown options first
+  checkForUnknownOptions(args);
+
   const options = parseArgs(args);
 
   if (options.help) {
-    printHelp();
-    return 0;
+    showHelp();
+    return ExitCode.SUCCESS;
   }
 
   // Get feature paths and validate branch
   const paths = await getFeaturePaths();
-  if (!checkFeatureBranch(paths.CURRENT_BRANCH, paths.HAS_GIT)) {
-    return 1;
+  const hasGitRepo = paths.HAS_GIT === "true";
+
+  if (!checkFeatureBranch(paths.CURRENT_BRANCH, hasGitRepo)) {
+    return ExitCode.USER_ERROR;
   }
 
-  // If paths-only mode, output paths and exit (support JSON + paths-only combined)
+  // If paths-only mode, output paths and exit
   if (options.pathsOnly) {
-    if (options.json) {
-      // Minimal JSON paths payload (no validation performed)
-      const output: PathsOnlyOutput = {
-        REPO_ROOT: paths.REPO_ROOT,
-        BRANCH: paths.CURRENT_BRANCH,
-        FEATURE_DIR: paths.FEATURE_DIR,
-        FEATURE_SPEC: paths.FEATURE_SPEC,
-        IMPL_PLAN: paths.IMPL_PLAN,
-        TASKS: paths.TASKS,
-      };
-      console.log(JSON.stringify(output));
-    } else {
-      console.log(`REPO_ROOT: ${paths.REPO_ROOT}`);
-      console.log(`BRANCH: ${paths.CURRENT_BRANCH}`);
-      console.log(`FEATURE_DIR: ${paths.FEATURE_DIR}`);
-      console.log(`FEATURE_SPEC: ${paths.FEATURE_SPEC}`);
-      console.log(`IMPL_PLAN: ${paths.IMPL_PLAN}`);
-      console.log(`TASKS: ${paths.TASKS}`);
-    }
-    return 0;
+    outputPathsOnly(paths, options.json);
+    return ExitCode.SUCCESS;
   }
 
   // Validate required directories and files
   if (!existsSync(paths.FEATURE_DIR)) {
     console.error(`ERROR: Feature directory not found: ${paths.FEATURE_DIR}`);
     console.error("Run /speckit.specify first to create the feature structure.");
-    return 1;
+    return ExitCode.USER_ERROR;
   }
 
   if (!existsSync(paths.IMPL_PLAN)) {
     console.error(`ERROR: plan.md not found in ${paths.FEATURE_DIR}`);
     console.error("Run /speckit.plan first to create the implementation plan.");
-    return 1;
+    return ExitCode.USER_ERROR;
   }
 
   // Check for tasks.md if required
   if (options.requireTasks && !existsSync(paths.TASKS)) {
     console.error(`ERROR: tasks.md not found in ${paths.FEATURE_DIR}`);
     console.error("Run /speckit.tasks first to create the task list.");
-    return 1;
+    return ExitCode.USER_ERROR;
   }
 
   // Build list of available documents
@@ -205,9 +209,13 @@ async function main(args: string[]): Promise<number> {
 
   // Check contracts directory (only if it exists and has files)
   if (existsSync(paths.CONTRACTS_DIR)) {
-    const files = readdirSync(paths.CONTRACTS_DIR);
-    if (files.length > 0) {
-      docs.push("contracts/");
+    try {
+      const files = readdirSync(paths.CONTRACTS_DIR);
+      if (files.length > 0) {
+        docs.push("contracts/");
+      }
+    } catch {
+      // Directory not readable, skip
     }
   }
 
@@ -222,7 +230,7 @@ async function main(args: string[]): Promise<number> {
 
   // Output results
   if (options.json) {
-    const output: CheckPrerequisitesOutput = {
+    const output: ValidationOutput = {
       FEATURE_DIR: paths.FEATURE_DIR,
       AVAILABLE_DOCS: docs,
     };
@@ -233,19 +241,23 @@ async function main(args: string[]): Promise<number> {
     console.log("AVAILABLE_DOCS:");
 
     // Show status of each potential document
-    checkFile(paths.RESEARCH, "research.md");
-    checkFile(paths.DATA_MODEL, "data-model.md");
-    checkDir(paths.CONTRACTS_DIR, "contracts/");
-    checkFile(paths.QUICKSTART, "quickstart.md");
+    console.log(checkFile(paths.RESEARCH, "research.md"));
+    console.log(checkFile(paths.DATA_MODEL, "data-model.md"));
+    console.log(checkDir(paths.CONTRACTS_DIR, "contracts/"));
+    console.log(checkFile(paths.QUICKSTART, "quickstart.md"));
 
     if (options.includeTasks) {
-      checkFile(paths.TASKS, "tasks.md");
+      console.log(checkFile(paths.TASKS, "tasks.md"));
     }
   }
 
-  return 0;
+  return ExitCode.SUCCESS;
 }
 
-// Entry point
-const exitCode = await main(process.argv.slice(2));
-process.exit(exitCode);
+/**
+ * Entry point
+ */
+if (import.meta.main) {
+  const exitCode = await main(process.argv.slice(2));
+  process.exit(exitCode);
+}
