@@ -1,380 +1,372 @@
-# Tasks: Speck - Claude Code-Optimized Specification Framework
+---
+
+## description: "Task list for Upstream Sync & Transformation Pipeline implementation"
+
+# Tasks: Upstream Sync & Transformation Pipeline
 
 **Input**: Design documents from `/specs/001-speck-core-project/`
-**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
+**Prerequisites**: [plan.md](plan.md), [spec.md](spec.md),
+[research.md](research.md), [data-model.md](data-model.md),
+[contracts/](contracts/)
 
-**Tests**: Tests are NOT explicitly requested in the feature specification. This implementation focuses on core functionality with manual E2E validation.
+**Tests**: Medium-weight tests included for TypeScript `.speck/scripts/`
+implementations and `common/` utilities (per plan.md Section "Technical
+Context")
 
-**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
+**Organization**: Tasks are organized by implementation phase with a single user
+story (US1: Transform Spec-Kit Release to Speck)
 
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
-- Include exact file paths in descriptions
+- **[Story]**: User story this task belongs to (US1 = User Story 1)
+- File paths included in task descriptions
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- Paths follow hexagonal architecture: `src/core/`, `src/adapters/`, `src/cli/`
+- **Scripts**: `.speck/scripts/` (Bun TypeScript implementations)
+- **Common utilities**: `.speck/scripts/common/`
+- **Tests**: `tests/.speck-scripts/` (mirrors `.speck/scripts/` structure)
+- **Commands**: `.claude/commands/`
+- **Agents**: `.claude/agents/`
+- **Upstream storage**: `upstream/<version>/`
+- **Tracking**: `upstream/releases.json`
 
 ---
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Project initialization and basic structure
+**Purpose**: Project initialization, directory structure, and development
+tooling
 
-- [X] T001 Create project structure per implementation plan with src/, tests/, .claude/, .speck/, upstream/ directories
-- [X] T002 Initialize TypeScript project with Bun runtime - configure package.json with dependencies
-- [X] T003 [P] Configure TypeScript compiler in tsconfig.json with strict mode and Bun target
-- [X] T004 [P] Configure Bun test runner in bunfig.toml
-- [X] T005 [P] Setup ESLint and Prettier for code formatting
-- [X] T006 Create .gitignore with node_modules/, dist/, .env patterns
-- [X] T007 Install core dependencies - Bun, Commander.js, Zod, Handlebars, Marked, Prompts, Chalk, Ora
+- [x] T001 Create `.speck/` directory structure with `scripts/` and
+      `scripts/common/` subdirectories
+- [x] T002 Create `upstream/` directory for storing pristine spec-kit releases
+- [x] T003 Create `.claude/commands/` directory for Speck slash commands
+- [x] T004 Create `.claude/agents/` directory for transformation agents
+- [x] T005 Create `tests/.speck-scripts/` directory structure mirroring
+      `.speck/scripts/`
+- [x] T006 Create `tests/fixtures/` directory for test fixtures
+- [x] T007 [P] Copy contract files from
+      `specs/001-speck-core-project/contracts/` to `.speck/scripts/contracts/`
+      for TypeScript imports
+- [x] T008 [P] Configure Bun test framework (verify `bun test` command works)
+- [x] T009 [P] Create `.gitignore` entries for `upstream/` directory (pristine
+      upstream content, can be re-pulled)
 
 ---
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented
+**Purpose**: Core infrastructure and common utilities that ALL user story tasks
+depend on
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-### Core Domain Models & Types
+### Common Utilities (Shared Across All Commands)
 
-- [X] T008 [P] Create Feature model with Zod schema in src/core/models/Feature.ts
-- [X] T009 [P] Create Specification model with Zod schema in src/core/models/Specification.ts
-- [X] T010 [P] Create Plan model with Zod schema in src/core/models/Plan.ts
-- [X] T011 [P] Create Task model with Zod schema in src/core/models/Task.ts
-- [X] T012 [P] Create Checklist model with Zod schema in src/core/models/Checklist.ts
-- [X] T013 [P] Create Constitution model with Zod schema in src/core/models/Constitution.ts
-- [X] T014 [P] Create UpstreamTracker model with Zod schema in src/core/models/UpstreamTracker.ts
-- [X] T015 [P] Create Clarification model with Zod schema in src/core/models/Clarification.ts
+- [x] T010 [P] Implement GitHub API client in
+      `.speck/scripts/common/github-api.ts` (fetch releases, rate limiting,
+      error handling)
+- [x] T011 [P] Implement release registry manager in
+      `.speck/scripts/common/json-tracker.ts` (read/write/validate
+      `upstream/releases.json`)
+- [x] T012 [P] Implement symlink manager in
+      `.speck/scripts/common/symlink-manager.ts` (create/update
+      `upstream/latest` symlink)
+- [x] T013 [P] Implement atomic file operations in
+      `.speck/scripts/common/file-ops.ts` (temp directories, atomic rename,
+      rollback)
 
-### Adapter Interfaces (Ports)
+### Tests for Common Utilities (Medium-Weight)
 
-- [X] T016 [P] Create GitAdapter interface in src/adapters/git/GitAdapter.ts
-- [X] T017 [P] Create FileSystemAdapter interface in src/adapters/filesystem/FileSystemAdapter.ts
-- [X] T018 [P] Create RuntimeAdapter interface in src/adapters/runtime/RuntimeAdapter.ts
-- [X] T019 [P] Create TemplateEngine interface in src/adapters/template/TemplateEngine.ts
+- [x] T014 [P] Test GitHub API client in
+      `tests/.speck-scripts/common/github-api.test.ts` (mock responses, rate
+      limiting, error cases)
+- [x] T015 [P] Test release registry manager in
+      `tests/.speck-scripts/common/json-tracker.test.ts` (add release, update
+      status, validation)
+- [x] T016 [P] Test symlink manager in
+      `tests/.speck-scripts/common/symlink-manager.test.ts` (create/update
+      symlinks, error handling)
+- [x] T017 [P] Test atomic file operations in
+      `tests/.speck-scripts/common/file-ops.test.ts` (temp directories, atomic
+      operations, rollback)
 
-### Adapter Implementations (Bun-Specific)
-
-- [ ] T020 [P] Implement BunRuntimeAdapter in src/adapters/runtime/BunRuntimeAdapter.ts with Bun.spawn and Bun.$ support
-- [ ] T021 Implement BunGitAdapter in src/adapters/git/BunGitAdapter.ts using BunRuntimeAdapter
-- [ ] T022 Implement BunFsAdapter in src/adapters/filesystem/BunFsAdapter.ts with Bun.file and Bun.write
-- [ ] T023 Implement WorktreeAdapter in src/adapters/git/WorktreeAdapter.ts for git worktree operations
-- [ ] T024 Implement HandlebarsAdapter in src/adapters/template/HandlebarsAdapter.ts with custom helpers
-
-### Configuration & Utilities
-
-- [ ] T025 [P] Create SpeckConfig Zod schema in src/config/schemas/SpeckConfig.ts
-- [ ] T026 [P] Create WorktreeConfig Zod schema in src/config/schemas/WorktreeConfig.ts
-- [ ] T027 Implement ConfigLoader in src/config/ConfigLoader.ts with Zod validation
-- [ ] T028 [P] Create path utilities in src/utils/paths.ts
-- [ ] T029 [P] Create markdown utilities in src/utils/markdown.ts
-- [ ] T030 [P] Create JSON utilities in src/utils/json.ts
-- [ ] T031 [P] Create logger utility in src/utils/logger.ts with Chalk integration
-- [ ] T032 [P] Create validation utilities in src/utils/validation.ts
-
-**Checkpoint**: Foundation ready - user story implementation can now begin in parallel
+**Checkpoint**: Foundation ready - all common utilities implemented and tested -
+user story implementation can now begin
 
 ---
 
-## Phase 3: User Story 1 - Solo Developer Creates First Feature Specification (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 - Transform Spec-Kit Release to Speck (Priority: P1) 🎯 MVP
 
-**Goal**: Enable a solo developer to create structured specifications via `/speck.specify` command in Claude Code
+**Goal**: Implement the three-command upstream sync and transformation pipeline
+that enables maintainers to discover, pull, and transform spec-kit releases into
+Speck's Claude-native implementation
 
-**Independent Test**: Run `/speck.specify "Add user authentication"` in Claude Code and verify complete specification is generated with all required sections in specs/001-user-authentication/spec.md
+**Independent Test**: Run `/speck.check-upstream`,
+`/speck.pull-upstream v1.0.0`, `/speck.transform-upstream`, then verify:
 
-### Implementation for User Story 1
+1. `upstream/v1.0.0/` contains pristine upstream templates and bash scripts
+2. `upstream/releases.json` tracks the v1.0.0 release metadata
+3. `.speck/scripts/` contains Bun TS equivalents with identical CLI behavior
+4. `/speck.*` commands exist and successfully call `.speck/scripts/`
+5. Transformation report shows what changed and Claude's rationale
 
-#### Core Services
+### Command 1: `/speck.check-upstream` (Discover Available Releases)
 
-- [ ] T033 [P] [US1] Create FeatureService in src/core/services/FeatureService.ts with createFeature method
-- [ ] T034 [P] [US1] Create SpecificationService in src/core/services/SpecificationService.ts with generateSpecification method
-- [ ] T035 [US1] Implement feature number assignment logic in FeatureService checking branches, worktrees, and specs directories
-- [ ] T036 [US1] Implement short name generation from description in FeatureService using keyword extraction
-- [ ] T037 [US1] Implement branch name validation in FeatureService with 244-character limit check
-- [ ] T038 [US1] Implement duplicate short-name collision detection with auto-append counter in FeatureService
+#### Tests First (Medium-Weight) ⚠️
 
-#### Generators
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T039 [P] [US1] Create SpecGenerator in src/core/generators/SpecGenerator.ts using Handlebars templates
-- [ ] T040 [US1] Implement spec generation with max 3 clarification markers in SpecGenerator
-- [ ] T041 [US1] Implement user scenario parsing and formatting in SpecGenerator
+- [x] T018 [P] [US1] Contract test: `--json` flag outputs valid JSON schema in
+      `tests/.speck-scripts/check-upstream.test.ts`
+- [x] T019 [P] [US1] Contract test: exit code 0 on success in
+      `tests/.speck-scripts/check-upstream.test.ts`
+- [x] T020 [P] [US1] Contract test: exit code 2 on network error in
+      `tests/.speck-scripts/check-upstream.test.ts`
+- [x] T021 [P] [US1] Contract test: `--help` flag shows usage information in
+      `tests/.speck-scripts/check-upstream.test.ts`
+- [x] T022 [P] [US1] Edge case test: handles GitHub rate limiting gracefully in
+      `tests/.speck-scripts/check-upstream.test.ts`
 
-#### Validators
+#### Implementation
 
-- [ ] T042 [P] [US1] Create SpecValidator in src/core/validators/SpecValidator.ts enforcing zero implementation details
-- [ ] T043 [US1] Implement technology-agnostic success criteria validation in SpecValidator
-- [ ] T044 [US1] Implement mandatory sections validation in SpecValidator
+- [x] T023 [US1] Implement `check-upstream.ts` in `.speck/scripts/` (uses
+      `common/github-api.ts`, outputs release list with versions, dates,
+      summaries)
+- [x] T024 [US1] Implement CLI flag parsing in
+      `.speck/scripts/check-upstream.ts` (--json, --help, --version flags)
+- [x] T025 [US1] Implement JSON output formatter in
+      `.speck/scripts/check-upstream.ts` (matches `CheckUpstreamOutput` schema
+      from `contracts/cli-interface.ts`)
+- [x] T026 [US1] Implement human-readable output formatter in
+      `.speck/scripts/check-upstream.ts` (table format with version, date,
+      summary)
+- [x] T027 [US1] Add error handling with proper exit codes in
+      `.speck/scripts/check-upstream.ts` (0=success, 2=network/system error)
 
-#### CLI Command
+#### Slash Command Integration
 
-- [ ] T045 [US1] Create CLI entry point in src/cli/index.ts with Commander.js setup
-- [ ] T046 [US1] Implement specify command in src/cli/commands/specify.ts
-- [ ] T047 [US1] Add interactive prompts for missing parameters in src/cli/shared/prompts.ts
-- [ ] T048 [US1] Add JSON output support with --json flag in src/cli/shared/output.ts
-- [ ] T049 [US1] Implement dependency injection composition root in src/cli/index.ts
+- [x] T028 [US1] Create `/speck.check-upstream` command file in
+      `.claude/commands/speck.check-upstream.md` (calls
+      `.speck/scripts/check-upstream.ts`)
 
-#### Claude Code Integration
-
-- [ ] T050 [US1] Create /speck.specify slash command markdown in .claude/commands/speck.specify.md
-- [ ] T051 [US1] Add specification examples and usage docs to speck.specify.md
-- [ ] T052 [US1] Test specify workflow end-to-end via CLI and verify spec generation
-
-**Checkpoint**: At this point, User Story 1 should be fully functional - developers can create specs via CLI or slash command
-
----
-
-## Phase 4: User Story 5 - Developer Clarifies Ambiguous Requirements (Priority: P1)
-
-**Goal**: Enable developers to systematically resolve spec ambiguities through `/speck.clarify` command
-
-**Independent Test**: Generate spec with clarification markers, run `/speck.clarify`, answer questions, verify spec is updated with resolved answers
-
-**Note**: Implementing User Story 5 before US2 because clarification is part of the specify→clarify→plan workflow
-
-### Implementation for User Story 5
-
-#### Core Services
-
-- [ ] T053 [US5] Extend SpecificationService with clarify method in src/core/services/SpecificationService.ts
-- [ ] T054 [US5] Implement ambiguity detection logic scanning for explicit markers and detected gaps
-- [ ] T055 [US5] Implement question generation with max 5 questions per session
-- [ ] T056 [US5] Implement spec update logic replacing markers with answers
-
-#### Generators
-
-- [ ] T057 [US5] Create ClarificationGenerator in src/core/generators/ClarificationGenerator.ts
-- [ ] T058 [US5] Implement question-answer formatting and spec section integration
-
-#### CLI Command
-
-- [ ] T059 [US5] Implement clarify command in src/cli/commands/clarify.ts
-- [ ] T060 [US5] Add interactive Q&A prompts in clarify command
-- [ ] T061 [US5] Track clarification sessions in Clarification model with session IDs
-
-#### Claude Code Integration
-
-- [ ] T062 [US5] Create /speck.clarify slash command markdown in .claude/commands/speck.clarify.md
-- [ ] T063 [US5] Create clarification-agent markdown in .claude/agents/clarification-agent.md for autonomous Q&A loops
-- [ ] T064 [US5] Test clarify workflow end-to-end - verify 90% single-session resolution
-
-**Checkpoint**: User Stories 1 AND 5 should both work independently - developers can specify and clarify specs
+**Checkpoint**: Command 1 complete - can discover available spec-kit releases
+via `/speck.check-upstream`
 
 ---
 
-## Phase 5: User Story 2 - Developer Syncs Upstream Spec-Kit Changes (Priority: P2)
+### Command 2: `/speck.pull-upstream <version>` (Pull Pristine Release)
 
-**Goal**: Enable syncing upstream spec-kit releases while preserving Speck-specific enhancements
+#### Tests First (Medium-Weight) ⚠️
 
-**Independent Test**: Run `/speck.transform-upstream` after upstream has new release, verify Speck commands updated with preserved [SPECK-EXTENSION] blocks
+- [x] T029 [P] [US1] Contract test: `--json` flag outputs valid JSON schema in
+      `tests/.speck-scripts/pull-upstream.test.ts`
+- [x] T030 [P] [US1] Contract test: exit code 0 on successful pull in
+      `tests/.speck-scripts/pull-upstream.test.ts`
+- [x] T031 [P] [US1] Contract test: exit code 1 on invalid version format in
+      `tests/.speck-scripts/pull-upstream.test.ts`
+- [x] T032 [P] [US1] Contract test: exit code 2 on network error in
+      `tests/.speck-scripts/pull-upstream.test.ts`
+- [x] T033 [P] [US1] Edge case test: creates `upstream/<version>/` directory in
+      `tests/.speck-scripts/pull-upstream.test.ts`
+- [x] T034 [P] [US1] Edge case test: updates `upstream/releases.json` with
+      release metadata in `tests/.speck-scripts/pull-upstream.test.ts`
+- [x] T035 [P] [US1] Edge case test: creates/updates `upstream/latest` symlink
+      in `tests/.speck-scripts/pull-upstream.test.ts`
+- [x] T036 [P] [US1] Edge case test: handles first-time pull (no existing
+      `upstream/` directory) in `tests/.speck-scripts/pull-upstream.test.ts`
+- [x] T037 [P] [US1] Edge case test: network failure leaves existing state
+      unchanged in `tests/.speck-scripts/pull-upstream.test.ts`
 
-### Implementation for User Story 2
+#### Implementation
 
-#### Core Services
+- [x] T038 [US1] Implement `pull-upstream.ts` in `.speck/scripts/` (fetches
+      tarball from GitHub, extracts to `upstream/<version>/`)
+- [x] T039 [US1] Implement version argument parsing and validation in
+      `.speck/scripts/pull-upstream.ts` (semantic versioning pattern check)
+- [x] T040 [US1] Implement tarball download logic in
+      `.speck/scripts/pull-upstream.ts` (uses GitHub API tarball_url)
+- [x] T041 [US1] Implement tarball extraction to `upstream/<version>/` in
+      `.speck/scripts/pull-upstream.ts` (pristine upstream content)
+- [x] T042 [US1] Implement release registry update in
+      `.speck/scripts/pull-upstream.ts` (calls `common/json-tracker.ts` to add
+      release with status "pulled")
+- [x] T043 [US1] Implement symlink update in `.speck/scripts/pull-upstream.ts`
+      (calls `common/symlink-manager.ts` to update `upstream/latest`)
+- [x] T044 [US1] Implement atomic operations in
+      `.speck/scripts/pull-upstream.ts` (uses `common/file-ops.ts` for rollback
+      on failure)
+- [x] T045 [US1] Implement JSON and human-readable output formatters in
+      `.speck/scripts/pull-upstream.ts` (matches `PullUpstreamOutput` schema)
+- [x] T046 [US1] Add error handling with proper exit codes in
+      `.speck/scripts/pull-upstream.ts` (0=success, 1=user error, 2=system
+      error)
 
-- [ ] T065 [P] [US2] Create UpstreamSyncService in src/core/services/UpstreamSyncService.ts
-- [ ] T066 [US2] Implement GitHub Releases fetching in UpstreamSyncService
-- [ ] T067 [US2] Implement release comparison and diff generation
-- [ ] T068 [US2] Implement extension marker preservation logic
-- [ ] T069 [US2] Implement sync manifest tracking in .speck/sync-manifest.json
+#### Slash Command Integration
 
-#### Generators
+- [x] T047 [US1] Create `/speck.pull-upstream` command file in
+      `.claude/commands/speck.pull-upstream.md` (calls
+      `.speck/scripts/pull-upstream.ts <version>`)
 
-- [ ] T070 [US2] Create SyncReportGenerator in src/core/generators/SyncReportGenerator.ts
-- [ ] T071 [US2] Implement transformation report with upstream changes, preserved extensions, and rationale
-
-#### CLI Commands
-
-- [ ] T072 [P] [US2] Implement check-upstream-releases command in src/cli/commands/checkUpstreamReleases.ts
-- [ ] T073 [P] [US2] Implement download-upstream command in src/cli/commands/downloadUpstream.ts
-- [ ] T074 [P] [US2] Implement diff-upstream-releases command in src/cli/commands/diffUpstreamReleases.ts
-- [ ] T075 [US2] Implement transform-upstream command in src/cli/commands/transformUpstream.ts
-- [ ] T076 [US2] Add Claude agent integration for semantic transformation in transform-upstream
-
-#### Upstream Tracking Infrastructure
-
-- [ ] T077 [P] [US2] Create upstream-tracker.json template in .speck/upstream-tracker.json
-- [ ] T078 [P] [US2] Create sync-manifest.json template in .speck/sync-manifest.json
-- [ ] T079 [P] [US2] Create extension-markers.json template in .speck/extension-markers.json
-- [ ] T080 [US2] Implement release-info.json management in upstream/.release-info.json
-
-#### Claude Code Integration
-
-- [ ] T081 [US2] Create /speck.check-upstream-releases slash command in .claude/commands/speck.check-upstream-releases.md
-- [ ] T082 [US2] Create /speck.download-upstream slash command in .claude/commands/speck.download-upstream.md
-- [ ] T083 [US2] Create /speck.diff-upstream-releases slash command in .claude/commands/speck.diff-upstream-releases.md
-- [ ] T084 [US2] Create /speck.transform-upstream slash command in .claude/commands/speck.transform-upstream.md
-- [ ] T085 [US2] Test upstream sync workflow - verify 100% extension preservation
-
-**Checkpoint**: User Story 2 complete - developers can sync upstream changes with preserved enhancements
-
----
-
-## Phase 6: User Story 3 - Developer Uses Bun-Powered TypeScript CLI (Priority: P3)
-
-**Goal**: Provide fast CLI alternative to Claude Code with sub-100ms startup time
-
-**Independent Test**: Run `speck specify "Add feature"` in terminal without Claude Code, verify feature creation identical to slash command version
-
-### Implementation for User Story 3
-
-#### CLI Enhancements
-
-- [ ] T086 [P] [US3] Optimize CLI startup time using Bun native TS execution
-- [ ] T087 [P] [US3] Add structured error messages with actionable guidance in src/cli/shared/validation.ts
-- [ ] T088 [P] [US3] Implement --json flag support for all commands
-- [ ] T089 [US3] Add CLI help text and command documentation
-- [ ] T090 [US3] Implement version command showing Speck version
-
-#### Build & Distribution
-
-- [ ] T091 [US3] Configure Bun build for standalone binary in package.json with --compile flag
-- [ ] T092 [US3] Create installation script for global CLI installation
-- [ ] T093 [US3] Document CLI usage in README.md with examples
-
-#### Performance Validation
-
-- [ ] T094 [US3] Benchmark CLI startup time and verify <100ms requirement
-- [ ] T095 [US3] Test behavioral parity between CLI and slash commands - verify <1% deviation
-
-**Checkpoint**: User Story 3 complete - CLI provides full functionality with fast startup
+**Checkpoint**: Command 2 complete - can pull pristine spec-kit releases via
+`/speck.pull-upstream <version>`
 
 ---
 
-## Phase 7: User Story 4 - Team Works on Multiple Features in Parallel (Priority: P2)
+### Command 3: `/speck.transform-upstream` (Transform to Speck Implementation)
 
-**Goal**: Enable multiple developers to work on different features using git worktrees without interference
+#### Transformation Agents (Core Logic)
 
-**Independent Test**: Create two features using worktree mode, verify isolated directories with independent specs, confirm no cross-contamination
+- [x] T048 [P] [US1] Create bash-to-Bun transformation agent in
+      `.claude/agents/speck.transform-bash-to-bun.md` (analyzes bash scripts,
+      generates Bun TypeScript equivalents)
+- [x] T049 [P] [US1] Create command transformation agent in
+      `.claude/agents/speck.transform-commands.md` (transforms `/speckit.*` to
+      `/speck.*`, factors agents/skills)
+- [x] T049a [P] [US1] Implement breaking change detection in bash-to-Bun agent
+      (analyzes CLI interface differences: removed/renamed flags, changed exit
+      codes, altered JSON output schemas; pauses transformation and presents
+      conflict analysis when detected)
+- [x] T049b [P] [US1] Implement command body parser in transform-commands agent
+      (parse markdown structure, identify workflow sections, count steps, detect
+      branching logic)
+- [x] T049c [P] [US1] Implement workflow section extraction logic in
+      transform-commands agent (create agent/skill files with appropriate
+      content, apply factoring criteria from FR-007)
+- [x] T049d [P] [US1] Implement command body updater in transform-commands agent
+      (replace extracted sections with Task tool invocations, preserve
+      non-extracted content)
+- [x] T049e [P] [US1] Create transformation-history.json schema contract in
+      `specs/001-speck-core-project/contracts/transformation-history.ts`
+      (structure: version, timestamp, mappings array with source/generated/type
+      fields per FR-013)
+- [x] T049f [P] [US1] Implement transformation history manager in
+      `.speck/scripts/common/transformation-history.ts` (read existing history,
+      append new mappings, write atomically to
+      `.speck/transformation-history.json`)
+- [x] T049g [P] [US1] Test transformation history manager in
+      `tests/.speck-scripts/common/transformation-history.test.ts` (add
+      mappings, read history, incremental updates)
 
-### Implementation for User Story 4
+#### Tests First (Medium-Weight) ⚠️
 
-#### Worktree Support
+- [x] T050 [P] [US1] Contract test: `--json` flag outputs valid JSON schema in
+      `tests/.speck-scripts/transform-upstream.test.ts`
+- [x] T051 [P] [US1] Contract test: exit code 0 on successful transformation in
+      `tests/.speck-scripts/transform-upstream.test.ts`
+- [x] T052 [P] [US1] Contract test: exit code 2 on transformation failure in
+      `tests/.speck-scripts/transform-upstream.test.ts`
+- [x] T053 [P] [US1] Contract test: defaults to `upstream/latest` when no
+      version specified in `tests/.speck-scripts/transform-upstream.test.ts`
+- [x] T054 [P] [US1] Contract test: accepts `--version` flag to target specific
+      release in `tests/.speck-scripts/transform-upstream.test.ts`
+- [x] T055 [P] [US1] Edge case test: updates status to "transformed" on success
+      in `tests/.speck-scripts/transform-upstream.test.ts`
+- [x] T056 [P] [US1] Edge case test: updates status to "failed" with error
+      details on failure in `tests/.speck-scripts/transform-upstream.test.ts`
+- [x] T057 [P] [US1] Edge case test: preserves existing `.speck/scripts/` on
+      transformation failure in
+      `tests/.speck-scripts/transform-upstream.test.ts`
+- [x] T058 [P] [US1] Edge case test: fails early with clear message if Bun not
+      installed in `tests/.speck-scripts/transform-upstream.test.ts`
 
-- [ ] T096 [US4] Extend FeatureService with createWorktreeFeature method
-- [ ] T097 [US4] Implement git worktree creation in WorktreeAdapter
-- [ ] T098 [US4] Implement specs directory mode auto-detection - git-tracked vs gitignored
-- [ ] T099 [US4] Implement symlink creation for gitignored specs mode
-- [ ] T100 [US4] Add worktree cleanup and removal support
-- [ ] T101 [US4] Implement feature number collision prevention across worktrees
+#### Implementation
 
-#### CLI Integration
+- [x] T059 [US1] Implement `/speck.transform-upstream` slash command
+      orchestration (sequences two transformation agents and manages
+      transformation workflow)
+- [x] T060 [US1] Implement version resolution logic in slash command (defaults
+      to `upstream/latest` symlink target, accepts `--version` arg)
+- [x] T061 [US1] Implement Bun runtime check in slash command (fails early if
+      `bun --version` fails)
+- [x] T062 [US1] Implement bash-to-Bun agent invocation in slash command
+      (launches `.claude/agents/speck.transform-bash-to-bun.md` with source bash
+      scripts)
+- [x] T063 [US1] Implement command transformation agent invocation in slash
+      command (launches `.claude/agents/speck.transform-commands.md` after
+      bash-to-Bun completes)
+- [x] T064 [US1] Implement transformation report generation in slash command
+      (collects agent outputs, creates 9-section report per FR-009: (1) upstream
+      version transformed, (2) file creation/update status, (3) Bun scripts with
+      test paths, (4) `/speck.*` commands created/updated, (5) file-level change
+      summaries, (6) agents/skills factored with mappings persisted to
+      `.speck/transformation-history.json` per FR-013, (7) SPECK-EXTENSION
+      blocks preserved, (8) validation results, (9) transformation rationale)
+- [x] T065 [US1] Implement release registry status update in slash command
+      (calls `common/json-tracker.ts` to update status to "transformed" or
+      "failed")
+- [x] T066 [US1] Implement atomic transformation operations in slash command
+      (coordinates agents to use temp directories, manages rollback on agent
+      failure)
+- [x] T067 [US1] Implement output formatting in slash command (presents
+      transformation results to user)
+- [x] T068 [US1] Add error handling in slash command (manages agent failures,
+      reports errors to user)
 
-- [ ] T102 [US4] Add --worktree flag to specify command in src/cli/commands/specify.ts
-- [ ] T103 [US4] Add worktree path validation and directory creation
+#### Slash Command Integration
 
-#### Claude Code Integration
+- [x] T069 [US1] Create `/speck.transform-upstream` command file in
+      `.claude/commands/speck.transform-upstream.md` (orchestrates
+      transformation agents, optional `--version` arg)
 
-- [ ] T104 [US4] Update /speck.specify slash command with worktree option
-- [ ] T105 [US4] Document worktree workflow in quickstart.md
-- [ ] T106 [US4] Test parallel feature development - create 3 worktrees and verify isolation
-
-**Checkpoint**: User Story 4 complete - teams can work on 10+ parallel features without conflicts
-
----
-
-## Phase 8: Remaining Core Commands (Planning & Tasks Workflows)
-
-**Purpose**: Complete the full workflow with plan and tasks generation
-
-### Planning Workflow
-
-- [ ] T107 [P] Create PlanningService in src/core/services/PlanningService.ts
-- [ ] T108 [P] Create ConstitutionValidator in src/core/validators/ConstitutionValidator.ts
-- [ ] T109 Create PlanGenerator in src/core/generators/PlanGenerator.ts
-- [ ] T110 Implement constitution check validation with principle compliance
-- [ ] T111 Implement complexity tracking for violations
-- [ ] T112 Implement plan command in src/cli/commands/plan.ts
-- [ ] T113 Create /speck.plan slash command in .claude/commands/speck.plan.md
-- [ ] T114 Create research-agent markdown in .claude/agents/research-agent.md
-
-### Tasks Workflow
-
-- [ ] T115 [P] Create TaskGenerationService in src/core/services/TaskGenerationService.ts
-- [ ] T116 Create TaskGenerator in src/core/generators/TaskGenerator.ts
-- [ ] T117 Implement user story mapping from spec.md to tasks
-- [ ] T118 Implement dependency graph generation with topological sort
-- [ ] T119 Implement task prioritization and parallel opportunity detection
-- [ ] T120 Implement tasks command in src/cli/commands/tasks.ts
-- [ ] T121 Create /speck.tasks slash command in .claude/commands/speck.tasks.md
-
-### Checklists & Analysis
-
-- [ ] T122 [P] Create ChecklistService in src/core/services/ChecklistService.ts
-- [ ] T123 [P] Create AnalysisService in src/core/services/AnalysisService.ts
-- [ ] T124 Create ChecklistGenerator in src/core/generators/ChecklistGenerator.ts
-- [ ] T125 Implement CrossArtifactValidator in src/core/validators/CrossArtifactValidator.ts
-- [ ] T126 Implement checklist command in src/cli/commands/checklist.ts
-- [ ] T127 Implement analyze command in src/cli/commands/analyze.ts
-- [ ] T128 Create /speck.checklist slash command in .claude/commands/speck.checklist.md
-- [ ] T129 Create /speck.analyze slash command in .claude/commands/speck.analyze.md
-
-### Constitution & Implementation
-
-- [ ] T130 [P] Create ImplementationService in src/core/services/ImplementationService.ts
-- [ ] T131 Implement constitution command in src/cli/commands/constitution.ts
-- [ ] T132 Implement implement command in src/cli/commands/implement.ts
-- [ ] T133 Create /speck.constitution slash command in .claude/commands/speck.constitution.md
-- [ ] T134 Create /speck.implement slash command in .claude/commands/speck.implement.md
-
----
-
-## Phase 9: Skills & Reusable Patterns
-
-**Purpose**: Extract reusable patterns as Claude Code skills
-
-- [ ] T135 [P] Create template-renderer skill in .claude/skills/template-renderer.md
-- [ ] T136 [P] Create spec-analyzer skill in .claude/skills/spec-analyzer.md
-- [ ] T137 [P] Create constitution-validator skill in .claude/skills/constitution-validator.md
-- [ ] T138 Add skill metadata files in .claude/skills/_metadata.json, .claude/agents/_metadata.json, .claude/commands/_metadata.json
-
----
-
-## Phase 10: Testing & Quality
-
-**Purpose**: Ensure quality through automated tests
-
-### Unit Tests
-
-- [ ] T139 [P] Write FeatureService unit tests in tests/unit/FeatureService.test.ts
-- [ ] T140 [P] Write SpecificationService unit tests in tests/unit/SpecificationService.test.ts
-- [ ] T141 [P] Write GitAdapter unit tests in tests/unit/GitAdapter.test.ts
-- [ ] T142 [P] Write SpecValidator unit tests in tests/unit/SpecValidator.test.ts
-- [ ] T143 [P] Write ConfigLoader unit tests in tests/unit/ConfigLoader.test.ts
-
-### Integration Tests
-
-- [ ] T144 [P] Write specify command integration test in tests/integration/specify-command.test.ts
-- [ ] T145 [P] Write clarify command integration test in tests/integration/clarify-command.test.ts
-- [ ] T146 [P] Write worktree creation integration test in tests/integration/worktree-creation.test.ts
-- [ ] T147 Write upstream sync integration test in tests/integration/upstream-sync.test.ts
-
-### E2E Manual Validation
-
-- [ ] T148 Create E2E validation checklist in tests/e2e/full-workflow.md
-- [ ] T149 Validate full workflow manually in Claude Code
+**Checkpoint**: Command 3 complete - can transform upstream releases via
+`/speck.transform-upstream`
 
 ---
 
-## Phase 11: Polish & Cross-Cutting Concerns
+### Integration & End-to-End Validation
 
-**Purpose**: Improvements that affect multiple user stories
+- [x] T070 [US1] Integration test: full pipeline from check → pull → transform
+      in `tests/.speck-scripts/integration.test.ts`
+- [x] T071 [US1] Validation: verify transformation report structure matches
+      `TransformUpstreamOutput` schema AND includes all 9 sections from FR-009
+      (upstream version, file status, Bun scripts, commands, change summaries,
+      agents/skills with transformation-history.json reference, SPECK-EXTENSION
+      blocks, validation results, rationale)
+- [x] T072 [US1] Validation: verify generated Bun scripts have identical CLI
+      interface to bash equivalents (same flags, exit codes, JSON output
+      structure)
+- [x] T073 [US1] Validation: verify `/speck.*` commands successfully call
+      `.speck/scripts/` implementations
+- [x] T074 [US1] Run quickstart.md validation scenarios (Prerequisites, Running
+      Tests, Development Workflows)
 
-- [ ] T150 [P] Create comprehensive README.md with quickstart guide
-- [ ] T151 [P] Document architecture in docs/architecture.md
-- [ ] T152 [P] Create CONTRIBUTING.md with development setup
-- [ ] T153 [P] Create LICENSE file (MIT recommended)
-- [ ] T154 Code cleanup and refactoring for consistency
-- [ ] T155 [P] Add JSDoc comments to public APIs
-- [ ] T156 Performance optimization - verify all success criteria met
-- [ ] T157 Security review - validate no command injection vulnerabilities
-- [ ] T158 Run quickstart.md validation end-to-end
-- [ ] T159 Verify all constitutional principles compliance
-- [ ] T160 Create GitHub repository and push initial commit
+**Checkpoint**: User Story 1 complete - upstream sync and transformation
+pipeline fully functional and independently testable
+
+---
+
+## Phase 4: Polish & Cross-Cutting Concerns
+
+**Purpose**: Improvements that affect multiple commands and overall developer
+experience
+
+- [x] T075 [P] Add JSDoc comments to all public functions in `.speck/scripts/`
+      and `.speck/scripts/common/`
+- [x] T076 [P] Add inline comments explaining transformation strategy decisions
+      in transformation agents
+- [x] T077 [P] Code cleanup: remove unused imports, enforce consistent
+      formatting with `prettier`
+- [x] T078 [P] Performance validation: verify `/speck.check-upstream` completes
+      in <10s (SC-001)
+- [x] T079 [P] Performance validation: verify `/speck.pull-upstream` completes
+      in <2min for typical releases (SC-002)
+- [x] T080 [P] Performance validation: verify `/speck.transform-upstream`
+      completes in <5min for typical releases (SC-003)
+- [x] T081 [P] Performance validation: verify Bun script startup time <100ms
+      (SC-006)
+- [x] T082 Run full test suite with coverage: `bun test --coverage` (target 80%+
+      coverage per research.md)
+- [x] T083 Verify coverage threshold: ensure 80%+ coverage for `.speck/scripts/`
+      and `common/` utilities (SC-007 transformation success rate validation)
+- [x] T084 Security review: ensure no secrets in `.speck/scripts/` (GitHub
+      tokens, credentials)
+- [x] T085 Documentation: add troubleshooting section to quickstart.md based on
+      common test failures
+- [x] T086 Final validation: run all quickstart.md scenarios end-to-end on clean
+      repository clone
 
 ---
 
@@ -383,183 +375,191 @@
 ### Phase Dependencies
 
 - **Setup (Phase 1)**: No dependencies - can start immediately
-- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
-- **User Story 1 (Phase 3)**: Depends on Foundational - First MVP story
-- **User Story 5 (Phase 4)**: Depends on User Story 1 - Part of specify→clarify workflow
-- **User Story 2 (Phase 5)**: Depends on Foundational - Can run parallel to US1/US5 if staffed
-- **User Story 3 (Phase 6)**: Depends on User Story 1 - CLI enhancements
-- **User Story 4 (Phase 7)**: Depends on User Story 1 - Worktree features
-- **Remaining Commands (Phase 8)**: Depends on Foundational - Can run parallel to user stories
-- **Skills (Phase 9)**: Depends on Commands being implemented
-- **Testing (Phase 10)**: Depends on implementation completion
-- **Polish (Phase 11)**: Depends on all features being complete
+- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user
+  story tasks
+- **User Story 1 (Phase 3)**: Depends on Foundational phase completion
+  - Command 1 (`/speck.check-upstream`): Can start after Foundational
+  - Command 2 (`/speck.pull-upstream`): Can start after Foundational
+    (independent of Command 1)
+  - Command 3 (`/speck.transform-upstream`): Depends on Command 2 (needs pulled
+    upstream content)
+- **Polish (Phase 4)**: Depends on User Story 1 completion
 
-### User Story Dependencies
+### User Story 1 Internal Dependencies
 
-- **User Story 1 (P1) - Solo Developer Specify**: Can start after Foundational - No dependencies on other stories ✅ MVP START
-- **User Story 5 (P1) - Developer Clarify**: Depends on User Story 1 - Extends specify workflow
-- **User Story 2 (P2) - Upstream Sync**: Can start after Foundational - Independent of US1 but benefits from testing US1 first
-- **User Story 3 (P3) - Bun CLI**: Depends on User Story 1 - Provides CLI alternative to slash commands
-- **User Story 4 (P2) - Worktrees**: Depends on User Story 1 - Extends feature creation with worktree mode
+**Command 1** (`/speck.check-upstream`):
 
-### Within Each User Story
+- Tests (T018-T022) → Implementation (T023-T027) → Slash Command (T028)
 
-- Models and interfaces before services
-- Services before generators
-- Generators before commands
-- Commands before Claude Code integration
-- Core implementation before integration tests
+**Command 2** (`/speck.pull-upstream`):
+
+- Tests (T029-T037) → Implementation (T038-T046) → Slash Command (T047)
+
+**Command 3** (`/speck.transform-upstream`):
+
+- Agents (T048-T049) can be written in parallel
+- Tests (T050-T058) → Implementation (T059-T068) → Slash Command (T069)
+
+**Integration** (T070-T074):
+
+- Depends on all three commands being complete
 
 ### Parallel Opportunities
 
-**Setup Phase (Phase 1):**
-- T003, T004, T005 can run in parallel (config files)
-
-**Foundational Phase (Phase 2):**
-- T008-T015: All domain models can run in parallel
-- T016-T019: All adapter interfaces can run in parallel
-- T020-T024: Adapter implementations depend on interfaces but can run in parallel once interfaces ready
-- T025-T032: Config and utilities can run in parallel
-
-**User Story 1 (Phase 3):**
-- T033, T034: Core services can run in parallel
-- T039, T042: Generator and validator can run in parallel
-
-**User Story 5 (Phase 4):**
-- No parallel opportunities (sequential extension of SpecificationService)
-
-**User Story 2 (Phase 5):**
-- T065-T071: Services and generators can run in parallel
-- T072-T074: CLI commands can run in parallel
-- T077-T079: Tracking infrastructure files can run in parallel
-
-**User Story 3 (Phase 6):**
-- T086-T088: CLI enhancements can run in parallel
-
-**User Story 4 (Phase 7):**
-- No parallel opportunities (extends FeatureService sequentially)
-
-**Phase 8 (Commands):**
-- T107-T108: Services and validators can run in parallel
-- T122-T123: ChecklistService and AnalysisService can run in parallel
-
-**Phase 9 (Skills):**
-- T135-T137: All skills can run in parallel
-
-**Phase 10 (Testing):**
-- T139-T143: All unit tests can run in parallel
-- T144-T146: All integration tests can run in parallel
-
-**Phase 11 (Polish):**
-- T150-T153, T155: Documentation tasks can run in parallel
-
----
-
-## Parallel Example: User Story 1 Core Services
+#### Within Setup (Phase 1)
 
 ```bash
-# Launch core services together:
-Task T033: "Create FeatureService in src/core/services/FeatureService.ts"
-Task T034: "Create SpecificationService in src/core/services/SpecificationService.ts"
+# All directory creation can happen in parallel
+Task: "Create .speck/ directory structure"
+Task: "Create upstream/ directory"
+Task: "Create .claude/commands/ directory"
+Task: "Create .claude/agents/ directory"
+Task: "Create tests/.speck-scripts/ directory"
+Task: "Create tests/fixtures/ directory"
+```
 
-# Then launch generator and validator together:
-Task T039: "Create SpecGenerator in src/core/generators/SpecGenerator.ts"
-Task T042: "Create SpecValidator in src/core/validators/SpecValidator.ts"
+#### Within Foundational (Phase 2)
+
+```bash
+# All common utilities can be implemented in parallel
+Task: "Implement GitHub API client in .speck/scripts/common/github-api.ts"
+Task: "Implement release registry manager in .speck/scripts/common/json-tracker.ts"
+Task: "Implement symlink manager in .speck/scripts/common/symlink-manager.ts"
+Task: "Implement atomic file operations in .speck/scripts/common/file-ops.ts"
+
+# All common utility tests can run in parallel
+Task: "Test GitHub API client in tests/.speck-scripts/common/github-api.test.ts"
+Task: "Test release registry manager in tests/.speck-scripts/common/json-tracker.test.ts"
+Task: "Test symlink manager in tests/.speck-scripts/common/symlink-manager.test.ts"
+Task: "Test atomic file operations in tests/.speck-scripts/common/file-ops.test.ts"
+```
+
+#### Within User Story 1 (Phase 3)
+
+```bash
+# Command 1 tests (all parallel)
+Task: "Contract test: --json flag outputs valid JSON schema"
+Task: "Contract test: exit code 0 on success"
+Task: "Contract test: exit code 2 on network error"
+Task: "Contract test: --help flag shows usage"
+Task: "Edge case test: handles rate limiting"
+
+# Command 2 tests (all parallel)
+Task: "Contract test: --json flag outputs valid JSON schema"
+Task: "Contract test: exit code 0 on successful pull"
+Task: "Contract test: exit code 1 on invalid version"
+# ... all T029-T037 tests can run in parallel
+
+# Command 3 agents (parallel development)
+Task: "Create bash-to-Bun transformation agent"
+Task: "Create command transformation agent"
+
+# Command 3 tests (all parallel)
+Task: "Contract test: --json flag outputs valid JSON schema"
+Task: "Contract test: exit code 0 on successful transformation"
+# ... all T050-T058 tests can run in parallel
+```
+
+#### Within Polish (Phase 4)
+
+```bash
+# Most polish tasks can run in parallel
+Task: "Add JSDoc comments to .speck/scripts/"
+Task: "Add inline comments to transformation agents"
+Task: "Code cleanup: remove unused imports"
+Task: "Performance validation: check-upstream <10s"
+Task: "Performance validation: pull-upstream <2min"
+Task: "Performance validation: transform-upstream <5min"
 ```
 
 ---
 
 ## Implementation Strategy
 
-### MVP First (User Story 1 + User Story 5 Only)
+### MVP First (User Story 1 Only)
 
-1. Complete Phase 1: Setup (T001-T007)
-2. Complete Phase 2: Foundational (T008-T032) - CRITICAL
-3. Complete Phase 3: User Story 1 (T033-T052)
-4. Complete Phase 4: User Story 5 (T053-T064)
-5. **STOP and VALIDATE**: Test specify→clarify workflow end-to-end
-6. Deploy/demo if ready
+This feature has a single user story (US1), so MVP = full feature
+implementation:
 
-**MVP Success**: Developers can create and clarify specifications via Claude Code
+1. Complete Phase 1: Setup (T001-T009)
+2. Complete Phase 2: Foundational (T010-T017) - CRITICAL, blocks everything
+3. Complete Phase 3: User Story 1
+   - Command 1: `/speck.check-upstream` (T018-T028)
+   - Command 2: `/speck.pull-upstream` (T029-T047)
+   - Command 3: `/speck.transform-upstream` (T048-T069)
+   - Integration & Validation (T070-T074)
+4. **STOP and VALIDATE**: Test full pipeline end-to-end using quickstart.md
+5. Complete Phase 4: Polish (T075-T086)
 
-### Incremental Delivery
+### Incremental Delivery Within User Story 1
 
-1. Complete Setup + Foundational → Foundation ready
-2. Add User Story 1 + User Story 5 → Test independently → Deploy/Demo (MVP!)
-3. Add User Story 2 (Upstream Sync) → Test independently → Deploy/Demo
-4. Add User Story 3 (CLI) → Test independently → Deploy/Demo
-5. Add User Story 4 (Worktrees) → Test independently → Deploy/Demo
-6. Add Phase 8 commands → Complete workflow → Deploy/Demo
-7. Each increment adds value without breaking previous functionality
+Since US1 has three commands, deliver incrementally:
+
+1. Setup + Foundational → Foundation ready
+2. Add Command 1 (`/speck.check-upstream`) → Test independently → Can discover
+   releases! ✅
+3. Add Command 2 (`/speck.pull-upstream`) → Test independently → Can pull
+   releases! ✅
+4. Add Command 3 (`/speck.transform-upstream`) → Test independently → Full
+   pipeline! 🎯
+5. Integration & validation → End-to-end tests pass → Ready for polish
+6. Polish & optimization → Production ready
 
 ### Parallel Team Strategy
 
-With multiple developers:
+With multiple developers working on Phase 3:
 
-1. **Week 1**: Team completes Setup (Phase 1) + Foundational (Phase 2) together
-2. **Week 2**: Once Foundational done:
-   - Developer A: User Story 1 (Specify)
-   - Developer B: User Story 2 (Upstream Sync)
-   - Developer C: Foundational testing + documentation
-3. **Week 3**:
-   - Developer A: User Story 5 (Clarify) - extends US1
-   - Developer B: User Story 3 (CLI) - extends US1
-   - Developer C: User Story 4 (Worktrees) - extends US1
-4. **Week 4**: Phase 8 commands, skills, testing, polish
-5. Stories complete and integrate independently
+1. Team completes Setup + Foundational together (T001-T017)
+2. Once Foundational is done, split into parallel workstreams:
+   - **Developer A**: Command 1 (`/speck.check-upstream`) - T018-T028
+   - **Developer B**: Command 2 (`/speck.pull-upstream`) - T029-T047
+   - **Developer C**: Command 3 agents (T048-T049), then wait for Developer B
+     before starting T050-T069
+3. Integration tests (T070-T074) require all commands complete
+4. Polish tasks (T075-T086) can be split among team members
 
 ---
 
-## Task Summary
+## Success Criteria Validation
 
-**Total Tasks**: 160 tasks
+Per [spec.md](spec.md) Section "Success Criteria", validate these measurable
+outcomes:
 
-**Breakdown by Phase**:
-- Phase 1 (Setup): 7 tasks
-- Phase 2 (Foundational): 25 tasks
-- Phase 3 (User Story 1 - Specify): 20 tasks
-- Phase 4 (User Story 5 - Clarify): 12 tasks
-- Phase 5 (User Story 2 - Upstream Sync): 21 tasks
-- Phase 6 (User Story 3 - CLI): 10 tasks
-- Phase 7 (User Story 4 - Worktrees): 11 tasks
-- Phase 8 (Commands): 28 tasks
-- Phase 9 (Skills): 4 tasks
-- Phase 10 (Testing): 11 tasks
-- Phase 11 (Polish): 11 tasks
-
-**Breakdown by User Story**:
-- User Story 1 (Solo Developer Specify): 20 tasks
-- User Story 2 (Upstream Sync): 21 tasks
-- User Story 3 (Bun CLI): 10 tasks
-- User Story 4 (Worktrees): 11 tasks
-- User Story 5 (Clarify): 12 tasks
-- Infrastructure/Shared: 86 tasks
-
-**Parallel Opportunities**: 89 tasks marked with [P] can run in parallel with other tasks in same phase
-
-**MVP Scope** (Recommended):
-- Phase 1: Setup (7 tasks)
-- Phase 2: Foundational (25 tasks)
-- Phase 3: User Story 1 (20 tasks)
-- Phase 4: User Story 5 (12 tasks)
-- **Total MVP**: 64 tasks (40% of total)
-
-**Independent Test Criteria**:
-- User Story 1: Run `/speck.specify "Add feature"` → verify spec generated in correct directory
-- User Story 5: Run `/speck.clarify` → verify spec updated with resolved answers
-- User Story 2: Run `/speck.transform-upstream` → verify extensions preserved
-- User Story 3: Run `speck specify "Add feature"` → verify CLI works identically to slash command
-- User Story 4: Create 2 features with `--worktree` → verify isolation and no cross-contamination
+- **SC-001**: `/speck.check-upstream` completes in <10s → Validate with T078
+- **SC-002**: `/speck.pull-upstream` completes in <2min → Validate with T079
+- **SC-003**: `/speck.transform-upstream` completes in <5min → Validate with
+  T080
+- **SC-004**: Generated Bun scripts produce byte-for-byte identical `--json`
+  output → Validate with T072
+- **SC-005**: Generated Bun scripts have 100% exit code compatibility → Validate
+  with T072
+- **SC-006**: Bun scripts start in <100ms → Validate with T081
+- **SC-007**: Transformation succeeds without manual conflict resolution in 80%
+  of releases → Validate with T083 (coverage threshold)
+- **SC-008**: Generated `/speck.*` commands successfully call `.speck/scripts/`
+  → Validate with T073
+- **SC-009**: `upstream/releases.json` accurately tracks all pulled releases →
+  Validate with T071
 
 ---
 
 ## Notes
 
-- [P] tasks = different files, no dependencies within phase
-- [US#] label maps task to specific user story for traceability
-- Each user story should be independently completable and testable
-- Commit after each task or logical group
-- Stop at any checkpoint to validate story independently
-- Constitution compliance verified throughout (Principle IV: Quality Gates)
-- File format compatibility maintained (Principle VII)
-- All success criteria mapped to tasks (SC-001 through SC-010)
+- **[P] tasks**: Different files, no dependencies - can run in parallel
+- **[US1] label**: All Phase 3 tasks belong to User Story 1
+- **Tests First**: All contract tests (T018-T037, T050-T058) must FAIL before
+  implementation
+- **Medium-Weight Tests**: Use `MockFilesystem`, `MockGitHubApi` from
+  `contracts/test-utilities.ts`
+- **CLI Interface Compatibility**: All Bun scripts MUST match bash equivalents
+  (flags, exit codes, JSON output)
+- **Atomic Operations**: All commands use temp directories + atomic rename for
+  rollback safety
+- **Commit Strategy**: Commit after each command is complete (T028, T047, T069)
+  or after logical groups
+- **Checkpoints**: Stop at each checkpoint to validate independently before
+  proceeding
+- **Transformation Strategy**: Pure TypeScript > Bun Shell API > Bun.spawn()
+  (per research.md)
+- **Extension Markers**: Transformation agents MUST preserve
+  `[SPECK-EXTENSION:START/END]` boundaries

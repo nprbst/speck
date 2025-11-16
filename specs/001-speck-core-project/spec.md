@@ -1,35 +1,83 @@
-# Feature Specification: Speck - Claude Code-Optimized Specification Framework
+# Feature Specification: Upstream Sync & Transformation Pipeline
 
 **Feature Branch**: `001-speck-core-project` **Created**: 2025-11-14 **Status**:
-Draft **Input**: User description: "We are going to create a project named
-Speck. Speck is an opinionated, extensible derivative of GitHub's spec-kit
-optimized for Claude Code."
+Draft **Input**: User description: "Transform spec-kit releases into Speck's
+Claude-native implementation by syncing upstream content to `.specify/`,
+converting bash scripts to Bun TypeScript in `.speck/scripts/`, and generating
+`/speck.*` commands."
 
 ## Clarifications
 
-### Session 2025-11-14
+### Session 2025-11-15
 
-- Q: Should clarification workflow only address max 3 explicit [NEEDS
-  CLARIFICATION] markers from generation, or scan broadly for up to 5 questions
-  including detected gaps? → A: Comprehensive: Clarification scans broadly and
-  asks up to 5 questions, including but not limited to explicit markers
-- Q: How should worktree specs directory modes (isolated vs shared) work? → A:
-  Auto-detect based on git tracking: if specs/ is git-tracked, worktrees share
-  it naturally; if gitignored, symlink specs/ into worktree for central
-  collection
-- Q: What constitutes an "iteration" in SC-007 clarification metric? → A: One
-  iteration = one /speck.clarify session (max 5 questions); 90% of specs fully
-  resolved in single session
-- Q: What happens when a developer creates a feature with duplicate short-name?
-  → A: Auto-append collision counter (e.g., 003-user-auth-2 if 002-user-auth
-  exists); warn user about similar existing feature
-- Q: How should Enhancement Rules be structured for upstream sync
-  transformations? → A: AI-driven transformation: Claude analyzes upstream diffs
-  and infers appropriate Speck adaptations preserving extension markers; no
-  explicit declarative rules needed
-- Q: Should TypeScript CLI support both Bun and Deno runtimes or focus on single
-  runtime? → A: Bun-only: Focus exclusively on Bun runtime to simplify
-  implementation and reduce maintenance overhead
+- Q: How should upstream transformations work? → A: AI-driven transformation
+  using Claude to analyze upstream bash scripts and generate semantically
+  equivalent Bun TypeScript code, preserving [SPECK-EXTENSION] markers
+- Q: Should TypeScript support both Bun and Deno runtimes? → A: Bun-only to
+  simplify implementation and leverage Bun's superior performance
+- Q: What happens when upstream sync detects breaking changes? → A: Pause sync,
+  present conflict analysis, offer options: skip conflicting changes, apply with
+  manual merge, or abort entirely
+- Q: What is the scope of this feature? → A: ONLY upstream sync and
+  transformation. Command enhancements, user workflows, worktree support, and
+  clarification improvements are separate future features.
+- Q: Should sync/transform be a single command or split into separate commands?
+  → A: Three separate commands: `/speck.check-upstream` (show available
+  releases), `/speck.pull-upstream <version>` (pull into `upstream/<version>`
+  tree, track in `upstream/releases.json`), `/speck.transform-upstream` (convert
+  bash → Bun TS). The `.specify/` directory is NOT to be modified or extended.
+- Q: How should transformation handle bash-specific constructs that have no
+  direct TypeScript equivalent? → A: Prefer pure TypeScript equivalents where
+  possible, use Bun's Shell API for shell-like constructs, fall back to
+  `Bun.spawn()` for complex bash-specific patterns that can't be cleanly
+  translated.
+- Q: What metadata should be tracked in `upstream/releases.json` and how is
+  "latest" version determined? → A: Track version, commit SHA, pull date, and
+  transformation status (pulled/transformed/failed). "Latest" = most recently
+  pulled version. Also create `upstream/latest` symlink pointing to the latest
+  release directory.
+- Q: How do upstream bash scripts map to generated `/speck.*` commands? → A:
+  Mapping defined by upstream `/speckit.*` command configuration (e.g.,
+  `speckit.plan.md` references `.specify/scripts/bash/setup-plan.sh --json`).
+  Transformation has two jobs: (1) transform bash scripts to Bun TypeScript, (2)
+  transform `/speckit.*` commands into `/speck.*` commands, updating script
+  references AND factoring out sections better implemented as `.claude/agents`
+  or `.claude/skills`.
+- Q: What criteria determine when to factor command sections into agents vs.
+  skills vs. inline? → A: Agent for multi-step autonomous workflows (>3 steps
+  with branching logic), skill for reusable cross-command capabilities, inline
+  for simple sequential procedures. The `/speck.transform-upstream` command
+  implementation itself should use two agents: one for bash-to-Bun
+  transformation, another for `/speckit.*` commands to Speck
+  commands/agents/skills transformation.
+- Q: When the bash-to-Bun transformation agent encounters an existing TypeScript
+  file in `.speck/scripts/`, what should be the priority for SPECK-EXTENSION
+  blocks? → A: Existing TypeScript SPECK-EXTENSION blocks take absolute
+  priority; never modify them
+- Q: When running `/speck.transform-upstream` on a spec-kit release that has
+  already been transformed, should the transformation agents re-run tests for
+  unchanged files? → A: Always re-run all tests for all transformed files
+  regardless of changes
+- Q: When the transformation report documents "specific changes made" for an
+  updated file, what level of detail should be included? → A: File-level summary
+  (e.g., "Added --version flag", "Updated error handling")
+- Q: Should the command transformation agent extract workflow sections into
+  agents/skills during transformation, or preserve command structure for later
+  factoring? → A: Extract in this transformation - analyze command body markdown
+  to identify workflow sections, extract into `.claude/agents/` or
+  `.claude/skills/` files, then update command body to invoke them (fulfills
+  Claude-native goal)
+- Q: How should transformed commands invoke extracted agents/skills? → A: Use
+  Task tool for agents (e.g.,
+  `Task(subagent_type: "general-purpose", prompt: "Execute .claude/agents/X.md...")`),
+  use Skill tool for skills (e.g., `Skill(skill: "skill-name")`)
+- Q: Where should transformation factoring decisions be stored for incremental
+  transformations? → A: Create separate `.speck/transformation-history.json`
+  file mapping source → generated artifacts
+- Q: Should extracted agents and skills be prefixed to avoid naming conflicts? →
+  A: Prefix all extracted agents and skills with `speck.` (e.g.,
+  `.claude/agents/speck.plan-workflow.md`,
+  `.claude/skills/speck.load-context.md`)
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -46,351 +94,301 @@ optimized for Claude Code."
   - Demonstrated to users independently
 -->
 
-### User Story 1 - Solo Developer Creates First Feature Specification (Priority: P1)
+### User Story 1 - Transform Spec-Kit Release to Speck (Priority: P1)
 
-A software developer working alone wants to create a structured specification
-for a new feature using Claude Code as their development environment. They need
-a workflow that guides them through specification creation, planning, and
-implementation without requiring extensive setup.
+A Speck maintainer receives notification that a new spec-kit release is
+available. They run `/speck.check-upstream` to see available releases, then
+`/speck.pull-upstream <version>` to fetch upstream content into
+`upstream/<version>/` directory with metadata tracked in
+`upstream/releases.json`. Finally, they run `/speck.transform-upstream` to
+analyze the pulled bash scripts and generate Bun TypeScript equivalents in
+`.speck/scripts/` plus corresponding `/speck.*` Claude Commands.
 
-**Why this priority**: This is the core value proposition of Speck - enabling
-developers to work with structured specifications in Claude Code. Without this,
-the tool provides no value.
+**Why this priority**: This is the foundational transformation pipeline. Without
+it, there's no Speck - just manually maintained forks of spec-kit files.
 
-**Independent Test**: Can be fully tested by running
-`/speck.specify "Add user authentication"` in Claude Code and verifying that a
-complete specification is generated with all required sections, stored in an
-appropriate directory structure, and ready for the next phase (clarification or
-planning).
+**Independent Test**: Run `/speck.check-upstream`,
+`/speck.pull-upstream v1.0.0`, `/speck.transform-upstream`, then verify:
 
-**Acceptance Scenarios**:
-
-1. **Given** a developer has Speck initialized in their project, **When** they
-   run `/speck.specify` with a feature description, **Then** the system creates
-   a feature branch, generates a specification from templates, and saves it to
-   the appropriate directory
-2. **Given** a developer has a newly generated spec, **When** they review it,
-   **Then** the spec contains all mandatory sections (User Scenarios,
-   Requirements, Success Criteria) without implementation details
-3. **Given** a developer's specification has unclear requirements, **When** the
-   spec is generated, **Then** ambiguous areas are marked with [NEEDS
-   CLARIFICATION] markers (max 3) for the developer to resolve
-
----
-
-### User Story 2 - Developer Syncs Upstream Spec-Kit Changes (Priority: P2)
-
-A Speck user wants to benefit from improvements made to the upstream GitHub
-spec-kit methodology without losing their Claude Code-specific enhancements like
-agents, skills, and improved workflows.
-
-**Why this priority**: Enables long-term maintainability and ensures Speck users
-benefit from spec-kit community improvements while preserving Speck's value-add
-features.
-
-**Independent Test**: Can be tested by running `/speck.transform-upstream` after
-upstream spec-kit has new commits, and verifying that Speck commands are updated
-with upstream changes while preserving all [SPECK-EXTENSION] blocks.
+1. `upstream/v1.0.0/` contains pristine upstream templates and bash scripts
+2. `upstream/releases.json` tracks the v1.0.0 release metadata
+3. `.speck/scripts/` contains Bun TS equivalents with identical CLI behavior
+4. `/speck.*` commands exist and successfully call `.speck/scripts/`
+5. Transformation report shows what changed and Claude's rationale
 
 **Acceptance Scenarios**:
 
-1. **Given** upstream spec-kit has new commits since last sync, **When** the
-   developer runs `/speck.transform-upstream`, **Then** Claude analyzes diffs,
-   infers semantic impact, and proposes AI-transformed updates to Speck's Claude
-   Code commands
-2. **Given** upstream changes affect areas with Speck extensions, **When** sync
-   is performed, **Then** Claude preserves Speck-specific enhancements marked
-   with [SPECK-EXTENSION] boundaries and requests developer guidance only for
-   ambiguous conflicts
-3. **Given** sync is complete, **When** developer reviews changes, **Then** a
-   detailed sync report shows which files were modified, what upstream changes
-   were applied, which extensions were preserved, and Claude's transformation
-   rationale
-
----
-
-### User Story 3 - Developer Uses Bun-Powered TypeScript CLI (Priority: P3)
-
-A developer prefers using command-line tools directly rather than Claude Code
-slash commands, and wants a fast, type-safe CLI powered by Bun for creating
-specs, plans, and tasks with near-instant startup times.
-
-**Why this priority**: Provides flexibility for developers who want to use Speck
-outside Claude Code or integrate it into automated workflows. Lower priority
-because Claude Code integration is the primary use case. Bun-only focus
-simplifies implementation and leverages Bun's superior performance.
-
-**Independent Test**: Can be tested by running `speck specify "Add feature"` in
-a terminal (without Claude Code) and verifying that feature creation, spec
-generation, and validation work identically to the slash command version.
-
-**Acceptance Scenarios**:
-
-1. **Given** a developer has installed Speck's Bun-powered CLI, **When** they
-   run `speck specify "feature description"`, **Then** the CLI creates a feature
-   with the same behavior as the Claude Code slash command with sub-100ms
-   startup time
-2. **Given** a developer runs CLI commands, **When** errors occur, **Then** the
-   CLI provides structured error messages with actionable guidance
-3. **Given** a developer wants JSON output for automation, **When** they add the
-   `--json` flag, **Then** the CLI outputs machine-readable JSON instead of
-   interactive prompts
-
----
-
-### User Story 4 - Team Works on Multiple Features in Parallel (Priority: P2)
-
-Multiple developers on a team want to work on different features simultaneously
-without interfering with each other's specifications, plans, and implementation
-work. They need isolated workspaces for each feature.
-
-**Why this priority**: Critical for team environments where parallel development
-is common. Worktree support enables true isolation without branch-switching
-overhead.
-
-**Independent Test**: Can be tested by creating two features using worktree
-mode, verifying each has its own isolated directory with independent specs, and
-confirming that changes in one worktree don't affect the other.
-
-**Acceptance Scenarios**:
-
-1. **Given** a developer wants to start a new feature while another is in
-   progress, **When** they run `/speck.specify` with worktree option, **Then** a
-   new git worktree is created in a separate directory with its own feature
-   branch
-2. **Given** multiple worktrees exist, **When** a developer works in one
-   worktree, **Then** the main repository and other worktrees remain unaffected
-   by their changes
-3. **Given** a worktree is created, **When** the developer opens it in their
-   IDE, **Then** they see the full project context with access to all specs
-   (either via git-tracked shared directory or symlink from main repo)
-
----
-
-### User Story 5 - Developer Clarifies Ambiguous Requirements (Priority: P1)
-
-After generating an initial specification, a developer encounters [NEEDS
-CLARIFICATION] markers and needs to systematically resolve ambiguities through
-an interactive Q&A process that updates the spec with clear, testable
-requirements.
-
-**Why this priority**: Specification quality directly impacts planning and
-implementation success. Without clarification, specs remain ambiguous and lead
-to rework.
-
-**Independent Test**: Can be tested by generating a spec with clarification
-markers, running `/speck.clarify`, answering the presented questions, and
-verifying the spec is updated with resolved answers replacing the markers.
-
-**Acceptance Scenarios**:
-
-1. **Given** a spec contains [NEEDS CLARIFICATION] markers or ambiguous areas,
-   **When** the developer runs `/speck.clarify`, **Then** the system performs a
-   comprehensive ambiguity scan and presents up to 5 structured questions with
-   suggested answers (including both explicit markers and detected gaps)
-2. **Given** the developer is presented with clarification questions, **When**
-   they select answers or provide custom input, **Then** the system updates the
-   spec by replacing markers with the selected answers and integrating
-   clarifications into appropriate sections
-3. **Given** all clarifications are resolved, **When** the developer reviews the
-   spec, **Then** no [NEEDS CLARIFICATION] markers remain and all requirements
-   are testable and unambiguous
+1. **Given** maintainer wants to see available releases, **When** they run
+   `/speck.check-upstream`, **Then** system queries spec-kit GitHub repo and
+   displays available release tags with versions, dates, and release notes
+   summaries
+2. **Given** a spec-kit release tag exists, **When** maintainer runs
+   `/speck.pull-upstream <version>`, **Then** system fetches upstream content
+   and stores it pristine in `upstream/<version>/` directory, records metadata
+   (version, commit SHA, pull date, status: "pulled") in
+   `upstream/releases.json`, creates/updates `upstream/latest` symlink to point
+   to this version, and does NOT modify `.specify/` directory
+3. **Given** upstream content pulled to `upstream/<version>/`, **When**
+   maintainer runs `/speck.transform-upstream`, **Then** system launches two
+   specialized agents in sequence: (1) bash-to-Bun transformation agent analyzes
+   bash scripts in `upstream/<version>/scripts/bash/` and generates semantically
+   equivalent Bun TypeScript in `.speck/scripts/` with identical CLI interface,
+   (2) command transformation agent transforms upstream `/speckit.*` command
+   files into `/speck.*` commands, updating script references from
+   `.specify/scripts/bash/` to `.speck/scripts/`, and updates status to
+   "transformed" in `upstream/releases.json`
+4. **Given** command transformation agent running, **When** agent analyzes
+   upstream `/speckit.*` command structure, **Then** agent applies factoring
+   criteria: creates `.claude/agents/` for multi-step autonomous workflows (>3
+   steps with branching), creates `.claude/skills/` for reusable cross-command
+   capabilities, keeps simple sequential procedures inline
+5. **Given** both transformation agents complete, **When** all scripts and
+   commands processed, **Then** transformation report documents: (1) Bun scripts
+   generated, (2) `/speck.*` commands created/updated, (3) agents/skills
+   factored out, (4) Claude's rationale for all transformations
+6. **Given** transformation fails, **When** error occurs during transformation,
+   **Then** system updates status to "failed" in `upstream/releases.json` with
+   error details, and preserves existing `.speck/scripts/` unchanged
+7. **Given** transformation encounters breaking changes, **When** conflict
+   detected, **Then** system pauses, shows conflict analysis, and offers: skip
+   conflicting changes, manual merge, or abort
 
 ### Edge Cases
 
-- **Duplicate short-name collision**: When a developer creates a feature with a
-  short-name matching an existing feature (e.g., `002-user-auth` exists), system
-  auto-appends collision counter (`003-user-auth-2`) and warns developer to
-  review existing similar feature before proceeding
-- How does the system handle extremely long feature descriptions that would
-  create branch names exceeding git's 244-character limit?
-- What happens when upstream sync detects breaking changes that fundamentally
-  conflict with Speck's architecture?
-- How does the system handle non-git repositories (developers who don't use
-  version control)?
-- What happens when a worktree creation fails due to disk space or permission
-  issues?
-- How does the system handle spec template corruption or missing required
-  template sections?
+- **Network failure during upstream fetch**: When network drops mid-fetch during
+  `/speck.pull-upstream`, command aborts and leaves existing `upstream/` and
+  `.speck/` unchanged (no partial state)
+- **Upstream release tag doesn't exist**: When user provides invalid tag to
+  `/speck.pull-upstream`, system shows error and suggests running
+  `/speck.check-upstream` to see available releases
+- **Breaking changes in bash scripts**: When upstream fundamentally changes
+  script behavior (e.g., removes `--json` flag), bash-to-Bun transformation
+  agent detects incompatibility, pauses transformation, and presents conflict
+  analysis with options: skip this script, attempt best-effort transform with
+  warnings, or abort
+- **Agent failure during transformation**: When either transformation agent
+  fails (e.g., bash-to-Bun agent encounters unsupported syntax, or command
+  transformation agent can't parse `/speckit.*` structure),
+  `/speck.transform-upstream` halts immediately, preserves existing `.speck/`
+  state, records failure in `upstream/releases.json`, and reports which agent
+  failed and why
+- **Bun not installed**: When Bun runtime missing, `/speck.transform-upstream`
+  fails early with clear message directing to Bun installation instructions
+- **First-time transformation**: When no `upstream/` or `.speck/` exists yet,
+  `/speck.pull-upstream` creates `upstream/<version>/` directory and
+  `/speck.transform-upstream` creates `.speck/scripts/` directory
+- **Multiple upstream versions pulled**: When `upstream/` contains multiple
+  version directories (e.g., `upstream/v1.0.0/` and `upstream/v1.1.0/`),
+  `/speck.transform-upstream` without arguments transforms the version pointed
+  to by `upstream/latest` symlink (most recently pulled); optional `--version`
+  flag allows targeting specific version
+- **Symlink already exists**: When `/speck.pull-upstream` runs and
+  `upstream/latest` symlink already exists, system removes old symlink and
+  creates new one pointing to newly pulled version
 
 ## Requirements _(mandatory)_
 
 ### Functional Requirements
 
-#### Core Specification Management
-
-- **FR-001**: System MUST provide slash commands (`/speck.specify`,
-  `/speck.clarify`, `/speck.plan`, etc.) that integrate with Claude Code's
-  command interface
-- **FR-002**: System MUST generate specifications from natural language feature
-  descriptions using templates
-- **FR-003**: System MUST validate specifications against quality criteria (no
-  implementation details, testable requirements, technology-agnostic success
-  criteria)
-- **FR-004**: System MUST support creating specifications in git repositories
-  with automatic branch creation
-- **FR-005**: System MUST support creating specifications in non-git directories
-  with environment-based feature tracking
-- **FR-006**: System MUST limit [NEEDS CLARIFICATION] markers to a maximum of 3
-  per specification during generation phase, prioritized by impact;
-  clarification workflow may ask up to 5 questions total by scanning beyond
-  explicit markers
-- **FR-007**: System MUST generate specifications that include mandatory
-  sections: User Scenarios & Testing, Requirements, and Success Criteria
-
-#### Upstream Synchronization
-
-- **FR-008**: System MUST track the last synced commit SHA from upstream
-  spec-kit repository
-- **FR-009**: System MUST preserve Speck-specific extensions marked with
-  [SPECK-EXTENSION:START/END] boundaries during AI-driven upstream sync
-  transformations
-- **FR-010**: System MUST provide a sync command (`/speck.transform-upstream`)
-  that uses Claude to analyze upstream diffs and infer appropriate Speck
-  adaptations
-- **FR-011**: System MUST generate sync reports documenting which files were
-  modified, what upstream changes were applied, which extensions were preserved,
-  and Claude's transformation rationale
-- **FR-012**: System MUST validate that AI-transformed sync changes pass type
-  checking and tests before updating tracking files
-
-#### Feature Isolation & Workflow
-
-- **FR-013**: System MUST support git worktree mode for isolated feature
-  development
-- **FR-014**: System MUST automatically detect and assign the next available
-  feature number based on existing branches, worktrees, and spec directories
-- **FR-015**: System MUST generate short feature names (2-4 words) from feature
-  descriptions by extracting meaningful keywords
-- **FR-015a**: System MUST detect duplicate short-names and auto-append
-  collision counter (e.g., `-2`, `-3`) while warning user about similar existing
-  features
-- **FR-016**: System MUST create feature directory structures under
-  `specs/<number>-<short-name>/`
-- **FR-017**: System MUST auto-detect worktree specs directory handling: if
-  specs/ is git-tracked, worktrees naturally share it; if specs/ is gitignored,
-  system creates symlink to main repo's specs/ directory in each worktree to
-  maintain central spec collection
-
-#### TypeScript CLI
-
-- **FR-018**: System MUST provide a Bun-powered TypeScript CLI (`speck` command)
-  with sub-100ms startup time
-- **FR-019**: System MUST provide the same functionality via CLI as via Claude
-  Code slash commands
-- **FR-020**: System MUST support `--json` flag for machine-readable output in
-  all CLI commands
-- **FR-021**: System MUST provide interactive prompts for CLI users when
-  required information is missing
-- **FR-022**: System MUST leverage Bun-specific APIs and features for optimal
-  performance (native TypeScript execution, fast file I/O, optimized subprocess execution)
-
-#### Quality & Validation
-
-- **FR-023**: System MUST validate specifications against a quality checklist
-  before marking them ready for planning
-- **FR-024**: System MUST generate requirements checklists at
-  `<feature-dir>/checklists/requirements.md`
-- **FR-025**: System MUST ensure success criteria are measurable,
-  technology-agnostic, and user-focused
-- **FR-026**: System MUST ensure functional requirements are testable and
-  unambiguous
+- **FR-001**: System MUST provide `/speck.check-upstream` command that queries
+  spec-kit GitHub repo and displays available release tags with versions, dates,
+  and release notes summaries
+- **FR-002**: System MUST provide `/speck.pull-upstream <version>` command that
+  fetches spec-kit release from GitHub and stores upstream version in
+  `upstream/<version>/` directory
+- **FR-003**: System MUST record pulled release metadata (version, pull date,
+  commit SHA, release notes URL, status: "pulled") in `upstream/releases.json`
+  file and create/update `upstream/latest` symlink to point to newly pulled
+  version directory
+- **FR-004**: System MUST NOT modify or extend `.specify/` directory during
+  upstream pull operations (`.specify/` remains static/read-only for upstream
+  sync purposes)
+- **FR-005**: System MUST provide `/speck.transform-upstream` command (optional
+  `--version` flag, defaults to `upstream/latest` symlink target) that
+  orchestrates dual transformation by launching two specialized agents in
+  sequence
+- **FR-005a**: System MUST provide bash-to-Bun transformation agent
+  (`.claude/agents/speck.transform-bash-to-bun.md`) that analyzes bash scripts
+  from `upstream/<version>/.specify/scripts/bash/` and generates semantically
+  equivalent Bun TypeScript in `.speck/scripts/` using transformation strategy:
+  prefer pure TypeScript equivalents, use Bun Shell API for shell-like
+  constructs, fall back to `Bun.spawn()` for complex bash-specific patterns
+- **FR-005a.1**: Bash-to-Bun agent MUST check for existing TypeScript files in
+  `.speck/scripts/` before transformation and preserve SPECK-EXTENSION blocks
+  from existing TypeScript files with absolute priority (never modify existing
+  extension blocks)
+- **FR-005a.2**: Bash-to-Bun agent MUST minimize changes when existing
+  TypeScript file has same functionality, only updating parts affected by
+  upstream changes while preserving existing code structure, variable names, and
+  patterns
+- **FR-005a.3**: Bash-to-Bun agent MUST generate or update lightweight contract
+  tests in `tests/.speck-scripts/` covering CLI flags, exit codes, and JSON
+  output structure
+- **FR-005a.4**: Bash-to-Bun agent MUST validate generated TypeScript compiles
+  without errors and passes all tests before reporting success (tests MUST be
+  run for all files regardless of whether file was created or updated)
+- **FR-005b**: System MUST provide command transformation agent
+  (`.claude/agents/speck.transform-commands.md`) that transforms upstream
+  `/speckit.*` command files from `upstream/<version>/.claude/commands/` into
+  `/speck.*` commands in `.claude/commands/`
+- **FR-005b.1**: Command transformation agent MUST check for existing Speck
+  command files in `.claude/commands/` before transformation and preserve
+  SPECK-EXTENSION blocks from existing commands with absolute priority (never
+  modify existing extension blocks)
+- **FR-005b.2**: Command transformation agent MUST minimize changes when
+  existing command has same functionality, only updating script references and
+  upstream-affected parts while preserving existing workflow steps and patterns
+- **FR-006**: Bun scripts MUST maintain identical CLI interfaces: same flags
+  (`--json`, `--paths-only`), exit codes, and error message formats as bash
+  equivalents
+- **FR-007**: Command transformation agent MUST analyze command body markdown to
+  identify workflow sections and apply factoring criteria: create
+  `.claude/agents/` for multi-step autonomous workflows (>3 steps with branching
+  logic), create `.claude/skills/` for reusable cross-command capabilities, keep
+  simple sequential procedures inline in command body
+- **FR-007a**: Command transformation agent MUST extract identified workflow
+  sections into separate agent files in `.claude/agents/` or skill files in
+  `.claude/skills/` with `speck.` prefix (e.g., `speck.plan-workflow.md`,
+  `speck.load-context.md`), then update the command body to invoke the new
+  agents/skills instead of containing the logic inline
+- **FR-007b**: Command transformation agent MUST update script references in
+  transformed `/speck.*` commands from `.specify/scripts/bash/` paths to
+  `.speck/scripts/` paths
+- **FR-008**: System MUST update status in `upstream/releases.json` to
+  "transformed" on successful transformation or "failed" (with error details) on
+  failure
+- **FR-009**: System MUST create transformation report documenting: (1) upstream
+  version transformed, (2) whether each file was created new or updated from
+  existing, (3) Bun scripts generated in `.speck/scripts/` with test file paths,
+  (4) `/speck.*` commands created/updated in `.claude/commands/`, (5) file-level
+  summary of specific changes made (e.g., "Added --version flag", "Updated error
+  handling") not line-by-line diffs, (6) agents/skills factored out in
+  `.claude/agents/speck.*.md` or `.claude/skills/speck.*.md` with extraction
+  completeness (all workflow sections >3 steps with branching logic extracted
+  per FR-007 criteria) and factoring decisions persisted to
+  `.speck/transformation-history.json` per FR-013, (7) SPECK-EXTENSION blocks
+  preserved with line numbers, (8) validation results (compilation, execution,
+  tests passed), (9) Claude's transformation rationale for all changes
+- **FR-010**: System MUST detect breaking changes in upstream bash scripts via
+  Claude analysis (breaking changes defined as: removed/renamed CLI flags,
+  changed exit code semantics, altered JSON output schema structure, or
+  incompatible behavioral changes), pause transformation, and present conflict
+  analysis with options: skip conflicting changes, attempt best-effort
+  transform, or abort
+- **FR-011**: System MUST fail gracefully with clear error messages for: network
+  failures, invalid tags, missing Bun runtime, or transformation conflicts
+- **FR-012**: System MUST perform atomic operations - either full command
+  succeeds or nothing changes (no partial state)
+- **FR-013**: System MUST record transformation factoring decisions in
+  `.speck/transformation-history.json` tracking which upstream source
+  commands/scripts map to which generated Speck commands, agents, and skills,
+  enabling incremental transformation to reference previous factoring decisions
 
 ### Key Entities
 
-- **Feature**: Represents a development feature with number, short-name, branch
-  name, description, directory path, and creation timestamp
-- **Specification**: A structured document describing what users need and why,
-  without implementation details
-- **Upstream Tracker**: Records the last synced commit SHA, sync date, and
-  file-level sync status for spec-kit repository
-- **Extension Marker**: Identifies Speck-specific code blocks (marked with
-  [SPECK-EXTENSION:START/END]) that must be preserved during AI-driven upstream
-  sync transformations
-- **Worktree**: An isolated git working directory for parallel feature
-  development
-- **Clarification**: A question-answer pair resolving ambiguous requirements in
-  a specification
+- **Upstream Release**: A tagged spec-kit release (e.g., v1.0.0) containing
+  templates, bash scripts, and documentation, stored pristine in
+  `upstream/<version>/` directory
+- **Release Registry**: JSON file (`upstream/releases.json`) tracking all pulled
+  releases with metadata (version, pull date, commit SHA, release notes URL,
+  transformation status: "pulled"/"transformed"/"failed")
+- **Latest Symlink**: `upstream/latest` symlink pointing to most recently pulled
+  release directory (e.g., `upstream/v1.2.0/`), updated by
+  `/speck.pull-upstream`, used as default source by `/speck.transform-upstream`
+- **Transformation Pipeline**: Three-command workflow: `/speck.check-upstream`
+  (discover releases) → `/speck.pull-upstream <version>` (fetch to
+  `upstream/<version>/`, update symlink) → `/speck.transform-upstream`
+  (orchestrates two-agent dual transformation)
+- **Bash-to-Bun Transformation Agent**: Specialized agent
+  (`.claude/agents/speck.transform-bash-to-bun.md`) that analyzes bash scripts
+  from `upstream/<version>/scripts/bash/` and generates semantically equivalent
+  Bun TypeScript in `.speck/scripts/` with identical CLI interfaces
+- **Command Transformation Agent**: Specialized agent
+  (`.claude/agents/speck.transform-commands.md`) that converts upstream
+  `/speckit.*` command files to `/speck.*` commands by: (1) updating script
+  references from `.specify/scripts/bash/` to `.speck/scripts/`, (2) applying
+  factoring criteria to identify and extract sections as
+  `.claude/agents/speck.*.md` (multi-step autonomous workflows >3 steps) or
+  `.claude/skills/speck.*.md` (reusable cross-command capabilities), (3)
+  preserving command structure and workflow intent
+- **Upstream Directory**: Read-only `upstream/<version>/` tree containing
+  pristine spec-kit release content (templates, bash scripts, `/speckit.*`
+  commands, docs) for transformation source material
+- **Transformation Report**: Markdown document generated after
+  `/speck.transform-upstream` showing: upstream version, Bun scripts generated,
+  `/speck.*` commands created/updated, agents/skills factored out, and Claude's
+  transformation rationale for all changes
+- **Bun Script**: TypeScript implementation in `.speck/scripts/` that replicates
+  bash script behavior with identical CLI interface
+- **Transformation History**: JSON file (`.speck/transformation-history.json`)
+  recording factoring decisions mapping upstream source commands/scripts to
+  generated Speck commands, agents, and skills, enabling incremental
+  transformations to reference previous decisions and maintain consistency
+  across versions
 
 ## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
-- **SC-001**: Developers can create a complete, valid feature specification from
-  a natural language description in under 2 minutes using `/speck.specify`
-- **SC-002**: Specifications generated by Speck contain zero implementation
-  details (no mention of frameworks, languages, databases, or tools)
-- **SC-003**: 95% of specifications pass quality validation on first generation
-  without requiring manual fixes
-- **SC-004**: Upstream sync operations complete in under 5 minutes and preserve
-  100% of Speck-specific extensions
-- **SC-005**: Bun-powered CLI provides identical functionality to Claude Code
-  slash commands with less than 1% behavioral deviation and sub-100ms startup
-  time
-- **SC-006**: Feature isolation via worktrees allows 10+ parallel features
-  without cross-contamination of specs or artifacts
-- **SC-007**: Clarification workflow fully resolves spec ambiguities in 1-3
-  `/speck.clarify` sessions (iterations), with 90% of specs requiring only 1
-  session (5 questions or fewer)
-- **SC-008**: Developers can sync monthly upstream spec-kit updates without
-  manual conflict resolution in 80% of cases
-- **SC-009**: System detects and prevents branch name length violations (>244
-  chars) with clear error messages before git operations
-- **SC-010**: Non-git workflows function identically to git workflows for all
-  core specification operations (specify, clarify, plan)
+- **SC-001**: `/speck.check-upstream` completes in under 10 seconds and displays
+  all available release tags
+- **SC-002**: `/speck.pull-upstream <version>` completes in under 2 minutes for
+  typical spec-kit releases (10-20 files)
+- **SC-003**: `/speck.transform-upstream` completes in under 5 minutes for
+  typical spec-kit releases (analyzing 5-10 bash scripts)
+- **SC-004**: Generated Bun scripts produce semantically equivalent `--json`
+  output compared to bash equivalents (identical schema, data values, and exit
+  codes; whitespace and key ordering may differ)
+- **SC-005**: Generated Bun scripts have 100% exit code compatibility with bash
+  equivalents
+- **SC-006**: Bun scripts start in under 100ms (vs ~300ms for bash equivalents)
+- **SC-007**: Transformation succeeds without manual conflict resolution in 80%
+  of upstream releases
+- **SC-008**: Generated `/speck.*` commands successfully call `.speck/scripts/`
+  and complete basic workflows
+- **SC-009**: `upstream/releases.json` accurately tracks all pulled releases
+  with complete metadata
 
 ## Assumptions
 
-1. **Claude Code Environment**: Primary users have access to Claude Code with
-   slash command and agent capabilities
-2. **Git Familiarity**: Users have basic understanding of git concepts
-   (branches, commits, repositories)
-3. **Template Availability**: Upstream spec-kit templates remain available and
-   structurally stable
-4. **Bun Runtime**: Users have Bun 1.0+ installed for TypeScript CLI
-   functionality
-5. **Disk Space**: Sufficient disk space available for worktree creation
-   (typically 100MB-1GB per worktree)
-6. **Upstream Stability**: Spec-kit methodology changes are incremental, not
-   revolutionary rewrites
-7. **Markdown Compatibility**: Generated specifications can be viewed in any
-   standard markdown renderer
-8. **Network Access**: Users have network access for fetching upstream changes
-   during sync operations
-9. **File System Permissions**: Users have write permissions in their project
-   directories for creating specs and worktrees
+1. **Claude Code Environment**: Commands run in Claude Code with access to
+   Claude for script analysis
+2. **Bun Runtime**: Bun 1.0+ installed and available in PATH
+3. **Upstream Availability**: spec-kit GitHub repository accessible via HTTPS
+4. **Upstream Stability**: spec-kit changes are incremental, not revolutionary
+   rewrites of core bash scripts
+5. **Network Access**: Internet connectivity available for fetching upstream
+   releases
+6. **File System Permissions**: Write access to create/update `upstream/` and
+   `.speck/` directories (`.specify/` is NOT modified)
+7. **Git Not Required**: Transformation works in non-git directories (git only
+   needed for actual feature workflows later)
 
 ## Dependencies
 
-- **Upstream Dependency**: GitHub's spec-kit repository and templates (external,
-  ongoing)
-- **Runtime Dependency**: Bun 1.0+ for TypeScript CLI execution with native
-  TypeScript support
-- **Claude Code Version**: Compatible Claude Code version with slash command and
-  agent support
-- **Git Version**: Git 2.30+ for worktree support and modern porcelain commands
+- **Upstream**: GitHub spec-kit repository (https://github.com/github/spec-kit
+  or wherever it's hosted)
+- **Runtime**: Bun 1.0+ for TypeScript execution
+- **Claude**: Claude Code with slash command support for
+  `/speck.check-upstream`, `/speck.pull-upstream`, `/speck.transform-upstream`,
+  and agent support for `.claude/agents/speck.transform-bash-to-bun.md` and
+  `.claude/agents/speck.transform-commands.md`
+- **Network**: HTTPS access to GitHub for fetching releases
 
 ## Out of Scope
 
-The following are explicitly **not** included in this feature:
+The following are explicitly **not** part of this feature (separate features
+later):
 
-- **Visual UI**: No web-based or GUI interface for managing specifications (CLI
-  and Claude Code only)
-- **Collaborative Editing**: No real-time multi-user editing of specifications
-  (use git merge workflows)
-- **Spec Versioning**: No built-in versioning beyond git's native branch/commit
-  history
-- **Custom Template Authoring**: No UI for creating custom templates (users edit
-  markdown files directly)
-- **Automated Testing**: No built-in test generation from specifications
-  (testing frameworks are separate)
-- **Deployment Integration**: No CI/CD pipeline generation or deployment
-  automation
-- **Project Management**: No issue tracking, sprint planning, or project
-  management features
-- **Cost Tracking**: No time estimation, budgeting, or resource allocation
-  features
-- **Bidirectional Sync**: Upstream sync is unidirectional (spec-kit → Speck
-  only, never Speck → spec-kit)
-- **Legacy Bash Script Support**: No support for running original spec-kit bash
-  scripts alongside Speck
+- **Command Enhancements**: Claude-native improvements to `/speck.clarify`,
+  `/speck.plan`, etc. (those are future features)
+- **User Workflows**: Creating specs, clarifying requirements, generating plans
+  (covered by generated commands, not transformation itself)
+- **Worktree Support**: Multi-feature parallel development (separate feature)
+- **Quality Validation**: Spec validation checklists and quality gates (separate
+  feature)
+- **Plugin Packaging**: Bundling as Claude Marketplace plugin (that's
+  feature 002)
+- **Bidirectional Sync**: Never sync Speck → spec-kit (unidirectional only)
+- **Manual Script Editing**: No UI for editing generated Bun scripts
+  (transformation regenerates them)

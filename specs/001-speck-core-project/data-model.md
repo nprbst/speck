@@ -1,841 +1,417 @@
-# Data Model
+# Data Model: Upstream Sync & Transformation Pipeline
 
-**Feature**: Speck - Claude Code-Optimized Specification Framework
-**Branch**: `001-speck-core-project`
-**Date**: 2025-11-14
-**Phase**: Phase 1 (Design & Contracts)
+**Feature**: 001-speck-core-project
+**Date**: 2025-11-15
+**Phase**: 1 - Design & Contracts
 
-## Overview
-
-This document defines the domain models and entities for Speck's TypeScript implementation. All models are TypeScript interfaces/classes with Zod schema validation for runtime safety.
+This document defines the core entities and their relationships for the upstream sync and transformation pipeline.
 
 ---
 
-## Core Domain Entities
+## Core Entities
 
-### 1. Feature
+### 1. UpstreamRelease
 
-Represents a development feature with associated metadata and directory structure.
+Represents a single spec-kit release pulled from GitHub and stored in `upstream/<version>/`.
 
-**Entity Definition**:
-
-```typescript
-// src/core/models/Feature.ts
-
-export interface Feature {
-  /** Feature number (3-digit zero-padded in branch name) */
-  number: number;
-
-  /** Short feature name (2-4 words, kebab-case) */
-  shortName: string;
-
-  /** Full branch name: {number}-{shortName} (e.g., "001-user-auth") */
-  branchName: string;
-
-  /** Original feature description from user input */
-  description: string;
-
-  /** Absolute path to feature specs directory */
-  directory: string;
-
-  /** Timestamp of feature creation */
-  createdAt: Date;
-
-  /** Optional worktree path (if created as worktree) */
-  worktreePath?: string;
-
-  /** Creation mode: branch | worktree | non-git */
-  mode: 'branch' | 'worktree' | 'non-git';
-}
-```
-
-**Zod Schema**:
-
-```typescript
-import { z } from 'zod';
-
-export const FeatureSchema = z.object({
-  number: z.number().int().positive().max(999),
-  shortName: z.string()
-    .min(3)
-    .max(50)
-    .regex(/^[a-z0-9-]+$/, 'Short name must be kebab-case'),
-  branchName: z.string()
-    .regex(/^\d{3}-[a-z0-9-]+$/, 'Branch name must match format: 001-feature-name'),
-  description: z.string().min(10).max(1000),
-  directory: z.string().min(1),
-  createdAt: z.date(),
-  worktreePath: z.string().optional(),
-  mode: z.enum(['branch', 'worktree', 'non-git']),
-});
-
-export type Feature = z.infer<typeof FeatureSchema>;
-```
-
-**Validation Rules**:
-- `number`: 1-999 (3-digit zero-padded)
-- `shortName`: Lowercase, numbers, hyphens only (kebab-case)
-- `branchName`: Must match `^\d{3}-[a-z0-9-]+$` pattern
-- `description`: 10-1000 characters
-- `branchName` length: ≤244 characters (git limitation)
-
-**State Transitions**:
-```
-[User Input] → Feature.create() → [Created] → Feature.activate() → [Active]
-```
+**Fields**:
+- `version: string` - Release tag (e.g., "v1.0.0")
+- `commit: string` - Git commit SHA for this release
+- `pullDate: string` - ISO 8601 timestamp when release was pulled
+- `releaseNotesUrl: string` - GitHub URL to release notes
+- `status: ReleaseStatus` - Current transformation status
+- `errorDetails?: string` - Error message if status is "failed"
 
 **Relationships**:
-- Has one Specification (in `{directory}/spec.md`)
-- Has one Plan (in `{directory}/plan.md`)
-- Has many Tasks (in `{directory}/tasks.md`)
-- Has many Checklists (in `{directory}/checklists/`)
+- Stored in `upstream/releases.json` as array of UpstreamRelease objects
+- Each release has corresponding directory `upstream/<version>/`
+- One release is "latest" (pointed to by `upstream/latest` symlink)
 
----
-
-### 2. Specification
-
-Represents a feature specification document describing what users need and why (technology-agnostic).
-
-**Entity Definition**:
-
-```typescript
-// src/core/models/Specification.ts
-
-export interface Specification {
-  /** Associated feature */
-  feature: Feature;
-
-  /** File path to spec.md */
-  filePath: string;
-
-  /** Markdown content of specification */
-  content: string;
-
-  /** Parsed sections */
-  sections: {
-    userScenarios: UserScenario[];
-    requirements: Requirement[];
-    successCriteria: SuccessCriterion[];
-    assumptions: string[];
-    dependencies: string[];
-    outOfScope: string[];
-    edgeCases: string[];
-  };
-
-  /** Clarifications (Q&A pairs) */
-  clarifications: Clarification[];
-
-  /** Validation status */
-  validation: {
-    isValid: boolean;
-    errors: ValidationError[];
-    warnings: ValidationWarning[];
-  };
-
-  /** Clarification markers count */
-  clarificationMarkersCount: number;
-
-  /** Last modified timestamp */
-  lastModified: Date;
-}
-
-export interface UserScenario {
-  title: string;
-  priority: 'P1' | 'P2' | 'P3';
-  description: string;
-  rationale: string;
-  independentTest: string;
-  acceptanceScenarios: AcceptanceScenario[];
-}
-
-export interface AcceptanceScenario {
-  given: string;
-  when: string;
-  then: string;
-}
-
-export interface Requirement {
-  id: string;            // e.g., "FR-001", "NFR-001"
-  type: 'functional' | 'non-functional' | 'quality';
-  description: string;
-  testable: boolean;
-}
-
-export interface SuccessCriterion {
-  id: string;            // e.g., "SC-001"
-  description: string;
-  measurable: boolean;
-  technologyAgnostic: boolean;
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const SpecificationSchema = z.object({
-  feature: FeatureSchema,
-  filePath: z.string(),
-  content: z.string().min(100),
-  sections: z.object({
-    userScenarios: z.array(UserScenarioSchema).min(1),
-    requirements: z.array(RequirementSchema).min(1),
-    successCriteria: z.array(SuccessCriterionSchema).min(1),
-    assumptions: z.array(z.string()),
-    dependencies: z.array(z.string()),
-    outOfScope: z.array(z.string()),
-    edgeCases: z.array(z.string()),
-  }),
-  clarifications: z.array(ClarificationSchema),
-  validation: z.object({
-    isValid: z.boolean(),
-    errors: z.array(ValidationErrorSchema),
-    warnings: z.array(ValidationWarningSchema),
-  }),
-  clarificationMarkersCount: z.number().int().min(0).max(3), // Max 3 per spec
-  lastModified: z.date(),
-});
-```
-
-**Validation Rules** (Constitution-Enforced):
-- Must have ≥1 user scenario (mandatory section)
-- Must have ≥1 functional requirement (mandatory section)
-- Must have ≥1 success criterion (mandatory section)
-- Clarification markers: Max 3 during generation (FR-006)
-- Zero implementation details (SC-002: validated via SpecValidator)
-- Technology-agnostic success criteria (Principle VI)
+**Validation Rules**:
+- `version` must match semantic versioning pattern (e.g., `v\d+\.\d+\.\d+`)
+- `commit` must be valid git SHA (40 hex characters)
+- `pullDate` must be valid ISO 8601 timestamp
+- `status` must be one of: "pulled", "transformed", "failed"
+- `errorDetails` required if and only if `status` is "failed"
 
 **State Transitions**:
 ```
-[Generated] → validate() → [Validation Failed/Passed] → clarify() → [Clarified] → finalize() → [Ready for Planning]
+Initial → "pulled" (via /speck.pull-upstream)
+"pulled" → "transformed" (via /speck.transform-upstream success)
+"pulled" → "failed" (via /speck.transform-upstream failure)
+"failed" → "transformed" (via retry after fixing issues)
 ```
 
 ---
 
-### 3. Plan
+### 2. ReleaseRegistry
 
-Represents an implementation plan with technical context, phase breakdowns, and design artifacts.
+The `upstream/releases.json` file tracking all pulled releases.
 
-**Entity Definition**:
-
-```typescript
-// src/core/models/Plan.ts
-
-export interface Plan {
-  /** Associated feature */
-  feature: Feature;
-
-  /** File path to plan.md */
-  filePath: string;
-
-  /** Markdown content */
-  content: string;
-
-  /** Technical context */
-  technicalContext: {
-    language: string;
-    dependencies: string[];
-    storage: string;
-    testing: string;
-    targetPlatform: string;
-    projectType: 'single' | 'web' | 'mobile';
-    performanceGoals: string[];
-    constraints: string[];
-    scale: string;
-  };
-
-  /** Constitution check results */
-  constitutionCheck: {
-    passed: boolean;
-    violations: ConstitutionViolation[];
-    summary: string;
-  };
-
-  /** Project structure definition */
-  projectStructure: {
-    documentation: string[];  // Paths in specs/ dir
-    sourceCode: string[];     // Paths in src/ dir
-    structureDecision: string;
-  };
-
-  /** Complexity justifications (if violations exist) */
-  complexityTracking: ComplexityJustification[];
-
-  /** Phases (from research.md, data-model.md, etc.) */
-  phases: {
-    phase0Research: boolean;      // research.md exists
-    phase1Design: boolean;         // data-model.md, contracts/, quickstart.md exist
-    phase2Tasks: boolean;          // tasks.md exists (generated via /speckit.tasks)
-  };
-
-  /** Last modified timestamp */
-  lastModified: Date;
-}
-
-export interface ConstitutionViolation {
-  principle: string;              // e.g., "Principle IV: Quality Gates"
-  severity: 'error' | 'warning';
-  description: string;
-  justification?: string;         // If violation is acceptable
-}
-
-export interface ComplexityJustification {
-  violation: string;              // What rule was broken
-  whyNeeded: string;              // Business justification
-  simplerAlternativeRejected: string; // Why simpler approach insufficient
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const PlanSchema = z.object({
-  feature: FeatureSchema,
-  filePath: z.string(),
-  content: z.string().min(500),
-  technicalContext: z.object({
-    language: z.string(),
-    dependencies: z.array(z.string()),
-    storage: z.string(),
-    testing: z.string(),
-    targetPlatform: z.string(),
-    projectType: z.enum(['single', 'web', 'mobile']),
-    performanceGoals: z.array(z.string()),
-    constraints: z.array(z.string()),
-    scale: z.string(),
-  }),
-  constitutionCheck: z.object({
-    passed: z.boolean(),
-    violations: z.array(ConstitutionViolationSchema),
-    summary: z.string(),
-  }),
-  projectStructure: z.object({
-    documentation: z.array(z.string()),
-    sourceCode: z.array(z.string()),
-    structureDecision: z.string(),
-  }),
-  complexityTracking: z.array(ComplexityJustificationSchema),
-  phases: z.object({
-    phase0Research: z.boolean(),
-    phase1Design: z.boolean(),
-    phase2Tasks: z.boolean(),
-  }),
-  lastModified: z.date(),
-});
-```
+**Fields**:
+- `releases: UpstreamRelease[]` - Array of all pulled releases
+- `latest: string` - Version string of most recently pulled release (matches symlink target)
 
 **Validation Rules**:
-- Constitution check must pass before Phase 0 research
-- Re-check required after Phase 1 design
-- Complexity justifications required ONLY if violations exist
-- Technical context must have all required fields filled (no "NEEDS CLARIFICATION" in final plan)
+- `releases` array must be sorted by `pullDate` descending (most recent first)
+- `latest` must match `version` of first element in `releases` array
+- No duplicate `version` values in `releases` array
+
+**Operations**:
+- `addRelease(release: UpstreamRelease)` - Append new release, update `latest`
+- `updateStatus(version: string, status: ReleaseStatus, errorDetails?: string)` - Update existing release
+- `getRelease(version: string): UpstreamRelease | null` - Lookup by version
+- `getLatestRelease(): UpstreamRelease` - Get most recent release
+
+---
+
+### 3. TransformationHistory (FR-013)
+
+The `.speck/transformation-history.json` file tracking factoring decisions across all upstream transformations.
+
+**Purpose**: Enable incremental transformations to reference previous factoring decisions and maintain consistency across versions.
+
+**Fields**:
+- `schemaVersion: string` - Schema version for forward compatibility (currently "1.0.0")
+- `latestVersion: string` - Most recently transformed version (for quick access)
+- `entries: TransformationHistoryEntry[]` - Array of all transformation history entries, newest first
+
+**TransformationHistoryEntry**:
+- `version: string` - Upstream version transformed (e.g., "v1.0.0")
+- `timestamp: string` - ISO 8601 timestamp of transformation
+- `commitSha: string` - Git commit SHA of the upstream release
+- `status: "transformed" | "failed" | "partial"` - Transformation status
+- `mappings: FactoringMapping[]` - Array of factoring decisions made during this transformation
+- `errorDetails?: string` - Optional error details if transformation failed
+
+**FactoringMapping**:
+- `source: string` - Upstream source file path (relative to `upstream/<version>/`)
+- `generated: string` - Generated artifact path (relative to repo root)
+- `type: "command" | "agent" | "skill" | "script"` - Type of generated artifact
+- `description?: string` - Optional description of what was extracted/transformed
+- `rationale?: string` - Optional rationale for factoring decision (e.g., "Multi-step workflow >3 steps per FR-007")
+
+**Operations**:
+- `addTransformationEntry(version, commitSha, status, mappings)` - Add new transformation
+- `updateTransformationStatus(version, status, errorDetails?)` - Update status
+- `addFactoringMapping(version, mapping)` - Record factoring decision
+- `getPreviousFactoringDecision(source): FactoringMapping | undefined` - Query previous decisions
+- `getLatestTransformedVersion(): string | undefined` - Get most recent successful transformation
+
+**Validation Rules**:
+- `schemaVersion` must be "1.0.0"
+- `latestVersion` must be non-empty string
+- `entries` must be sorted newest first (by timestamp)
+- Each `mapping.type` must be one of: "command", "agent", "skill", "script"
+- Each `mapping.source` and `mapping.generated` must be non-empty strings
 
 **State Transitions**:
 ```
-[Specification Ready] → generatePlan() → [Draft] → constitutionCheck() → [Approved] → executePhase0() → [Researched] → executePhase1() → [Designed]
+Initial → "partial" (transformation started)
+"partial" → "transformed" (transformation succeeded)
+"partial" → "failed" (transformation failed)
+"failed" → "transformed" (retry after fixing issues)
+```
+
+**Example Usage**:
+```typescript
+// Query previous decision during incremental transformation
+const previousMapping = await getPreviousFactoringDecision(
+  ".speck/transformation-history.json",
+  ".claude/commands/plan.md"
+);
+
+if (previousMapping) {
+  // Use same factoring decision for consistency
+  console.log(`Previously factored to: ${previousMapping.generated}`);
+  console.log(`Rationale: ${previousMapping.rationale}`);
+}
 ```
 
 ---
 
-### 4. Task
+### 4. TransformationReport
 
-Represents an actionable implementation task with dependencies and status tracking.
+Markdown document generated after `/speck.transform-upstream` completes, documenting all changes.
 
-**Entity Definition**:
+**Fields**:
+- `upstreamVersion: string` - Version transformed (e.g., "v1.0.0")
+- `transformDate: string` - ISO 8601 timestamp of transformation
+- `bunScriptsGenerated: BunScript[]` - List of Bun TS scripts created/updated
+- `speckCommandsGenerated: SpeckCommand[]` - List of /speck.* commands created/updated
+- `agentsFactored: Agent[]` - List of .claude/agents/ extracted
+- `skillsFactored: Skill[]` - List of .claude/skills/ extracted
+- `transformationHistoryPath: string` - Path to `.speck/transformation-history.json` (FR-013)
+- `factoringMappingsCount: number` - Number of factoring mappings recorded (FR-013)
+- `transformationRationale: string` - Claude's explanation of transformation decisions
 
+**Sub-Entities**:
+
+**BunScript**:
+- `path: string` - Path in `.speck/scripts/` (e.g., "check-upstream.ts")
+- `bashSource: string` - Original bash script path in `upstream/<version>/`
+- `transformationStrategy: string` - Which approach used (pure TS, Bun Shell, spawn)
+- `cliInterface: CLIInterface` - Flags, exit codes, JSON output structure
+
+**SpeckCommand**:
+- `commandName: string` - Command name (e.g., "speck.check-upstream")
+- `specKitSource: string` - Original /speckit.* command path
+- `scriptReference: string` - Path to .speck/scripts/ implementation
+- `factoredSections: string[]` - Which sections extracted to agents/skills
+
+**Agent**:
+- `path: string` - Path in `.claude/agents/` (e.g., "transform-bash-to-bun.md")
+- `purpose: string` - What this agent does
+- `extractedFrom: string` - Source /speckit.* command
+
+**Skill**:
+- `path: string` - Path in `.claude/skills/`
+- `purpose: string` - Reusable capability provided
+- `extractedFrom: string[]` - Source /speckit.* commands (can be multiple)
+
+**CLIInterface**:
+- `flags: string[]` - Supported flags (e.g., ["--json", "--version"])
+- `exitCodes: { [key: number]: string }` - Exit code meanings (e.g., {0: "success", 1: "user error"})
+- `jsonOutputSchema?: object` - JSON schema for `--json` output (if applicable)
+
+---
+
+### 4. ExtensionMarker
+
+Represents a `[SPECK-EXTENSION:START/END]` block in a file.
+
+**Fields**:
+- `filePath: string` - Absolute path to file containing extension
+- `startLine: number` - Line number of `[SPECK-EXTENSION:START]`
+- `endLine: number` - Line number of `[SPECK-EXTENSION:END]`
+- `content: string` - Full text between markers (inclusive)
+
+**Validation Rules**:
+- Every `startLine` must have matching `endLine` in same file
+- `endLine` must be > `startLine`
+- `content` must include both marker lines
+
+**Operations**:
+- `detectExtensions(fileContent: string): ExtensionMarker[]` - Find all markers in file
+- `validateMarkers(markers: ExtensionMarker[])` - Ensure proper nesting/pairing
+
+---
+
+### 5. TransformationConflict
+
+Represents detected conflict between upstream change and extension marker.
+
+**Fields**:
+- `filePath: string` - File where conflict occurred
+- `upstreamChange: Change` - What upstream modified
+- `affectedExtension: ExtensionMarker` - Which extension overlaps
+- `resolutionOptions: ResolutionOption[]` - Available conflict resolution choices
+
+**Sub-Entities**:
+
+**Change**:
+- `startLine: number` - First line of change
+- `endLine: number` - Last line of change
+- `changeType: string` - "addition", "deletion", "modification"
+- `content: string` - New content from upstream
+
+**ResolutionOption**:
+- `action: string` - "skip", "manual_merge", "abort"
+- `description: string` - Human-readable explanation of option
+- `consequence: string` - What happens if this option chosen
+
+---
+
+### 6. GitHubRelease
+
+Represents a release fetched from GitHub REST API.
+
+**Fields**:
+- `tag_name: string` - Release tag (e.g., "v1.0.0")
+- `target_commitish: string` - Commit SHA
+- `name: string` - Release title
+- `body: string` - Release notes markdown
+- `published_at: string` - ISO 8601 publication timestamp
+- `tarball_url: string` - URL to download release tarball
+- `zipball_url: string` - URL to download release zip
+
+**Mapping to UpstreamRelease**:
 ```typescript
-// src/core/models/Task.ts
-
-export interface Task {
-  /** Task ID (e.g., "T001", "T002") */
-  id: string;
-
-  /** Task title (imperative form) */
-  title: string;
-
-  /** Detailed description */
-  description: string;
-
-  /** Type of task */
-  type: 'implementation' | 'testing' | 'documentation' | 'research' | 'review';
-
-  /** Status */
-  status: 'pending' | 'in-progress' | 'completed' | 'blocked';
-
-  /** Priority */
-  priority: 'P0' | 'P1' | 'P2' | 'P3';
-
-  /** Task dependencies (task IDs that must complete first) */
-  dependencies: string[];
-
-  /** Estimated effort (in story points or hours) */
-  estimatedEffort?: number;
-
-  /** Acceptance criteria */
-  acceptanceCriteria: string[];
-
-  /** Related files/components */
-  relatedFiles: string[];
-
-  /** Created date */
-  createdAt: Date;
-
-  /** Last updated date */
-  updatedAt: Date;
-}
-
-export interface TaskList {
-  /** Associated feature */
-  feature: Feature;
-
-  /** File path to tasks.md */
-  filePath: string;
-
-  /** All tasks */
-  tasks: Task[];
-
-  /** Dependency graph */
-  dependencyGraph: Map<string, string[]>; // taskId → dependent taskIds
-
-  /** Execution order (topological sort of tasks) */
-  executionOrder: string[];
-
-  /** Summary statistics */
-  summary: {
-    total: number;
-    completed: number;
-    inProgress: number;
-    blocked: number;
-    pending: number;
+function mapGitHubRelease(gh: GitHubRelease): UpstreamRelease {
+  return {
+    version: gh.tag_name,
+    commit: gh.target_commitish,
+    pullDate: new Date().toISOString(),
+    releaseNotesUrl: `https://github.com/owner/repo/releases/tag/${gh.tag_name}`,
+    status: "pulled",
   };
 }
 ```
 
-**Zod Schema**:
+---
 
+### 7. TestFixture
+
+Represents test data used in medium-weight tests.
+
+**Fields**:
+- `name: string` - Fixture identifier (e.g., "mock-release-v1.0.0")
+- `type: string` - Fixture type ("github_release", "upstream_directory", "bash_script")
+- `data: object` - Fixture content (structure depends on `type`)
+
+**Fixture Types**:
+
+**github_release**:
 ```typescript
-export const TaskSchema = z.object({
-  id: z.string().regex(/^T\d{3}$/, 'Task ID must match format: T001'),
-  title: z.string().min(5).max(200),
-  description: z.string().min(10),
-  type: z.enum(['implementation', 'testing', 'documentation', 'research', 'review']),
-  status: z.enum(['pending', 'in-progress', 'completed', 'blocked']),
-  priority: z.enum(['P0', 'P1', 'P2', 'P3']),
-  dependencies: z.array(z.string()),
-  estimatedEffort: z.number().positive().optional(),
-  acceptanceCriteria: z.array(z.string()).min(1),
-  relatedFiles: z.array(z.string()),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-export const TaskListSchema = z.object({
-  feature: FeatureSchema,
-  filePath: z.string(),
-  tasks: z.array(TaskSchema).min(1),
-  dependencyGraph: z.map(z.string(), z.array(z.string())),
-  executionOrder: z.array(z.string()),
-  summary: z.object({
-    total: z.number().int().min(0),
-    completed: z.number().int().min(0),
-    inProgress: z.number().int().min(0),
-    blocked: z.number().int().min(0),
-    pending: z.number().int().min(0),
-  }),
-});
+{
+  type: "github_release",
+  data: {
+    tag_name: "v1.0.0",
+    target_commitish: "abc123...",
+    body: "Release notes...",
+    published_at: "2025-11-15T00:00:00Z",
+    tarball_url: "https://..."
+  }
+}
 ```
 
-**Validation Rules**:
-- Task ID must be unique within feature
-- Dependency cycles not allowed (validated via topological sort)
-- Blocked tasks must have reason documented
-- At least 1 acceptance criterion per task
-
-**State Transitions**:
+**upstream_directory**:
+```typescript
+{
+  type: "upstream_directory",
+  data: {
+    version: "v1.0.0",
+    files: {
+      ".specify/scripts/bash/setup-plan.sh": "#!/bin/bash\n...",
+      ".claude/commands/speckit.plan.md": "# Plan Command\n..."
+    }
+  }
+}
 ```
-[Pending] → startTask() → [In Progress] → completeTask() → [Completed]
-          ↓
-     blockTask() → [Blocked] → unblockTask() → [Pending]
+
+**bash_script**:
+```typescript
+{
+  type: "bash_script",
+  data: {
+    path: "setup-plan.sh",
+    content: "#!/bin/bash\n...",
+    flags: ["--json", "--paths-only"],
+    exitCodes: { 0: "success", 1: "error" },
+    jsonOutput: { FEATURE_SPEC: "/path", IMPL_PLAN: "/path" }
+  }
+}
 ```
 
 ---
 
-### 5. Checklist
-
-Represents a quality checklist for validation gates (requirements, constitution, etc.).
-
-**Entity Definition**:
-
-```typescript
-// src/core/models/Checklist.ts
-
-export interface Checklist {
-  /** Associated feature */
-  feature: Feature;
-
-  /** Checklist type */
-  type: 'requirements' | 'constitution' | 'quality' | 'deployment';
-
-  /** File path (in checklists/ directory) */
-  filePath: string;
-
-  /** Checklist items */
-  items: ChecklistItem[];
-
-  /** Completion status */
-  status: {
-    total: number;
-    completed: number;
-    percentComplete: number;
-  };
-
-  /** Last updated timestamp */
-  lastUpdated: Date;
-}
-
-export interface ChecklistItem {
-  /** Item ID (e.g., "REQ-001", "CON-001") */
-  id: string;
-
-  /** Item description */
-  description: string;
-
-  /** Completion status */
-  completed: boolean;
-
-  /** Optional notes */
-  notes?: string;
-
-  /** Linked requirement/criterion */
-  linkedTo?: string; // e.g., "FR-001", "SC-002"
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const ChecklistSchema = z.object({
-  feature: FeatureSchema,
-  type: z.enum(['requirements', 'constitution', 'quality', 'deployment']),
-  filePath: z.string(),
-  items: z.array(ChecklistItemSchema).min(1),
-  status: z.object({
-    total: z.number().int().positive(),
-    completed: z.number().int().min(0),
-    percentComplete: z.number().min(0).max(100),
-  }),
-  lastUpdated: z.date(),
-});
-
-export const ChecklistItemSchema = z.object({
-  id: z.string().regex(/^[A-Z]+-\d{3}$/, 'Item ID must match format: REQ-001'),
-  description: z.string().min(5),
-  completed: z.boolean(),
-  notes: z.string().optional(),
-  linkedTo: z.string().optional(),
-});
-```
-
-**Validation Rules**:
-- At least 1 checklist item
-- Percent complete must match `(completed / total) * 100`
-- Linked items must exist in spec/plan
-
----
-
-### 6. Constitution
-
-Represents the project's governance document with principles and compliance tracking.
-
-**Entity Definition**:
-
-```typescript
-// src/core/models/Constitution.ts
-
-export interface Constitution {
-  /** Constitution version (semantic versioning) */
-  version: string;
-
-  /** Ratified date */
-  ratifiedDate: Date;
-
-  /** Last amended date */
-  lastAmendedDate: Date;
-
-  /** Core principles */
-  principles: Principle[];
-
-  /** Compliance rules */
-  complianceRules: ComplianceRule[];
-
-  /** Amendment history */
-  amendments: Amendment[];
-}
-
-export interface Principle {
-  /** Principle ID (e.g., "I", "II", "VII") */
-  id: string;
-
-  /** Principle title */
-  title: string;
-
-  /** Is this principle non-negotiable? */
-  nonNegotiable: boolean;
-
-  /** Rationale */
-  rationale: string;
-
-  /** Implementation requirements */
-  implementationRequirements: string[];
-}
-
-export interface ComplianceRule {
-  /** Rule ID */
-  id: string;
-
-  /** Linked principle */
-  principleId: string;
-
-  /** Validation type */
-  validationType: 'automated' | 'manual' | 'hybrid';
-
-  /** Validation command/process */
-  validationProcess: string;
-}
-
-export interface Amendment {
-  /** Amendment version */
-  version: string;
-
-  /** Amendment date */
-  date: Date;
-
-  /** Amendment type */
-  type: 'MAJOR' | 'MINOR' | 'PATCH';
-
-  /** Changes summary */
-  changes: string;
-
-  /** Rationale */
-  rationale: string;
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const ConstitutionSchema = z.object({
-  version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Version must be semantic: X.Y.Z'),
-  ratifiedDate: z.date(),
-  lastAmendedDate: z.date(),
-  principles: z.array(PrincipleSchema).min(1),
-  complianceRules: z.array(ComplianceRuleSchema),
-  amendments: z.array(AmendmentSchema),
-});
-```
-
-**Validation Rules**:
-- Version must follow semantic versioning
-- Non-negotiable principles cannot be removed (only amended)
-- Amendments must document rationale
-
----
-
-### 7. Upstream Tracker
-
-Tracks synchronization state with upstream spec-kit releases.
-
-**Entity Definition**:
-
-```typescript
-// src/core/models/UpstreamTracker.ts
-
-export interface UpstreamTracker {
-  /** Last synced commit SHA from upstream */
-  lastSyncedCommit: string;
-
-  /** Last sync date */
-  lastSyncDate: Date;
-
-  /** Upstream repository URL */
-  upstreamRepo: string;
-
-  /** Upstream branch */
-  upstreamBranch: string;
-
-  /** Current upstream release version */
-  currentVersion: string;
-
-  /** Synced files mapping */
-  syncedFiles: SyncedFile[];
-
-  /** Sync status */
-  status: 'synced' | 'pending' | 'conflicted';
-}
-
-export interface SyncedFile {
-  /** Upstream file path */
-  upstreamPath: string;
-
-  /** Speck artifact paths (one upstream file → many Speck artifacts) */
-  speckPaths: string[];
-
-  /** Last upstream file hash */
-  lastUpstreamHash: string;
-
-  /** Sync status for this file */
-  syncStatus: 'synced' | 'modified' | 'conflicted';
-
-  /** Last sync date */
-  lastSyncDate: Date;
-}
-
-export interface ReleaseInfo {
-  /** Release version tag */
-  version: string;
-
-  /** Download URL */
-  downloadUrl: string;
-
-  /** Downloaded at timestamp */
-  downloadedAt: Date;
-
-  /** SHA256 checksum */
-  sha256: string;
-
-  /** Release date */
-  releaseDate: Date;
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const UpstreamTrackerSchema = z.object({
-  lastSyncedCommit: z.string().length(40), // Git SHA
-  lastSyncDate: z.date(),
-  upstreamRepo: z.string().url(),
-  upstreamBranch: z.string().default('main'),
-  currentVersion: z.string().regex(/^v\d+\.\d+\.\d+$/),
-  syncedFiles: z.array(SyncedFileSchema),
-  status: z.enum(['synced', 'pending', 'conflicted']),
-});
-
-export const ReleaseInfoSchema = z.object({
-  version: z.string().regex(/^v\d+\.\d+\.\d+$/),
-  downloadUrl: z.string().url(),
-  downloadedAt: z.date(),
-  sha256: z.string().length(64),
-  releaseDate: z.date(),
-});
-```
-
----
-
-### 8. Clarification
-
-Represents a question-answer pair resolving specification ambiguities.
-
-**Entity Definition**:
-
-```typescript
-// src/core/models/Clarification.ts
-
-export interface Clarification {
-  /** Session ID (timestamp-based) */
-  sessionId: string;
-
-  /** Session date */
-  sessionDate: Date;
-
-  /** Question */
-  question: string;
-
-  /** Answer */
-  answer: string;
-
-  /** Related section in spec (e.g., "Requirements", "User Scenarios") */
-  relatedSection: string;
-
-  /** Clarification type */
-  type: 'explicit-marker' | 'detected-gap' | 'edge-case';
-
-  /** Resolution status */
-  resolved: boolean;
-
-  /** Spec update applied */
-  specUpdateApplied: boolean;
-}
-```
-
-**Zod Schema**:
-
-```typescript
-export const ClarificationSchema = z.object({
-  sessionId: z.string(),
-  sessionDate: z.date(),
-  question: z.string().min(10),
-  answer: z.string().min(5),
-  relatedSection: z.string(),
-  type: z.enum(['explicit-marker', 'detected-gap', 'edge-case']),
-  resolved: z.boolean(),
-  specUpdateApplied: z.boolean(),
-});
-```
-
-**Validation Rules**:
-- Max 5 questions per clarification session (FR-006)
-- Resolved clarifications must have `specUpdateApplied: true`
-- 90% of specs should resolve in 1 session (SC-007)
-
----
-
-## Entity Relationships
+## Entity Relationships Diagram
 
 ```
-Feature (1) ─────┬───── (1) Specification
-                 │
-                 ├───── (1) Plan
-                 │
-                 ├───── (1) TaskList ─── (n) Task
-                 │
-                 └───── (n) Checklist ─── (n) ChecklistItem
+ReleaseRegistry
+  │
+  ├─► UpstreamRelease (1..n)
+  │     │
+  │     └─► TransformationReport (0..1, generated after transform)
+  │           │
+  │           ├─► BunScript (0..n)
+  │           ├─► SpeckCommand (0..n)
+  │           ├─► Agent (0..n)
+  │           └─► Skill (0..n)
+  │
+  └─► latest: string (points to one UpstreamRelease.version)
 
-Specification (1) ─── (n) Clarification
+GitHubRelease (external API)
+  │
+  └─► maps to UpstreamRelease (via /speck.pull-upstream)
 
-Plan (1) ─── (n) ConstitutionViolation
-         ─── (n) ComplexityJustification
+ExtensionMarker (0..n per file)
+  │
+  └─► may conflict with upstream Change → TransformationConflict
 
-Constitution (1) ─── (n) Principle
-                 ─── (n) ComplianceRule
-                 ─── (n) Amendment
-
-UpstreamTracker (1) ─── (n) SyncedFile
-                    ─── (n) ReleaseInfo
+TestFixture (test data only)
+  │
+  └─► mocks GitHubRelease, UpstreamRelease, BunScript, etc.
 ```
 
 ---
 
 ## Validation Summary
 
-| Entity | Zod Schema | Constitution-Enforced | Key Constraints |
-|--------|------------|----------------------|-----------------|
-| Feature | ✅ | Principle VII (File Format Compatibility) | 3-digit numbering, kebab-case short names, ≤244 char branch names |
-| Specification | ✅ | Principles III, VI (Spec-first, Tech-agnostic) | Zero implementation details, ≥1 mandatory section each, max 3 clarification markers |
-| Plan | ✅ | Principle IV (Quality Gates) | Constitution check must pass, no NEEDS CLARIFICATION in final |
-| Task | ✅ | Development Workflow (Feature Isolation) | Unique IDs, no dependency cycles, ≥1 acceptance criterion |
-| Checklist | ✅ | Principle IV (Quality Gates) | Linked to requirements/criteria, completion tracking |
-| Constitution | ✅ | Governance (Amendment Process) | Semantic versioning, documented rationale |
-| UpstreamTracker | ✅ | Principle I (Upstream Fidelity) | Release-based sync, file-level tracking |
-| Clarification | ✅ | FR-006 (Max 5 questions) | Session-based, 90% resolve in 1 session |
+### UpstreamRelease
+- ✅ Version matches semantic versioning
+- ✅ Commit is valid git SHA
+- ✅ Pull date is ISO 8601
+- ✅ Status is enum value
+- ✅ Error details present iff status is "failed"
+
+### ReleaseRegistry
+- ✅ No duplicate versions
+- ✅ Releases sorted by pull date descending
+- ✅ Latest matches first release version
+
+### ExtensionMarker
+- ✅ Every START has matching END
+- ✅ End line > start line
+- ✅ Content includes markers
+
+### TransformationReport
+- ✅ All referenced paths exist
+- ✅ CLI interfaces match bash equivalents
+- ✅ Transformation rationale non-empty
 
 ---
 
-## Next Steps
+## Storage Formats
 
-**Phase 1 continues with**:
-1. Generate API contracts (`contracts/`) for CLI commands
-2. Generate `quickstart.md` for getting started guide
-3. Update agent context files with new technology stack
-4. Re-evaluate Constitution Check post-design
+### upstream/releases.json
+```json
+{
+  "latest": "v1.0.0",
+  "releases": [
+    {
+      "version": "v1.0.0",
+      "commit": "abc123...",
+      "pullDate": "2025-11-15T12:00:00Z",
+      "releaseNotesUrl": "https://github.com/owner/repo/releases/tag/v1.0.0",
+      "status": "transformed"
+    }
+  ]
+}
+```
 
-All entities defined. Proceed to contracts generation.
+### .speck/upstream-tracker.json
+```json
+{
+  "currentVersion": "v1.0.0",
+  "lastSyncDate": "2025-11-15T12:00:00Z",
+  "upstreamRepo": "https://github.com/owner/spec-kit"
+}
+```
+
+### Transformation Report (specs/001-speck-core-project/transformation-report-v1.0.0.md)
+```markdown
+# Transformation Report: v1.0.0
+
+**Transformation Date**: 2025-11-15T12:30:00Z
+**Upstream Version**: v1.0.0
+
+## Bun Scripts Generated
+
+- `.speck/scripts/check-upstream.ts` (from `.specify/scripts/bash/check-upstream.sh`)
+  - Strategy: Pure TypeScript (GitHub API client)
+  - CLI: `--json`, `--help`
+  - Exit codes: 0 (success), 1 (error)
+
+...
+
+## Claude's Transformation Rationale
+
+The upstream `check-upstream.sh` was a simple curl wrapper around GitHub API.
+Transformation used pure TypeScript with native fetch for better error handling
+and type safety...
+```
+
+---
+
+**Next**: Proceed to contracts/ generation for API schemas and test utilities.

@@ -1,500 +1,550 @@
-# Speck Quickstart Guide
+# Quickstart: Upstream Sync & Transformation Pipeline
 
-**Version**: 1.0.0
-**Last Updated**: 2025-11-14
+**Feature**: 001-speck-core-project
+**Date**: 2025-11-15
+**Phase**: 1 - Design & Contracts
 
-Welcome to Speck, the Claude Code-optimized specification framework! This guide will get you up and running in under 10 minutes.
-
----
-
-## What is Speck?
-
-Speck is a living derivative of GitHub's spec-kit methodology, designed specifically for Claude Code with:
-- **Native slash commands**: `/speck.specify`, `/speck.clarify`, `/speck.plan`, etc.
-- **Autonomous agents**: Delegated Q&A loops, research, and transformation
-- **Upstream sync**: Continuous synchronization with spec-kit releases
-- **Bun-powered CLI**: Fast TypeScript CLI for non-Claude Code workflows
-- **100% file format compatibility**: Drop-in replacement for spec-kit
+This guide provides quick setup and common workflows for implementing and testing the upstream sync and transformation pipeline.
 
 ---
 
 ## Prerequisites
 
-- **Claude Code** (recommended) or **Bun 1.0+** (for CLI-only usage)
-- **Git 2.30+** (for worktree support)
-- **macOS, Linux, or Windows** (Bun is cross-platform)
+- **Bun 1.0+**: Install from [bun.sh](https://bun.sh)
+  ```bash
+  curl -fsSL https://bun.sh/install | bash
+  ```
+
+- **Git 2.30+**: Verify with `git --version`
+
+- **Claude Code**: VS Code extension installed
+
+- **GitHub Access**: Internet connectivity for fetching spec-kit releases
 
 ---
 
-## Installation
-
-### Option 1: Claude Code (Recommended)
-
-1. **Install Speck templates** in your project:
-   ```bash
-   cd your-project
-   git clone https://github.com/nprbst/speck.git .speck-install
-   cp -r .speck-install/.claude .
-   cp -r .speck-install/.specify .
-   cp -r .speck-install/upstream .
-   rm -rf .speck-install
-   ```
-
-2. **Initialize Speck configuration**:
-   ```bash
-   cp .specify/templates/speck.config.ts speck.config.ts
-   ```
-
-3. **Verify installation** in Claude Code:
-   ```
-   /help
-   ```
-   You should see `/speck.specify`, `/speck.clarify`, `/speck.plan`, etc.
-
-### Option 2: CLI Only (Bun)
-
-1. **Install globally**:
-   ```bash
-   bun install -g speck
-   ```
-
-2. **Initialize project**:
-   ```bash
-   cd your-project
-   speck init
-   ```
-
-3. **Verify installation**:
-   ```bash
-   speck --version
-   speck --help
-   ```
-
----
-
-## Your First Feature (Claude Code)
-
-Let's create a feature specification in 2 minutes:
-
-### Step 1: Specify
-
-```
-/speck.specify "Add user authentication with email and password"
-```
-
-Claude will:
-1. Create a feature branch (`001-user-authentication`)
-2. Generate a complete specification in `specs/001-user-authentication/spec.md`
-3. Generate a requirements checklist in `checklists/requirements.md`
-4. Mark up to 3 areas needing clarification
-
-**Output**:
-```
-✓ Feature created: 001-user-authentication
-✓ Specification generated: specs/001-user-authentication/spec.md
-✓ Checklist generated: checklists/requirements.md
-
-Next steps:
-  1. Review and clarify: /speck.clarify
-  2. Create implementation plan: /speck.plan
-```
-
-### Step 2: Clarify (Optional)
-
-If your spec has `[NEEDS CLARIFICATION]` markers or ambiguous requirements:
-
-```
-/speck.clarify
-```
-
-Claude's clarification agent will:
-1. Scan for ambiguities (both explicit markers and detected gaps)
-2. Ask up to 5 targeted questions
-3. Update the spec with your answers
-4. Validate that all requirements are now unambiguous
-
-**90% of specs resolve in 1 session** (SC-007)
-
-### Step 3: Plan
-
-```
-/speck.plan
-```
-
-Claude will:
-1. Generate `plan.md` with technical context
-2. Run constitution check (validate principles compliance)
-3. Execute Phase 0: Create `research.md` (architecture decisions)
-4. Execute Phase 1: Create `data-model.md`, `contracts/`, `quickstart.md`
-5. Prepare for Phase 2 (tasks generation)
-
-**Output**: Complete implementation plan ready for task breakdown
-
-### Step 4: Tasks
-
-```
-/speck.tasks
-```
-
-Claude will:
-1. Generate dependency-ordered task list in `tasks.md`
-2. Assign priorities (P0, P1, P2, P3)
-3. Define acceptance criteria for each task
-4. Create execution order via topological sort
-
----
-
-## Your First Feature (CLI)
-
-Same workflow, different interface:
+## Project Setup
 
 ```bash
-# Step 1: Specify
-speck specify "Add user authentication with email and password"
+# Clone repository
+git clone <repo-url>
+cd speck
 
-# Step 2: Clarify (if needed)
-speck clarify
+# Install dependencies (if any)
+bun install
 
-# Step 3: Plan
-speck plan
-
-# Step 4: Tasks
-speck tasks
-```
-
-**JSON output** (for automation):
-```bash
-speck specify "Add feature" --json | jq '.feature.branchName'
-# Output: "001-feature-name"
+# Verify Bun runtime
+bun --version  # Should show 1.0.0 or higher
 ```
 
 ---
 
-## Working with Worktrees (Parallel Features)
+## Running Tests
 
-Worktrees enable true isolation for multiple parallel features.
-
-### Creating a Worktree Feature
-
-**Claude Code**:
-```
-/speck.specify "Add search functionality" --worktree
-```
-
-**CLI**:
-```bash
-speck specify "Add search functionality" --worktree
-```
-
-Speck will:
-1. Create a new git worktree in `../worktrees/002-search-functionality/`
-2. Create feature branch `002-search-functionality`
-3. Set up isolated or shared `specs/` directory (auto-detected based on git tracking)
-
-### Specs Directory Modes
-
-Speck auto-detects the appropriate mode:
-
-| Git Tracking | Behavior | Use Case |
-|--------------|----------|----------|
-| **specs/ is git-tracked** | Worktrees naturally share specs/ (git manages it) | Team environments, shared spec visibility |
-| **specs/ is gitignored** | Speck creates symlink: `worktree/specs → main-repo/specs` | Solo development, central spec collection |
-
-**Recommendation**:
-- **Team**: Git-track `specs/` (add to repo)
-- **Solo**: Gitignore `specs/` (Speck symlinks automatically)
-
-### Working in a Worktree
+### Run All Tests
 
 ```bash
-# Navigate to worktree
-cd ../worktrees/002-search-functionality
+# Run all medium-weight tests
+bun test
 
-# Open in your IDE
-code .
+# Run tests with coverage
+bun test --coverage
 
-# Develop feature in isolation
-# (Changes don't affect main repo until you merge)
-
-# When done, remove worktree
-git worktree remove ../worktrees/002-search-functionality
+# Run tests in watch mode
+bun test --watch
 ```
 
----
+### Run Specific Test Suites
 
-## Syncing with Upstream (spec-kit Updates)
-
-Speck maintains continuous sync with upstream spec-kit releases.
-
-### Checking for Updates
-
-**Claude Code**:
-```
-/speck.check-upstream-releases
-```
-
-**Output**:
-```
-📦 Checking spec-kit releases...
-
-Current version: v0.0.85
-Latest release:  v0.0.86 (released 2025-11-13)
-
-📋 Release Notes (v0.0.86):
-- Improved clarify command with better ambiguity detection
-- Updated plan template with success criteria format
-
-New release available! Would you like to download it? [y/n]
-```
-
-### Downloading New Release
-
-```
-/speck.download-upstream v0.0.86
-```
-
-Speck will:
-1. Download `spec-kit-template-claude-sh-v0.0.86.zip`
-2. Extract to `upstream/spec-kit/v0.0.86/`
-3. Update symlink: `current → v0.0.86/`
-4. Keep previous version (`v0.0.85`) for diffing
-
-### Comparing Versions
-
-```
-/speck.diff-upstream-releases v0.0.85 v0.0.86
-```
-
-**Output**:
-```
-📊 Comparing spec-kit v0.0.85 → v0.0.86
-
-Changed Files (3):
-├── templates/commands/clarify.md       (+45, -12 lines)
-│   └── Impact: .claude/commands/speck.clarify.md
-│                .claude/agents/clarification-agent.md
-├── templates/commands/plan.md          (+8, -3 lines)
-│   └── Impact: .claude/commands/speck.plan.md
-└── templates/constitution-template.md  (+1, -1 lines)
-    └── Impact: .claude/commands/speck.constitution.md
-
-Recommended transformations:
-  /speck.transform-upstream clarify
-  /speck.transform-upstream plan
-```
-
-### Transforming Commands (Claude Agent-Powered)
-
-```
-/speck.transform-upstream clarify
-```
-
-Claude will:
-1. Analyze upstream bash changes semantically
-2. Apply equivalent changes to Speck's TypeScript + Claude Code artifacts
-3. Preserve all `[SPECK-EXTENSION:START/END]` blocks
-4. Run type checking and tests
-5. Generate sync report
-6. Present changes for review
-
-**After review**:
 ```bash
-# Review changes in your IDE
-git diff .claude/
+# Test .speck/scripts/ implementations
+bun test tests/.speck-scripts/
 
-# Commit if satisfied
-git commit -m "sync: transform clarify from spec-kit v0.0.86"
+# Test specific script
+bun test tests/.speck-scripts/check-upstream.test.ts
+
+# Test common utilities
+bun test tests/.speck-scripts/common/
+
+# Test specific utility
+bun test tests/.speck-scripts/common/github-api.test.ts
 ```
 
----
+### Test Output
 
-## Configuration
-
-Edit `speck.config.ts` in your project root:
+Tests use Bun's built-in test runner with Jest-compatible syntax:
 
 ```typescript
-import { defineConfig } from 'speck';
+// Example test structure
+import { describe, test, expect } from "bun:test";
 
-export default defineConfig({
-  // Worktree configuration
-  worktree: {
-    baseDir: '../worktrees',       // Where worktrees are created
-    specsMode: 'isolated',         // 'isolated' | 'shared' (auto-detected if omitted)
-    shareSpecify: true,            // Share .specify/ directory across worktrees
-  },
+describe("check-upstream", () => {
+  test("fetches GitHub releases", async () => {
+    const result = await checkUpstream({ json: true });
+    expect(result.exitCode).toBe(0);
+    expect(result.data.releases).toBeArrayOfSize(3);
+  });
+});
+```
 
-  // Agent context mode
-  agentContextMode: 'per-worktree', // 'shared' | 'per-worktree'
+**Coverage Goals**:
+- 80%+ code coverage for `.speck/scripts/` and `common/`
+- 100% coverage for CLI interface paths (all flags, all exit codes)
 
-  // Validation rules
-  validation: {
-    maxClarifications: 3,          // Max [NEEDS CLARIFICATION] markers
-    requireChecklist: true,        // Generate checklists automatically
-    enforceConstitution: true,     // Run constitution checks
-  },
+---
+
+## Development Workflows
+
+### Workflow 1: Implement New Script
+
+```bash
+# 1. Create script implementation
+touch .speck/scripts/check-upstream.ts
+
+# 2. Create test file
+touch tests/.speck-scripts/check-upstream.test.ts
+
+# 3. Implement script using contracts
+# - Import types from contracts/cli-interface.ts
+# - Ensure CLI interface matches bash equivalent
+# - Follow transformation strategy (pure TS > Bun Shell > spawn)
+
+# 4. Write medium-weight tests
+# - Test CLI flags (--json, --help, --version)
+# - Test exit codes (0, 1, 2)
+# - Test JSON output structure
+# - Test error handling
+
+# 5. Run tests
+bun test tests/.speck-scripts/check-upstream.test.ts
+
+# 6. Verify coverage
+bun test --coverage tests/.speck-scripts/check-upstream.test.ts
+```
+
+### Workflow 2: Implement Common Utility
+
+```bash
+# 1. Create utility implementation
+touch .speck/scripts/common/github-api.ts
+
+# 2. Create test file
+touch tests/.speck-scripts/common/github-api.test.ts
+
+# 3. Implement utility
+# - Export reusable functions
+# - Use contracts/github-api.ts types
+# - Handle errors gracefully
+
+# 4. Write tests using mock utilities
+# - Use MockGitHubApi from contracts/test-utilities.ts
+# - Test happy path and error cases
+# - Test rate limiting behavior
+
+# 5. Run tests
+bun test tests/.speck-scripts/common/github-api.test.ts
+```
+
+### Workflow 3: Work with Transformation History (FR-013)
+
+```bash
+# 1. Query previous factoring decisions
+bun --eval '
+import { getPreviousFactoringDecision } from "./.speck/scripts/common/transformation-history.ts";
+
+const mapping = await getPreviousFactoringDecision(
+  ".speck/transformation-history.json",
+  ".claude/commands/plan.md"
+);
+
+console.log(mapping);
+'
+
+# 2. Add transformation entry
+bun --eval '
+import { addTransformationEntry } from "./.speck/scripts/common/transformation-history.ts";
+
+await addTransformationEntry(
+  ".speck/transformation-history.json",
+  "v1.0.0",
+  "abc123def456",
+  "transformed",
+  []
+);
+'
+
+# 3. Record factoring mapping
+bun --eval '
+import { addFactoringMapping } from "./.speck/scripts/common/transformation-history.ts";
+
+await addFactoringMapping(
+  ".speck/transformation-history.json",
+  "v1.0.0",
+  {
+    source: ".claude/commands/plan.md",
+    generated: ".claude/agents/speck.plan-workflow.md",
+    type: "agent",
+    rationale: "Multi-step workflow >3 steps per FR-007"
+  }
+);
+'
+
+# 4. View transformation history
+cat .speck/transformation-history.json | jq '.'
+
+# 5. Get latest transformed version
+bun --eval '
+import { getLatestTransformedVersion } from "./.speck/scripts/common/transformation-history.ts";
+
+const version = await getLatestTransformedVersion(".speck/transformation-history.json");
+console.log(`Latest: ${version}`);
+'
+```
+
+### Workflow 4: Validate CLI Interface Compatibility
+
+```bash
+# 1. Identify bash script to transform
+# Example: .specify/scripts/bash/setup-plan.sh
+
+# 2. Document bash CLI interface
+# - Flags: --json, --paths-only
+# - Exit codes: 0 (success), 1 (error)
+# - JSON output: { FEATURE_SPEC: "/path", IMPL_PLAN: "/path" }
+
+# 3. Implement Bun TypeScript equivalent
+# - Match flags exactly
+# - Match exit codes exactly
+# - Match JSON output structure exactly
+
+# 4. Write compatibility test
+# tests/.speck-scripts/setup-plan.test.ts
+
+describe("setup-plan --json", () => {
+  test("outputs same JSON structure as bash equivalent", async () => {
+    const result = await setupPlan(["--json"]);
+
+    expect(result.exitCode).toBe(0);
+
+    const output = JSON.parse(result.stdout);
+    expect(output).toHaveProperty("FEATURE_SPEC");
+    expect(output).toHaveProperty("IMPL_PLAN");
+    expect(output).toHaveProperty("SPECS_DIR");
+    expect(output).toHaveProperty("BRANCH");
+  });
+});
+
+# 5. Verify byte-for-byte JSON compatibility
+# Compare bash output vs. Bun output using fixtures
+```
+
+---
+
+## Testing Patterns
+
+### Pattern 1: Mock Filesystem
+
+```typescript
+import { MockFilesystem } from "../contracts/test-utilities";
+
+test("creates upstream directory", async () => {
+  const mockFs = new MockFilesystem();
+
+  await pullUpstream(["v1.0.0"], { fs: mockFs });
+
+  expect(await mockFs.exists("upstream/v1.0.0")).toBe(true);
+  expect(await mockFs.exists("upstream/releases.json")).toBe(true);
+});
+```
+
+### Pattern 2: Mock GitHub API
+
+```typescript
+import { MockGitHubApi, createMockGitHubRelease } from "../contracts/test-utilities";
+
+test("fetches releases from GitHub", async () => {
+  const mockGitHub = new MockGitHubApi();
+  mockGitHub.setReleases([
+    createMockGitHubRelease({ tag_name: "v1.0.0" }),
+    createMockGitHubRelease({ tag_name: "v1.1.0" }),
+  ]);
+
+  const result = await checkUpstream({ json: true }, { github: mockGitHub });
+
+  expect(result.data.releases).toHaveLength(2);
+});
+```
+
+### Pattern 3: Assert CLI Result
+
+```typescript
+import { assertCliResult, ExitCode } from "../contracts/test-utilities";
+
+test("shows error on invalid version", async () => {
+  const result = await pullUpstream(["invalid-version"]);
+
+  assertCliResult(result, {
+    exitCode: ExitCode.USER_ERROR,
+    stderrContains: "Invalid version format",
+  });
+});
+```
+
+### Pattern 4: Assert JSON Output
+
+```typescript
+import { assertJsonOutput } from "../contracts/test-utilities";
+import { validateCheckUpstreamOutput } from "../contracts/cli-interface";
+
+test("outputs valid JSON schema", async () => {
+  const result = await checkUpstream({ json: true });
+
+  const data = assertJsonOutput(result, (data) => {
+    // Custom validation logic
+    if (!Array.isArray(data.releases)) {
+      throw new Error("releases must be an array");
+    }
+    return data;
+  });
+
+  expect(data.releases[0]).toHaveProperty("version");
 });
 ```
 
 ---
 
-## Complete Workflow Example
+## Common Tasks
 
-Here's a full end-to-end example:
+### Task: Add New CLI Flag
 
+```bash
+# 1. Update CLI interface contract
+# Edit: contracts/cli-interface.ts
+
+export interface CheckUpstreamOptions extends BaseCliOptions {
+  /** Show only pre-releases */
+  prereleases?: boolean;
+}
+
+# 2. Implement flag handling in script
+# Edit: .speck/scripts/check-upstream.ts
+
+function parseArgs(args: string[]): CheckUpstreamOptions {
+  return {
+    json: args.includes("--json"),
+    prereleases: args.includes("--prereleases"),
+  };
+}
+
+# 3. Add test for new flag
+# Edit: tests/.speck-scripts/check-upstream.test.ts
+
+test("shows pre-releases when --prereleases flag used", async () => {
+  const mockGitHub = new MockGitHubApi();
+  mockGitHub.setReleases([
+    createMockGitHubRelease({ prerelease: true }),
+  ]);
+
+  const result = await checkUpstream({ prereleases: true }, { github: mockGitHub });
+
+  expect(result.data.releases).toHaveLength(1);
+});
+
+# 4. Run tests
+bun test tests/.speck-scripts/check-upstream.test.ts
 ```
-# 1. Create feature
-/speck.specify "Add real-time notifications"
 
-# Claude creates:
-# - Branch: 003-realtime-notifications
-# - specs/003-realtime-notifications/spec.md
-# - specs/003-realtime-notifications/checklists/requirements.md
+### Task: Add New Common Utility
 
-# 2. Clarify ambiguities
-/speck.clarify
+```bash
+# 1. Create utility file
+touch .speck/scripts/common/symlink-manager.ts
 
-# Claude asks 5 questions, updates spec
+# 2. Define interface
+export async function createSymlink(target: string, path: string): Promise<void> {
+  // Implementation...
+}
 
-# 3. Generate implementation plan
-/speck.plan
+export async function updateSymlink(target: string, path: string): Promise<void> {
+  // Remove old symlink, create new one
+}
 
-# Claude creates:
-# - specs/003-realtime-notifications/plan.md
-# - specs/003-realtime-notifications/research.md
-# - specs/003-realtime-notifications/data-model.md
-# - specs/003-realtime-notifications/contracts/
-# - specs/003-realtime-notifications/quickstart.md
+# 3. Create test file
+touch tests/.speck-scripts/common/symlink-manager.test.ts
 
-# 4. Generate tasks
-/speck.tasks
+# 4. Write tests using MockFilesystem
+import { MockFilesystem } from "../../contracts/test-utilities";
 
-# Claude creates:
-# - specs/003-realtime-notifications/tasks.md (dependency-ordered)
+test("creates symlink pointing to target", async () => {
+  const mockFs = new MockFilesystem();
 
-# 5. Implement tasks
-/speck.implement
+  await createSymlink("upstream/v1.0.0", "upstream/latest", { fs: mockFs });
 
-# Claude executes task-by-task implementation
+  const target = await mockFs.readlink("upstream/latest");
+  expect(target).toBe("upstream/v1.0.0");
+});
 
-# 6. Analyze consistency
-/speck.analyze
+# 5. Run tests
+bun test tests/.speck-scripts/common/symlink-manager.test.ts
+```
 
-# Claude validates cross-artifact consistency (spec ↔ plan ↔ tasks)
+---
 
-# 7. Create pull request
-git push origin 003-realtime-notifications
-gh pr create --title "Add real-time notifications"
+## Debugging Tests
+
+### Enable Verbose Output
+
+```bash
+# Show all test output (including console.log)
+bun test --verbose
+
+# Show test names as they run
+bun test --reporter=verbose
+```
+
+### Debug Single Test
+
+```typescript
+import { describe, test } from "bun:test";
+
+// Use test.only to run just this test
+test.only("debug this specific test", async () => {
+  console.log("Debug output here");
+  // ...
+});
+```
+
+### Inspect Mock State
+
+```typescript
+test("inspect mock filesystem", async () => {
+  const mockFs = new MockFilesystem();
+
+  await pullUpstream(["v1.0.0"], { fs: mockFs });
+
+  // Log all files in mock filesystem
+  console.log("Files created:", Array.from(mockFs["files"].keys()));
+
+  // Read file content for debugging
+  const content = await mockFs.readFile("upstream/releases.json");
+  console.log("Registry content:", content);
+});
+```
+
+---
+
+## Performance Benchmarks
+
+### Measure Test Execution Time
+
+```bash
+# Run tests with timing
+time bun test
+
+# Expected results:
+# - All tests should complete in <5 seconds
+# - Individual test suites in <1 second
+# - Mock-based tests in <100ms each
+```
+
+### Profile Script Performance
+
+```typescript
+test("script starts in under 100ms", async () => {
+  const start = performance.now();
+
+  await checkUpstream({ json: true });
+
+  const duration = performance.now() - start;
+  expect(duration).toBeLessThan(100);
+});
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions Example
+
+```yaml
+name: Test
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun test --coverage
+
+      - name: Check coverage threshold
+        run: |
+          # Ensure 80%+ coverage
+          bun test --coverage --coverage-threshold=80
 ```
 
 ---
 
 ## Troubleshooting
 
-### "Branch name too long" Error
+### Issue: Tests Fail with "ENOENT"
 
-**Problem**: Generated branch name exceeds git's 244-character limit.
+**Cause**: MockFilesystem not properly initialized
 
-**Solution**: Provide a shorter description or explicit short name:
-```
-/speck.specify "Add feature" --short-name "custom-short-name"
-```
-
-### Duplicate Short Name Warning
-
-**Problem**: Generated short name matches existing feature.
-
-**Solution**: Speck auto-appends collision counter (e.g., `user-auth-2`). Review existing feature before proceeding:
-```bash
-git checkout 002-user-auth  # Review existing feature
-git checkout 003-user-auth-2  # Return to new feature
+**Solution**:
+```typescript
+// Always create new MockFilesystem per test
+test("use fresh mock filesystem", async () => {
+  const mockFs = new MockFilesystem();  // Create here, not in global scope
+  // ...
+});
 ```
 
-### Upstream Sync Conflict
+### Issue: JSON Output Doesn't Match Bash
 
-**Problem**: Upstream changes conflict with Speck extension.
+**Cause**: Different JSON key ordering or whitespace
 
-**Solution**: Claude will halt and request manual resolution:
-```
-⚠️  Extension conflict detected:
-File: .claude/commands/speck.clarify.md
-Extension: Clarification agent integration
-Conflict: Upstream renamed section "## Outline" to "## Overview"
+**Solution**: Use deep equality checks, not string comparison
+```typescript
+// ✅ Good: Compare parsed objects
+expect(JSON.parse(result.stdout)).toEqual({ version: "v1.0.0" });
 
-Options:
-1. Keep Speck extension (recommended)
-2. Apply upstream change (may break agent)
-3. Manually merge in IDE
+// ❌ Bad: Compare JSON strings (whitespace/order issues)
+expect(result.stdout).toBe('{"version":"v1.0.0"}');
 ```
 
-Choose option 1 (preserve extension), then manually review upstream intent.
+### Issue: Rate Limit Errors in Tests
+
+**Cause**: Using real GitHub API instead of mock
+
+**Solution**: Always inject MockGitHubApi
+```typescript
+// ✅ Good: Use mock
+const mockGitHub = new MockGitHubApi();
+await checkUpstream({}, { github: mockGitHub });
+
+// ❌ Bad: Uses real API (slow, flaky, rate limited)
+await checkUpstream({});
+```
 
 ---
 
 ## Next Steps
 
-- **Read the Constitution**: `.specify/memory/constitution.md`
-- **Explore Templates**: `.specify/templates/`
-- **Review Architecture**: `specs/001-speck-core-project/research.md`
-- **Join Community**: [GitHub Discussions](https://github.com/nprbst/speck/discussions)
+1. **Implement `/speck.check-upstream`**: Start with `check-upstream.ts` and its test
+2. **Implement GitHub API client**: Create `common/github-api.ts` with mock-based tests
+3. **Implement `/speck.pull-upstream`**: Follow same pattern with filesystem mocks
+4. **Implement release registry manager**: Create `common/json-tracker.ts` for `upstream/releases.json`
+5. **Implement `/speck.transform-upstream`**: Orchestrate transformation agents
 
----
-
-## Getting Help
-
-- **Documentation**: https://speck.dev/docs
-- **GitHub Issues**: https://github.com/nprbst/speck/issues
-- **Discussions**: https://github.com/nprbst/speck/discussions
-- **X/Twitter**: @speckdev
-
----
-
-## Comparison: Speck vs spec-kit
-
-| Feature | spec-kit | Speck |
-|---------|----------|-------|
-| **Methodology** | Spec-first development | Same (100% compatible) |
-| **IDE Integration** | Manual bash scripts | Native Claude Code slash commands |
-| **Agents** | None | Clarification, Research, Transformation agents |
-| **Skills** | None | Template-renderer, Spec-analyzer, Constitution-validator |
-| **CLI** | Bash scripts | Bun-powered TypeScript CLI (<100ms startup) |
-| **Upstream Sync** | Manual copy-paste | Automated Claude agent-powered transformation |
-| **Worktree Support** | Basic | Advanced (auto-detect specs mode, per-worktree config) |
-| **Validation** | Manual checklist | Automated Zod validation + quality gates |
-| **File Format** | specs/ directory structure | Identical (drop-in replacement) |
-
----
-
-## FAQ
-
-### Q: Can I use Speck without Claude Code?
-
-**A**: Yes! The Bun CLI (`speck` command) provides identical functionality. However, Claude Code integration is the primary use case and provides the best experience.
-
-### Q: Is Speck compatible with existing spec-kit projects?
-
-**A**: Yes, 100%. Speck maintains file format compatibility (Constitution Principle VII). You can:
-- Adopt Speck in an existing spec-kit project (no migration)
-- Switch between spec-kit and Speck freely
-- Fallback to spec-kit without data loss
-
-### Q: How often should I sync with upstream?
-
-**A**: Monthly recommended (spec-kit releases monthly). Check for updates:
-```
-/speck.check-upstream-releases
-```
-
-### Q: What happens if I edit a generated file in `.claude/`?
-
-**A**: Generated files (marked with `<!-- GENERATED FILE - DO NOT EDIT -->`) will be overwritten on next upstream sync. Instead:
-- **Modify upstream**: Contribute changes to spec-kit repository
-- **Modify enhancements**: Edit `enhancements/rules/*.json` (future compiler-based sync)
-- **For now**: Edits survive until next `/speck.transform-upstream` run
-
-### Q: Can I customize templates?
-
-**A**: Yes, edit templates in `.specify/templates/`. Changes persist across Speck updates (templates are project-specific, not generated).
-
----
-
-**Happy Specifying!** 🚀
+See [plan.md](plan.md) for detailed implementation plan and [research.md](research.md) for architectural decisions.

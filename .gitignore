@@ -21,6 +21,7 @@ coverage/
 
 # Speck-specific
 .speck/sync-reports/
+.test-workspace-*/
 
 # IDE
 .vscode/
