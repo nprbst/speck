@@ -5,6 +5,16 @@
 **Status**: Draft
 **Input**: User description: "This project needs a public website. We should aim for something that has the asthetic of hono.dev mixed with https://www.claude.com/product/claude-code (both in dark mode). We also want this to be cheap and simple to host (mostly static) on something like Cloudflare. The target audience is developers who are trying to learn to get the most of Claude Code and/or wanting to use github/spec-kit, but need to customize it to be more opinionated. You can reference the 001 spec for details on what we've built so far."
 
+## Clarifications
+
+### Session 2025-11-15
+
+- Q: How will documentation content be structured and sourced for the website build? → A: Embed markdown docs in website repo with build-time import from main repo
+- Q: Which static site generator will be used (VitePress, Astro, Next.js, or other)? → A: Astro
+- Q: How will images and assets be optimized to meet 2-second 3G load time? → A: Cloudflare Images + responsive formats (WebP/AVIF with PNG fallback), prefer SVG-first approach where practical
+- Q: When/how is documentation sync from main repo triggered (manual, webhook, scheduled)? → A: Webhook from main repo triggers Cloudflare Pages rebuild
+- Q: What is the analytics privacy posture (cookieless, cookie-based with consent, no analytics)? → A: Cookieless analytics (no consent banner needed)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Discover Speck (Priority: P1)
@@ -99,7 +109,7 @@ A developer ready to try Speck follows installation instructions. They successfu
 - **FR-007**: Website MUST support dark mode as default with manual theme toggle, using color palette inspired by claude.com/product/claude-code (charcoal background, clay accents, subtle gray borders)
 - **FR-008**: Website MUST provide copy-to-clipboard functionality for all code blocks and command examples
 - **FR-009**: Website MUST be deployable as static files to Cloudflare Pages with build process generating optimized HTML/CSS/JS
-- **FR-010**: Website MUST load core content (hero + navigation + primary CTA) within 2 seconds on 3G connection
+- **FR-010**: Website MUST load core content (hero + navigation + primary CTA) within 2 seconds on 3G connection, using SVG-first approach for icons/diagrams and Cloudflare Images with responsive formats (WebP/AVIF with PNG fallback) for raster images
 - **FR-011**: Website MUST degrade gracefully when JavaScript disabled, maintaining navigation, content readability, and basic functionality
 - **FR-012**: Website MUST include meta tags for SEO (title, description, Open Graph) and social sharing with relevant keywords (Claude Code, spec-kit, feature specification, workflow automation)
 - **FR-013**: Website MUST provide a "Speck vs Spec-Kit" migration guide with step-by-step instructions for converting existing spec-kit projects
@@ -116,7 +126,8 @@ A developer ready to try Speck follows installation instructions. They successfu
 - **Theme System**: Dark/light mode toggle with persistence, inspired by claude.com color palette (charcoal/clay) and hono.dev structure
 - **Code Block Component**: Syntax-highlighted code examples with copy-to-clipboard button, line numbers, and language labels
 - **Navigation System**: Responsive header with dropdown menus (Docs, Examples, GitHub), mobile hamburger menu, and breadcrumb trails
-- **Static Build Pipeline**: Build process converting markdown/React components to optimized static HTML/CSS/JS for Cloudflare Pages deployment
+- **Static Build Pipeline**: Astro build process converting markdown content collections and component islands to optimized static HTML/CSS/JS for Cloudflare Pages deployment. Build-time import pulls markdown documentation from main Speck repository to ensure single source of truth while allowing independent website deployment. GitHub webhook from main repo triggers automatic rebuild when documentation changes
+- **Documentation Content Source**: Markdown files embedded in website repository with build-time import mechanism (e.g., Git sparse checkout, submodule, or build script that clones/copies from main repo) to fetch latest command documentation, specs, and examples from main Speck repository
 
 ## Success Criteria *(mandatory)*
 
@@ -135,22 +146,25 @@ A developer ready to try Speck follows installation instructions. They successfu
 
 ## Assumptions
 
-1. **Static Site Generator**: Using a modern static site generator (VitePress, Astro, or similar) that supports markdown documentation, React/Vue components, and optimized builds
+1. **Static Site Generator**: Using Astro for static site generation with content collections for markdown documentation, component islands for interactive elements, and framework-agnostic component support (can integrate React/Vue/Svelte as needed)
 2. **Cloudflare Pages**: Deployment target is Cloudflare Pages with standard free tier limits (500 builds/month, 100 custom domains)
-3. **Content Updates**: Documentation content will be maintained via markdown files in the repository, allowing updates via standard Git workflow
+3. **Content Updates**: Documentation content will be maintained via markdown files in the main Speck repository; GitHub webhook from main repo triggers Cloudflare Pages rebuild when documentation changes, ensuring automatic updates with single source of truth
 4. **Search**: If search functionality needed, using client-side search (no server required) via tools like Algolia DocSearch (free for open source) or local search index
-5. **Analytics**: Basic analytics (page views, popular pages) provided by Cloudflare Web Analytics (free, privacy-friendly) or similar static-site-compatible solution
+5. **Analytics**: Cookieless analytics using Cloudflare Web Analytics (free, privacy-friendly, GDPR/CCPA compliant without consent banner) tracking basic metrics (page views, popular pages) without personally identifiable information
 6. **Code Syntax Highlighting**: Using a client-side syntax highlighter (Prism, Shiki) supporting TypeScript, bash, markdown, and JSON
 7. **Browser Support**: Modern browsers (Chrome/Edge 90+, Firefox 88+, Safari 14+) with graceful degradation for older browsers
 8. **Content Migration**: Initial content based on existing documentation in specs/001-speck-core-project and README files
+9. **Image Optimization**: Icons and diagrams as SVG where practical; raster images (screenshots, photos) served via Cloudflare Images with automatic WebP/AVIF conversion and PNG fallback for older browsers
 
 ## Dependencies
 
-- **Static Site Generator**: VitePress, Astro, or similar tool for markdown-based documentation sites
+- **Static Site Generator**: Astro (framework-agnostic, content-focused static site generator)
 - **Build Environment**: Node.js/Bun for running build scripts and dependency management
 - **Hosting Platform**: Cloudflare Pages with Git integration for automatic deployments
+- **Webhook Integration**: GitHub webhook from main Speck repository to trigger Cloudflare Pages rebuild on documentation changes
 - **Content Source**: Existing Speck documentation (001 spec, README, command documentation)
-- **Design Assets**: Logo/branding for Speck (if not yet created, simple text-based logo acceptable for MVP)
+- **Design Assets**: Logo/branding for Speck (if not yet created, simple text-based logo acceptable for MVP); icons and diagrams preferably as SVG
+- **Image Service**: Cloudflare Images for serving raster images with automatic format optimization (WebP/AVIF)
 - **Domain**: speck.dev or similar domain (assumption: domain will be registered separately)
 
 ## Out of Scope
@@ -167,3 +181,5 @@ The following are explicitly **not** part of this feature:
 - **Search autocomplete**: Basic search only; no autocomplete, typo correction, or AI-powered suggestions
 - **Playground/sandbox**: Online environment to test Speck commands (future feature)
 - **Performance monitoring**: No APM, error tracking, or advanced analytics beyond basic page views
+- **Cookie consent banner**: No consent banner (cookieless analytics only via Cloudflare Web Analytics)
+- **User tracking/profiling**: No behavioral tracking, user profiling, or invasive analytics beyond aggregate page views
