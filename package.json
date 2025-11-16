@@ -20,7 +20,11 @@
     "version:major": "bun run scripts/version.ts major",
     "test": "bun test",
     "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "website:sync": "bun website/scripts/sync-docs.ts",
+    "website:dev": "cd website && bun run dev",
+    "website:build": "bun run website:sync && cd website && bun run build",
+    "website:preview": "cd website && bun run preview"
   },
   "dependencies": {
     "chalk": "^5.3.0",

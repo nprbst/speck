@@ -1,0 +1,91 @@
+---
+/**
+ * Base Layout Component
+ * Provides common HTML structure, SEO metadata, and theme system
+ */
+
+export interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  keywords?: string[];
+  bodyClass?: string;
+}
+
+const {
+  title,
+  description,
+  canonical = Astro.url.href,
+  ogImage = '/images/og-image.png',
+  ogType = 'website',
+  keywords = [],
+  bodyClass = '',
+} = Astro.props;
+
+const siteTitle = title.includes('Speck') ? title : `${title} | Speck`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{siteTitle}</title>
+
+    <!-- SEO Metadata -->
+    <link rel="canonical" href={canonical} />
+    {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={siteTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(ogImage, Astro.site).href} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="Speck" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={siteTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(ogImage, Astro.site).href} />
+
+    <!-- Theme Script (runs before page render to prevent FOUC) -->
+    <script is:inline>
+      // Immediately apply theme before page renders
+      const THEME_KEY = 'speck-theme';
+
+      function getStoredTheme() {
+        try {
+          const stored = localStorage.getItem(THEME_KEY);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            return parsed.theme;
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+        return null;
+      }
+
+      function getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      const theme = getStoredTheme() || getSystemTheme();
+      document.documentElement.setAttribute('data-theme', theme);
+    </script>
+
+    <!-- Global Styles -->
+    <link rel="stylesheet" href="/src/styles/global.css" />
+    <link rel="stylesheet" href="/src/styles/theme.css" />
+  </head>
+  <body class={bodyClass}>
+    <slot />
+  </body>
+</html>
