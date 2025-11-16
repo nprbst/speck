@@ -2,6 +2,17 @@
 description: Generate a custom checklist for the current feature based on user requirements.
 ---
 
+## Script Path Resolution
+
+**IMPORTANT**: Detect execution context before running any scripts:
+
+1. Check if `CLAUDE_PLUGIN_ROOT` environment variable is set (run `echo $CLAUDE_PLUGIN_ROOT`)
+2. Set paths based on context:
+   - **Plugin context** (if CLAUDE_PLUGIN_ROOT is set): Use `$CLAUDE_PLUGIN_ROOT/.speck/scripts/` for scripts
+   - **Standalone context** (if CLAUDE_PLUGIN_ROOT is empty): Use `.speck/scripts/` for scripts
+
+Throughout this command, when you see `.speck/scripts/scriptname.ts`, replace it with the resolved path from above.
+
 ## Checklist Purpose: "Unit Tests for English"
 
 **CRITICAL CONCEPT**: Checklists are **UNIT TESTS FOR REQUIREMENTS WRITING** - they validate the quality, clarity, and completeness of requirements in a given domain.

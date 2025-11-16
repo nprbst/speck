@@ -55,9 +55,11 @@ specs/[###-feature]/
 │   ├── speck.tasks.md
 │   ├── speck.implement.md
 │   └── ... (15+ more)
-└── agents/                # Subagents (2 .md files)
-    ├── speck.transform-bash-to-bun.md
-    └── speck.transform-commands.md
+├── agents/                # Subagents (2 .md files)
+│   ├── speck.transform-bash-to-bun.md
+│   └── speck.transform-commands.md
+└── skills/                # Reusable skills (1 .md file)
+    └── speck-runner.md    # Script execution delegate for plugin context
 
 .specify/
 ├── templates/             # Spec/plan templates
@@ -80,10 +82,12 @@ dist/plugin/               # Build output directory
 │   └── marketplace.json
 ├── commands/              # Copied from .claude/commands/
 ├── agents/                # Copied from .claude/agents/
-└── templates/             # Copied from .specify/templates/
+├── skills/                # Copied from .claude/skills/
+├── templates/             # Copied from .specify/templates/
+└── scripts/               # Copied from .speck/scripts/ (bundled for skill access)
 
 scripts/
-└── build-plugin.ts        # Build script to generate dist/plugin/
+└── build-plugin.ts        # Build script: copies commands/agents/skills/templates/scripts to dist/plugin/, generates manifests
 ```
 
 **Structure Decision**: Single project with build tooling. The build script copies existing `.claude/commands/`, `.claude/agents/`, and `.specify/templates/` into a new `dist/plugin/` directory alongside generated `.claude-plugin/plugin.json` and `marketplace.json` manifests. The plugin structure conforms to Claude Code plugin specifications discovered in research.

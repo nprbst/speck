@@ -18,6 +18,12 @@ Marketplace."
 - Q: What version number should the initial Speck plugin release use? → A: 0.1.0
 - Q: When the Claude Plugin format specification is unknown, incomplete, or changes during development, what should the build system do? → A: Claude Plugin format is published and stable. Research it during the plan stage.
 
+### Session 2025-11-16
+
+- Q: Script execution architecture pattern? → A: Option B - Create a single "speck-runner" skill that wraps all script execution
+- Q: Backward compatibility strategy for slash commands? → A: Commands remain as slash-command entrypoints, delegate script execution to skill
+- Q: Skill invocation pattern? → A: Single skill with script-name parameter
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Install Speck Plugin from Marketplace (Priority: P1)
@@ -155,10 +161,12 @@ accurate.
 **Build & Packaging**
 - **FR-001**: The build system MUST generate a plugin package containing all Speck slash commands from .claude/commands/ directory (including but not limited to: /speck.specify, /speck.plan, /speck.clarify, /speck.tasks, /speck.implement, /speck.analyze, /speck.constitution, /speck.checklist, /speck.taskstoissues)
 - **FR-002**: The build system MUST include all Speck agent definitions in the plugin package (agents discovered in `.claude/agents/`: speck.transform-bash-to-bun.md, speck.transform-commands.md)
-- **FR-003**: The build system MUST include all Speck skills in the plugin package (skills to be enumerated during implementation)
+- **FR-003**: The build system MUST include a single "speck-runner" skill in the plugin package that wraps all script execution with script-name parameter interface (valid values defined in contracts/skill-parameter.schema.json: create-new-feature, setup-plan, check-prerequisites, update-agent-context, generate-tasks, analyze-consistency)
 - **FR-004**: The build system MUST include all required templates (.specify/templates/*) in the plugin package
-- **FR-005**: The build system MUST include all required scripts (.specify/scripts/*) in the plugin package
+- **FR-005**: The build system MUST include all required scripts (.speck/scripts/*) in the plugin package for access by the speck-runner skill
 - **FR-006**: The build system MUST include all constitution templates and principles in the plugin package
+- **FR-007-NEW**: Slash commands MUST remain as user-facing entrypoints and invoke the speck-runner skill for all script execution; the speck-runner skill MUST handle plugin context detection internally using CLAUDE_PLUGIN_ROOT environment variable or skill-relative path resolution
+- **FR-028**: The speck-runner skill MUST resolve script paths as follows: (a) If CLAUDE_PLUGIN_ROOT environment variable is set, resolve scripts relative to `${CLAUDE_PLUGIN_ROOT}/scripts/`, (b) Otherwise resolve scripts relative to repository root `.speck/scripts/`
 
 **Plugin Metadata**
 - **FR-007**: The plugin manifest MUST use "Speck" as the plugin name
@@ -192,8 +200,9 @@ accurate.
 ### Key Entities
 
 - **Plugin Package**: The distributable artifact containing all Speck components
-  (commands, agents, skill, templates, scripts), with metadata, version
+  (commands, agents, speck-runner skill, templates, scripts), with metadata, version
   information, and installation instructions
+- **Speck-Runner Skill**: A single Claude Code skill that accepts script-name parameter and executes the corresponding Speck script (e.g., create-new-feature, setup-plan, check-prerequisites, update-agent-context); commands delegate to this skill instead of executing scripts directly. Example invocation from command markdown: `Please use the speck-runner skill with script-name parameter set to "create-new-feature" and pass the feature description.`
 - **Marketplace Listing**: The public-facing page in Claude Marketplace showing
   plugin name, description, features, screenshots, version history, ratings, and
   installation button
@@ -232,7 +241,9 @@ accurate.
 
 - Build system that generates Claude Marketplace-compliant plugin packages
 - Plugin manifest definition with all required metadata (name, version, author, license, dependencies, compatibility)
-- Packaging all Speck components: slash commands, agents, skills, templates, scripts, constitution files
+- Packaging all Speck components: slash commands, agents, speck-runner skill, templates, scripts, constitution files
+- Implementation of speck-runner skill with script-name parameter interface for delegated script execution
+- Updating commands to detect plugin context and delegate script execution to speck-runner skill
 - Marketplace listing content: description, features, usage guide, command examples
 - Plugin documentation files included in package
 - Changelog structure and version history documentation
@@ -268,7 +279,9 @@ accurate.
 6. Marketplace provides standard metadata fields for plugin manifests (name, version, author, license, description, keywords, dependencies)
 7. Plugin format supports including both executable code (commands, agents, skills) and data files (templates, scripts, documentation)
 8. Claude Plugin system handles installation, updates, uninstalls, and dependency validation
-9. Package size limit of 5MB is sufficient for all Speck components
+9. Package size limit of 5MB is sufficient for all Speck components including the speck-runner skill
+10. Claude Code skills can accept parameters and execute scripts bundled within the plugin using paths relative to the skill location
+11. Commands (markdown files) invoke speck-runner skill unconditionally; the speck-runner skill detects execution context (standalone repo vs plugin installation) internally by checking for CLAUDE_PLUGIN_ROOT environment variable and resolves script paths accordingly (plugin: relative to CLAUDE_PLUGIN_ROOT, standalone: relative to repository root)
 
 ## Dependencies
 

@@ -22,6 +22,7 @@ interface BuildConfig {
   outputDir: string;
   commandsSourceDir: string;
   agentsSourceDir: string;
+  skillsSourceDir: string;
   templatesSourceDir: string;
   scriptsSourceDir: string;
   memorySourceDir: string;
@@ -37,6 +38,7 @@ const config: BuildConfig = {
   outputDir: join(process.cwd(), 'dist/plugin'),
   commandsSourceDir: join(process.cwd(), '.claude/commands'),
   agentsSourceDir: join(process.cwd(), '.claude/agents'),
+  skillsSourceDir: join(process.cwd(), '.claude/skills'),
   templatesSourceDir: join(process.cwd(), '.specify/templates'),
   scriptsSourceDir: join(process.cwd(), '.speck/scripts'),
   memorySourceDir: join(process.cwd(), '.specify/memory'),
@@ -228,6 +230,7 @@ async function generateMarketplaceManifest(): Promise<void> {
 interface FileCounts {
   commands: number;
   agents: number;
+  skills: number;
   templates: number;
   scripts: number;
   memory: number;
@@ -240,6 +243,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
   const counts: FileCounts = {
     commands: 0,
     agents: 0,
+    skills: 0,
     templates: 0,
     scripts: 0,
     memory: 0,
@@ -274,6 +278,14 @@ async function copyPluginFiles(): Promise<FileCounts> {
     await copyDir(config.agentsSourceDir, agentsDestDir);
     const files = await readdir(agentsDestDir);
     counts.agents = files.filter(f => f.endsWith('.md')).length;
+  }
+
+  // T014a: Copy skills
+  if (existsSync(config.skillsSourceDir)) {
+    const skillsDestDir = join(config.outputDir, 'skills');
+    await copyDir(config.skillsSourceDir, skillsDestDir);
+    const files = await readdir(skillsDestDir);
+    counts.skills = files.filter(f => f.endsWith('.md')).length;
   }
 
   // T015: Copy templates
@@ -669,6 +681,9 @@ async function main() {
     const fileCounts = await copyPluginFiles();
     console.log(`   ✓ Copied ${fileCounts.commands} commands`);
     console.log(`   ✓ Copied ${fileCounts.agents} agents`);
+    if (fileCounts.skills > 0) {
+      console.log(`   ✓ Copied ${fileCounts.skills} skills`);
+    }
     console.log(`   ✓ Copied ${fileCounts.templates} templates`);
     console.log(`   ✓ Copied ${fileCounts.scripts} scripts`);
     if (fileCounts.memory > 0) {

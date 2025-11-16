@@ -16,7 +16,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 ```text
 .claude/
 ├── commands/              # Slash commands (Markdown with YAML frontmatter)
-└── agents/                # Subagents (Markdown with YAML frontmatter)
+├── agents/                # Subagents (Markdown with YAML frontmatter)
+└── skills/                # Skills (Markdown with YAML frontmatter)
 
 .claude-plugin/            # Plugin manifests (002-claude-plugin-packaging)
 ├── plugin.json            # Plugin metadata and configuration
@@ -33,6 +34,7 @@ dist/plugin/               # Build output (002-claude-plugin-packaging)
 ├── .claude-plugin/        # Generated manifests
 ├── commands/              # Packaged slash commands
 ├── agents/                # Packaged subagents
+├── skills/                # Packaged skills
 ├── templates/             # Packaged templates
 └── scripts/               # Packaged scripts
 

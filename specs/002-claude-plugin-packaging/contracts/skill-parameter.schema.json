@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Speck Runner Skill Parameter Schema",
+  "description": "Defines the script-name parameter interface for the speck-runner skill",
+  "type": "object",
+  "properties": {
+    "script-name": {
+      "type": "string",
+      "enum": [
+        "create-new-feature",
+        "setup-plan",
+        "check-prerequisites",
+        "update-agent-context",
+        "generate-tasks",
+        "analyze-consistency"
+      ],
+      "description": "Name of the Speck script to execute (without .ts extension)"
+    }
+  },
+  "required": ["script-name"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "script-name": "create-new-feature"
+    },
+    {
+      "script-name": "check-prerequisites"
+    }
+  ]
+}
