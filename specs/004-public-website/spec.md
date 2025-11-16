@@ -71,7 +71,7 @@ A developer already using spec-kit wonders if Speck is worth switching to. They 
 
 ### User Story 4 - Install and Set Up Speck (Priority: P1)
 
-A developer ready to try Speck follows installation instructions. They successfully install prerequisites (Bun, Claude Code), clone the repo, and run their first `/speck.specify` command within 5 minutes.
+A developer ready to try Speck follows installation instructions. They successfully install prerequisites (Bun, Claude Code), clone the repo, and run their first `/speck.specify` command within 5-10 minutes.
 
 **Why this priority**: Installation is the conversion point. If it fails, all prior discovery work is wasted.
 
@@ -95,7 +95,6 @@ A developer ready to try Speck follows installation instructions. They successfu
 - **Outdated browser**: When user visits with browser lacking CSS Grid support (IE11, old Safari), site renders in single-column fallback layout
 - **Mobile landscape orientation**: When user views site on narrow landscape screen (e.g., phone rotated), header collapses to hamburger menu to preserve content width
 - **Copy command fails**: When clipboard API unavailable, copy button shows tooltip "Select and copy manually"
-- **Search query with no results**: When user searches docs for nonexistent term, they see "No results found. Try [suggested terms]" with links to popular docs
 
 ## Requirements *(mandatory)*
 
@@ -139,7 +138,7 @@ A developer ready to try Speck follows installation instructions. They successfu
 - **SC-003**: Website core content loads in under 2 seconds on 3G connection (measured via Lighthouse/WebPageTest)
 - **SC-004**: Mobile usability score is 95+ on Google PageSpeed Insights with zero horizontal scrolling issues
 - **SC-005**: Code copy-to-clipboard functionality succeeds 99%+ of the time across modern browsers (Chrome 90+, Firefox 88+, Safari 14+)
-- **SC-006**: Documentation search (if implemented) returns relevant results in under 500ms for 95% of queries
+- **SC-006**: Documentation search (deferred post-MVP) returns relevant results in under 500ms for 95% of queries
 - **SC-007**: Site remains fully functional (navigation, content readable, links work) when JavaScript disabled
 - **SC-008**: Comparison page visit-to-GitHub-click conversion rate is 30%+ (developers who read comparison page then visit Speck GitHub repo)
 - **SC-009**: Monthly hosting cost on Cloudflare Pages is under $5 for up to 10,000 monthly visitors
@@ -152,7 +151,7 @@ A developer ready to try Speck follows installation instructions. They successfu
 3. **Content Updates**: Documentation content will be maintained via markdown files in the main Speck repository; GitHub webhook from main repo triggers Cloudflare Pages rebuild when documentation changes, ensuring automatic updates with single source of truth
 4. **Search**: If search functionality needed, using client-side search (no server required) via tools like Algolia DocSearch (free for open source) or local search index
 5. **Analytics**: Cookieless analytics using Cloudflare Web Analytics (free, privacy-friendly, GDPR/CCPA compliant without consent banner) tracking basic metrics (page views, popular pages) without personally identifiable information
-6. **Code Syntax Highlighting**: Using a client-side syntax highlighter (Prism, Shiki) supporting TypeScript, bash, markdown, and JSON
+6. **Code Syntax Highlighting**: Using Shiki syntax highlighter (chosen for better TypeScript support over Prism) supporting TypeScript, bash, markdown, and JSON
 7. **Browser Support**: Modern browsers (Chrome/Edge 90+, Firefox 88+, Safari 14+) with graceful degradation for older browsers
 8. **Content Migration**: Initial content based on existing documentation in specs/001-speck-core-project and README files
 9. **Image Optimization**: Icons and diagrams as SVG where practical; raster images (screenshots, photos) served via Cloudflare Images with automatic WebP/AVIF conversion and PNG fallback for older browsers
