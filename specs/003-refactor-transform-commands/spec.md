@@ -14,6 +14,11 @@
 - Q: When a command contains both skill-worthy and agent-worthy logic, how should transformation handle this? → A: Extract both - create separate files for each, update command to reference both
 - Q: How should system determine threshold for extractable logic? → A: Heuristic-based with explicit criteria; agent must record explanation of extraction decisions (both positive and negative) in existing transformation-history.json
 - Q: When preprocessing fails due to unexpected file formats or encoding issues, should transformation continue? → A: Continue with remaining files, log failures, produce error report at end
+- Q: What should TypeScript preprocessing handle vs what should the agent handle? → A: TypeScript handles ONLY mechanical string replacements (add speck. prefix, change .specify/ to .speck/, update command references). Agent handles ALL analysis and extraction decisions including identifying sections, calculating complexity, evaluating reusability, and creating files
+- Q: When should validation of extracted skill/agent files occur? → A: After agent creates files but before writing to disk - validation layer (Bun validation script) checks descriptions, tool permissions, structure, then either writes valid files or returns errors to agent for correction
+- Q: Should the transform-commands agent extract skills/agents from ONLY commands or also from other extracted agents? → A: Agent extracts ONLY from original upstream commands - extracted agents/skills are terminal outputs and not subject to further extraction
+- Q: When there are gaps in feature numbering (e.g., 001, 003, 005), should the script use the next sequential number or fill gaps? → A: Use next sequential number (no gap filling)
+- Q: When best practices conflict (e.g., conciseness vs completeness in skill descriptions), how should the agent prioritize? → A: Prefer conciseness, cap at 1024 chars; degradation starts above ~300 tokens
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -90,27 +95,27 @@ When developers create new features using the create-new-feature script, the fea
 - How does the system handle commands with nested dependencies or circular references?
 - What happens when preprocessing fails due to unexpected file formats or encoding issues? → Continue processing remaining files, collect failures, produce error report at end (clarified 2025-11-15)
 - How does the agent distinguish between command-specific logic (keep in command) vs reusable patterns (extract to skill)? → Use heuristic criteria (size, reusability, complexity) and record all decisions in transformation log (clarified 2025-11-15)
-- What happens when best practices conflict (e.g., conciseness vs completeness in skill descriptions)?
-- What happens when there are gaps in feature numbering (e.g., 001, 003, 005) - should the script use the next sequential number or fill gaps?
+- What happens when best practices conflict (e.g., conciseness vs completeness in skill descriptions)? → Prefer conciseness, cap at 1024 chars; quality degradation starts above ~300 tokens (clarified 2025-11-15)
+- What happens when there are gaps in feature numbering (e.g., 001, 003, 005) - should the script use the next sequential number or fill gaps? → Use next sequential number (no gap filling) (clarified 2025-11-15)
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST separate deterministic text transformations (prefix changes, path updates, reference replacements) into standalone TypeScript preprocessing code
+- **FR-001**: System MUST separate deterministic text transformations (prefix changes, path updates, reference replacements) into standalone TypeScript preprocessing code; TypeScript preprocessing handles ONLY mechanical string replacements and does NOT perform any semantic analysis, section identification, complexity calculation, or extraction decisions
 - **FR-002**: System MUST apply all preprocessing transformations before invoking the transform-commands agent
-- **FR-003**: Transform-commands agent MUST focus exclusively on extracting skills, agents, and architectural patterns rather than performing text replacements
-- **FR-003a**: Transform-commands agent MUST use explicit heuristic criteria for extraction decisions (size, reusability, complexity)
+- **FR-003**: Transform-commands agent MUST focus exclusively on extracting skills, agents, and architectural patterns rather than performing text replacements; agent performs ALL semantic analysis including section identification, complexity scoring, reusability evaluation, and extraction decisions
+- **FR-003a**: Transform-commands agent MUST apply explicit heuristic criteria for extraction decisions (size, reusability, complexity) through holistic semantic understanding, not through TypeScript-calculated scores
 - **FR-003b**: Transform-commands agent MUST record explanation for ALL extraction decisions in transformation-history.json (both positive: "extracted X because Y" and negative: "no extraction because Z")
-- **FR-004**: System MUST validate that each extracted skill or agent file includes specific justification citing Claude Code best practices (as inline comments or metadata)
+- **FR-004**: System MUST validate that each extracted skill or agent file includes specific justification citing Claude Code best practices (as inline comments or metadata); validation occurs after agent generates file content but before writing to disk, using Bun validation scripts that return errors for agent correction if invalid
 - **FR-005**: System MUST distinguish between manual-invoke patterns (keep as commands) and auto-invoke patterns (extract as skills) based on usage context
 - **FR-006**: TypeScript preprocessing MUST handle batch transformations of multiple command files with consistent rules
 - **FR-007**: System MUST provide clear error messages when preprocessing fails, indicating which file and which transformation step failed
 - **FR-007a**: When preprocessing fails for individual files, system MUST continue processing remaining files and collect all failures
 - **FR-007b**: System MUST produce a comprehensive error report at the end of batch transformation listing all failed files with specific error details
 - **FR-008**: Transform-commands agent MUST reference official Claude Code best practices documentation when making factoring decisions
-- **FR-009**: System MUST generate transformation output that includes the transformed command file and any extracted skill/agent files with proper references in the source command
-- **FR-010**: Extracted skill files MUST include properly formatted description fields (third person, triggers, under 1024 chars)
+- **FR-009**: System MUST generate transformation output that includes the transformed command file and any extracted skill/agent files with proper references in the source command; extraction occurs ONLY from upstream commands, not recursively from extracted agents
+- **FR-010**: Extracted skill files MUST include properly formatted description fields (third person, triggers, under 1024 chars); prefer conciseness with quality degradation starting above ~300 tokens; when practices conflict, technical constraints (1024 char limit) take precedence
 - **FR-011**: Extracted agent files MUST specify appropriate tool permissions based on task fragility
 - **FR-012**: System MUST detect progressive disclosure opportunities where command content should be split across referenced files and automatically implement the file structure
 - **FR-012a**: Extracted skill files MUST be created in `.claude/skills/` directory with `speck.` prefix (e.g., `speck.validation.md`)
