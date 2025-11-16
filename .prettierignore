@@ -7,3 +7,4 @@ bun.lockb
 .speck/
 upstream/
 specs/
+*.md

@@ -53,9 +53,9 @@ Given that feature description, do this:
       - Find the highest number N
       - Use N+1 for the new branch number
 
-   d. Run the script `.speck/scripts/create-new-feature.ts --json "$ARGUMENTS"` with the calculated number and short-name:
+   d. Run the script `bun .speck/scripts/create-new-feature.ts --json "$ARGUMENTS"` with the calculated number and short-name:
       - Pass `--number N+1` and `--short-name "your-short-name"` along with the feature description
-      - Bash example: `.speck/scripts/create-new-feature.ts --json "$ARGUMENTS" --json --number 5 --short-name "user-auth" "Add user authentication"`
+      - Example: `bun .speck/scripts/create-new-feature.ts --json "$ARGUMENTS" --json --number 5 --short-name "user-auth" "Add user authentication"`
 
    **IMPORTANT**:
    - Check all three sources (remote branches, local branches, specs directories) to find the highest number
