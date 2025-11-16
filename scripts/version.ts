@@ -63,35 +63,44 @@ async function updatePackageJson(newVersion: string): Promise<void> {
   console.log(`✓ Updated package.json: ${oldVersion} → ${newVersion}`);
 }
 
-async function createGitTag(version: string, skipGit: boolean): Promise<void> {
+async function checkGitStatus(skipGit: boolean): Promise<boolean> {
   if (skipGit) {
-    console.log('⊘ Skipping git tag (--no-git flag)');
-    return;
+    return false; // Not using git
   }
 
   try {
     // Check if we're in a git repo
     await $`git rev-parse --git-dir`.quiet();
   } catch {
-    console.log('⊘ Not a git repository, skipping tag');
-    return;
+    console.log('⊘ Not a git repository, skipping git operations');
+    return false;
   }
 
-  try {
-    // Check if there are uncommitted changes
-    const status = await $`git status --porcelain`.text();
-    if (status.trim()) {
-      console.log('⚠ Warning: Uncommitted changes detected');
-      console.log('  Run git commit before tagging, or use --no-git to skip tagging');
-      return;
-    }
+  // Check if there are uncommitted changes
+  const status = await $`git status --porcelain`.text();
+  if (status.trim()) {
+    console.error('\n❌ Error: Working directory has uncommitted changes');
+    console.error('   Please commit or stash your changes before bumping version.');
+    console.error('   Or use --no-git to skip git operations.\n');
+    process.exit(1);
+  }
 
-    // Create and push tag
+  return true; // Using git and repo is clean
+}
+
+async function commitAndTag(version: string): Promise<void> {
+  try {
+    // Commit the version change
+    await $`git add package.json`;
+    await $`git commit -m "chore: bump version to v${version}"`;
+    console.log(`✓ Committed version bump: v${version}`);
+
+    // Create tag
     await $`git tag v${version}`;
     console.log(`✓ Created git tag: v${version}`);
-    console.log(`  Push with: git push origin v${version}`);
   } catch (error) {
-    console.log(`⚠ Warning: Could not create git tag: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`⚠ Warning: Git operations failed: ${error instanceof Error ? error.message : String(error)}`);
+    throw error;
   }
 }
 
@@ -107,6 +116,9 @@ async function main() {
   const skipGit = args.includes('--no-git');
 
   try {
+    // Check git status first (before making any changes)
+    const useGit = await checkGitStatus(skipGit);
+
     // Read current version
     const packageJsonPath = join(process.cwd(), 'package.json');
     const content = await readFile(packageJsonPath, 'utf-8');
@@ -121,16 +133,24 @@ async function main() {
     // Update package.json
     await updatePackageJson(newVersion);
 
-    // Create git tag
-    await createGitTag(newVersion, skipGit);
+    // Commit and tag if using git
+    if (useGit) {
+      await commitAndTag(newVersion);
+    }
 
     console.log('\n✅ Version bump complete!');
     console.log('\nNext steps:');
-    console.log('  1. Review changes: git diff package.json');
-    console.log('  2. Commit changes: git add package.json && git commit -m "chore: bump version to v' + newVersion + '"');
-    console.log('  3. Push tag: git push origin v' + newVersion);
-    console.log('  4. Build plugin: bun run build-plugin');
-    console.log('  5. Publish: bun run publish-plugin\n');
+    if (useGit) {
+      console.log('  1. Push commit and tag: git push && git push origin v' + newVersion);
+      console.log('  2. Build plugin: bun run build-plugin');
+      console.log('  3. Publish: bun run publish-plugin\n');
+    } else {
+      console.log('  1. Review changes: git diff package.json');
+      console.log('  2. Commit changes: git add package.json && git commit -m "chore: bump version to v' + newVersion + '"');
+      console.log('  3. Push tag: git push origin v' + newVersion);
+      console.log('  4. Build plugin: bun run build-plugin');
+      console.log('  5. Publish: bun run publish-plugin\n');
+    }
 
   } catch (error) {
     console.error('\n❌ Version bump failed:');
