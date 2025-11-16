@@ -2,8 +2,8 @@
 /**
  * Bun TypeScript implementation of update-agent-context.sh
  *
- * Transformation Date: 2025-11-15
- * Source: upstream/v0.0.83/.specify/scripts/bash/update-agent-context.sh
+ * Transformation Date: 2025-11-15 (updated from v0.0.85)
+ * Source: upstream/v0.0.85/.specify/scripts/bash/update-agent-context.sh
  * Strategy: Pure TypeScript (file I/O, string manipulation, regex, template processing)
  *
  * CLI Interface:
@@ -25,6 +25,11 @@
  * - Replaced bash file I/O with Node.js fs operations
  * - Replaced bash template substitution with TypeScript string replacement
  * - Replaced mktemp with Bun.write for atomic file operations
+ *
+ * Changes from v0.0.84 to v0.0.85:
+ * - Upstream added CDPATH="" before cd commands for security
+ * - TypeScript implementation already immune: uses common.ts with absolute paths
+ * - No code changes needed; documented for transparency
  */
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";

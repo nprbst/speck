@@ -85,7 +85,7 @@ Find source files to transform and detect changes from previous version:
 
 4. **Detect changed bash scripts** (if `PREV_VERSION` exists):
    ```bash
-   diff -qr upstream/<PREV_VERSION>/.specify/scripts/bash/ upstream/<version>/.specify/scripts/bash/ | grep -E "\.sh$"
+   diff -qr upstream/<PREV_VERSION>/.specify/scripts/bash/ upstream/<version>/.specify/scripts/bash/ | grep "\.sh"
    ```
    - Parse diff output to identify:
      - **New files**: `Only in upstream/<version>/...`
@@ -96,7 +96,7 @@ Find source files to transform and detect changes from previous version:
 
 5. **Detect changed speckit commands** (if `PREV_VERSION` exists):
    ```bash
-   diff -qr upstream/<PREV_VERSION>/.claude/commands/ upstream/<version>/.claude/commands/ | grep -E "speckit\..*\.md$"
+   diff -qr upstream/<PREV_VERSION>/.claude/commands/ upstream/<version>/.claude/commands/ | grep "speckit\."
    ```
    - Parse diff output to identify:
      - **New files**: `Only in upstream/<version>/...`
@@ -171,12 +171,19 @@ Task tool parameters:
     3. Bun.spawn() (LAST RESORT)
 
     For each CHANGED script:
-    1. Read and analyze the bash script
-    2. Choose transformation strategy
-    3. Generate/update .ts file in .speck/scripts/
-    4. Preserve CLI interface 100%
-    5. Document transformation in header comment
-    6. Preserve [SPECK-EXTENSION:START/END] markers if present
+    1. Read the upstream bash script to understand what changed
+    2. Read the existing TypeScript file (if it exists)
+    3. Choose transformation strategy
+    4. Generate/update .ts file in .speck/scripts/
+    5. ALWAYS update documentation header (even if code unchanged)
+    6. Preserve CLI interface 100%
+    7. Preserve [SPECK-EXTENSION:START/END] markers if present
+
+    IMPORTANT: The scripts in CHANGED_BASH_SCRIPTS have changed in upstream.
+    You MUST process all of them. Even if the TypeScript implementation is
+    already functionally equivalent to the bash change, you MUST update the
+    documentation header to track the new upstream version and explain the
+    equivalence.
 
     ## Report Format
 
@@ -188,13 +195,18 @@ Task tool parameters:
           "path": ".speck/scripts/X.ts",
           "bashSource": "upstream/<version>/.specify/scripts/bash/X.sh",
           "strategy": "pure-typescript | bun-shell | bun-spawn",
-          "changeType": "new | modified"
+          "changeType": "new | modified",
+          "codeChanged": true | false,
+          "documentationUpdated": true,
+          "upstreamChange": "Brief description of what changed in bash",
+          "typeScriptEquivalent": "Explanation of how TypeScript handles this"
         }
       ],
       "skipped": [
         {
           "path": ".speck/scripts/Y.ts",
-          "reason": "No changes in upstream bash script"
+          "bashSource": "upstream/<version>/.specify/scripts/bash/Y.sh",
+          "reason": "Script not in CHANGED_BASH_SCRIPTS list (unchanged from previous version)"
         }
       ],
       "errors": [],

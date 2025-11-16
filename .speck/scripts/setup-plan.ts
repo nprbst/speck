@@ -2,8 +2,8 @@
 /**
  * Bun TypeScript implementation of setup-plan.sh
  *
- * Transformation Date: 2025-11-15
- * Source: upstream/v0.0.83/.specify/scripts/bash/setup-plan.sh
+ * Transformation Date: 2025-11-15 (updated from v0.0.85)
+ * Source: upstream/v0.0.85/.specify/scripts/bash/setup-plan.sh
  * Strategy: Pure TypeScript (file I/O, path operations) + imported common functions
  *
  * CLI Interface:
@@ -16,6 +16,11 @@
  * - Replaced sourced common.sh functions with TypeScript imports
  * - Replaced bash file operations with Node.js fs operations
  * - Replaced bash template copying with Node.js fs.copyFileSync()
+ *
+ * Changes from v0.0.84 to v0.0.85:
+ * - Upstream added CDPATH="" before cd commands for security
+ * - TypeScript implementation already immune: uses common.ts with absolute paths
+ * - No code changes needed; documented for transparency
  */
 
 import { existsSync, copyFileSync, writeFileSync, mkdirSync } from "node:fs";

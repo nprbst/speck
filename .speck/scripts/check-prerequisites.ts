@@ -2,8 +2,8 @@
 /**
  * Bun TypeScript implementation of check-prerequisites.sh
  *
- * Transformation Date: 2025-11-15
- * Source: upstream/v0.0.83/.specify/scripts/bash/check-prerequisites.sh
+ * Transformation Date: 2025-11-15 (updated from v0.0.85)
+ * Source: upstream/v0.0.85/.specify/scripts/bash/check-prerequisites.sh
  * Strategy: Pure TypeScript (file I/O, JSON generation, path operations)
  *
  * CLI Interface:
@@ -17,6 +17,11 @@
  * - Replaced sourced common.sh functions with TypeScript imports
  * - Replaced bash directory checks with Node.js fs operations
  * - Replaced bash JSON generation with native JSON.stringify()
+ *
+ * Changes from v0.0.84 to v0.0.85:
+ * - Upstream added CDPATH="" before cd commands for security
+ * - TypeScript implementation already immune: imports use absolute paths
+ * - No code changes needed; documented for transparency
  */
 
 import { existsSync, readdirSync } from "node:fs";

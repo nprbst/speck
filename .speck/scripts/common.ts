@@ -1,8 +1,8 @@
 /**
  * Bun TypeScript implementation of common.sh
  *
- * Transformation Date: 2025-11-15
- * Source: upstream/v0.0.83/.specify/scripts/bash/common.sh
+ * Transformation Date: 2025-11-15 (updated from v0.0.85)
+ * Source: upstream/v0.0.85/.specify/scripts/bash/common.sh
  * Strategy: Pure TypeScript (file I/O, path operations) + Bun Shell API (git commands)
  *
  * This module provides common functions and variables for all Speck scripts.
@@ -15,6 +15,11 @@
  * - Replaced environment variable access with process.env
  * - Replaced string matching with native JS regex
  * - Replaced file checks with Node.js fs.existsSync()
+ *
+ * Changes from v0.0.84 to v0.0.85:
+ * - Upstream added CDPATH="" before cd commands for security
+ * - TypeScript implementation already immune: uses import.meta.dir and path.resolve()
+ * - No code changes needed; documented for transparency
  */
 
 import { $ } from "bun";

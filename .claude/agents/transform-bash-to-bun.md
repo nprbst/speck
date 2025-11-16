@@ -35,16 +35,23 @@ When invoked, you will receive:
    transformation)
 
 2. **If PREVIOUS_VERSION exists**:
+   - **TRUST the CHANGED_BASH_SCRIPTS list** - do NOT re-verify or second-guess
+     whether files changed
    - **ONLY process scripts in CHANGED_BASH_SCRIPTS list**
    - **Skip all other scripts entirely** - they're already transformed and
      unchanged
    - Report skipped scripts in the JSON output
 
 3. **For each changed script**:
+   - **ALWAYS read the upstream bash script** to understand what changed
    - Check if a `.ts` file already exists in `.speck/scripts/`
    - If exists: **UPDATE** the existing file (preserve [SPECK-EXTENSION]
      markers)
    - If new: **CREATE** a new `.ts` file
+   - **CRITICAL**: Even if the TypeScript implementation already handles the
+     change functionally (e.g., already immune to a bash security fix), you
+     MUST update the documentation header to track the upstream version and
+     explain the equivalence
 
 ---
 
@@ -427,9 +434,20 @@ SPECK-EXTENSION blocks and minimize changes.
        conflict
    - **Add error handling** with proper exit codes
    - **Format output** (JSON mode, human-readable mode)
-4. **Minimize changes**: If existing file has same functionality, only update:
-   - Parts affected by upstream changes
-   - Bug fixes or compatibility improvements
+4. **Minimize code changes, but ALWAYS update documentation**:
+   - If the script is in CHANGED_BASH_SCRIPTS, the upstream bash changed
+   - Determine what actually needs to change in the TypeScript implementation:
+     - If the change requires code updates (new features, bug fixes, logic
+       changes) → update the code
+     - If the TypeScript is already functionally equivalent (e.g., already
+       immune to a bash-specific security fix) → no code changes needed
+   - **ALWAYS update the header documentation**:
+     - Update "Transformation Date" to current date
+     - Update "Source" to reference the new upstream version
+     - Add a "Changes from vX.Y.Z to vA.B.C" section documenting:
+       - What changed in upstream bash
+       - Whether TypeScript code was updated or already equivalent
+       - Why no code changes were needed (if applicable)
    - Keep existing code structure, variable names, and patterns where possible
 
 ### Step 4: Generate/Update Tests

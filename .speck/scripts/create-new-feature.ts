@@ -2,8 +2,8 @@
 /**
  * Bun TypeScript implementation of create-new-feature.sh
  *
- * Transformation Date: 2025-11-15
- * Source: upstream/v0.0.83/.specify/scripts/bash/create-new-feature.sh
+ * Transformation Date: 2025-11-15 (updated from v0.0.85)
+ * Source: upstream/v0.0.85/.specify/scripts/bash/create-new-feature.sh
  * Strategy: Pure TypeScript (file I/O, path operations, string processing) + Bun Shell API (git commands)
  *
  * CLI Interface:
@@ -19,6 +19,11 @@
  * - Replaced directory traversal with Node.js fs operations
  * - Replaced bash regex with native JS regex
  * - Replaced branch number detection logic with TypeScript
+ *
+ * Changes from v0.0.84 to v0.0.85:
+ * - Upstream added CDPATH="" before cd commands for security
+ * - TypeScript implementation already immune: uses import.meta.dir
+ * - No code changes needed; documented for transparency
  */
 
 import { $ } from "bun";
