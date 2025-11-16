@@ -102,20 +102,20 @@ When developers create new features using the create-new-feature script, the fea
 
 ### Functional Requirements
 
-- **FR-001**: System MUST separate deterministic text transformations (prefix changes, path updates, reference replacements) into standalone TypeScript preprocessing code; TypeScript preprocessing handles ONLY mechanical string replacements and does NOT perform any semantic analysis, section identification, complexity calculation, or extraction decisions
+- **FR-001**: System MUST separate deterministic text transformations (prefix changes, path updates, reference replacements) into standalone imperative code preprocessing (implemented in project's primary language, NOT agent-based); preprocessing handles ONLY mechanical string replacements and does NOT perform any semantic analysis, section identification, complexity calculation, or extraction decisions
 - **FR-002**: System MUST apply all preprocessing transformations before invoking the transform-commands agent
 - **FR-003**: Transform-commands agent MUST focus exclusively on extracting skills, agents, and architectural patterns rather than performing text replacements; agent performs ALL semantic analysis including section identification, complexity scoring, reusability evaluation, and extraction decisions
-- **FR-003a**: Transform-commands agent MUST apply explicit heuristic criteria for extraction decisions (size, reusability, complexity) through holistic semantic understanding, not through TypeScript-calculated scores
+- **FR-003a**: Transform-commands agent MUST apply explicit heuristic criteria for extraction decisions (size, reusability, complexity) through holistic semantic understanding, not through imperative code-calculated scores
 - **FR-003b**: Transform-commands agent MUST record explanation for ALL extraction decisions in transformation-history.json (both positive: "extracted X because Y" and negative: "no extraction because Z")
-- **FR-004**: System MUST validate that each extracted skill or agent file includes specific justification citing Claude Code best practices (as inline comments or metadata); validation occurs after agent generates file content but before writing to disk, using Bun validation scripts that return errors for agent correction if invalid
-- **FR-005**: System MUST distinguish between manual-invoke patterns (keep as commands) and auto-invoke patterns (extract as skills) based on usage context
-- **FR-006**: TypeScript preprocessing MUST handle batch transformations of multiple command files with consistent rules
+- **FR-004**: System MUST validate that each extracted skill or agent file includes specific justification citing Claude Code best practices (as inline comments or metadata); validation occurs after agent generates file content but before writing to disk, using imperative validation logic that returns errors for agent correction if invalid
+- **FR-005**: System MUST distinguish between manual-invoke patterns (keep as commands) and auto-invoke patterns (extract as skills) based on extraction criteria defined in research.md section 1.3
+- **FR-006**: Imperative preprocessing MUST handle batch transformations of multiple command files with consistent rules
 - **FR-007**: System MUST provide clear error messages when preprocessing fails, indicating which file and which transformation step failed
 - **FR-007a**: When preprocessing fails for individual files, system MUST continue processing remaining files and collect all failures
 - **FR-007b**: System MUST produce a comprehensive error report at the end of batch transformation listing all failed files with specific error details
 - **FR-008**: Transform-commands agent MUST reference official Claude Code best practices documentation when making factoring decisions
 - **FR-009**: System MUST generate transformation output that includes the transformed command file and any extracted skill/agent files with proper references in the source command; extraction occurs ONLY from upstream commands, not recursively from extracted agents
-- **FR-010**: Extracted skill files MUST include properly formatted description fields (third person, triggers, under 1024 chars); prefer conciseness with quality degradation starting above ~300 tokens; when practices conflict, technical constraints (1024 char limit) take precedence
+- **FR-010**: Extracted skill files MUST include properly formatted description fields (third person, triggers, under 1024 chars); prefer conciseness as validation SHOULD warn when descriptions exceed ~300 tokens (~1200 chars) due to quality degradation; when practices conflict, technical constraints (1024 char limit) take precedence
 - **FR-011**: Extracted agent files MUST specify appropriate tool permissions based on task fragility
 - **FR-012**: System MUST detect progressive disclosure opportunities where command content should be split across referenced files and automatically implement the file structure
 - **FR-012a**: Extracted skill files MUST be created in `.claude/skills/` directory with `speck.` prefix (e.g., `speck.validation.md`)
