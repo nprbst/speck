@@ -88,7 +88,7 @@ async function checkGitStatus(skipGit: boolean): Promise<boolean> {
   return true; // Using git and repo is clean
 }
 
-async function commitAndTag(version: string): Promise<void> {
+async function commitAndTag(version: string, skipPush: boolean): Promise<void> {
   try {
     // Commit the version change
     await $`git add package.json`;
@@ -98,6 +98,15 @@ async function commitAndTag(version: string): Promise<void> {
     // Create tag
     await $`git tag v${version}`;
     console.log(`✓ Created git tag: v${version}`);
+
+    // Push commit and tag
+    if (!skipPush) {
+      await $`git push`;
+      console.log(`✓ Pushed commit to remote`);
+
+      await $`git push origin v${version}`;
+      console.log(`✓ Pushed tag v${version} to remote`);
+    }
   } catch (error) {
     console.error(`⚠ Warning: Git operations failed: ${error instanceof Error ? error.message : String(error)}`);
     throw error;
@@ -114,6 +123,7 @@ async function main() {
 
   const bump = args[0];
   const skipGit = args.includes('--no-git');
+  const skipPush = args.includes('--no-push');
 
   try {
     // Check git status first (before making any changes)
@@ -133,17 +143,22 @@ async function main() {
     // Update package.json
     await updatePackageJson(newVersion);
 
-    // Commit and tag if using git
+    // Commit, tag, and push if using git
     if (useGit) {
-      await commitAndTag(newVersion);
+      await commitAndTag(newVersion, skipPush);
     }
 
     console.log('\n✅ Version bump complete!');
     console.log('\nNext steps:');
     if (useGit) {
-      console.log('  1. Push commit and tag: git push && git push origin v' + newVersion);
-      console.log('  2. Build plugin: bun run build-plugin');
-      console.log('  3. Publish: bun run publish-plugin\n');
+      if (skipPush) {
+        console.log('  1. Push commit and tag: git push && git push origin v' + newVersion);
+        console.log('  2. Build plugin: bun run build-plugin');
+        console.log('  3. Publish: bun run publish-plugin\n');
+      } else {
+        console.log('  1. Build plugin: bun run build-plugin');
+        console.log('  2. Publish: bun run publish-plugin\n');
+      }
     } else {
       console.log('  1. Review changes: git diff package.json');
       console.log('  2. Commit changes: git add package.json && git commit -m "chore: bump version to v' + newVersion + '"');
