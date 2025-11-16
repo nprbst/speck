@@ -1,0 +1,228 @@
+# API Contracts
+
+**Phase**: 1 (Design & Contracts)
+**Date**: 2025-11-15
+
+## Overview
+
+This directory contains TypeScript interface definitions for all components and build scripts in the Speck public website project. These contracts serve as the source of truth for component APIs, ensuring consistency across implementation.
+
+## Files
+
+### `components.ts`
+
+Defines props interfaces for all Astro components:
+
+- **Navigation Components**: `NavigationProps`, `NavigationLink`, `NavigationLogo`
+- **Code Display**: `CodeBlockProps`
+- **Theme System**: `ThemeToggleProps`, `PersistedTheme`
+- **Content Components**: `FeatureCardProps`
+- **Page Data Models**: `HomePageData`, `DocsPageData`, `ComparisonPageData`
+- **SEO**: `SEOMetadata`
+- **Layout Props**: `BaseLayoutProps`, `DocsLayoutProps`
+
+### `build-scripts.ts`
+
+Defines APIs for build-time scripts:
+
+- **Documentation Sync**: `SyncDocsConfig`, `SyncDocsResult`, `SyncDocsError`
+- **Environment Variables**: `BuildEnvironment`
+- **Performance Budgets**: `PerformanceBudgets`, `LighthouseConfig`
+- **Content Collections**: `ContentCollectionEntry` (Astro-generated types)
+
+## Usage
+
+### In Astro Components
+
+Reference these interfaces when implementing components:
+
+```astro
+---
+// src/components/Navigation.astro
+import type { NavigationProps } from '../../specs/004-public-website/contracts/components';
+
+interface Props extends NavigationProps {}
+
+const { currentPath, links, logo, mobileBreakpoint = 768 } = Astro.props;
+---
+
+<!-- Component implementation -->
+```
+
+### In Build Scripts
+
+Use these interfaces to ensure type safety in build scripts:
+
+```typescript
+// website/scripts/sync-docs.ts
+import type { SyncDocsConfig, SyncDocsResult } from '../../specs/004-public-website/contracts/build-scripts';
+
+export async function syncDocs(config?: SyncDocsConfig): Promise<SyncDocsResult> {
+  // Implementation
+}
+```
+
+### In Tests
+
+Reference contracts to ensure tests validate correct data structures:
+
+```typescript
+// tests/build/sync-docs.test.ts
+import { test, expect } from 'bun:test';
+import type { SyncDocsResult } from '../../specs/004-public-website/contracts/build-scripts';
+
+test('syncDocs returns valid result', async () => {
+  const result: SyncDocsResult = await syncDocs({ dryRun: true });
+  expect(result.success).toBe(true);
+  expect(result.filesSynced).toBeGreaterThan(0);
+});
+```
+
+## Contract Principles
+
+### 1. Required vs Optional Props
+
+- **Required props**: No default value, essential for component functionality
+- **Optional props**: Marked with `?`, have sensible defaults
+
+Example:
+```typescript
+export interface CodeBlockProps {
+  code: string;              // Required (no default)
+  language: string;          // Required (no default)
+  showLineNumbers?: boolean; // Optional (default: true)
+}
+```
+
+### 2. Documentation Comments
+
+All interfaces and props include JSDoc comments explaining:
+- Purpose of the prop
+- Default values (if applicable)
+- Examples or constraints
+
+### 3. Type Safety
+
+Use specific types rather than broad types:
+
+```typescript
+// ✅ Good: Specific enum type
+theme: 'light' | 'dark';
+
+// ❌ Bad: Too broad
+theme: string;
+```
+
+### 4. Validation Strategy
+
+- **Compile-time**: TypeScript enforces interface contracts
+- **Build-time**: Zod schemas validate content collection frontmatter
+- **Runtime**: Minimal validation (static site, props known at build time)
+
+## Updating Contracts
+
+When adding new components or modifying existing ones:
+
+1. **Update interface** in `components.ts` or `build-scripts.ts`
+2. **Add JSDoc comments** explaining purpose and defaults
+3. **Update this README** if adding new files or major changes
+4. **Run type check**: `bun run typecheck` (ensure no breaking changes)
+
+## Contract Stability
+
+These contracts are considered **stable** once implementation begins. Breaking changes require:
+
+1. Version bump (if versioning applies)
+2. Deprecation notice (if applicable)
+3. Migration guide for existing usage
+
+## Examples
+
+### Adding a New Component
+
+```typescript
+// contracts/components.ts
+
+/**
+ * SearchBar Component
+ * Renders a client-side search input for documentation
+ */
+export interface SearchBarProps {
+  /** Placeholder text shown in empty input. Default: "Search docs..." */
+  placeholder?: string;
+  /** Max number of results to show. Default: 10 */
+  maxResults?: number;
+  /** If true, shows category filters. Default: false */
+  showFilters?: boolean;
+}
+```
+
+### Adding a New Build Script Contract
+
+```typescript
+// contracts/build-scripts.ts
+
+export interface ImageOptimizationConfig {
+  /** Source directory containing images */
+  sourceDir: string;
+  /** Output directory for optimized images */
+  outputDir: string;
+  /** Target formats (e.g., ['webp', 'avif']) */
+  formats: string[];
+  /** Quality setting (0-100). Default: 80 */
+  quality?: number;
+}
+```
+
+## Type Generation
+
+Some types are **generated by Astro** based on content collection schemas. These are documented in `build-scripts.ts` for reference but should not be manually defined.
+
+Example:
+```typescript
+// This type is AUTO-GENERATED by Astro from src/content/config.ts
+// Do not define manually - reference from 'astro:content' instead
+import type { CollectionEntry } from 'astro:content';
+
+type DocsEntry = CollectionEntry<'docs'>;
+```
+
+## Validation Rules Reference
+
+### Content Collections (Zod Schemas)
+
+See `website/src/content/config.ts` for runtime validation schemas:
+
+```typescript
+import { z } from 'astro:content';
+
+const docsSchema = z.object({
+  title: z.string().max(100),
+  description: z.string().max(200),
+  category: z.enum(['getting-started', 'commands', 'concepts', 'examples']),
+  order: z.number().int().positive(),
+  lastUpdated: z.date().optional(),
+  tags: z.array(z.string()).optional(),
+});
+```
+
+### Component Props (TypeScript Interfaces)
+
+Validation happens at **compile time** via TypeScript:
+
+```astro
+<CodeBlock
+  code="bun install"
+  language="bash"
+  invalidProp="value"  {/* ❌ TypeScript error: Property 'invalidProp' does not exist */}
+/>
+```
+
+## Next Steps
+
+After contracts are defined:
+
+1. Generate `quickstart.md` with developer setup instructions
+2. Implement components using these contracts
+3. Write tests validating contract adherence
+4. Update CLAUDE.md with component API references

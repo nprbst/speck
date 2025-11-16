@@ -14,6 +14,7 @@
 - Q: How will images and assets be optimized to meet 2-second 3G load time? → A: Cloudflare Images + responsive formats (WebP/AVIF with PNG fallback), prefer SVG-first approach where practical
 - Q: When/how is documentation sync from main repo triggered (manual, webhook, scheduled)? → A: Webhook from main repo triggers Cloudflare Pages rebuild
 - Q: What is the analytics privacy posture (cookieless, cookie-based with consent, no analytics)? → A: Cookieless analytics (no consent banner needed)
+- Q: How is documentation synced from main repo at build time (submodule, sparse checkout script, or manual)? → A: During Cloudflare Pages build, execute a Bun script that clones only the /docs subdirectory from main repo using sparse checkout and copies files to Astro content collections
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -127,7 +128,7 @@ A developer ready to try Speck follows installation instructions. They successfu
 - **Code Block Component**: Syntax-highlighted code examples with copy-to-clipboard button, line numbers, and language labels
 - **Navigation System**: Responsive header with dropdown menus (Docs, Examples, GitHub), mobile hamburger menu, and breadcrumb trails
 - **Static Build Pipeline**: Astro build process converting markdown content collections and component islands to optimized static HTML/CSS/JS for Cloudflare Pages deployment. Build-time import pulls markdown documentation from main Speck repository to ensure single source of truth while allowing independent website deployment. GitHub webhook from main repo triggers automatic rebuild when documentation changes
-- **Documentation Content Source**: Markdown files embedded in website repository with build-time import mechanism (e.g., Git sparse checkout, submodule, or build script that clones/copies from main repo) to fetch latest command documentation, specs, and examples from main Speck repository
+- **Documentation Content Source**: During Cloudflare Pages build, a Bun script clones only the /docs subdirectory from main Speck repository using Git sparse checkout and copies files to Astro content collections, ensuring latest command documentation, specs, and examples are included in static build
 
 ## Success Criteria *(mandatory)*
 

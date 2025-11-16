@@ -12,6 +12,7 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 - Build tooling: Bun shell API for file operations, JSON/YAML parsing, package size validation (<5MB), semantic versioning from package.json (002-claude-plugin-packaging)
 - Markdown with YAML frontmatter (Claude Code skill format) + Claude Code plugin system 2.0+, existing Speck templates in `.specify/templates/` (005-speck-skill)
 - File-based, reads from `specs/NUM-short-name/` directories and `.specify/templates/` (005-speck-skill)
+- Astro 4.x (static site generator), Cloudflare Pages (hosting), Cloudflare Images (image optimization), Shiki or Prism (syntax highlighting), Playwright (visual regression testing), Axe-core (accessibility testing) (004-public-website)
 
 ## Project Structure
 
@@ -42,6 +43,18 @@ dist/plugin/               # Build output (002-claude-plugin-packaging)
 
 specs/                     # Feature specifications and plans
 tests/                     # Test files
+
+src/                       # Core Speck CLI/scripts (001-speck-core-project)
+
+website/                   # Public website (004-public-website)
+├── src/
+│   ├── components/        # Astro components
+│   ├── content/docs/      # Documentation (synced from main repo)
+│   ├── layouts/           # Page layouts
+│   ├── pages/             # File-based routing
+│   └── styles/            # Global styles, theme
+├── public/                # Static assets
+└── scripts/               # Build scripts (doc sync)
 ```
 
 ## Commands
@@ -56,16 +69,29 @@ bun run scripts/build-plugin.ts
 # Validate plugin package
 du -sh dist/plugin/  # Check size < 5MB
 tree dist/plugin/    # Inspect structure
+
+# Website (004-public-website)
+bun run website:sync      # Sync docs from main repo
+bun run website:dev       # Start dev server (localhost:4321)
+bun run website:build     # Build for production
+bun test                  # Run all tests (unit, visual, a11y)
 ```
 
 ## Code Style
 
-TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary): Follow standard conventions
+- TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary): Follow standard conventions
+- Astro components: Use `.astro` file extension, TypeScript for scripts, CSS scoped styles
+- Component props: Define interfaces in `specs/004-public-website/contracts/components.ts`
+- File naming: PascalCase for components, kebab-case for pages/content
 
 ## Recent Changes
 - 005-speck-skill: Added Markdown with YAML frontmatter (Claude Code skill format) + Claude Code plugin system 2.0+, existing Speck templates in `.specify/templates/`
+- 004-public-website: Added Astro 4.x static site generator, Cloudflare Pages deployment, documentation sync from main repo, visual regression testing with Playwright, accessibility testing with Axe-core
 - 002-claude-plugin-packaging: Added Claude Code plugin system 2.0+ with plugin.json manifest, marketplace.json listing, build tooling for packaging
 - 002-claude-plugin-packaging: Implemented build process with size validation (<5MB), JSON schema contracts, semantic versioning
+- 001-speck-core-project: Added TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary - out of scope after clarification) + Bun runtime, Bun Shell API, GitHub REST API (for fetching releases), Claude Code slash command and agent system
+- 001-speck-core-project: Added TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary) + Bun runtime, Git 2.30+, Claude Code (slash command + agent support)
+- 001-speck-core-project: Added TypeScript 5.3+
 
 
 <!-- MANUAL ADDITIONS START -->
