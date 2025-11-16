@@ -168,12 +168,16 @@ async function checkGitRepo(): Promise<void> {
 }
 
 /**
- * Check if bin directory exists (ensure we're in repo root or worktree)
+ * Check if we're in the repository root
+ * Looks for package.json or .git as indicators
  */
-function checkBinDirectory(): void {
-  if (!existsSync("bin")) {
+function checkRepoRoot(): void {
+  const hasPackageJson = existsSync("package.json");
+  const hasGitDir = existsSync(".git");
+
+  if (!hasPackageJson && !hasGitDir) {
     throw new Error(
-      `Must be run from repository root (where 'bin/' directory exists)\nCurrent directory: ${process.cwd()}`
+      `Must be run from repository root\nCurrent directory: ${process.cwd()}\nLooking for package.json or .git directory`
     );
   }
 }
@@ -505,8 +509,8 @@ function outputResults(
     console.log("To switch to the new worktree, run:");
     console.log(`  cd ../${config.worktreeDirName}`);
     console.log("");
-    console.log("To remove the worktree when done, run from the main worktree:");
-    console.log(`  ./bin/remove-worktree ../${config.worktreeDirName}`);
+    console.log("To remove the worktree when done, run:");
+    console.log(`  bun .speck/scripts/remove-worktree.ts ../${config.worktreeDirName}`);
     console.log(`  # or: git worktree remove ../${config.worktreeDirName}`);
   }
 }
@@ -520,7 +524,7 @@ async function main(): Promise<void> {
 
     // Validation checks
     await checkGitRepo();
-    checkBinDirectory();
+    checkRepoRoot();
 
     const safeBranchName = sanitizeBranchName(options.branchName);
     const gitConfig = await getGitConfig();
