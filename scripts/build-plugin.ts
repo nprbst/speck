@@ -372,7 +372,7 @@ Specification and planning workflow framework for Claude Code.
 
 ## About
 
-Speck provides a complete workflow for creating, planning, and implementing features using Claude Code. It includes 20+ slash commands, specialized agents, and templates for generating specifications, implementation plans, and task breakdowns.
+Speck provides a complete workflow for creating, planning, and implementing features using Claude Code. It includes 9 core slash commands, specialized agents, and templates for generating specifications, implementation plans, and task breakdowns.
 
 ## Installation
 
@@ -431,24 +431,6 @@ Or install from a marketplace (if available):
 - \`/speck.checklist\` - Generate custom checklist for current feature
 - \`/speck.taskstoissues\` - Convert tasks into GitHub issues
 
-### Spec-Kit Compatibility Commands
-
-- \`/speckit.specify\` - Alias for /speck.specify
-- \`/speckit.plan\` - Alias for /speck.plan
-- \`/speckit.tasks\` - Alias for /speck.tasks
-- \`/speckit.implement\` - Alias for /speck.implement
-- \`/speckit.clarify\` - Alias for /speck.clarify
-- \`/speckit.analyze\` - Alias for /speck.analyze
-- \`/speckit.constitution\` - Alias for /speck.constitution
-- \`/speckit.checklist\` - Alias for /speck.checklist
-- \`/speckit.taskstoissues\` - Alias for /speck.taskstoissues
-
-### Upstream Management Commands
-
-- \`/speck.check-upstream\` - Check for available spec-kit releases
-- \`/speck.pull-upstream\` - Pull specific spec-kit release
-- \`/speck.transform-upstream\` - Transform upstream release to Bun TypeScript
-
 ## System Requirements
 
 - **Git**: Version 2.30.0 or higher
@@ -480,12 +462,11 @@ Or install from a marketplace (if available):
 
 ## Features
 
-- **20+ Slash Commands**: Complete workflow coverage from specification to implementation
-- **Specialized Agents**: Transform scripts and commands automatically
-- **Template System**: Handlebars templates for specs, plans, and tasks
-- **Build Scripts**: Automated workflows for feature management
+- **9 Core Commands**: Essential workflow from specification to implementation
+- **2 Specialized Agents**: Transform scripts and commands automatically
+- **5 Templates**: Handlebars templates for specs, plans, tasks, constitution, and checklists
+- **Runtime Scripts**: Automated workflows for feature management
 - **Constitution Support**: Define and enforce project principles
-- **Upstream Compatibility**: Sync with spec-kit releases
 
 ## Documentation
 
