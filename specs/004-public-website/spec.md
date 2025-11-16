@@ -1,6 +1,6 @@
 # Feature Specification: Speck Public Website
 
-**Feature Branch**: `002-public-website`
+**Feature Branch**: `004-public-website`
 **Created**: 2025-11-15
 **Status**: Draft
 **Input**: User description: "This project needs a public website. We should aim for something that has the asthetic of hono.dev mixed with https://www.claude.com/product/claude-code (both in dark mode). We also want this to be cheap and simple to host (mostly static) on something like Cloudflare. The target audience is developers who are trying to learn to get the most of Claude Code and/or wanting to use github/spec-kit, but need to customize it to be more opinionated. You can reference the 001 spec for details on what we've built so far."
