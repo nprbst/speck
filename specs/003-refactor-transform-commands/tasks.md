@@ -131,12 +131,12 @@ description: "Task list for refactoring transform commands agent"
 
 ### Implementation for User Story 4
 
-- [ ] T039 [P] [US4] Update getNextFeatureNumber function in .speck/scripts/create-new-feature.ts to check remote branches for highest number
-- [ ] T040 [P] [US4] Update getNextFeatureNumber function in .speck/scripts/create-new-feature.ts to check local branches for highest number
-- [ ] T041 [P] [US4] Update getNextFeatureNumber function in .speck/scripts/create-new-feature.ts to check specs directories for highest number
-- [ ] T042 [US4] Implement global maximum calculation across all three sources (remote, local, specs) in .speck/scripts/create-new-feature.ts (depends on T039-T041)
-- [ ] T043 [US4] Update feature creation logic to use global sequential numbering (no gap filling) in .speck/scripts/create-new-feature.ts (depends on T042)
-- [ ] T044 [US4] Add validation to ensure feature number is globally unique in .speck/scripts/create-new-feature.ts
+- [X] T039 [P] [US4] Update getNextFeatureNumber function in .speck/scripts/create-new-feature.ts to check remote branches for highest number
+- [X] T040 [P] [US4] Update getNextFeatureNumber function in .speck/scripts/create-new-feature.ts to check local branches for highest number
+- [X] T041 [P] [US4] Update getNextFeatureNumber function in .speck/scripts/create-new-feature.ts to check specs directories for highest number
+- [X] T042 [US4] Implement global maximum calculation across all three sources (remote, local, specs) in .speck/scripts/create-new-feature.ts (depends on T039-T041)
+- [X] T043 [US4] Update feature creation logic to use global sequential numbering (no gap filling) in .speck/scripts/create-new-feature.ts (depends on T042)
+- [X] T044 [US4] Add validation to ensure feature number is globally unique in .speck/scripts/create-new-feature.ts
 
 **Checkpoint**: Feature numbering now works correctly with global sequential assignment
 
@@ -146,14 +146,14 @@ description: "Task list for refactoring transform commands agent"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T045 [P] Add comprehensive error reporting in .speck/scripts/types/error-reporting.ts for batch transformation failures
-- [ ] T046 [P] Implement error report generation in .speck/scripts/preprocess-commands.ts for preprocessBatch function
-- [ ] T047 [P] Add performance monitoring to track transformation time per file (30 second target) with warning logs when threshold exceeded in .speck/scripts/preprocess-commands.ts
-- [ ] T048 Code cleanup and refactoring across all .speck/scripts/ modules for consistency
-- [ ] T049 [P] Update transformation-history.json schema documentation in specs/003-refactor-transform-commands/data-model.md
-- [ ] T050 Run quickstart.md validation scenarios from specs/003-refactor-transform-commands/quickstart.md
-- [ ] T051 [P] Document API contracts in specs/003-refactor-transform-commands/contracts/ (already complete, verify accuracy)
-- [ ] T052 Update CLAUDE.md with new technologies and structure from feature 003
+- [X] T045 [P] Add comprehensive error reporting in .speck/scripts/types/error-reporting.ts for batch transformation failures
+- [X] T046 [P] Implement error report generation in .speck/scripts/preprocess-commands.ts for preprocessBatch function
+- [X] T047 [P] Add performance monitoring to track transformation time per file (30 second target) with warning logs when threshold exceeded in .speck/scripts/preprocess-commands.ts
+- [X] T048 Code cleanup and refactoring across all .speck/scripts/ modules for consistency
+- [X] T049 [P] Update transformation-history.json schema documentation in specs/003-refactor-transform-commands/data-model.md
+- [X] T050 Run quickstart.md validation scenarios from specs/003-refactor-transform-commands/quickstart.md
+- [X] T051 [P] Document API contracts in specs/003-refactor-transform-commands/contracts/ (already complete, verify accuracy)
+- [X] T052 Update CLAUDE.md with new technologies and structure from feature 003
 
 ---
 

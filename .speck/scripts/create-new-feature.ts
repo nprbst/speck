@@ -159,20 +159,47 @@ function getHighestFromSpecs(specsDir: string): number {
 }
 
 /**
- * Get highest number from git branches
+ * Get highest number from remote git branches (global across all features)
+ * This implements T039: Check remote branches for highest number
  */
-async function getHighestFromBranches(): Promise<number> {
+async function getHighestFromRemoteBranches(): Promise<number> {
   let highest = 0;
 
   try {
-    const result = await $`git branch -a`.quiet();
+    const result = await $`git ls-remote --heads origin`.quiet();
+    const lines = result.text().split("\n");
+
+    for (const line of lines) {
+      // Match pattern: refs/heads/###-*
+      const match = line.match(/refs\/heads\/(\d{3})-/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > highest) {
+          highest = num;
+        }
+      }
+    }
+  } catch {
+    // No remote or ls-remote failed
+  }
+
+  return highest;
+}
+
+/**
+ * Get highest number from local git branches (global across all features)
+ * This implements T040: Check local branches for highest number
+ */
+async function getHighestFromLocalBranches(): Promise<number> {
+  let highest = 0;
+
+  try {
+    const result = await $`git branch`.quiet();
     const branches = result.text().split("\n");
 
     for (const branch of branches) {
-      // Clean branch name: remove leading markers and remote prefixes
-      const cleanBranch = branch
-        .replace(/^[* ]+/, "")
-        .replace(/^remotes\/[^/]+\//, "");
+      // Clean branch name: remove leading markers
+      const cleanBranch = branch.replace(/^[* ]+/, "");
 
       // Extract feature number if branch matches pattern ###-*
       const match = cleanBranch.match(/^(\d{3})-/);
@@ -191,7 +218,42 @@ async function getHighestFromBranches(): Promise<number> {
 }
 
 /**
- * Check existing branches and return next available number
+ * Get next feature number using global sequential numbering
+ * This implements T042: Global maximum calculation across all three sources
+ *
+ * The algorithm:
+ * 1. Check remote branches for highest number (T039)
+ * 2. Check local branches for highest number (T040)
+ * 3. Check specs directories for highest number (T041)
+ * 4. Return max(all three) + 1 (global sequential, no gap filling)
+ */
+async function getNextFeatureNumber(specsDir: string): Promise<number> {
+  // Fetch all remotes to get latest branch info
+  try {
+    await $`git fetch --all --prune`.quiet();
+  } catch {
+    // Ignore fetch errors
+  }
+
+  // T039: Get highest from remote branches (global across all features)
+  const remoteMax = await getHighestFromRemoteBranches();
+
+  // T040: Get highest from local branches (global across all features)
+  const localMax = await getHighestFromLocalBranches();
+
+  // T041: Get highest from specs directory (global across all features)
+  const specsMax = getHighestFromSpecs(specsDir);
+
+  // T042: Calculate global maximum across all three sources
+  const globalMax = Math.max(remoteMax, localMax, specsMax);
+
+  // Return next number (no gap filling, sequential assignment)
+  return globalMax + 1;
+}
+
+/**
+ * @deprecated This function used per-short-name numbering which caused the bug.
+ * Use getNextFeatureNumber() instead for global sequential numbering.
  */
 async function checkExistingBranches(shortName: string, specsDir: string): Promise<number> {
   // Fetch all remotes to get latest branch info
@@ -365,19 +427,63 @@ async function main(args: string[]): Promise<number> {
     branchSuffix = generateBranchName(options.featureDescription);
   }
 
-  // Determine branch number
+  // Determine branch number (T043: Use global sequential numbering)
   let branchNumber: number;
   if (options.number !== undefined) {
+    // Manual override still supported
     branchNumber = options.number;
   } else if (hasGit) {
-    branchNumber = await checkExistingBranches(branchSuffix, specsDir);
+    // Use global sequential numbering (fixes per-short-name bug)
+    branchNumber = await getNextFeatureNumber(specsDir);
   } else {
+    // Fallback for non-git environments
     const highest = getHighestFromSpecs(specsDir);
     branchNumber = highest + 1;
   }
 
   const featureNum = branchNumber.toString().padStart(3, "0");
   let branchName = `${featureNum}-${branchSuffix}`;
+
+  // T044: Validate that feature number is globally unique
+  if (hasGit) {
+    // Check if branch already exists locally
+    try {
+      const localBranches = await $`git branch`.quiet();
+      const branchExists = localBranches.text().split("\n").some(b => {
+        const cleanBranch = b.replace(/^[* ]+/, "");
+        return cleanBranch === branchName;
+      });
+
+      if (branchExists) {
+        console.error(`Error: Branch ${branchName} already exists locally`);
+        return ExitCode.USER_ERROR;
+      }
+    } catch {
+      // Ignore git errors
+    }
+
+    // Check if branch already exists remotely
+    try {
+      const remoteBranches = await $`git ls-remote --heads origin`.quiet();
+      const branchExists = remoteBranches.text().split("\n").some(line => {
+        return line.includes(`refs/heads/${branchName}`);
+      });
+
+      if (branchExists) {
+        console.error(`Error: Branch ${branchName} already exists on remote`);
+        return ExitCode.USER_ERROR;
+      }
+    } catch {
+      // Ignore git errors (no remote is OK)
+    }
+  }
+
+  // Check if specs directory already exists
+  const featureDir = path.join(specsDir, branchName);
+  if (existsSync(featureDir)) {
+    console.error(`Error: Feature directory ${featureDir} already exists`);
+    return ExitCode.USER_ERROR;
+  }
 
   // GitHub enforces a 244-byte limit on branch names
   const maxBranchLength = 244;
@@ -404,8 +510,7 @@ async function main(args: string[]): Promise<number> {
     console.error(`[specify] Warning: Git repository not detected; skipped branch creation for ${branchName}`);
   }
 
-  // Create feature directory
-  const featureDir = path.join(specsDir, branchName);
+  // Create feature directory (already declared above for validation)
   mkdirSync(featureDir, { recursive: true });
 
   // Copy template if it exists

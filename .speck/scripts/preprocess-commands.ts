@@ -13,6 +13,10 @@ import type {
   PreprocessingBatchResult,
 } from "./types/preprocessing.ts";
 
+// T045-T046: Import error reporting types
+import type { BatchErrorReport, ErrorReportEntry } from "./types/error-reporting.ts";
+import { createErrorEntry, formatError } from "./types/error-reporting.ts";
+
 /**
  * Standard preprocessing rules applied to all upstream commands
  * Execution order: Lower order values run first
@@ -149,6 +153,7 @@ export function validatePreprocessedFile(
 
 /**
  * Preprocesses multiple files in batch
+ * T047: Adds performance monitoring with 30-second threshold warnings
  */
 export function preprocessBatch(
   files: UpstreamCommandFile[],
@@ -157,10 +162,23 @@ export function preprocessBatch(
   const preprocessed: PreprocessedCommandFile[] = [];
   const failures: Array<{ filePath: string; errorMessage: string; stackTrace?: string }> = [];
 
+  // T047: Performance monitoring - track time per file
+  const performanceThresholdMs = 30000; // 30 seconds
+
   for (const file of files) {
+    const startTime = performance.now();
+
     try {
       const result = preprocessCommandFile(file, rules);
       preprocessed.push(result);
+
+      // T047: Check performance threshold
+      const elapsedTime = performance.now() - startTime;
+      if (elapsedTime > performanceThresholdMs) {
+        console.warn(
+          `[PERFORMANCE WARNING] File preprocessing exceeded 30s threshold: ${file.filePath} (${(elapsedTime / 1000).toFixed(2)}s)`
+        );
+      }
     } catch (error) {
       failures.push({
         filePath: file.filePath,
@@ -176,5 +194,51 @@ export function preprocessBatch(
     failedFiles: failures.length,
     failures,
     preprocessed,
+  };
+}
+
+/**
+ * T046: Generate error report from batch preprocessing results
+ * Creates structured error report for batch transformation failures
+ */
+export function generateBatchErrorReport(result: PreprocessingBatchResult): BatchErrorReport {
+  const errors: ErrorReportEntry[] = [];
+  const errorsByCategory: Record<string, number> = {
+    preprocessing: 0,
+    extraction: 0,
+    validation: 0,
+    file_io: 0,
+    network: 0,
+    configuration: 0,
+  };
+  const errorsBySeverity: Record<string, number> = {
+    error: 0,
+    warning: 0,
+    info: 0,
+  };
+
+  // Convert preprocessing failures to structured error entries
+  for (const failure of result.failures) {
+    const errorEntry = createErrorEntry("error", "preprocessing", failure.errorMessage, {
+      filePath: failure.filePath,
+      stackTrace: failure.stackTrace,
+    });
+
+    errors.push(errorEntry);
+    errorsByCategory.preprocessing++;
+    errorsBySeverity.error++;
+  }
+
+  return {
+    timestamp: new Date().toISOString(),
+    totalFiles: result.totalFiles,
+    successCount: result.successfulFiles,
+    failureCount: result.failedFiles,
+    errors,
+    errorsByCategory: errorsByCategory as Record<
+      "preprocessing" | "extraction" | "validation" | "file_io" | "network" | "configuration",
+      number
+    >,
+    errorsBySeverity: errorsBySeverity as Record<"error" | "warning" | "info", number>,
   };
 }
