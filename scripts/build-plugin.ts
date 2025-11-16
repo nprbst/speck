@@ -38,7 +38,7 @@ const config: BuildConfig = {
   commandsSourceDir: join(process.cwd(), '.claude/commands'),
   agentsSourceDir: join(process.cwd(), '.claude/agents'),
   templatesSourceDir: join(process.cwd(), '.specify/templates'),
-  scriptsSourceDir: join(process.cwd(), '.specify/scripts'),
+  scriptsSourceDir: join(process.cwd(), '.speck/scripts'),
   memorySourceDir: join(process.cwd(), '.specify/memory'),
   version: '', // Will be loaded from package.json
   maxSizeBytes: 5 * 1024 * 1024, // 5MB
@@ -195,7 +195,9 @@ async function generateMarketplaceManifest(): Promise<void> {
     plugins: [
       {
         name: 'speck',
-        source: 'https://github.com/nprbst/speck',
+        source: {
+          url: 'https://github.com/nprbst/speck',
+        },
         description: 'Specification and planning workflow framework for Claude Code',
         version: config.version,
         author: {
@@ -249,12 +251,27 @@ async function copyPluginFiles(): Promise<FileCounts> {
     memory: 0,
   };
 
-  // T013: Copy commands
+  // T013: Copy commands (excluding speckit.* and speck.*-upstream)
   if (existsSync(config.commandsSourceDir)) {
     const commandsDestDir = join(config.outputDir, 'commands');
-    await copyDir(config.commandsSourceDir, commandsDestDir);
-    const files = await readdir(commandsDestDir);
-    counts.commands = files.filter(f => f.endsWith('.md')).length;
+    await ensureDir(commandsDestDir);
+
+    const sourceFiles = await readdir(config.commandsSourceDir);
+    const mdFiles = sourceFiles.filter(f => f.endsWith('.md'));
+
+    for (const file of mdFiles) {
+      // Exclude speckit.* aliases and upstream management commands
+      if (file.startsWith('speckit.') ||
+          file.includes('-upstream')) {
+        continue;
+      }
+
+      await copyFile(
+        join(config.commandsSourceDir, file),
+        join(commandsDestDir, file)
+      );
+      counts.commands++;
+    }
   }
 
   // T014: Copy agents
@@ -273,12 +290,37 @@ async function copyPluginFiles(): Promise<FileCounts> {
     counts.templates = files.filter(f => typeof f === 'string').length;
   }
 
-  // T016: Copy scripts
+  // T016: Copy scripts (only scripts needed by published commands/agents)
   if (existsSync(config.scriptsSourceDir)) {
     const scriptsDestDir = join(config.outputDir, 'scripts');
-    await copyDir(config.scriptsSourceDir, scriptsDestDir);
-    const files = await readdir(scriptsDestDir, { recursive: true });
-    counts.scripts = files.filter(f => typeof f === 'string').length;
+    await ensureDir(scriptsDestDir);
+
+    // Scripts needed by published commands
+    const neededScripts = [
+      'check-prerequisites.ts',
+      'setup-plan.ts',
+      'update-agent-context.ts',
+      'create-new-feature.ts',
+    ];
+
+    for (const file of neededScripts) {
+      const sourcePath = join(config.scriptsSourceDir, file);
+      if (existsSync(sourcePath)) {
+        await copyFile(sourcePath, join(scriptsDestDir, file));
+        counts.scripts++;
+      }
+    }
+
+    // Also copy common/ and contracts/ directories if they exist
+    const commonPath = join(config.scriptsSourceDir, 'common');
+    if (existsSync(commonPath)) {
+      await copyDir(commonPath, join(scriptsDestDir, 'common'));
+    }
+
+    const contractsPath = join(config.scriptsSourceDir, 'contracts');
+    if (existsSync(contractsPath)) {
+      await copyDir(contractsPath, join(scriptsDestDir, 'contracts'));
+    }
   }
 
   // T016a: Copy memory/constitution if exists
