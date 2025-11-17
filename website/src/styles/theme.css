@@ -11,12 +11,17 @@
   /* Colors - Light Mode */
   --color-bg: #ffffff;
   --color-bg-secondary: #f8f8f7;
+  --color-surface: #fafafa;
   --color-text: #1a1a1a;
+  --color-text-secondary: #666666;
   --color-text-muted: #666666;
   --color-border: #e0e0e0;
   --color-accent: #c17d4a; /* Clay accent from claude.com */
   --color-accent-hover: #a66b3d;
+  --color-accent-subtle: rgba(193, 125, 74, 0.1);
+  --color-hover: rgba(0, 0, 0, 0.05);
   --color-code-bg: #f5f5f5;
+  --color-code-text: #1a1a1a;
 
   /* Semantic Colors */
   --color-link: var(--color-accent);
@@ -64,12 +69,17 @@
     /* Colors - Dark Mode */
     --color-bg: #1a1a1a;
     --color-bg-secondary: #2a2a2a;
+    --color-surface: #242424;
     --color-text: #e8e6e3;
+    --color-text-secondary: #a8a8a8;
     --color-text-muted: #a8a8a8;
     --color-border: #3a3a3a;
     --color-accent: #d4a574; /* Clay accent lightened for dark mode */
     --color-accent-hover: #e0b890;
+    --color-accent-subtle: rgba(212, 165, 116, 0.15);
+    --color-hover: rgba(255, 255, 255, 0.05);
     --color-code-bg: #2a2a2a;
+    --color-code-text: #e8e6e3;
 
     /* Shadows adjusted for dark mode */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -87,12 +97,17 @@
   /* Colors - Light Mode */
   --color-bg: #ffffff;
   --color-bg-secondary: #f8f8f7;
+  --color-surface: #fafafa;
   --color-text: #1a1a1a;
+  --color-text-secondary: #666666;
   --color-text-muted: #666666;
   --color-border: #e0e0e0;
   --color-accent: #c17d4a;
   --color-accent-hover: #a66b3d;
+  --color-accent-subtle: rgba(193, 125, 74, 0.1);
+  --color-hover: rgba(0, 0, 0, 0.05);
   --color-code-bg: #f5f5f5;
+  --color-code-text: #1a1a1a;
 
   /* Shadows for light mode */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -104,12 +119,17 @@
   /* Colors - Dark Mode */
   --color-bg: #1a1a1a;
   --color-bg-secondary: #2a2a2a;
+  --color-surface: #242424;
   --color-text: #e8e6e3;
+  --color-text-secondary: #a8a8a8;
   --color-text-muted: #a8a8a8;
   --color-border: #3a3a3a;
   --color-accent: #d4a574;
   --color-accent-hover: #e0b890;
+  --color-accent-subtle: rgba(212, 165, 116, 0.15);
+  --color-hover: rgba(255, 255, 255, 0.05);
   --color-code-bg: #2a2a2a;
+  --color-code-text: #e8e6e3;
 
   /* Shadows for dark mode */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);

@@ -32,22 +32,22 @@
 
 **Purpose**: Project initialization, directory structure, and foundational configuration
 
-- [ ] T001 Create `website/` directory with Astro project structure
-- [ ] T002 [P] Initialize Astro 4.x project with `bun create astro@latest website` (use TypeScript, strict mode)
-- [ ] T003 [P] Create `website/src/components/` directory for reusable UI components
-- [ ] T004 [P] Create `website/src/layouts/` directory for page layouts
-- [ ] T005 [P] Create `website/src/content/docs/` directory for documentation content collection
-- [ ] T006 [P] Create `website/src/styles/` directory for global styles and theme CSS
-- [ ] T007 [P] Create `website/public/images/` directory for SVG icons and static assets
-- [ ] T008 [P] Create `website/scripts/` directory for build-time scripts
-- [ ] T009 [P] Create `tests/build/` directory for build script unit tests
-- [ ] T010 [P] Create `tests/visual/` directory for Playwright visual regression tests
-- [ ] T011 [P] Create `tests/accessibility/` directory for Axe-core accessibility tests
-- [ ] T012 Configure Astro in `website/astro.config.mjs` (enable content collections, set site URL, configure integrations)
-- [ ] T013 Install dependencies in `website/package.json` (Astro, Shiki syntax highlighter, Bun test runner, Playwright, Axe-core)
-- [ ] T014 [P] Configure TypeScript in `website/tsconfig.json` (strict mode, paths for `@/` alias)
-- [ ] T015 [P] Create `.gitignore` entries for `website/dist/`, `website/.astro/`, `website/node_modules/`, `.temp-docs-clone/`
-- [ ] T016 [P] Add npm scripts to root `package.json` (`website:sync`, `website:dev`, `website:build`, `website:preview`)
+- [X] T001 Create `website/` directory with Astro project structure
+- [X] T002 [P] Initialize Astro 4.x project with `bun create astro@latest website` (use TypeScript, strict mode)
+- [X] T003 [P] Create `website/src/components/` directory for reusable UI components
+- [X] T004 [P] Create `website/src/layouts/` directory for page layouts
+- [X] T005 [P] Create `website/src/content/docs/` directory for documentation content collection
+- [X] T006 [P] Create `website/src/styles/` directory for global styles and theme CSS
+- [X] T007 [P] Create `website/public/images/` directory for SVG icons and static assets
+- [X] T008 [P] Create `website/scripts/` directory for build-time scripts
+- [X] T009 [P] Create `tests/build/` directory for build script unit tests
+- [X] T010 [P] Create `tests/visual/` directory for Playwright visual regression tests
+- [X] T011 [P] Create `tests/accessibility/` directory for Axe-core accessibility tests
+- [X] T012 Configure Astro in `website/astro.config.mjs` (enable content collections, set site URL, configure integrations)
+- [X] T013 Install dependencies in `website/package.json` (Astro, Shiki syntax highlighter, Bun test runner, Playwright, Axe-core)
+- [X] T014 [P] Configure TypeScript in `website/tsconfig.json` (strict mode, paths for `@/` alias)
+- [X] T015 [P] Create `.gitignore` entries for `website/dist/`, `website/.astro/`, `website/node_modules/`, `.temp-docs-clone/`
+- [X] T016 [P] Add npm scripts to root `package.json` (`website:sync`, `website:dev`, `website:build`, `website:preview`)
 
 ---
 
@@ -59,16 +59,16 @@
 
 ### Content Collection Schema & Build Scripts
 
-- [ ] T017 Implement content collection schema in `website/src/content/config.ts` (Zod schema for docs with title, description, category, order, lastUpdated, tags)
-- [ ] T018 Implement documentation sync script in `website/scripts/sync-docs.ts` (Git sparse checkout from main repo, copy to content/docs/, error handling with cached fallback)
-- [ ] T019 Create `.env.example` file documenting required environment variables (MAIN_REPO_URL, DOCS_SOURCE_PATH)
+- [X] T017 Implement content collection schema in `website/src/content/config.ts` (Zod schema for docs with title, description, category, order, lastUpdated, tags)
+- [X] T018 Implement documentation sync script in `website/scripts/sync-docs.ts` (Git sparse checkout from main repo, copy to content/docs/, error handling with cached fallback)
+- [X] T019 Create `.env.example` file documenting required environment variables (MAIN_REPO_URL, DOCS_SOURCE_PATH)
 
 ### Base Layout & Global Styles
 
-- [ ] T020 Implement BaseLayout in `website/src/layouts/BaseLayout.astro` (HTML structure, SEO metadata, theme script in head, global CSS import)
-- [ ] T021 [P] Implement global CSS reset in `website/src/styles/global.css` (modern CSS reset, base typography, responsive breakpoints)
-- [ ] T022 [P] Implement theme CSS variables in `website/src/styles/theme.css` (CSS custom properties for colors, dark/light mode with prefers-color-scheme, clay accent palette from claude.com)
-- [ ] T023 Implement theme toggle inline script in BaseLayout head (prevent FOUC, read localStorage, set data-theme attribute)
+- [X] T020 Implement BaseLayout in `website/src/layouts/BaseLayout.astro` (HTML structure, SEO metadata, theme script in head, global CSS import)
+- [X] T021 [P] Implement global CSS reset in `website/src/styles/global.css` (modern CSS reset, base typography, responsive breakpoints)
+- [X] T022 [P] Implement theme CSS variables in `website/src/styles/theme.css` (CSS custom properties for colors, dark/light mode with prefers-color-scheme, clay accent palette from claude.com)
+- [X] T023 Implement theme toggle inline script in BaseLayout head (prevent FOUC, read localStorage, set data-theme attribute)
 
 **Checkpoint**: Foundation ready - content schema, build scripts, base layout, and theme system implemented - user story implementation can now begin
 
@@ -82,19 +82,19 @@
 
 ### Core Components
 
-- [ ] T024 [P] [US1] Implement Navigation component in `website/src/components/Navigation.astro` (header, logo, links, mobile hamburger menu at 768px breakpoint)
-- [ ] T025 [P] [US1] Implement FeatureCard component in `website/src/components/FeatureCard.astro` (title, description, SVG icon, optional learn-more link)
-- [ ] T026 [P] [US1] Implement ThemeToggle component in `website/src/components/ThemeToggle.astro` (dark/light toggle button, localStorage persistence, ARIA labels)
+- [X] T024 [P] [US1] Implement Navigation component in `website/src/components/Navigation.astro` (header, logo, links, mobile hamburger menu at 768px breakpoint)
+- [X] T025 [P] [US1] Implement FeatureCard component in `website/src/components/FeatureCard.astro` (title, description, SVG icon, optional learn-more link)
+- [X] T026 [P] [US1] Implement ThemeToggle component in `website/src/components/ThemeToggle.astro` (dark/light toggle button, localStorage persistence, ARIA labels)
 
 ### Homepage Implementation
 
-- [ ] T027 [US1] Implement HomeLayout in `website/src/layouts/HomeLayout.astro` (extends BaseLayout, homepage-specific structure)
-- [ ] T028 [US1] Implement homepage in `website/src/pages/index.astro` (hero section with value prop, 3-4 feature cards, comparison preview, CTAs)
-- [ ] T029 [US1] Add homepage content data in `website/src/pages/index.astro` (hero headline "Opinionated feature specs for Claude Code", subheadline, primary/secondary CTAs, feature highlights)
-- [ ] T030 [US1] Create SVG icons for feature cards in `website/public/images/` (command-line icon, lightning icon for Bun, sync icon for upstream)
-- [ ] T031 [US1] Create Speck logo SVG in `website/public/images/speck-logo.svg` (simple text-based logo acceptable for MVP)
-- [ ] T032 [US1] Implement responsive homepage styles (30em mobile, 48em tablet, 62em desktop breakpoints, thumb-accessible CTAs)
-- [ ] T033 [US1] Add SEO metadata to homepage (title "Speck - Opinionated Feature Specs for Claude Code", description, Open Graph tags, keywords)
+- [X] T027 [US1] Implement HomeLayout in `website/src/layouts/HomeLayout.astro` (extends BaseLayout, homepage-specific structure)
+- [X] T028 [US1] Implement homepage in `website/src/pages/index.astro` (hero section with value prop, 3-4 feature cards, comparison preview, CTAs)
+- [X] T029 [US1] Add homepage content data in `website/src/pages/index.astro` (hero headline "Opinionated feature specs for Claude Code", subheadline, primary/secondary CTAs, feature highlights)
+- [X] T030 [US1] Create SVG icons for feature cards in `website/public/images/` (command-line icon, lightning icon for Bun, sync icon for upstream)
+- [X] T031 [US1] Create Speck logo SVG in `website/public/images/speck-logo.svg` (simple text-based logo acceptable for MVP)
+- [X] T032 [US1] Implement responsive homepage styles (30em mobile, 48em tablet, 62em desktop breakpoints, thumb-accessible CTAs)
+- [X] T033 [US1] Add SEO metadata to homepage (title "Speck - Opinionated Feature Specs for Claude Code", description, Open Graph tags, keywords)
 
 **Checkpoint**: User Story 1 complete - homepage displays with hero, features, and navigation - independently testable at speck.dev/
 
@@ -108,29 +108,29 @@
 
 ### Documentation Components
 
-- [ ] T034 [P] [US2] Implement CodeBlock component in `website/src/components/CodeBlock.astro` (Shiki syntax highlighting for bash/TypeScript/JSON, copy-to-clipboard button, line numbers, optional title)
-- [ ] T035 [P] [US2] Implement Sidebar component for documentation navigation (hierarchical navigation by category, active page highlighting, collapsible sections)
+- [X] T034 [P] [US2] Implement CodeBlock component in `website/src/components/CodeBlock.astro` (Shiki syntax highlighting for bash/TypeScript/JSON, copy-to-clipboard button, line numbers, optional title)
+- [X] T035 [P] [US2] Implement Sidebar component for documentation navigation (hierarchical navigation by category, active page highlighting, collapsible sections)
 
 ### Documentation Layout & Routing
 
-- [ ] T036 [US2] Implement DocsLayout in `website/src/layouts/DocsLayout.astro` (extends BaseLayout, sidebar navigation, breadcrumbs, table of contents from headings)
-- [ ] T037 [US2] Implement dynamic docs page in `website/src/pages/docs/[...slug].astro` (getStaticPaths from content collection, render markdown, build sidebar from all docs)
-- [ ] T038 [US2] Implement sidebar navigation logic in DocsLayout (group docs by category, sort by order, highlight active page)
-- [ ] T039 [US2] Implement breadcrumb navigation in DocsLayout (Home → Category → Current Page)
-- [ ] T040 [US2] Implement table of contents extraction from markdown headings (display h2/h3 headings with anchor links)
+- [X] T036 [US2] Implement DocsLayout in `website/src/layouts/DocsLayout.astro` (extends BaseLayout, sidebar navigation, breadcrumbs, table of contents from headings)
+- [X] T037 [US2] Implement dynamic docs page in `website/src/pages/docs/[...slug].astro` (getStaticPaths from content collection, render markdown, build sidebar from all docs)
+- [X] T038 [US2] Implement sidebar navigation logic in DocsLayout (group docs by category, sort by order, highlight active page)
+- [X] T039 [US2] Implement breadcrumb navigation in DocsLayout (Home → Category → Current Page)
+- [X] T040 [US2] Implement table of contents extraction from markdown headings (display h2/h3 headings with anchor links)
 
 ### Documentation Content (Placeholder)
 
-- [ ] T041 [US2] Create placeholder "Quick Start" doc in `website/src/content/docs/getting-started/quick-start.md` (installation, first command, verification - content synced from main repo later)
-- [ ] T042 [US2] Create placeholder "Commands Reference" doc in `website/src/content/docs/commands/reference.md` (list of /speck.* commands with syntax)
-- [ ] T043 [US2] Create placeholder "Concepts" doc in `website/src/content/docs/concepts/workflow.md` (three-phase workflow diagram)
-- [ ] T044 [US2] Create placeholder "Examples" doc in `website/src/content/docs/examples/first-feature.md` (walkthrough example)
+- [X] T041 [US2] Create placeholder "Quick Start" doc in `website/src/content/docs/getting-started/quick-start.md` (installation, first command, verification - content synced from main repo later)
+- [X] T042 [US2] Create placeholder "Commands Reference" doc in `website/src/content/docs/commands/reference.md` (list of /speck.* commands with syntax)
+- [X] T043 [US2] Create placeholder "Concepts" doc in `website/src/content/docs/concepts/workflow.md` (three-phase workflow diagram)
+- [X] T044 [US2] Create placeholder "Examples" doc in `website/src/content/docs/examples/first-feature.md` (walkthrough example)
 
 ### Documentation Styles & Interactions
 
-- [ ] T045 [US2] Implement copy-to-clipboard functionality in CodeBlock component (Clipboard API with fallback message, success feedback)
-- [ ] T046 [US2] Style documentation page layout (sidebar width, content max-width, mobile responsive with collapsible sidebar)
-- [ ] T047 [US2] Add SEO metadata to docs pages (dynamic title from frontmatter, description, canonical URL)
+- [X] T045 [US2] Implement copy-to-clipboard functionality in CodeBlock component (Clipboard API with fallback message, success feedback)
+- [X] T046 [US2] Style documentation page layout (sidebar width, content max-width, mobile responsive with collapsible sidebar)
+- [X] T047 [US2] Add SEO metadata to docs pages (dynamic title from frontmatter, description, canonical URL)
 
 **Checkpoint**: User Story 2 complete - documentation section with sidebar, code blocks, and navigation - independently testable
 
@@ -144,13 +144,13 @@
 
 ### Comparison Page Implementation
 
-- [ ] T048 [US3] Implement comparison page in `website/src/pages/comparison.astro` (side-by-side comparison table, when to use each, migration guide)
-- [ ] T049 [US3] Add comparison table data in comparison page (runtime: Bun vs Bash, command style: Claude-native vs generic, philosophy: opinionated vs flexible)
-- [ ] T050 [US3] Add "When to Use Speck" section with bullet points (use Claude Code daily, want fast TypeScript builds, prefer opinionated workflows)
-- [ ] T051 [US3] Add "When to Use Spec-Kit" section with honest caveats (need language-agnostic specs, constrained environments without Bun, maximum customization freedom)
-- [ ] T052 [US3] Add migration guide section with step-by-step instructions (install prerequisites, clone Speck repo, run first command)
-- [ ] T053 [US3] Style comparison table (responsive table layout, mobile card-based view, visual differentiators)
-- [ ] T054 [US3] Add SEO metadata to comparison page (title "Speck vs Spec-Kit Comparison", description, keywords)
+- [X] T048 [US3] Implement comparison page in `website/src/pages/comparison.astro` (side-by-side comparison table, when to use each, migration guide)
+- [X] T049 [US3] Add comparison table data in comparison page (runtime: Bun vs Bash, command style: Claude-native vs generic, philosophy: opinionated vs flexible)
+- [X] T050 [US3] Add "When to Use Speck" section with bullet points (use Claude Code daily, want fast TypeScript builds, prefer opinionated workflows)
+- [X] T051 [US3] Add "When to Use Spec-Kit" section with honest caveats (need language-agnostic specs, constrained environments without Bun, maximum customization freedom)
+- [X] T052 [US3] Add migration guide section with step-by-step instructions (install prerequisites, clone Speck repo, run first command)
+- [X] T053 [US3] Style comparison table (responsive table layout, mobile card-based view, visual differentiators)
+- [X] T054 [US3] Add SEO metadata to comparison page (title "Speck vs Spec-Kit Comparison", description, keywords)
 
 **Checkpoint**: User Story 3 complete - comparison page with honest tradeoff analysis - independently testable
 
@@ -164,11 +164,11 @@
 
 ### Installation Documentation
 
-- [ ] T055 [US4] Create installation guide doc in `website/src/content/docs/getting-started/installation.md` (prerequisites: Bun 1.0+, Git 2.30+, Claude Code, with version links)
-- [ ] T056 [US4] Add setup steps to installation guide (clone repo, install dependencies, verify installation, run first command)
-- [ ] T057 [US4] Add troubleshooting section to installation guide (Bun not in PATH, Claude Code not configured, permissions errors, common solutions)
-- [ ] T058 [US4] Add verification command example to installation guide (example output confirming Speck is ready)
-- [ ] T059 [US4] Create prerequisite check code examples in installation guide (bun --version, git --version, claude --version checks)
+- [X] T055 [US4] Create installation guide doc in `website/src/content/docs/getting-started/installation.md` (prerequisites: Bun 1.0+, Git 2.30+, Claude Code, with version links)
+- [X] T056 [US4] Add setup steps to installation guide (clone repo, install dependencies, verify installation, run first command)
+- [X] T057 [US4] Add troubleshooting section to installation guide (Bun not in PATH, Claude Code not configured, permissions errors, common solutions)
+- [X] T058 [US4] Add verification command example to installation guide (example output confirming Speck is ready)
+- [X] T059 [US4] Create prerequisite check code examples in installation guide (bun --version, git --version, claude --version checks)
 
 **Checkpoint**: User Story 4 complete - installation documentation with clear prerequisites and troubleshooting - validates full user journey from discovery to first command
 

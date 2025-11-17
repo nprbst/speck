@@ -1,0 +1,46 @@
+---
+/**
+ * Dynamic Documentation Page
+ * Renders markdown documentation with sidebar navigation and table of contents
+ */
+
+import { getCollection, getEntry } from 'astro:content';
+import DocsLayout from '@/layouts/DocsLayout.astro';
+import type { CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+
+  return docs.map(doc => ({
+    params: { slug: doc.slug },
+    props: { doc },
+  }));
+}
+
+interface Props {
+  doc: CollectionEntry<'docs'>;
+}
+
+const { doc } = Astro.props;
+const { Content, headings } = await doc.render();
+
+// Get all docs for sidebar
+const allDocs = await getCollection('docs');
+const docsForSidebar = allDocs.map(d => ({
+  slug: d.slug,
+  title: d.data.title,
+  category: d.data.category,
+  order: d.data.order,
+}));
+---
+
+<DocsLayout
+  title={doc.data.title}
+  description={doc.data.description}
+  slug={doc.slug}
+  category={doc.data.category}
+  headings={headings}
+  allDocs={docsForSidebar}
+>
+  <Content />
+</DocsLayout>
