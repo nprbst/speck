@@ -23,7 +23,7 @@ Throughout this command, when you see `.speck/scripts/scriptname.ts`, replace it
 
 ## Outline
 
-1. Run `.speck/scripts/check-prerequisites.ts --json --require-tasks --include-tasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. Run `bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/check-prerequisites.ts --json --require-tasks --include-tasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
 2. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
    - Scan all checklist files in the checklists/ directory
@@ -71,6 +71,7 @@ Throughout this command, when you see `.speck/scripts/scriptname.ts`, replace it
    - Check if the following command succeeds to determine if the repository is a git repo (create/verify .gitignore if so):
 
      ```sh
+     echo "DEBUG: $(env | grep PLUGIN)"
      git rev-parse --git-dir 2>/dev/null
      ```
 

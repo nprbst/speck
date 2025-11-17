@@ -58,8 +58,7 @@ specs/[###-feature]/
 ├── agents/                # Subagents (2 .md files)
 │   ├── speck.transform-bash-to-bun.md
 │   └── speck.transform-commands.md
-└── skills/                # Reusable skills (1 .md file)
-    └── speck-runner.md    # Script execution delegate for plugin context
+└── skills/                # Reusable skills (empty - speck-runner removed in favor of SessionStart hooks)
 
 .specify/
 ├── templates/             # Spec/plan templates

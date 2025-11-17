@@ -48,11 +48,11 @@ Source scripts: `.specify/scripts/`
 - [X] T008 Create build script skeleton in `scripts/build-plugin.ts` with Bun imports and basic structure
 - [X] T009 Implement version detection from `package.json` in `scripts/build-plugin.ts`
 - [X] T010 Implement directory creation utilities in `scripts/build-plugin.ts` (mkdir, copy functions)
-- [X] T010a Create speck-runner skill file in `.claude/skills/speck-runner.md` with YAML frontmatter (name, description, parameters schema)
-- [X] T010b Implement script-name parameter validation logic in speck-runner skill using skill-parameter.schema.json enum values
-- [X] T010c Implement plugin context detection in speck-runner skill by checking CLAUDE_PLUGIN_ROOT environment variable
-- [X] T010d Implement script path resolution in speck-runner skill (plugin context: CLAUDE_PLUGIN_ROOT/scripts/, standalone: .speck/scripts/)
-- [X] T010e Implement script execution logic in speck-runner skill using Bun.spawn() with resolved paths
+- [X] T010f Create `hooks/hooks.json` at repository root with SessionStart hook configuration pointing to scripts/setup-env.sh
+- [X] T010g Create `scripts/setup-env.sh` bash script with shebang and CLAUDE_ENV_FILE detection logic
+- [X] T010h Implement setup-env.sh core logic: if CLAUDE_ENV_FILE exists, write `export SPECK_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}/.speck"` to file, exit 0
+- [X] T010i Add hooks/ directory copy logic in `scripts/build-plugin.ts` to copy `hooks/hooks.json` to `dist/plugin/hooks/hooks.json`
+- [X] T010j Add scripts/setup-env.sh copy logic in `scripts/build-plugin.ts` to copy to `dist/plugin/scripts/setup-env.sh` with executable permissions
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -70,7 +70,6 @@ Source scripts: `.specify/scripts/`
 - [X] T012 [P] [US1] Create marketplace.json manifest generator in `scripts/build-plugin.ts` with marketplace structure per marketplace.schema.json
 - [X] T013 [US1] Implement command file copy logic in `scripts/build-plugin.ts` to copy `.claude/commands/*.md` to `dist/plugin/commands/`
 - [X] T014 [US1] Implement agent file copy logic in `scripts/build-plugin.ts` to copy `.claude/agents/*.md` to `dist/plugin/agents/`
-- [X] T014a [US1] Implement skill file copy logic in `scripts/build-plugin.ts` to copy `.claude/skills/*.md` to `dist/plugin/skills/`
 - [X] T015 [US1] Implement template file copy logic in `scripts/build-plugin.ts` to copy `.specify/templates/*` to `dist/plugin/templates/`
 - [X] T016 [US1] Implement script file copy logic in `scripts/build-plugin.ts` to copy `.specify/scripts/*` to `dist/plugin/scripts/`
 - [X] T016a [P] [US1] Implement constitution file copy logic in `scripts/build-plugin.ts` to copy `.specify/memory/constitution.md` to `dist/plugin/memory/` if it exists
@@ -81,10 +80,13 @@ Source scripts: `.specify/scripts/`
 - [X] T020 [US1] Implement manifest JSON validation in `scripts/build-plugin.ts` to verify plugin.json and marketplace.json parse correctly
 - [X] T021 [US1] Implement missing file detection in `scripts/build-plugin.ts` to fail build if required files absent
 - [X] T022 [US1] Add build output logging in `scripts/build-plugin.ts` showing package size, file counts, and validation results
+- [X] T022a [US1] Implement BUILD FAILED error message pattern in `scripts/build-plugin.ts` following format: "BUILD FAILED: [description]. [details]. Action: [fix]" per FR-030
 - [X] T023 [US1] Create initial plugin.json manifest in `.claude-plugin/plugin.json` with name "speck", version "0.1.0", required metadata
 - [X] T024 [US1] Create initial marketplace.json manifest in `.claude-plugin/marketplace.json` with Speck plugin entry
 - [X] T025 [US1] Add dependencies declaration in `.claude-plugin/plugin.json` for git >=2.30.0 and bash shell
 - [X] T026 [US1] Add keywords to `.claude-plugin/plugin.json` for searchability: "specification", "planning", "workflow", "feature-management", "development-tools"
+- [X] T026a [US1] Update all `.claude/commands/*.md` files to use bash pattern `bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/<script-name>.ts` for script execution
+- [X] T026b [US1] Add debugging output `echo "DEBUG: $(env | grep PLUGIN)"` at the beginning of bash execution steps in all `.claude/commands/*.md` files
 - [X] T027 [US1] Run build script and verify `dist/plugin/` structure matches Claude Plugin format specification
 - [ ] T028 [US1] Test local plugin installation with `/plugin install file:///path/to/dist/plugin` and verify all commands available
 
@@ -257,10 +259,10 @@ With multiple developers:
 
 ## Summary
 
-**Total Tasks**: 69 tasks
+**Total Tasks**: 71 tasks (removed 6 obsolete speck-runner tasks, added 5 SessionStart hook tasks, added 3 command/error tasks)
 - Phase 1 (Setup): 3 tasks
-- Phase 2 (Foundational): 12 tasks
-- Phase 3 (US1 - Install): 21 tasks
+- Phase 2 (Foundational): 16 tasks (added T010f-T010j for SessionStart hooks)
+- Phase 3 (US1 - Install): 24 tasks (added T022a, T026a, T026b)
 - Phase 4 (US4 - Discover): 11 tasks
 - Phase 5 (US2 - Update): 10 tasks
 - Phase 6 (Polish): 12 tasks

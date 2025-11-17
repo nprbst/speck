@@ -72,6 +72,15 @@ function validateVersion(version: string): boolean {
 }
 
 /**
+ * T022a: Format BUILD FAILED error message
+ * Pattern: "BUILD FAILED: [description]. [details]. Action: [fix]"
+ */
+function buildFailedError(description: string, details: string, action: string): Error {
+  const message = `BUILD FAILED: ${description}. ${details}. Action: ${action}`;
+  return new Error(message);
+}
+
+/**
  * Create directory recursively if it doesn't exist
  */
 async function ensureDir(dirPath: string): Promise<void> {
@@ -234,6 +243,7 @@ interface FileCounts {
   templates: number;
   scripts: number;
   memory: number;
+  hooks: number;
 }
 
 /**
@@ -247,6 +257,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
     templates: 0,
     scripts: 0,
     memory: 0,
+    hooks: 0,
   };
 
   // T013: Copy commands (excluding speckit.* and speck.*-upstream)
@@ -339,6 +350,26 @@ async function copyPluginFiles(): Promise<FileCounts> {
     await ensureDir(memoryDestDir);
     await copyFile(constitutionPath, join(memoryDestDir, 'constitution.md'));
     counts.memory = 1;
+  }
+
+  // T010i: Copy hooks/hooks.json
+  const hooksSourcePath = join(config.sourceRoot, 'hooks/hooks.json');
+  if (existsSync(hooksSourcePath)) {
+    const hooksDestDir = join(config.outputDir, 'hooks');
+    await ensureDir(hooksDestDir);
+    await copyFile(hooksSourcePath, join(hooksDestDir, 'hooks.json'));
+    counts.hooks++;
+  }
+
+  // T010j: Copy scripts/setup-env.sh with executable permissions
+  const setupEnvSourcePath = join(config.sourceRoot, 'scripts/setup-env.sh');
+  if (existsSync(setupEnvSourcePath)) {
+    const scriptsDestDir = join(config.outputDir, 'scripts');
+    await ensureDir(scriptsDestDir);
+    const destPath = join(scriptsDestDir, 'setup-env.sh');
+    await copyFile(setupEnvSourcePath, destPath);
+    // Set executable permissions (0o755 = rwxr-xr-x)
+    await Bun.write(destPath, await Bun.file(destPath).text(), { mode: 0o755 });
   }
 
   return counts;
@@ -509,8 +540,10 @@ Nathan Prabst (nathan@example.com)
 async function validatePackageSize(): Promise<void> {
   const totalSize = await getDirSize(config.outputDir);
   if (config.failOnOversized && totalSize > config.maxSizeBytes) {
-    throw new Error(
-      `Package size ${formatBytes(totalSize)} exceeds limit ${formatBytes(config.maxSizeBytes)}`
+    throw buildFailedError(
+      'Package size exceeds limit',
+      `Current size: ${formatBytes(totalSize)}, limit: ${formatBytes(config.maxSizeBytes)}`,
+      'Remove unnecessary files or reduce file sizes to stay under 5MB'
     );
   }
 }
@@ -523,21 +556,33 @@ async function validateCommands(): Promise<void> {
 
   const commandsDir = join(config.outputDir, 'commands');
   if (!existsSync(commandsDir)) {
-    throw new Error('Commands directory missing after copy');
+    throw buildFailedError(
+      'Commands directory missing',
+      'The commands/ directory was not created during the build process',
+      'Check that .claude/commands/ exists in the source repository'
+    );
   }
 
   const files = await readdir(commandsDir);
   const mdFiles = files.filter(f => f.endsWith('.md'));
 
   if (mdFiles.length === 0) {
-    throw new Error('No command files found in commands/ directory');
+    throw buildFailedError(
+      'No command files found',
+      'The commands/ directory exists but contains no .md files',
+      'Ensure .claude/commands/ contains at least one command file'
+    );
   }
 
   // Basic validation: ensure files are readable and not empty
   for (const file of mdFiles) {
     const content = await readFile(join(commandsDir, file), 'utf-8');
     if (content.trim().length === 0) {
-      throw new Error(`Command file ${file} is empty`);
+      throw buildFailedError(
+        'Empty command file detected',
+        `Command file ${file} has no content`,
+        `Add content to ${file} or remove it from .claude/commands/`
+      );
     }
   }
 }
@@ -658,7 +703,11 @@ async function main() {
 
     // Validate version format
     if (!validateVersion(config.version)) {
-      throw new Error(`Invalid version format: ${config.version}. Must be semantic versioning (e.g., 1.0.0)`);
+      throw buildFailedError(
+        'Invalid version format',
+        `Version "${config.version}" does not match semantic versioning format (MAJOR.MINOR.PATCH)`,
+        'Update version in package.json to follow semantic versioning (e.g., 1.0.0)'
+      );
     }
     console.log('   ✓ Version format valid\n');
 
@@ -688,6 +737,9 @@ async function main() {
     console.log(`   ✓ Copied ${fileCounts.scripts} scripts`);
     if (fileCounts.memory > 0) {
       console.log(`   ✓ Copied ${fileCounts.memory} memory files`);
+    }
+    if (fileCounts.hooks > 0) {
+      console.log(`   ✓ Copied ${fileCounts.hooks} hook files`);
     }
     console.log('');
 
