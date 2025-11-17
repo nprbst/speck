@@ -15,12 +15,12 @@ provided by the user and present the results.
 1. Extract the version argument from the user's command
 2. Run the pull-upstream script:
    ```bash
-   bun .speck/scripts/pull-upstream.ts <version>
+   bun run .speck/scripts/pull-upstream.ts <version>
    ```
 
 3. If the user requested JSON output, run with --json flag:
    ```bash
-   bun .speck/scripts/pull-upstream.ts <version> --json
+   bun run .speck/scripts/pull-upstream.ts <version> --json
    ```
 
 4. Present the results to the user:

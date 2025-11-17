@@ -24,7 +24,7 @@ Identify inconsistencies, duplications, ambiguities, and underspecified items ac
 
 ### 1. Initialize Analysis Context
 
-Run `.speck/scripts/check-prerequisites.ts --json --require-tasks --include-tasks` once from repo root and parse JSON for FEATURE_DIR and AVAILABLE_DOCS. Derive absolute paths:
+Run `bun run $(cat .speck/plugin-path 2>/dev/null || echo ".speck")/scripts/check-prerequisites.ts --json --require-tasks --include-tasks` once from repo root and parse JSON for FEATURE_DIR and AVAILABLE_DOCS. Derive absolute paths:
 
 - SPEC = FEATURE_DIR/spec.md
 - PLAN = FEATURE_DIR/plan.md
@@ -62,7 +62,7 @@ Load only the minimal necessary context from each artifact:
 
 **From constitution:**
 
-- Load `.speck/memory/constitution.md` for principle validation
+- Load `$(cat .speck/plugin-path 2>/dev/null || echo ".specify")/memory/constitution.md` for principle validation
 
 ### 3. Build Semantic Models
 

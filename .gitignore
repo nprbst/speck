@@ -20,11 +20,13 @@ coverage/
 .nyc_output/
 
 # Speck-specific
+.speck/plugin-path
 .speck/sync-reports/
 .test-workspace-*/
 
 # IDE
 .vscode/
+.vscode
 .idea/
 *.swp
 *.swo

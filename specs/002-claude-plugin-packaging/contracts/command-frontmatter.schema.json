@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://code.claude.com/schemas/command-frontmatter.json",
+  "title": "Claude Code Command Frontmatter",
+  "description": "Schema for YAML frontmatter in slash command Markdown files",
+  "type": "object",
+  "properties": {
+    "description": {
+      "type": "string",
+      "description": "Brief command description shown in help and autocomplete",
+      "minLength": 5,
+      "maxLength": 256,
+      "examples": [
+        "Create or update feature specification from natural language",
+        "Generate implementation plan with research and design phases"
+      ]
+    },
+    "allowed-tools": {
+      "type": "string",
+      "description": "Comma-separated list of tool names Claude can use (restricts access)",
+      "pattern": "^[A-Za-z, ]+$",
+      "examples": [
+        "Read, Write, Grep, Glob, Bash",
+        "Read, Grep",
+        "WebSearch, WebFetch"
+      ]
+    },
+    "model": {
+      "type": "string",
+      "description": "Preferred model for command execution",
+      "enum": [
+        "sonnet",
+        "opus",
+        "haiku",
+        "inherit"
+      ],
+      "default": "inherit",
+      "examples": [
+        "sonnet",
+        "haiku"
+      ]
+    },
+    "argument-hint": {
+      "type": "string",
+      "description": "Usage hint for command arguments shown in help text",
+      "minLength": 1,
+      "maxLength": 128,
+      "examples": [
+        "feature description",
+        "[optional feature number]",
+        "<file-path> [options]"
+      ]
+    },
+    "disable-model-invocation": {
+      "type": "boolean",
+      "description": "If true, skip LLM invocation and use command content as text expansion",
+      "default": false,
+      "examples": [
+        true,
+        false
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "description": "Create or update feature specification from natural language",
+      "allowed-tools": "Read, Write, Grep, Glob, Bash",
+      "model": "sonnet",
+      "argument-hint": "feature description"
+    },
+    {
+      "description": "Generate implementation plan with research and design",
+      "allowed-tools": "Read, Write, WebSearch, WebFetch, Bash",
+      "model": "sonnet",
+      "argument-hint": "optional context or focus area"
+    },
+    {
+      "description": "Simple text expansion without LLM",
+      "disable-model-invocation": true
+    }
+  ]
+}

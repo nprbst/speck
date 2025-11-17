@@ -393,13 +393,13 @@ Record factoring decisions in `.speck/transformation-history.json`:
 Update `upstream/releases.json` with transformation status:
 
 ```bash
-bun .speck/scripts/common/json-tracker.ts update-status <version> transformed
+bun run .speck/scripts/common/json-tracker.ts update-status <version> transformed
 ```
 
 Or if any agent failed:
 
 ```bash
-bun .speck/scripts/common/json-tracker.ts update-status <version> failed "<error message>"
+bun run .speck/scripts/common/json-tracker.ts update-status <version> failed "<error message>"
 ```
 
 ### 6. Report Results
