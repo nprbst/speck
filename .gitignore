@@ -23,8 +23,10 @@ coverage/
 .speck/plugin-path
 .speck/sync-reports/
 .test-workspace-*/
+dist/
 
-# Website-specific (004-public-website)
+# Website-specific
+.astro/
 website/dist/
 website/.astro/
 website/node_modules/

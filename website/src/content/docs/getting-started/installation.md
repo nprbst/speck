@@ -3,155 +3,99 @@ title: "Installation Guide"
 description: "Complete installation and setup instructions for Speck"
 category: "getting-started"
 order: 2
-lastUpdated: 2025-11-16
-tags: ["installation", "setup", "prerequisites"]
+lastUpdated: 2025-11-17
+tags: ["installation", "setup", "prerequisites", "plugin"]
 ---
 
 # Installation Guide
 
-This guide provides complete installation and setup instructions for Speck, including prerequisites, installation steps, verification, and troubleshooting.
+This guide provides complete installation instructions for Speck as a Claude Code plugin. Install in under 5 minutes using the Claude Marketplace.
 
 ---
 
 ## Prerequisites
 
-Speck requires the following tools to be installed:
+Speck requires Claude Code with plugin support:
 
 ### Required
 
-1. **Bun 1.0+** - JavaScript runtime and package manager
-   - Download: [bun.sh](https://bun.sh)
-   - Used for: Fast builds, TypeScript execution, package management
-
-2. **Git 2.30+** - Version control
-   - Download: [git-scm.com](https://git-scm.com)
-   - Used for: Repository cloning, version control, doc sync
-
-3. **Claude Code** - Anthropic's official CLI
+1. **Claude Code 2.0+** - With plugin system support
    - Download: [claude.com/code](https://claude.com/code)
-   - Used for: Running slash commands, AI-assisted development
+   - Minimum version: 2.0.0 (with plugin system support)
+   - Used for: Running Speck slash commands and skill
+
+**Verification**:
+
+```bash
+claude --version
+# Expected output: Claude Code v2.0.0 or higher
+```
+
+If your version is older, upgrade Claude Code following the [official upgrade guide](https://claude.com/code/docs/installation).
 
 ### Optional
 
-- **Node.js 20+** - Some Astro dependencies require Node (even when using Bun)
 - **VS Code** - Recommended editor with Claude Code extension
+- **Git 2.30+** - If you plan to contribute to Speck or work with the source code
 
 ---
 
 ## Installation Steps
 
-### 1. Install Bun
+### 1. Open Claude Code
 
-**macOS and Linux:**
-
-```bash
-curl -fsSL https://bun.sh/install | bash
-```
-
-This installs Bun to `~/.bun/bin/bun` and updates your shell profile.
-
-**Windows:**
-
-```powershell
-# PowerShell (run as administrator)
-irm bun.sh/install.ps1 | iex
-```
-
-**Verify installation:**
+Start Claude Code in your project directory:
 
 ```bash
-bun --version
-# Expected output: 1.0.0 or higher
+claude
 ```
 
-### 2. Install Git
+### 2. Install Speck Plugin
 
-**macOS:**
+In Claude Code, type:
 
-Git comes pre-installed on macOS. Verify with:
-
-```bash
-git --version
-# Expected: 2.30.0 or higher
+```
+/plugin
 ```
 
-If not installed, install via Homebrew:
+This opens the plugin management interface.
 
-```bash
-brew install git
-```
+### 3. Add speck-market Marketplace
 
-**Linux:**
+1. Select "Manage marketplaces"
+2. Select "Add marketplace"
+3. Enter the marketplace name: `speck-market`
+4. Confirm
 
-```bash
-# Debian/Ubuntu
-sudo apt-get update
-sudo apt-get install git
+### 4. Install Speck
 
-# Fedora/RHEL
-sudo dnf install git
-
-# Arch
-sudo pacman -S git
-```
-
-**Windows:**
-
-Download the installer from [git-scm.com/download/win](https://git-scm.com/download/win) and run it.
-
-### 3. Install Claude Code
-
-Follow the official Claude Code installation instructions at [claude.com/code](https://claude.com/code).
-
-**Verify installation:**
-
-```bash
-claude --version
-```
-
-### 4. Clone Speck Repository
-
-```bash
-# Clone the repository
-git clone https://github.com/nprbst/speck.git
-
-# Navigate to the directory
-cd speck
-```
-
-### 5. Install Dependencies
-
-```bash
-bun install
-```
-
-This installs all project dependencies including TypeScript, testing tools, and Astro (for the website).
+1. In the plugin interface, select "speck-market"
+2. Find "speck" in the available plugins list
+3. Select "Install"
+4. Wait for installation to complete
 
 **Expected output:**
 
 ```
-bun install v1.x.x
- + chalk@5.3.0
- + commander@11.1.0
- + handlebars@4.7.8
- ...
- 150 packages installed [2.5s]
+✓ Speck plugin installed successfully
+✓ Commands registered: /speck.specify, /speck.clarify, /speck.plan, /speck.tasks, /speck.implement
+✓ Speck skill available for natural language queries
 ```
 
-### 6. Verify Installation
+### 5. Verify Installation
 
-Run the Speck CLI to verify everything is working:
-
-```bash
-bun run dev --version
-```
-
-**Expected output:**
+Check that Speck commands are available:
 
 ```
-Speck v1.0.0
-Claude Code-Optimized Specification Framework
+/speck
 ```
+
+You should see autocomplete suggestions for all Speck commands:
+- `/speck.specify` - Create feature specifications
+- `/speck.clarify` - Identify underspecified areas
+- `/speck.plan` - Generate implementation plans
+- `/speck.tasks` - Break down work into tasks
+- `/speck.implement` - Execute implementation
 
 ---
 
@@ -159,11 +103,7 @@ Claude Code-Optimized Specification Framework
 
 Test that Speck is working by running your first command:
 
-```bash
-# Start Claude Code
-claude
-
-# In Claude Code, run:
+```
 /speck.specify
 ```
 
@@ -180,149 +120,141 @@ If successful, you'll see:
 
 ---
 
-## Configuration
+## Version Compatibility
 
-### Environment Variables
+### Minimum Versions
 
-Speck uses environment variables for configuration. Create a `.env` file in your project root:
+- **Claude Code**: 2.0.0 or higher (with plugin system 2.0+ support)
+- **Speck Plugin**: Latest version from speck-market
 
-```bash
-# .env (optional - has sensible defaults)
+### Checking Your Version
 
-# Main Speck repository URL (for doc sync if using website)
-MAIN_REPO_URL=https://github.com/nprbst/speck.git
-
-# Path to docs in main repo
-DOCS_SOURCE_PATH=docs
-```
-
-**Note**: `.env` is gitignored and should not be committed to version control.
-
-### Git Configuration
-
-Ensure your Git is configured with your name and email:
+**Claude Code version:**
 
 ```bash
-git config --global user.name "Your Name"
-git config --global user.email "your.email@example.com"
+claude --version
 ```
 
-This is required for Git commits created by Speck during implementation.
+**Speck plugin version:**
+
+In Claude Code:
+
+```
+/plugin
+```
+
+Then select "Manage marketplaces" → "speck-market" → View installed plugins
+
+### Upgrading Claude Code
+
+If you have an older version of Claude Code:
+
+1. Visit [claude.com/code](https://claude.com/code)
+2. Download the latest installer
+3. Run the installer to upgrade
+4. Restart your terminal
+5. Verify: `claude --version`
+
+---
+
+## Updating Speck
+
+Keep Speck up to date with the latest features and bug fixes:
+
+### Update Steps
+
+1. In Claude Code, type: `/plugin`
+2. Select "Manage marketplaces"
+3. Select "speck-market"
+4. Select "Update marketplace"
+5. Wait for update to complete
+
+**Update frequency**: Check for updates monthly or when new features are announced.
 
 ---
 
 ## Troubleshooting
 
-### Bun not in PATH
+### Plugin not found
 
-**Symptom**: `command not found: bun`
-
-**Solution**:
-
-```bash
-# Add Bun to your PATH
-echo 'export PATH="$HOME/.bun/bin:$PATH"' >> ~/.bashrc  # or ~/.zshrc
-source ~/.bashrc  # or ~/.zshrc
-
-# Verify
-bun --version
-```
-
-### Claude Code not configured
-
-**Symptom**: Slash commands (`/speck.*`) not recognized
+**Symptom**: "Plugin 'speck' not found in marketplace"
 
 **Solution**:
 
-1. Ensure Claude Code is installed and running
-2. Check that you're in a Git repository (Speck requires Git)
-3. Verify the `.claude/` directory exists in your project root
+1. Verify Claude Code version: `claude --version` (must be 2.0.0+)
+2. Ensure speck-market marketplace is added correctly
+3. Try refreshing the marketplace:
+   ```
+   /plugin → Manage marketplaces → speck-market → Refresh
+   ```
+4. Check your internet connection
+
+### Commands not recognized
+
+**Symptom**: Slash commands (`/speck.*`) not showing in autocomplete
+
+**Solution**:
+
+1. Verify Speck is installed:
+   ```
+   /plugin → View installed plugins
+   ```
+2. If installed but not working, try reinstalling:
+   ```
+   /plugin → speck → Uninstall → Install again
+   ```
+3. Restart Claude Code
+
+### Version compatibility issues
+
+**Symptom**: "This plugin requires Claude Code 2.0.0 or higher"
+
+**Solution**:
+
+1. Check your Claude Code version: `claude --version`
+2. If below 2.0.0, upgrade following the [upgrade steps](#upgrading-claude-code)
+3. After upgrading, reinstall Speck plugin
+
+### Marketplace connection issues
+
+**Symptom**: "Failed to connect to speck-market"
+
+**Solution**:
+
+1. Check internet connection
+2. Verify marketplace URL is correct
+3. Try removing and re-adding the marketplace:
+   ```
+   /plugin → Manage marketplaces → Remove → Add marketplace (speck-market)
+   ```
+4. Check firewall/proxy settings
 
 ### Permission errors
 
-**Symptom**: `EACCES: permission denied`
+**Symptom**: `EACCES: permission denied` when running commands
 
 **Solution (macOS/Linux)**:
 
 ```bash
-# Make scripts executable
-chmod +x .speck/scripts/*.ts
+# Ensure write permissions for specs directory
+chmod -R u+w specs/
 
-# If using npm global installs, fix npm permissions
-mkdir ~/.npm-global
-npm config set prefix '~/.npm-global'
-export PATH=~/.npm-global/bin:$PATH
+# If using sudo, avoid it - Speck should run with user permissions
 ```
 
-### Bun install fails
+### Skill not responding
 
-**Symptom**: `error: failed to fetch package`
+**Symptom**: Speck skill doesn't respond to natural language queries
 
 **Solution**:
 
-```bash
-# Clear Bun cache
-rm -rf ~/.bun/install/cache
-
-# Retry installation
-bun install
-
-# If still failing, check network connection or use verbose mode
-bun install --verbose
-```
-
-### Git sparse checkout fails (website)
-
-**Symptom**: Documentation sync fails during website build
-
-**Solution**:
-
-```bash
-# Check Git sparse-checkout is supported
-git --version  # Must be 2.25.0+
-
-# Manually sync docs
-bun run website:sync
-
-# Check environment variables
-echo $MAIN_REPO_URL
-echo $DOCS_SOURCE_PATH
-```
-
-### Node.js compatibility issues
-
-**Symptom**: Astro dependencies fail with Bun
-
-**Solution**:
-
-Ensure Node.js 20+ is installed (some Astro dependencies require Node):
-
-```bash
-# Install Node via nvm (recommended)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-nvm install 20
-nvm use 20
-
-# Verify
-node --version  # Should show v20.x.x
-```
-
-### TypeScript errors
-
-**Symptom**: `error: TypeScript compilation failed`
-
-**Solution**:
-
-```bash
-# Check TypeScript version
-bun run --version typescript
-
-# If outdated, update dependencies
-bun update
-
-# Run type check to see specific errors
-bun run typecheck
-```
+1. Verify plugin is installed and active
+2. Try specific skill queries:
+   ```
+   What does this spec define?
+   ```
+3. Ensure you're in a directory with `specs/` folder
+4. Restart Claude Code if needed
 
 ---
 
@@ -333,53 +265,46 @@ Run through this checklist to ensure everything is working:
 ### ✅ Prerequisites Check
 
 ```bash
-# Check Bun version
-bun --version
-# Expected: 1.0.0 or higher
-
-# Check Git version
-git --version
-# Expected: 2.30.0 or higher
-
-# Check Claude Code
+# Check Claude Code version
 claude --version
-# Expected: Claude Code vX.X.X
+# Expected: 2.0.0 or higher
 ```
+
+### ✅ Plugin Installation
+
+In Claude Code:
+
+```
+/plugin
+```
+
+Then navigate to installed plugins - you should see "speck" listed.
 
 ### ✅ Speck Commands
 
-```bash
-# Navigate to project directory
-cd path/to/your/project
+Test command autocomplete:
 
-# Start Claude Code
-claude
-
-# Try each command:
-/speck.specify    # Should prompt for feature description
-/speck.clarify    # Should work after spec created
-/speck.plan       # Should work after clarification
-/speck.tasks      # Should work after plan created
+```
+/speck.
 ```
 
-### ✅ Build Process
+You should see all available commands:
+- `/speck.specify`
+- `/speck.clarify`
+- `/speck.plan`
+- `/speck.tasks`
+- `/speck.implement`
+- And more...
 
-```bash
-# Build Speck CLI
-bun run build
+### ✅ Speck Skill
 
-# Expected output: dist/cli/index.js created
-ls -la dist/cli/index.js
+Test the skill with a natural language query:
+
+```
+What workflow phases does Speck support?
 ```
 
-### ✅ Tests
-
-```bash
-# Run test suite
-bun test
-
-# Expected: All tests pass
-```
+The skill should respond with information about Speck's three-phase workflow.
 
 ---
 
@@ -389,8 +314,8 @@ Once installation is complete:
 
 1. **Read the Quick Start**: Follow the [Quick Start Guide](/docs/getting-started/quick-start) for a hands-on tutorial
 2. **Learn the workflow**: Understand the [Three-Phase Workflow](/docs/concepts/workflow)
-3. **Try an example**: Build your [First Feature](/docs/examples/first-feature) with Speck
-4. **Explore commands**: Reference the [Commands Guide](/docs/commands/reference)
+3. **Use the skill**: Ask questions naturally or use slash commands - [Learn when to use each](/docs/commands/reference#speck-skill)
+4. **Try an example**: Build your [First Feature](/docs/examples/first-feature) with Speck
 
 ---
 
@@ -398,10 +323,10 @@ Once installation is complete:
 
 **Installation Issues**:
 - Check the [Troubleshooting](#troubleshooting) section above
-- Review Bun docs: [bun.sh/docs](https://bun.sh/docs)
-- Review Git docs: [git-scm.com/doc](https://git-scm.com/doc)
+- Review Claude Code plugin docs: [claude.com/code/docs/plugins](https://claude.com/code/docs/plugins)
 
 **Speck-Specific Questions**:
+- Use the Speck skill: Ask "How do I use Speck?" in Claude Code
 - Open a GitHub Discussion: [github.com/nprbst/speck/discussions](https://github.com/nprbst/speck/discussions)
 - Report a bug: [github.com/nprbst/speck/issues](https://github.com/nprbst/speck/issues)
 
@@ -410,5 +335,5 @@ Once installation is complete:
 
 ---
 
-**Last Updated**: 2025-11-16
-**Speck Version**: 1.0.0
+**Last Updated**: 2025-11-17
+**Minimum Claude Code Version**: 2.0.0

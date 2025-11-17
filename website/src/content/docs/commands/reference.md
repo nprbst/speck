@@ -1,15 +1,118 @@
 ---
 title: "Commands Reference"
-description: "Complete reference for all Speck slash commands"
+description: "Complete reference for all Speck slash commands and skill"
 category: "commands"
 order: 1
-lastUpdated: 2025-11-16
-tags: ["commands", "reference", "cli"]
+lastUpdated: 2025-11-17
+tags: ["commands", "reference", "cli", "skill"]
 ---
 
 # Commands Reference
 
-Speck provides a set of slash commands designed specifically for Claude Code. Each command corresponds to a phase in the feature development workflow.
+Speck provides slash commands and a natural language skill for Claude Code. Use commands for actions, and the skill for questions and understanding.
+
+---
+
+## Speck Skill
+
+### Overview
+
+The Speck skill lets you ask questions naturally to explore and understand your feature specs, plans, and tasks. Instead of reading files directly, ask Speck!
+
+### When to Use the Skill
+
+Use the skill for:
+- **Exploring specifications**: Understanding what's defined
+- **Querying plans**: Checking technical approach and architecture
+- **Tracking tasks**: Seeing what's pending or completed
+- **Workflow guidance**: Knowing what to do next
+- **Requirement checks**: Validating feature scope
+
+### Invocation
+
+Simply type your question naturally in Claude Code conversation:
+
+```
+What user stories are in this spec?
+```
+
+No special syntax required - just ask!
+
+### Capabilities
+
+1. **Understanding Spec Structure**
+   - Read and explain specifications
+   - List user stories and requirements
+   - Show success criteria
+
+2. **Querying Plan Details**
+   - Explain technical approach
+   - List dependencies and tech stack
+   - Show architecture decisions
+
+3. **Checking Task Status**
+   - List pending tasks
+   - Show task dependencies
+   - Track implementation progress
+
+4. **Explaining Workflow Phases**
+   - Guide you through specify → plan → implement
+   - Suggest next steps
+
+5. **Answering Requirement Questions**
+   - Validate scope
+   - Check acceptance criteria
+   - Identify gaps
+
+### Example Queries
+
+1. **Understanding**: "What does this spec define?"
+2. **Planning**: "What's the technical approach in the plan?"
+3. **Tasks**: "What tasks are pending?"
+4. **Workflow**: "What phase am I in the Speck workflow?"
+5. **Requirements**: "List all functional requirements for this feature"
+
+### Skill vs Slash Commands Comparison
+
+| Use Case | Skill (Ask) | Slash Command (Execute) |
+|----------|-------------|-------------------------|
+| Understand existing spec | ✅ "What user stories are defined?" | ❌ |
+| Create new spec | ❌ | ✅ `/speck.specify` |
+| Check task status | ✅ "What tasks are pending?" | ❌ |
+| Generate plan | ❌ | ✅ `/speck.plan` |
+| Get workflow help | ✅ "What should I do next?" | ❌ |
+| Execute tasks | ❌ | ✅ `/speck.implement` |
+
+**Rule of thumb**: Skill for questions and exploration, commands for generation and execution.
+
+---
+
+## Installation and Updates
+
+### Installing Speck Plugin
+
+1. In Claude Code, type: `/plugin`
+2. Select "Manage marketplaces"
+3. Select "Add marketplace"
+4. Enter: `speck-market`
+5. Select "speck" from the plugin list
+6. Select "Install"
+
+See the [Installation Guide](/docs/getting-started/installation) for detailed instructions.
+
+### Updating Speck
+
+Keep Speck up to date with the latest features:
+
+1. In Claude Code, type: `/plugin`
+2. Select "Manage marketplaces"
+3. Select "speck-market"
+4. Select "Update marketplace"
+5. Wait for update to complete
+
+**Recommended**: Check for updates monthly or when new features are announced.
+
+---
 
 ## Core Commands
 

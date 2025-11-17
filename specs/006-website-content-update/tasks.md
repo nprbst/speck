@@ -28,9 +28,9 @@ description: "Task list for website content update for plugin installation"
 
 **Purpose**: Project initialization and validation prep
 
-- [ ] T001 Verify Astro project structure exists and website builds successfully
-- [ ] T002 Review existing website content structure in website/src/content/docs/
-- [ ] T003 Create backup branch or commit point before content changes
+- [X] T001 Verify Astro project structure exists and website builds successfully
+- [X] T002 Review existing website content structure in website/src/content/docs/
+- [X] T003 Create backup branch or commit point before content changes
 
 ---
 
@@ -50,23 +50,23 @@ description: "Task list for website content update for plugin installation"
 
 ### Implementation for User Story 1
 
-- [ ] T004 [P] [US1] Update installation.md: Replace git clone prerequisites section with Claude Code version requirement in website/src/content/docs/getting-started/installation.md
-- [ ] T005 [P] [US1] Update installation.md: Replace "Clone Speck Repository" section with "Install Speck Plugin" section using /plugin command workflow in website/src/content/docs/getting-started/installation.md
-- [ ] T006 [P] [US1] Update installation.md: Add marketplace setup instructions and plugin installation steps in website/src/content/docs/getting-started/installation.md
-- [ ] T007 [P] [US1] Update installation.md: Update verification section to check plugin installation instead of git clone in website/src/content/docs/getting-started/installation.md
-- [ ] T008 [P] [US1] Update installation.md: Update troubleshooting section for plugin-specific issues (version compatibility, marketplace connection) in website/src/content/docs/getting-started/installation.md
-- [ ] T009 [P] [US1] Update installation.md: Add version compatibility section with minimum Claude Code version and upgrade instructions in website/src/content/docs/getting-started/installation.md
-- [ ] T010 [P] [US1] Update installation.md: Update frontmatter lastUpdated field to current date in website/src/content/docs/getting-started/installation.md
-- [ ] T011 [P] [US1] Update quick-start.md: Simplify prerequisites to Claude Code with plugin support only in website/src/content/docs/getting-started/quick-start.md
-- [ ] T012 [P] [US1] Update quick-start.md: Replace git clone installation section with /plugin workflow in website/src/content/docs/getting-started/quick-start.md
-- [ ] T013 [P] [US1] Update quick-start.md: Remove "Install Dependencies" section (not needed for plugin) in website/src/content/docs/getting-started/quick-start.md
-- [ ] T014 [P] [US1] Update quick-start.md: Update frontmatter lastUpdated field to current date in website/src/content/docs/getting-started/quick-start.md
-- [ ] T015 [P] [US1] Update homepage: Change hero headline to emphasize "Claude Plugin" status in website/src/pages/index.astro
-- [ ] T016 [P] [US1] Update homepage: Update Quick Start Preview step 2 from "Clone Speck" to "Install Plugin" in website/src/pages/index.astro
-- [ ] T017 [P] [US1] Update homepage: Update CTA links to point to updated plugin installation guide in website/src/pages/index.astro
-- [ ] T018 [US1] Validate US1: Verify no "git clone" references remain in primary installation paths (getting-started directory)
-- [ ] T019 [US1] Validate US1: Verify /plugin command is documented in installation.md and quick-start.md
-- [ ] T020 [US1] Validate US1: Build website and manually test installation guide as new user (target: under 5 minutes)
+- [X] T004 [P] [US1] Update installation.md: Replace git clone prerequisites section with Claude Code version requirement in website/src/content/docs/getting-started/installation.md
+- [X] T005 [P] [US1] Update installation.md: Replace "Clone Speck Repository" section with "Install Speck Plugin" section using /plugin command workflow in website/src/content/docs/getting-started/installation.md
+- [X] T006 [P] [US1] Update installation.md: Add marketplace setup instructions and plugin installation steps in website/src/content/docs/getting-started/installation.md
+- [X] T007 [P] [US1] Update installation.md: Update verification section to check plugin installation instead of git clone in website/src/content/docs/getting-started/installation.md
+- [X] T008 [P] [US1] Update installation.md: Update troubleshooting section for plugin-specific issues (version compatibility, marketplace connection) in website/src/content/docs/getting-started/installation.md
+- [X] T009 [P] [US1] Update installation.md: Add version compatibility section with minimum Claude Code version and upgrade instructions in website/src/content/docs/getting-started/installation.md
+- [X] T010 [P] [US1] Update installation.md: Update frontmatter lastUpdated field to current date in website/src/content/docs/getting-started/installation.md
+- [X] T011 [P] [US1] Update quick-start.md: Simplify prerequisites to Claude Code with plugin support only in website/src/content/docs/getting-started/quick-start.md
+- [X] T012 [P] [US1] Update quick-start.md: Replace git clone installation section with /plugin workflow in website/src/content/docs/getting-started/quick-start.md
+- [X] T013 [P] [US1] Update quick-start.md: Remove "Install Dependencies" section (not needed for plugin) in website/src/content/docs/getting-started/quick-start.md
+- [X] T014 [P] [US1] Update quick-start.md: Update frontmatter lastUpdated field to current date in website/src/content/docs/getting-started/quick-start.md
+- [X] T015 [P] [US1] Update homepage: Change hero headline to emphasize "Claude Plugin" status in website/src/pages/index.astro
+- [X] T016 [P] [US1] Update homepage: Update Quick Start Preview step 2 from "Clone Speck" to "Install Plugin" in website/src/pages/index.astro
+- [X] T017 [P] [US1] Update homepage: Update CTA links to point to updated plugin installation guide in website/src/pages/index.astro
+- [X] T018 [US1] Validate US1: Verify no "git clone" references remain in primary installation paths (getting-started directory)
+- [X] T019 [US1] Validate US1: Verify /plugin command is documented in installation.md and quick-start.md
+- [X] T020 [US1] Validate US1: Build website and manually test installation guide as new user (target: under 5 minutes)
 
 **Checkpoint**: At this point, new users can successfully install Speck via plugin system with clear instructions (User Story 1 complete and independently testable)
 
@@ -80,26 +80,26 @@ description: "Task list for website content update for plugin installation"
 
 ### Implementation for User Story 2
 
-- [ ] T021 [P] [US2] Update workflow.md: Add new section "Working with Speck: Two Ways to Interact" in website/src/content/docs/concepts/workflow.md
-- [ ] T022 [P] [US2] Update workflow.md: Document Speck skill capabilities (understanding specs, querying plans, checking tasks) in website/src/content/docs/concepts/workflow.md
-- [ ] T023 [P] [US2] Update workflow.md: Provide 5 skill example queries covering understanding, planning, tasks, workflow, and requirements categories in website/src/content/docs/concepts/workflow.md
-- [ ] T024 [P] [US2] Update workflow.md: Add decision guide section with table or visual for "when to use skill vs commands" in website/src/content/docs/concepts/workflow.md
-- [ ] T025 [P] [US2] Update workflow.md: Update each workflow phase section to mention skill usage alongside slash commands in website/src/content/docs/concepts/workflow.md
-- [ ] T026 [P] [US2] Update workflow.md: Update frontmatter lastUpdated field to current date in website/src/content/docs/concepts/workflow.md
-- [ ] T027 [P] [US2] Update reference.md: Add new top-level section "Speck skill" with overview and when to use in website/src/content/docs/commands/reference.md
-- [ ] T028 [P] [US2] Update reference.md: Document skill invocation (natural language in conversation) and list all capabilities in website/src/content/docs/commands/reference.md
-- [ ] T029 [P] [US2] Update reference.md: Provide 5 skill example queries with purposes in website/src/content/docs/commands/reference.md
-- [ ] T030 [P] [US2] Update reference.md: Add comparison table showing skill vs slash commands with use cases in website/src/content/docs/commands/reference.md
-- [ ] T031 [P] [US2] Update reference.md: Add plugin update instructions section using /plugin marketplace workflow in website/src/content/docs/commands/reference.md
-- [ ] T032 [P] [US2] Update reference.md: Update frontmatter lastUpdated field to current date in website/src/content/docs/commands/reference.md
-- [ ] T033 [P] [US2] Update quick-start.md: Add brief "Using the Speck skill" section with example queries in website/src/content/docs/getting-started/quick-start.md
-- [ ] T034 [P] [US2] Update quick-start.md: Update "Your First Specification" to include skill usage example alongside /speck.specify command in website/src/content/docs/getting-started/quick-start.md
-- [ ] T035 [P] [US2] Update homepage: Update hero subheadline to mention skill feature alongside commands in website/src/pages/index.astro
-- [ ] T036 [P] [US2] Update homepage: Update "Claude-Native Commands" feature card to include skill in website/src/pages/index.astro
-- [ ] T037 [P] [US2] Update homepage: Update Quick Start Preview step 3 to mention skill option in website/src/pages/index.astro
-- [ ] T038 [US2] Validate US2: Verify at least 5 skill examples present across workflow.md and reference.md
-- [ ] T039 [US2] Validate US2: Verify decision guide exists and clearly distinguishes skill (questions) from commands (actions)
-- [ ] T040 [US2] Validate US2: Build website and manually test skill documentation clarity (target: understand in under 2 minutes)
+- [X] T021 [P] [US2] Update workflow.md: Add new section "Working with Speck: Two Ways to Interact" in website/src/content/docs/concepts/workflow.md
+- [X] T022 [P] [US2] Update workflow.md: Document Speck skill capabilities (understanding specs, querying plans, checking tasks) in website/src/content/docs/concepts/workflow.md
+- [X] T023 [P] [US2] Update workflow.md: Provide 5 skill example queries covering understanding, planning, tasks, workflow, and requirements categories in website/src/content/docs/concepts/workflow.md
+- [X] T024 [P] [US2] Update workflow.md: Add decision guide section with table or visual for "when to use skill vs commands" in website/src/content/docs/concepts/workflow.md
+- [X] T025 [P] [US2] Update workflow.md: Update each workflow phase section to mention skill usage alongside slash commands in website/src/content/docs/concepts/workflow.md
+- [X] T026 [P] [US2] Update workflow.md: Update frontmatter lastUpdated field to current date in website/src/content/docs/concepts/workflow.md
+- [X] T027 [P] [US2] Update reference.md: Add new top-level section "Speck skill" with overview and when to use in website/src/content/docs/commands/reference.md
+- [X] T028 [P] [US2] Update reference.md: Document skill invocation (natural language in conversation) and list all capabilities in website/src/content/docs/commands/reference.md
+- [X] T029 [P] [US2] Update reference.md: Provide 5 skill example queries with purposes in website/src/content/docs/commands/reference.md
+- [X] T030 [P] [US2] Update reference.md: Add comparison table showing skill vs slash commands with use cases in website/src/content/docs/commands/reference.md
+- [X] T031 [P] [US2] Update reference.md: Add plugin update instructions section using /plugin marketplace workflow in website/src/content/docs/commands/reference.md
+- [X] T032 [P] [US2] Update reference.md: Update frontmatter lastUpdated field to current date in website/src/content/docs/commands/reference.md
+- [X] T033 [P] [US2] Update quick-start.md: Add brief "Using the Speck skill" section with example queries in website/src/content/docs/getting-started/quick-start.md
+- [X] T034 [P] [US2] Update quick-start.md: Update "Your First Specification" to include skill usage example alongside /speck.specify command in website/src/content/docs/getting-started/quick-start.md
+- [X] T035 [P] [US2] Update homepage: Update hero subheadline to mention skill feature alongside commands in website/src/pages/index.astro
+- [X] T036 [P] [US2] Update homepage: Update "Claude-Native Commands" feature card to include skill in website/src/pages/index.astro
+- [X] T037 [P] [US2] Update homepage: Update Quick Start Preview step 3 to mention skill option in website/src/pages/index.astro
+- [X] T038 [US2] Validate US2: Verify at least 5 skill examples present across workflow.md and reference.md
+- [X] T039 [US2] Validate US2: Verify decision guide exists and clearly distinguishes skill (questions) from commands (actions)
+- [X] T040 [US2] Validate US2: Build website and manually test skill documentation clarity (target: understand in under 2 minutes)
 
 **Checkpoint**: At this point, users can understand both installation (US1) AND the Speck skill feature (US2) independently
 
@@ -109,21 +109,21 @@ description: "Task list for website content update for plugin installation"
 
 **Purpose**: Improvements that affect multiple user stories and final validation
 
-- [ ] T041 [P] Update first-feature.md: Replace git clone references with plugin installation in website/src/content/docs/examples/first-feature.md
-- [ ] T042 [P] Update first-feature.md: Add skill usage examples showing both skill queries and slash commands in workflow in website/src/content/docs/examples/first-feature.md
-- [ ] T043 [P] Update first-feature.md: Update frontmatter lastUpdated field to current date in website/src/content/docs/examples/first-feature.md
-- [ ] T044 [P] Validate all code blocks have language identifiers for syntax highlighting across all updated files
-- [ ] T045 [P] Validate all internal links use relative paths and work correctly across all updated files
-- [ ] T046 [P] Validate frontmatter in all updated files conforms to schema (title, description, category, order, lastUpdated)
-- [ ] T047 Run full website build (bun run build from website directory)
-- [ ] T048 [P] Run type checking (bun run typecheck from website directory)
-- [ ] T049 Manual testing: Test all internal links on updated pages work correctly
-- [ ] T050 Manual testing: Verify responsive design on mobile for updated pages
-- [ ] T051 Content validation: Grep search for "git clone" in getting-started directory (should return 0 results)
-- [ ] T052 Content validation: Grep search for "/plugin" references across docs (should have multiple results)
-- [ ] T053 Content validation: Grep search for "Speck skill" references (should appear in workflow.md and reference.md)
-- [ ] T054 Final review: Verify all 9 functional requirements (FR-001 through FR-009) are implemented
-- [ ] T055 Final review: Verify all 5 success criteria (SC-001 through SC-005) can be validated
+- [X] T041 [P] Update first-feature.md: Replace git clone references with plugin installation in website/src/content/docs/examples/first-feature.md
+- [X] T042 [P] Update first-feature.md: Add skill usage examples showing both skill queries and slash commands in workflow in website/src/content/docs/examples/first-feature.md
+- [X] T043 [P] Update first-feature.md: Update frontmatter lastUpdated field to current date in website/src/content/docs/examples/first-feature.md
+- [X] T044 [P] Validate all code blocks have language identifiers for syntax highlighting across all updated files
+- [X] T045 [P] Validate all internal links use relative paths and work correctly across all updated files
+- [X] T046 [P] Validate frontmatter in all updated files conforms to schema (title, description, category, order, lastUpdated)
+- [X] T047 Run full website build (bun run build from website directory)
+- [X] T048 [P] Run type checking (bun run typecheck from website directory)
+- [X] T049 Manual testing: Test all internal links on updated pages work correctly
+- [X] T050 Manual testing: Verify responsive design on mobile for updated pages
+- [X] T051 Content validation: Grep search for "git clone" in getting-started directory (should return 0 results)
+- [X] T052 Content validation: Grep search for "/plugin" references across docs (should have multiple results)
+- [X] T053 Content validation: Grep search for "Speck skill" references (should appear in workflow.md and reference.md)
+- [X] T054 Final review: Verify all 9 functional requirements (FR-001 through FR-009) are implemented
+- [X] T055 Final review: Verify all 5 success criteria (SC-001 through SC-005) can be validated
 
 ---
 

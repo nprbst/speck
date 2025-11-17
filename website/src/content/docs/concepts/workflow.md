@@ -3,13 +3,59 @@ title: "Three-Phase Workflow"
 description: "Understanding Speck's structured specify → plan → implement cycle"
 category: "concepts"
 order: 1
-lastUpdated: 2025-11-16
-tags: ["workflow", "concepts", "methodology"]
+lastUpdated: 2025-11-17
+tags: ["workflow", "concepts", "methodology", "skill"]
 ---
 
 # Three-Phase Workflow
 
 Speck implements an opinionated three-phase workflow designed to keep your feature development organized, documented, and actionable from day one.
+
+## Working with Speck: Two Ways to Interact
+
+Speck provides two complementary ways to work:
+
+### 1. Speck Skill (For Understanding)
+
+Ask questions naturally to explore and understand your specs, plans, and tasks:
+
+```
+What user stories are defined in this spec?
+```
+
+```
+What's the technical approach in the plan?
+```
+
+```
+What tasks are pending?
+```
+
+The skill reads from your `specs/` directories and helps you navigate your feature documentation.
+
+### 2. Slash Commands (For Actions)
+
+Execute generation and implementation tasks:
+
+- `/speck.specify` - Create feature specifications
+- `/speck.plan` - Generate implementation plans
+- `/speck.tasks` - Break down work into tasks
+- `/speck.implement` - Execute implementation
+
+### When to Use Each
+
+| Situation | Use Skill | Use Slash Command |
+|-----------|-----------|-------------------|
+| Understand existing spec | ✅ "What does this spec define?" | ❌ |
+| Create new specification | ❌ | ✅ `/speck.specify` |
+| Check task status | ✅ "What tasks are pending?" | ❌ |
+| Generate implementation plan | ❌ | ✅ `/speck.plan` |
+| Explore requirements | ✅ "List all functional requirements" | ❌ |
+| Execute implementation | ❌ | ✅ `/speck.implement` |
+
+**Rule of thumb**: Skill for questions, commands for actions.
+
+---
 
 ## Overview
 
@@ -36,6 +82,16 @@ Speck implements an opinionated three-phase workflow designed to keep your featu
 
 - `/speck.specify` - Generate initial specification
 - `/speck.clarify` - Resolve ambiguities with targeted questions
+
+### Using the Skill in This Phase
+
+Ask questions to understand your specification:
+
+```
+What user stories are in this spec?
+Show me all functional requirements
+What's the success criteria for this feature?
+```
 
 ### Inputs
 
@@ -91,6 +147,16 @@ Speck implements an opinionated three-phase workflow designed to keep your featu
 ### Commands
 
 - `/speck.plan` - Generate implementation plan and design artifacts
+
+### Using the Skill in This Phase
+
+Ask questions to explore your implementation plan:
+
+```
+What's the technical approach in the plan?
+What dependencies are needed for this feature?
+Show me the data model entities
+```
 
 ### Inputs
 
@@ -173,6 +239,16 @@ Speck implements an opinionated three-phase workflow designed to keep your featu
 
 - `/speck.tasks` - Generate task breakdown
 - `/speck.implement` - Execute tasks automatically
+
+### Using the Skill in This Phase
+
+Ask questions to track implementation progress:
+
+```
+What tasks are pending?
+Show me the task dependencies
+What's the implementation order for this feature?
+```
 
 ### Inputs
 
