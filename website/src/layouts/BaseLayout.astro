@@ -86,6 +86,9 @@ const siteTitle = title.includes('Speck') ? title : `${title} | Speck`;
     <link rel="stylesheet" href="/src/styles/theme.css" />
   </head>
   <body class={bodyClass}>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <slot />
   </body>
 </html>

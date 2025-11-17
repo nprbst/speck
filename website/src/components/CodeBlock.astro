@@ -1,0 +1,188 @@
+---
+/**
+ * Code Block Component
+ * Code block with copy-to-clipboard functionality
+ * For use in Astro pages (markdown will use Astro's built-in syntax highlighting)
+ */
+
+export interface Props {
+  code: string;
+  language: string;
+  title?: string;
+  copyButton?: boolean;
+}
+
+const {
+  code,
+  language,
+  title,
+  copyButton = true,
+} = Astro.props;
+---
+
+<div class="code-block-wrapper">
+  {title && <div class="code-block-title">{title}</div>}
+  <div class="code-block">
+    {copyButton && (
+      <button
+        class="copy-button"
+        aria-label="Copy code to clipboard"
+        data-code={code}
+      >
+        <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </button>
+    )}
+    <pre class="code-content"><code class={`language-${language}`}>{code}</code></pre>
+  </div>
+</div>
+
+<style>
+  .code-block-wrapper {
+    margin-bottom: var(--space-lg);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-code-bg);
+    border: 1px solid var(--color-border);
+  }
+
+  .code-block-title {
+    background: var(--color-bg-secondary);
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+
+  .code-block {
+    position: relative;
+    overflow-x: auto;
+  }
+
+  .copy-button {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    padding: 0.5rem;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition-fast), background var(--transition-fast);
+    z-index: 10;
+  }
+
+  .code-block:hover .copy-button {
+    opacity: 1;
+  }
+
+  .copy-button:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  .copy-button:focus-visible {
+    opacity: 1;
+  }
+
+  .copy-button .check-icon {
+    display: none;
+  }
+
+  .copy-button.copied .copy-icon {
+    display: none;
+  }
+
+  .copy-button.copied .check-icon {
+    display: block;
+  }
+
+  .code-content {
+    margin: 0;
+    padding: var(--space-md);
+    background: transparent;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .code-content code {
+    font-family: inherit;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    color: var(--color-text);
+  }
+
+  /* Scroll hint on mobile */
+  .code-block::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 2rem;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-code-bg) 100%
+    );
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .code-block:not(:hover)::after {
+    opacity: 1;
+  }
+
+  @media (max-width: 48em) {
+    .code-content {
+      padding-right: var(--space-xl);
+    }
+  }
+</style>
+
+<script>
+  // Copy to clipboard functionality
+  document.querySelectorAll('[data-code]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const code = button.getAttribute('data-code');
+      if (!code) return;
+
+      try {
+        // Try Clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(code);
+        } else {
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea');
+          textArea.value = code;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+        }
+
+        // Show success feedback
+        button.classList.add('copied');
+        setTimeout(() => {
+          button.classList.remove('copied');
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy code:', err);
+        // Could show error tooltip here
+      }
+    });
+  });
+</script>

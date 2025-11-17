@@ -1,0 +1,182 @@
+---
+/**
+ * 404 Error Page
+ * Displayed when a page is not found
+ */
+
+import HomeLayout from '@/layouts/HomeLayout.astro';
+
+const seo = {
+  title: "Page Not Found | Speck",
+  description: "The page you're looking for doesn't exist. Return to the homepage or browse our documentation.",
+};
+---
+
+<HomeLayout title={seo.title} description={seo.description} bodyClass="error-page">
+  <main class="error-main">
+    <div class="container">
+      <div class="error-content">
+        <h1 class="error-code">404</h1>
+        <h2 class="error-title">Page Not Found</h2>
+        <p class="error-message">
+          Sorry, the page you're looking for doesn't exist or has been moved.
+        </p>
+
+        <div class="error-suggestions">
+          <h3>Here are some helpful links:</h3>
+          <ul class="suggestion-list">
+            <li>
+              <a href="/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Homepage
+              </a>
+            </li>
+            <li>
+              <a href="/docs/getting-started/quick-start">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                Documentation
+              </a>
+            </li>
+            <li>
+              <a href="/comparison">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                Comparison
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/nprbst/speck" target="_blank" rel="noopener noreferrer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+                GitHub Repository
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="error-search">
+          <p class="search-hint">Looking for something specific? Check the documentation or search our GitHub repository.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</HomeLayout>
+
+<style>
+  .error-main {
+    min-height: calc(100vh - 4rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2xl) 0;
+  }
+
+  .error-content {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .error-code {
+    font-size: clamp(4rem, 15vw, 8rem);
+    font-weight: 900;
+    color: var(--color-accent);
+    margin: 0;
+    line-height: 1;
+  }
+
+  .error-title {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    margin: var(--space-md) 0;
+    color: var(--color-text);
+  }
+
+  .error-message {
+    font-size: 1.125rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-2xl);
+    line-height: 1.6;
+  }
+
+  .error-suggestions {
+    margin: var(--space-2xl) 0;
+    text-align: left;
+  }
+
+  .error-suggestions h3 {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-md);
+    color: var(--color-text);
+  }
+
+  .suggestion-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .suggestion-list li {
+    margin-bottom: var(--space-sm);
+  }
+
+  .suggestion-list a {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .suggestion-list a:hover {
+    background: var(--color-bg);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateX(4px);
+  }
+
+  .suggestion-list svg {
+    flex-shrink: 0;
+    color: var(--color-accent);
+  }
+
+  .error-search {
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-2xl);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .search-hint {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+
+  @media (max-width: 48em) {
+    .error-main {
+      padding: var(--space-xl) 0;
+    }
+
+    .error-suggestions {
+      text-align: center;
+    }
+
+    .suggestion-list a {
+      justify-content: center;
+    }
+  }
+</style>

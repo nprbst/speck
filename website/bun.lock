@@ -6,6 +6,7 @@
       "name": "speck-website",
       "dependencies": {
         "astro": "^5.15.8",
+        "shiki": "^3.15.0",
       },
       "devDependencies": {
         "@astrojs/check": "^0.9.4",
