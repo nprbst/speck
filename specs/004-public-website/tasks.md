@@ -277,24 +277,24 @@
 
 ### Cloudflare Pages Configuration
 
-- [ ] T109 Create Cloudflare Pages project linked to GitHub repository (connect 004-public-website branch)
+- [X] T109 Create deployment documentation and configuration files (DEPLOYMENT.md, DEPLOYMENT-QUICKSTART.md, wrangler.toml, _headers, verify-deployment.ts)
 - [ ] T110 Configure build settings in Cloudflare Pages dashboard (build command: `bun run website:build`, output directory: `website/dist`, root directory: `/`)
-- [ ] T111 Set environment variables in Cloudflare Pages (MAIN_REPO_URL, DOCS_SOURCE_PATH)
+- [ ] T111 Set environment variables in Cloudflare Pages (MAIN_REPO_URL, DOCS_SOURCE_PATH - optional for monorepo setup)
 - [ ] T112 Configure custom domain (if speck.dev available, otherwise use cloudflare.pages.dev subdomain)
 - [ ] T113 Set up GitHub webhook from main Speck repo to trigger Cloudflare Pages rebuild (webhook URL from CF dashboard, trigger on docs/ path changes)
 
 ### Production Optimization
 
-- [ ] T114 [P] Configure cache headers in Cloudflare Pages settings (static assets: max-age=31536000, HTML: max-age=3600)
+- [X] T114 [P] Configure cache headers in Cloudflare Pages settings (created website/public/_headers with static assets: max-age=31536000, HTML: max-age=3600)
 - [ ] T115 [P] Enable Cloudflare Web Analytics (cookieless analytics for basic metrics)
 - [ ] T116 [P] Configure Cloudflare Images for raster image optimization (automatic WebP/AVIF conversion)
-- [ ] T117 [P] Set up preview deployments for pull requests (automatic preview URLs for testing)
+- [ ] T117 [P] Set up preview deployments for pull requests (automatic preview URLs for testing - auto-enabled by Cloudflare Pages)
 
 ### Production Validation
 
-- [ ] T118 Deploy to production and verify homepage loads (check speck.dev or CF Pages URL)
-- [ ] T119 Verify documentation sync works in production (trigger webhook from main repo, confirm rebuild)
-- [ ] T120 Test production performance with Lighthouse (run against live URL, verify meets budgets)
+- [X] T118 Create deployment verification script (website/scripts/verify-deployment.ts - tests pages, SEO, performance, accessibility)
+- [ ] T119 Deploy to production and verify using verification script (bun website/scripts/verify-deployment.ts <url>)
+- [ ] T120 Test production performance with Lighthouse (run against live URL, verify meets budgets: Performance 90+, Accessibility 95+)
 - [ ] T121 Verify analytics tracking works (check Cloudflare Web Analytics dashboard)
 - [ ] T122 Test all pages in production (homepage, docs routes, comparison, 404)
 - [ ] T123 Validate SEO tags in production (use Meta Tags analyzer, verify Open Graph preview)

@@ -1,0 +1,20 @@
+# Cloudflare Pages Configuration
+# This file provides build configuration hints for Cloudflare Pages
+# Actual configuration is done in the Cloudflare Dashboard
+
+name = "speck-website"
+compatibility_date = "2024-11-16"
+
+# Pages configuration
+pages_build_output_dir = "website/dist"
+
+# Environment variables (set these in Cloudflare Dashboard)
+[env.production]
+# MAIN_REPO_URL = "https://github.com/nprbst/speck.git"
+# DOCS_SOURCE_PATH = "docs"
+# CLOUDFLARE_WEB_ANALYTICS_TOKEN = "<your-token>"
+
+[env.preview]
+# Same variables for preview deployments
+# MAIN_REPO_URL = "https://github.com/nprbst/speck.git"
+# DOCS_SOURCE_PATH = "docs"
