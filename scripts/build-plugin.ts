@@ -273,14 +273,27 @@ async function copyPluginFiles(): Promise<FileCounts> {
     for (const file of mdFiles) {
       // Exclude speckit.* aliases and upstream management commands
       if (file.startsWith('speckit.') ||
-          file.includes('-upstream')) {
+        file.includes('-upstream')) {
         continue;
       }
 
-      await copyFile(
-        join(config.commandsSourceDir, file),
-        join(commandsDestDir, file)
-      );
+      // Strip 'speck.' prefix from filename for published plugin
+      // e.g., speck.tasks.md -> tasks.md
+      const destFilename = file.startsWith('speck.')
+        ? file.substring('speck.'.length)
+        : file;
+
+      // Read the source file
+      const sourcePath = join(config.commandsSourceDir, file);
+      let content = await readFile(sourcePath, 'utf-8');
+
+      // Post-process: Replace /speck. with /speck:speck.
+      // e.g., /speck.tasks -> /speck:speck.tasks
+      content = content.replace(/\/speck\./g, '/speck:');
+
+      // Write to destination
+      const destPath = join(commandsDestDir, destFilename);
+      await writeFile(destPath, content, 'utf-8');
       counts.commands++;
     }
   }
