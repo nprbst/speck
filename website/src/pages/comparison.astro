@@ -1,0 +1,493 @@
+---
+/**
+ * Comparison Page
+ * Side-by-side comparison of Speck vs Spec-Kit
+ */
+
+import HomeLayout from '@/layouts/HomeLayout.astro';
+import CodeBlock from '@/components/CodeBlock.astro';
+
+const comparisonData = {
+  title: "Speck vs Spec-Kit",
+  intro: "Both tools help you write better feature specifications for Claude Code, but they take different philosophical approaches. Choose the one that fits your workflow.",
+  comparisonTable: [
+    {
+      feature: "Runtime Environment",
+      speck: "Bun 1.0+ (TypeScript native, fast startup)",
+      specKit: "Bash (universal compatibility, minimal dependencies)",
+    },
+    {
+      feature: "Command Style",
+      speck: "Claude-native slash commands (/speck.specify)",
+      specKit: "Generic templating scripts",
+    },
+    {
+      feature: "Workflow Philosophy",
+      speck: "Opinionated (specify → clarify → plan → tasks → implement)",
+      specKit: "Flexible (adapt to your process)",
+    },
+    {
+      feature: "TypeScript Support",
+      speck: "First-class (Bun runtime)",
+      specKit: "Via separate tooling",
+    },
+    {
+      feature: "Build Performance",
+      speck: "Fast (Bun's native TypeScript execution)",
+      specKit: "Lightweight (bash scripts)",
+    },
+    {
+      feature: "Customization",
+      speck: "Opinionated templates with extension points",
+      specKit: "Full flexibility, customize everything",
+    },
+    {
+      feature: "Learning Curve",
+      speck: "Moderate (opinionated path reduces decisions)",
+      specKit: "Steep (maximum flexibility requires understanding)",
+    },
+  ],
+  whenToUseSpeck: [
+    "You use Claude Code daily and want optimized integration",
+    "You prefer fast, TypeScript-powered builds without configuration",
+    "You want an opinionated workflow that guides best practices",
+    "You're building a new project and can choose modern tooling",
+  ],
+  whenToUseSpecKit: [
+    "You need language-agnostic specifications",
+    "You work in constrained environments without Bun",
+    "You want maximum customization freedom",
+    "You have an existing workflow you don't want to change",
+  ],
+  migrationGuide: {
+    title: "Migrating from Spec-Kit to Speck",
+    steps: [
+      {
+        title: "1. Install Bun",
+        description: "Speck requires Bun 1.0+ for TypeScript execution",
+        codeExample: `# macOS/Linux
+curl -fsSL https://bun.sh/install | bash
+
+# Windows (PowerShell)
+irm bun.sh/install.ps1 | iex
+
+# Verify installation
+bun --version`,
+      },
+      {
+        title: "2. Clone Speck",
+        description: "Add Speck to your project (or as a separate repo)",
+        codeExample: `git clone https://github.com/nprbst/speck.git
+cd speck
+bun install`,
+      },
+      {
+        title: "3. Copy Your Existing Specs",
+        description: "Speck specs are compatible with spec-kit structure",
+        codeExample: `# Copy specs from spec-kit to Speck
+cp -r /path/to/spec-kit/specs/ /path/to/speck/specs/
+
+# Your existing spec.md, plan.md, tasks.md files work as-is`,
+      },
+      {
+        title: "4. Run Your First Command",
+        description: "Use Speck's slash commands in Claude Code",
+        codeExample: `/speck.specify "Add user authentication"`,
+      },
+      {
+        title: "5. Optional: Customize Templates",
+        description: "Override default templates in .speck/templates/ directory",
+        codeExample: `# Example: Custom specification template
+.speck/templates/
+├── specify.md
+├── plan.md
+└── tasks.md`,
+      },
+    ],
+  },
+};
+
+const seo = {
+  title: "Speck vs Spec-Kit Comparison",
+  description: "Compare Speck and spec-kit: runtime, command style, workflow philosophy, and when to use each tool for writing feature specifications with Claude Code.",
+  keywords: ["speck", "spec-kit", "comparison", "claude code", "feature specs"],
+};
+---
+
+<HomeLayout title={seo.title} description={seo.description}>
+  <!-- Intro Section -->
+  <section class="intro">
+    <div class="container">
+      <h1>{comparisonData.title}</h1>
+      <p class="intro-text">{comparisonData.intro}</p>
+    </div>
+  </section>
+
+  <!-- Comparison Table -->
+  <section class="comparison-table-section">
+    <div class="container">
+      <h2>Feature Comparison</h2>
+      <div class="table-wrapper">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Speck</th>
+              <th>Spec-Kit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {comparisonData.comparisonTable.map(row => (
+              <tr>
+                <td class="feature-name">{row.feature}</td>
+                <td>{row.speck}</td>
+                <td>{row.specKit}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- When to Use Each -->
+  <section class="when-to-use">
+    <div class="container">
+      <div class="when-to-use-grid">
+        <!-- When to Use Speck -->
+        <div class="use-case-card">
+          <h2>When to Use Speck</h2>
+          <ul class="use-case-list">
+            {comparisonData.whenToUseSpeck.map(reason => (
+              <li>{reason}</li>
+            ))}
+          </ul>
+          <div class="cta">
+            <a href="/docs/getting-started/quick-start" class="btn btn-primary">
+              Get Started with Speck
+            </a>
+          </div>
+        </div>
+
+        <!-- When to Use Spec-Kit -->
+        <div class="use-case-card">
+          <h2>When to Use Spec-Kit</h2>
+          <ul class="use-case-list">
+            {comparisonData.whenToUseSpecKit.map(reason => (
+              <li>{reason}</li>
+            ))}
+          </ul>
+          <div class="cta">
+            <a href="https://github.com/jmilldotdev/spec-kit" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+              View Spec-Kit on GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Migration Guide -->
+  <section class="migration-guide">
+    <div class="container">
+      <h2>{comparisonData.migrationGuide.title}</h2>
+      <div class="migration-steps">
+        {comparisonData.migrationGuide.steps.map(step => (
+          <div class="migration-step">
+            <h3>{step.title}</h3>
+            <p>{step.description}</p>
+            {step.codeExample && (
+              <CodeBlock
+                code={step.codeExample}
+                language="bash"
+                copyButton={true}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq">
+    <div class="container">
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h3>Can I use both Speck and spec-kit?</h3>
+          <p>Yes! Both tools use compatible file formats. You can experiment with Speck while keeping spec-kit as a fallback.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Will my existing spec-kit files work in Speck?</h3>
+          <p>Yes. Speck uses the same markdown-based spec.md, plan.md, and tasks.md structure. Just copy your specs over and run Speck commands.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Does Speck support Windows?</h3>
+          <p>Yes! Bun supports Windows, macOS, and Linux. Install Bun via PowerShell on Windows.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Can I customize Speck's templates?</h3>
+          <p>Yes. Override templates in .speck/templates/ directory. See the documentation for details.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</HomeLayout>
+
+<style>
+  /* Intro Section */
+  .intro {
+    padding: var(--space-2xl) 0 var(--space-xl);
+    text-align: center;
+  }
+
+  .intro h1 {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    margin-bottom: var(--space-md);
+  }
+
+  .intro-text {
+    font-size: 1.25rem;
+    color: var(--color-text-muted);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Comparison Table */
+  .comparison-table-section {
+    padding: var(--space-2xl) 0;
+  }
+
+  .comparison-table-section h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: var(--space-2xl);
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+  }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-bg-secondary);
+  }
+
+  .comparison-table th,
+  .comparison-table td {
+    padding: var(--space-md);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .comparison-table thead th {
+    background: var(--color-bg);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .comparison-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .comparison-table tbody tr:hover {
+    background: var(--color-bg);
+  }
+
+  .feature-name {
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  /* When to Use Section */
+  .when-to-use {
+    padding: var(--space-2xl) 0;
+    background: var(--color-bg-secondary);
+  }
+
+  .when-to-use-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--space-2xl);
+  }
+
+  .use-case-card {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+  }
+
+  .use-case-card h2 {
+    font-size: 1.75rem;
+    margin-bottom: var(--space-lg);
+    color: var(--color-accent);
+  }
+
+  .use-case-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-2xl) 0;
+  }
+
+  .use-case-list li {
+    padding: var(--space-sm) 0 var(--space-sm) var(--space-lg);
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .use-case-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--color-accent);
+    font-weight: bold;
+  }
+
+  .cta {
+    text-align: center;
+  }
+
+  /* Migration Guide */
+  .migration-guide {
+    padding: var(--space-2xl) 0;
+  }
+
+  .migration-guide h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: var(--space-2xl);
+  }
+
+  .migration-steps {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .migration-step {
+    margin-bottom: var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .migration-step:last-child {
+    border-bottom: none;
+  }
+
+  .migration-step h3 {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-sm);
+    color: var(--color-text);
+  }
+
+  .migration-step p {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-md);
+    line-height: 1.6;
+  }
+
+  /* FAQ Section */
+  .faq {
+    padding: var(--space-2xl) 0;
+    background: var(--color-bg-secondary);
+  }
+
+  .faq h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: var(--space-2xl);
+  }
+
+  .faq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .faq-item {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+  }
+
+  .faq-item h3 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-sm);
+    color: var(--color-accent);
+  }
+
+  .faq-item p {
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    border: 2px solid transparent;
+    font-size: 1rem;
+  }
+
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border-color: var(--color-accent);
+  }
+
+  .btn-primary:hover {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-secondary {
+    background: var(--color-bg-secondary);
+    color: var(--color-text);
+    border-color: var(--color-border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-bg);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Responsive */
+  @media (max-width: 48em) {
+    .comparison-table {
+      font-size: 0.875rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: var(--space-sm);
+    }
+
+    .when-to-use-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .faq-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

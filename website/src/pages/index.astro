@@ -1,0 +1,417 @@
+---
+/**
+ * Homepage
+ * Landing page communicating Speck's value proposition
+ */
+
+import HomeLayout from '@/layouts/HomeLayout.astro';
+import FeatureCard from '@/components/FeatureCard.astro';
+
+// Homepage data
+const hero = {
+  headline: "Opinionated feature specs for Claude Code",
+  subheadline: "Transform spec-kit into a Bun-powered, Claude-native workflow with TypeScript-first tooling and slash command integration",
+  ctaPrimary: {
+    text: "Get Started",
+    href: "/docs/getting-started/quick-start",
+  },
+  ctaSecondary: {
+    text: "View on GitHub",
+    href: "https://github.com/nprbst/speck",
+  },
+};
+
+const features = [
+  {
+    title: "Claude-Native Commands",
+    description: "Slash commands optimized for Claude Code workflow, not generic bash scripts. Type /speck.specify and let Claude guide you through the process.",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>`,
+  },
+  {
+    title: "Bun-Powered Runtime",
+    description: "Fast builds with TypeScript support out of the box. Native ESM, modern JavaScript features, and blazing startup times without configuration.",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+  },
+  {
+    title: "Upstream Sync",
+    description: "Pull updates from spec-kit while preserving your customizations. Stay current with the latest features without losing your project-specific tweaks.",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>`,
+  },
+  {
+    title: "Opinionated Workflow",
+    description: "Structured specify → clarify → plan → implement cycle keeps your project organized and your specs actionable from day one.",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>`,
+  },
+];
+
+const comparisonPreview = {
+  title: "Speck vs Spec-Kit",
+  description: "Both tools help you write feature specifications, but they take different approaches. Speck is opinionated and optimized for Claude Code, while spec-kit is flexible and language-agnostic.",
+  speckHighlights: [
+    "Bun runtime (fast, modern TypeScript)",
+    "Claude-native slash commands",
+    "Structured opinionated workflow",
+  ],
+  specKitHighlights: [
+    "Bash-based (universal compatibility)",
+    "Language-agnostic templates",
+    "Flexible, customizable process",
+  ],
+  ctaLink: "/comparison",
+};
+
+const seo = {
+  title: "Speck - Opinionated Feature Specs for Claude Code",
+  description: "Transform spec-kit into a Bun-powered, Claude-native workflow with TypeScript-first tooling and slash command integration. Write better feature specs faster.",
+  keywords: ["speck", "spec-kit", "claude code", "feature specs", "bun", "typescript", "claude ai"],
+};
+---
+
+<HomeLayout title={seo.title} description={seo.description}>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-headline">{hero.headline}</h1>
+        <p class="hero-subheadline">{hero.subheadline}</p>
+        <div class="hero-ctas">
+          <a href={hero.ctaPrimary.href} class="btn btn-primary">
+            {hero.ctaPrimary.text}
+          </a>
+          <a href={hero.ctaSecondary.href} class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+            {hero.ctaSecondary.text}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <div class="container">
+      <h2 class="section-title">Why Speck?</h2>
+      <div class="features-grid">
+        {features.map(feature => (
+          <FeatureCard
+            title={feature.title}
+            description={feature.description}
+            icon={feature.icon}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Preview Section -->
+  <section class="comparison-preview">
+    <div class="container">
+      <h2 class="section-title">{comparisonPreview.title}</h2>
+      <p class="comparison-description">{comparisonPreview.description}</p>
+
+      <div class="comparison-grid">
+        <div class="comparison-column">
+          <h3>Speck</h3>
+          <ul>
+            {comparisonPreview.speckHighlights.map(highlight => (
+              <li>{highlight}</li>
+            ))}
+          </ul>
+        </div>
+        <div class="comparison-column">
+          <h3>Spec-Kit</h3>
+          <ul>
+            {comparisonPreview.specKitHighlights.map(highlight => (
+              <li>{highlight}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div class="comparison-cta">
+        <a href={comparisonPreview.ctaLink} class="btn btn-secondary">
+          See Full Comparison →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Start Preview -->
+  <section class="quick-start-preview">
+    <div class="container">
+      <h2 class="section-title">Get Started in Minutes</h2>
+      <div class="quick-start-content">
+        <div class="quick-start-steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <h3>Install Prerequisites</h3>
+            <p>Bun 1.0+, Git 2.30+, Claude Code</p>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <h3>Clone Speck</h3>
+            <p>Add Speck to your project repository</p>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <h3>Run Your First Command</h3>
+            <p>Type <code>/speck.specify</code> in Claude Code</p>
+          </div>
+        </div>
+        <div class="quick-start-cta">
+          <a href="/docs/getting-started/installation" class="btn btn-primary">
+            View Installation Guide
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</HomeLayout>
+
+<style>
+  /* Hero Section */
+  .hero {
+    padding: var(--space-2xl) 0;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+  }
+
+  .hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .hero-headline {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    margin-bottom: var(--space-lg);
+    line-height: 1.1;
+    color: var(--color-text);
+  }
+
+  .hero-subheadline {
+    font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-2xl);
+    line-height: 1.6;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    border: 2px solid transparent;
+    font-size: 1rem;
+  }
+
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border-color: var(--color-accent);
+  }
+
+  .btn-primary:hover {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-secondary {
+    background: var(--color-bg-secondary);
+    color: var(--color-text);
+    border-color: var(--color-border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-bg);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Sections */
+  .features,
+  .comparison-preview,
+  .quick-start-preview {
+    padding: var(--space-2xl) 0;
+  }
+
+  .section-title {
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+    color: var(--color-text);
+  }
+
+  /* Features Grid */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  /* Comparison Preview */
+  .comparison-description {
+    text-align: center;
+    color: var(--color-text-muted);
+    max-width: 700px;
+    margin: 0 auto var(--space-2xl);
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-xl);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .comparison-column {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+  }
+
+  .comparison-column h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+    color: var(--color-text);
+  }
+
+  .comparison-column ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .comparison-column li {
+    padding: var(--space-sm) 0;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .comparison-column li::before {
+    content: "✓";
+    color: var(--color-accent);
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .comparison-cta {
+    text-align: center;
+  }
+
+  /* Quick Start Preview */
+  .quick-start-content {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .quick-start-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .step {
+    text-align: center;
+    padding: var(--space-xl);
+  }
+
+  .step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border-radius: 50%;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: var(--space-md);
+  }
+
+  .step h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+    color: var(--color-text);
+  }
+
+  .step p {
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .step code {
+    background: var(--color-code-bg);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+
+  .quick-start-cta {
+    text-align: center;
+  }
+
+  /* Responsive */
+  @media (max-width: 48em) {
+    .hero {
+      padding: var(--space-xl) 0;
+      min-height: 60vh;
+    }
+
+    .hero-ctas {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .comparison-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-start-steps {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Thumb-accessible CTAs on mobile */
+  @media (max-width: 30em) {
+    .btn {
+      min-height: 48px;
+      font-size: 1.125rem;
+    }
+  }
+</style>

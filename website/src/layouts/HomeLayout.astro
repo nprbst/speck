@@ -1,0 +1,134 @@
+---
+/**
+ * Home Layout
+ * Layout specifically for the homepage with special styling
+ */
+
+import BaseLayout from './BaseLayout.astro';
+import Navigation from '@components/Navigation.astro';
+import ThemeToggle from '@components/ThemeToggle.astro';
+
+export interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+
+const navLinks = [
+  { text: 'Docs', href: '/docs/getting-started/quick-start' },
+  { text: 'Comparison', href: '/comparison' },
+  { text: 'GitHub', href: 'https://github.com/nprbst/speck', external: true },
+];
+---
+
+<BaseLayout title={title} description={description} bodyClass="home-page">
+  <Navigation
+    currentPath={Astro.url.pathname}
+    links={navLinks}
+    logo={{
+      src: '/images/speck-logo.svg',
+      alt: 'Speck',
+      href: '/',
+    }}
+  />
+
+  <main id="main-content" class="home-main">
+    <slot />
+  </main>
+
+  <footer class="home-footer">
+    <div class="container footer-content">
+      <div class="footer-section">
+        <h4>Speck</h4>
+        <p>Claude Code-Optimized Specification Framework</p>
+      </div>
+      <div class="footer-section">
+        <h4>Links</h4>
+        <ul>
+          <li><a href="/docs/getting-started/quick-start">Quick Start</a></li>
+          <li><a href="/docs/commands/reference">Commands</a></li>
+          <li><a href="/comparison">Comparison</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="https://github.com/nprbst/speck" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href="https://github.com/nprbst/speck/issues" target="_blank" rel="noopener noreferrer">Issues</a></li>
+          <li><a href="https://github.com/nprbst/speck/discussions" target="_blank" rel="noopener noreferrer">Discussions</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <ThemeToggle position="footer" />
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>&copy; {new Date().getFullYear()} Speck. MIT License.</p>
+    </div>
+  </footer>
+</BaseLayout>
+
+<style>
+  .home-main {
+    min-height: calc(100vh - 4rem);
+  }
+
+  .home-footer {
+    background: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-2xl) 0 var(--space-xl);
+    margin-top: var(--space-2xl);
+  }
+
+  .footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
+  }
+
+  .footer-section h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+    color: var(--color-text);
+  }
+
+  .footer-section p {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .footer-section ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .footer-section li {
+    margin-bottom: var(--space-xs);
+  }
+
+  .footer-section a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color var(--transition-fast);
+  }
+
+  .footer-section a:hover {
+    color: var(--color-accent);
+  }
+
+  .footer-bottom {
+    text-align: center;
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .footer-bottom p {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+</style>

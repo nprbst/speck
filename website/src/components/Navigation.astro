@@ -1,0 +1,230 @@
+---
+/**
+ * Navigation Component
+ * Header navigation with logo, links, and mobile hamburger menu
+ */
+
+export interface NavLink {
+  text: string;
+  href: string;
+  external?: boolean;
+}
+
+export interface Props {
+  currentPath: string;
+  links: NavLink[];
+  logo: {
+    src: string;
+    alt: string;
+    href: string;
+  };
+  mobileBreakpoint?: number;
+}
+
+const { currentPath, links, logo, mobileBreakpoint = 768 } = Astro.props;
+---
+
+<header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label="Main navigation">
+      <a href={logo.href} class="logo-link">
+        <img src={logo.src} alt={logo.alt} class="logo" />
+      </a>
+
+      <!-- Mobile menu button -->
+      <button
+        class="mobile-menu-toggle"
+        aria-label="Toggle mobile menu"
+        aria-expanded="false"
+        data-mobile-menu-toggle
+      >
+        <span class="hamburger"></span>
+      </button>
+
+      <!-- Navigation links -->
+      <ul class="nav-links" data-nav-links>
+        {
+          links.map((link) => (
+            <li class="nav-item">
+              <a
+                href={link.href}
+                class:list={['nav-link', { active: currentPath === link.href }]}
+                aria-current={currentPath === link.href ? 'page' : undefined}
+                target={link.external ? '_blank' : undefined}
+                rel={link.external ? 'noopener noreferrer' : undefined}
+              >
+                {link.text}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style define:vars={{ mobileBreakpoint: `${mobileBreakpoint}px` }}>
+  .site-header {
+    background-color: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+    background-color: rgba(26, 26, 26, 0.9);
+  }
+
+  [data-theme='light'] .site-header {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    gap: 2rem;
+  }
+
+  .logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .logo {
+    height: 2rem;
+    width: auto;
+  }
+
+  .nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    margin: 0;
+  }
+
+  .nav-link {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-fast);
+  }
+
+  .nav-link:hover {
+    color: var(--color-accent);
+  }
+
+  .nav-link.active {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  /* Mobile menu toggle */
+  .mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+
+  .hamburger {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--color-text);
+    position: relative;
+    transition: background var(--transition-fast);
+  }
+
+  .hamburger::before,
+  .hamburger::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: var(--color-text);
+    transition: transform var(--transition-fast);
+  }
+
+  .hamburger::before {
+    top: -6px;
+  }
+
+  .hamburger::after {
+    bottom: -6px;
+  }
+
+  /* Mobile menu open state */
+  .mobile-menu-toggle[aria-expanded='true'] .hamburger {
+    background: transparent;
+  }
+
+  .mobile-menu-toggle[aria-expanded='true'] .hamburger::before {
+    transform: rotate(45deg) translateY(6px);
+  }
+
+  .mobile-menu-toggle[aria-expanded='true'] .hamburger::after {
+    transform: rotate(-45deg) translateY(-6px);
+  }
+
+  /* Mobile styles */
+  @media (max-width: 48em) {
+    .mobile-menu-toggle {
+      display: flex;
+    }
+
+    .nav-links {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--color-bg);
+      border-bottom: 1px solid var(--color-border);
+      flex-direction: column;
+      gap: 0;
+      padding: 1rem 0;
+      display: none;
+    }
+
+    .nav-links[data-menu-open='true'] {
+      display: flex;
+    }
+
+    .nav-item {
+      width: 100%;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 0.75rem 1rem;
+    }
+  }
+</style>
+
+<script>
+  // Mobile menu toggle functionality
+  const toggle = document.querySelector('[data-mobile-menu-toggle]');
+  const navLinks = document.querySelector('[data-nav-links]');
+
+  if (toggle && navLinks) {
+    toggle.addEventListener('click', () => {
+      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', (!isExpanded).toString());
+      navLinks.setAttribute('data-menu-open', (!isExpanded).toString());
+    });
+
+    // Close menu when clicking a link
+    navLinks.querySelectorAll('.nav-link').forEach((link) => {
+      link.addEventListener('click', () => {
+        toggle.setAttribute('aria-expanded', 'false');
+        navLinks.setAttribute('data-menu-open', 'false');
+      });
+    });
+  }
+</script>

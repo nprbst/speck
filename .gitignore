@@ -24,6 +24,12 @@ coverage/
 .speck/sync-reports/
 .test-workspace-*/
 
+# Website-specific (004-public-website)
+website/dist/
+website/.astro/
+website/node_modules/
+.temp-docs-clone/
+
 # IDE
 .vscode/
 .vscode
