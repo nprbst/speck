@@ -3,8 +3,8 @@ title: "Your First Feature"
 description: "Complete walkthrough building a dark mode toggle with Speck"
 category: "examples"
 order: 1
-lastUpdated: 2025-11-16
-tags: ["tutorial", "example", "walkthrough"]
+lastUpdated: 2025-11-17
+tags: ["tutorial", "example", "walkthrough", "plugin", "skill"]
 ---
 
 # Your First Feature: Dark Mode Toggle
@@ -13,7 +13,20 @@ This tutorial walks you through building a dark mode toggle from start to finish
 
 **Time**: 30-45 minutes
 **Difficulty**: Beginner
-**Prerequisites**: Speck installed, basic understanding of web development
+**Prerequisites**: Claude Code 2.0+ with Speck plugin installed, basic understanding of web development
+
+---
+
+## Before You Begin: Install Speck
+
+If you haven't installed Speck yet:
+
+1. Open Claude Code: `claude`
+2. Type: `/plugin`
+3. Add marketplace: `speck-market`
+4. Install: `speck` plugin
+
+See the [Installation Guide](/docs/getting-started/installation) for detailed steps.
 
 ---
 
@@ -143,6 +156,24 @@ Speck analyzes your spec and asks targeted questions:
 
 Speck updates `spec.md` with clarifications encoded directly into requirements.
 
+### Using the Speck Skill
+
+Before moving to planning, you can ask Speck questions about your specification:
+
+```
+What user stories are defined in this spec?
+```
+
+```
+What are the success criteria?
+```
+
+```
+List all functional requirements
+```
+
+The Speck skill helps you understand what you've specified before diving into technical implementation.
+
 ---
 
 ## Step 3: Plan the Implementation
@@ -243,6 +274,24 @@ export interface ThemeState {
 }
 ```
 
+### Exploring the Plan with the Skill
+
+Before generating tasks, use the Speck skill to understand your technical plan:
+
+```
+What's the technical approach for this feature?
+```
+
+```
+What dependencies are needed?
+```
+
+```
+Show me the project structure
+```
+
+This helps you validate the approach before starting implementation.
+
 ---
 
 ## Step 4: Generate Tasks
@@ -286,6 +335,24 @@ Speck generates `tasks.md`:
 **Total Tasks**: 15
 **Estimated Time**: 3-4 hours
 ```
+
+### Checking Tasks with the Skill
+
+During implementation, ask Speck about task status:
+
+```
+What tasks are pending?
+```
+
+```
+Show me the task dependencies
+```
+
+```
+What's next in the implementation?
+```
+
+The skill provides real-time visibility into your progress.
 
 ---
 

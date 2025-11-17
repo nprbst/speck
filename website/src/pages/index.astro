@@ -9,11 +9,11 @@ import FeatureCard from '@/components/FeatureCard.astro';
 
 // Homepage data
 const hero = {
-  headline: "Opinionated feature specs for Claude Code",
-  subheadline: "Transform spec-kit into a Bun-powered, Claude-native workflow with TypeScript-first tooling and slash command integration",
+  headline: "Claude Plugin for opinionated feature specs",
+  subheadline: "Install in seconds with the Claude Marketplace. Use slash commands or ask questions naturally with the Speck skill - work your way.",
   ctaPrimary: {
-    text: "Get Started",
-    href: "/docs/getting-started/quick-start",
+    text: "Install Plugin",
+    href: "/docs/getting-started/installation",
   },
   ctaSecondary: {
     text: "View on GitHub",
@@ -23,8 +23,8 @@ const hero = {
 
 const features = [
   {
-    title: "Claude-Native Commands",
-    description: "Slash commands optimized for Claude Code workflow, not generic bash scripts. Type /speck.specify and let Claude guide you through the process.",
+    title: "Claude-Native Commands & Skill",
+    description: "Slash commands for actions (/speck.specify, /speck.plan) or ask questions naturally with the Speck skill. Type commands or talk to Speck - your choice.",
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>`,
   },
   {
@@ -143,18 +143,18 @@ const seo = {
         <div class="quick-start-steps">
           <div class="step">
             <div class="step-number">1</div>
-            <h3>Install Prerequisites</h3>
-            <p>Bun 1.0+, Git 2.30+, Claude Code</p>
+            <h3>Have Claude Code 2.0+</h3>
+            <p>Verify with: <code>claude --version</code></p>
           </div>
           <div class="step">
             <div class="step-number">2</div>
-            <h3>Clone Speck</h3>
-            <p>Add Speck to your project repository</p>
+            <h3>Install Plugin</h3>
+            <p>Type <code>/plugin</code> → Add speck-market → Install Speck</p>
           </div>
           <div class="step">
             <div class="step-number">3</div>
-            <h3>Run Your First Command</h3>
-            <p>Type <code>/speck.specify</code> in Claude Code</p>
+            <h3>Start Building</h3>
+            <p>Use <code>/speck.specify</code> or ask "What does Speck do?"</p>
           </div>
         </div>
         <div class="quick-start-cta">

@@ -3,68 +3,56 @@ title: "Quick Start Guide"
 description: "Install Speck and run your first command in under 10 minutes"
 category: "getting-started"
 order: 1
-lastUpdated: 2025-11-16
-tags: ["installation", "setup", "beginner"]
+lastUpdated: 2025-11-17
+tags: ["installation", "setup", "beginner", "plugin"]
 ---
 
 # Quick Start Guide
 
-Get started with Speck in under 10 minutes. This guide will walk you through installation, setup, and running your first specification command.
+Get started with Speck in under 10 minutes. This guide will walk you through plugin installation and running your first specification command.
 
 ## Prerequisites
 
-Before you begin, ensure you have the following installed:
+Before you begin, ensure you have:
 
-- **Bun 1.0+** - JavaScript runtime and package manager
-- **Git 2.30+** - Version control
-- **Claude Code** - Anthropic's official CLI
+- **Claude Code 2.0+** - With plugin system support
 
-### Installing Prerequisites
+That's it! No other dependencies required.
 
-**macOS/Linux**:
+### Verify Claude Code Version
+
 ```bash
-# Install Bun
-curl -fsSL https://bun.sh/install | bash
-
-# Verify installation
-bun --version    # Should show 1.0.0 or higher
-git --version    # Should show 2.30.0 or higher
+claude --version
+# Should show: Claude Code v2.0.0 or higher
 ```
 
-**Windows**:
-```powershell
-# Install Bun (PowerShell)
-irm bun.sh/install.ps1 | iex
-
-# Verify installations (in new terminal)
-bun --version
-git --version
-```
+**If you need to upgrade**: Visit [claude.com/code](https://claude.com/code) for the latest installer.
 
 ## Installation
 
-### 1. Clone the Repository
+### Install Speck Plugin (2 minutes)
 
-```bash
-git clone https://github.com/nprbst/speck.git
-cd speck
-```
+1. **Open Claude Code** in your project directory:
+   ```bash
+   claude
+   ```
 
-### 2. Install Dependencies
+2. **Open plugin manager**:
+   ```
+   /plugin
+   ```
 
-```bash
-bun install
-```
+3. **Add speck-market**:
+   - Select "Manage marketplaces"
+   - Select "Add marketplace"
+   - Enter: `speck-market`
 
-This installs all necessary dependencies including TypeScript support.
+4. **Install Speck**:
+   - Select "speck-market"
+   - Find "speck" in the plugin list
+   - Select "Install"
 
-### 3. Verify Installation
-
-```bash
-bun run dev --version
-```
-
-You should see output indicating Speck is ready to use.
+✅ **Done!** Speck is now installed.
 
 ## Your First Specification
 
@@ -98,10 +86,44 @@ Add a user authentication system with email and password login
 Speck will generate a `spec.md` file in `specs/001-your-feature/` with:
 
 - Feature overview
-- User stories
+- User stories and acceptance scenarios
 - Functional requirements
 - Success criteria
 - Out of scope items
+
+## Using the Speck Skill
+
+In addition to slash commands, you can ask Speck questions naturally!
+
+### Ask Questions About Your Spec
+
+Try asking:
+
+```
+What user stories are in this spec?
+```
+
+```
+What are the success criteria?
+```
+
+```
+Show me all functional requirements
+```
+
+The Speck skill understands your specs, plans, and tasks - ask it anything!
+
+### Skill vs Commands: When to Use Each
+
+- **Use the skill** for questions and understanding:
+  - "What does this spec define?"
+  - "What tasks are pending?"
+  - "What's the technical approach?"
+
+- **Use slash commands** for actions and generation:
+  - `/speck.specify` - Create new spec
+  - `/speck.plan` - Generate implementation plan
+  - `/speck.tasks` - Break down into tasks
 
 ## Next Steps
 
@@ -112,42 +134,48 @@ Now that you've created your first specification, you can:
 3. **Generate tasks**: Run `/speck.tasks` to break down the work
 4. **Implement**: Run `/speck.implement` to execute the plan
 
+Or ask the Speck skill:
+
+```
+What should I do next in the Speck workflow?
+```
+
 ## Getting Help
 
 - **Documentation**: Browse the [Commands Reference](/docs/commands/reference) for detailed command syntax
 - **Concepts**: Learn about the [Three-Phase Workflow](/docs/concepts/workflow)
 - **Examples**: See [real-world examples](/docs/examples/first-feature)
+- **Ask the skill**: Type questions naturally in Claude Code
 - **GitHub**: Report issues at [github.com/nprbst/speck](https://github.com/nprbst/speck)
 
 ## Troubleshooting
 
-### Bun not found
+### Plugin not found
 
-If you see "command not found: bun":
+If Speck doesn't appear in the marketplace:
 
-```bash
-# Restart your terminal to reload PATH
-# Or manually add Bun to PATH
-export PATH="$HOME/.bun/bin:$PATH"
-```
+1. Verify Claude Code version: `claude --version` (must be 2.0.0+)
+2. Check that speck-market marketplace was added correctly
+3. Try refreshing: `/plugin` → Manage marketplaces → speck-market → Refresh
 
-### Git errors
+### Commands not working
 
-If you see Git-related errors, ensure Git is installed and accessible:
+If slash commands don't autocomplete:
 
-```bash
-which git
-git --version
-```
+1. Verify installation: `/plugin` → View installed plugins → Check for "speck"
+2. Restart Claude Code
+3. If still not working, try reinstalling the plugin
 
-### Permission errors
+### Skill not responding
 
-If you encounter permission errors on macOS/Linux:
+If the Speck skill doesn't respond to questions:
 
-```bash
-# Make scripts executable
-chmod +x .speck/scripts/*.ts
-```
+1. Ensure you're in a directory with a `specs/` folder
+2. Try asking more specific questions:
+   ```
+   List all specs in this project
+   ```
+3. Restart Claude Code if needed
 
 ---
 
