@@ -33,7 +33,7 @@ A new user discovers Speck and wants to install it. They visit the website to le
 
 ---
 
-### User Story 2 - Understanding the Speck Skill (Priority: P2)
+### User Story 2 - Understanding the Speck skill (Priority: P2)
 
 Users want to understand how to work with Speck specifications, plans, and tasks. They need to know about the Speck skill feature that allows interaction without using slash commands.
 
@@ -58,7 +58,7 @@ Users want to understand how to work with Speck specifications, plans, and tasks
 
 ### Functional Requirements
 
-- **FR-001**: Website MUST display plugin installation instructions using `/plugins` command as the primary installation method
+- **FR-001**: Website MUST display plugin installation instructions using `/plugin` command as the primary installation method
 - **FR-002**: Website MUST document the Speck skill feature and explain its purpose for working with specs, plans, and tasks
 - **FR-003**: Website MUST remove or update all references to git clone as the installation method
 - **FR-004**: Website MUST document minimum Claude Code version required for plugin support and provide upgrade instructions for incompatible versions
@@ -71,15 +71,15 @@ Users want to understand how to work with Speck specifications, plans, and tasks
 ### Key Entities
 
 - **Installation Instructions**: Primary content describing how users install Speck via the Claude plugin system, including prerequisites, steps, and verification
-- **Speck Skill Documentation**: Content explaining the Speck skill feature, its capabilities, use cases, and how it complements slash commands
+- **Speck skill Documentation**: Content explaining the Speck skill feature, its capabilities, use cases, and how it complements slash commands
 - **Plugin Update Guide**: Content explaining how to update the Speck plugin using the Claude Marketplace system (`/plugin` > "Manage marketplaces" > "speck-market" > "Update marketplace")
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: New users can successfully install Speck by following website instructions in under 5 minutes
-- **SC-002**: 100% of installation documentation references the `/plugins` method, with zero references to git clone as the primary method
-- **SC-003**: Users can understand the difference between slash commands and the Speck skill within 2 minutes of reading the documentation
+- **SC-001**: New users can successfully install Speck by following website instructions in under 5 minutes (measured from first viewing installation page to verified plugin installation)
+- **SC-002**: 100% of installation documentation references the `/plugin` method, with zero references to git clone as the primary method
+- **SC-003**: Users can understand the difference between slash commands and the Speck skill within 2 minutes of starting to read the workflow.md skill section
 - **SC-004**: Website content accurately reflects features introduced in specs 002 (plugin packaging) and 005 (Speck skill)
 - **SC-005**: Plugin update instructions clearly explain the Claude Marketplace update workflow
