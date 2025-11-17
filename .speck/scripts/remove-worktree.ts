@@ -571,7 +571,23 @@ async function main(): Promise<void> {
       console.log(
         "Use --auto-confirm to skip this prompt in non-interactive mode"
       );
-      process.exit(ExitCode.USER_ERROR);
+      console.log("");
+
+      // Interactive confirmation prompt
+      const readline = await import("node:readline/promises");
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+
+      const answer = await rl.question("Do you want to proceed? (yes/no): ");
+      rl.close();
+
+      if (answer.toLowerCase() !== "yes" && answer.toLowerCase() !== "y") {
+        console.log("Removal cancelled.");
+        process.exit(ExitCode.USER_ERROR);
+      }
+      console.log("");
     }
 
     if (hasIssues && options.force && !options.json) {
