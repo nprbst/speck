@@ -46,7 +46,7 @@ Source scripts: `.specify/scripts/`
 - [X] T006 [P] Create JSON schema contracts in `specs/002-claude-plugin-packaging/contracts/command-frontmatter.schema.json` for command validation
 - [X] T007 [P] Create JSON schema contracts in `specs/002-claude-plugin-packaging/contracts/agent-frontmatter.schema.json` for agent validation
 - [X] T008 Create build script skeleton in `scripts/build-plugin.ts` with Bun imports and basic structure
-- [X] T009 Implement version detection from `package.json` in `scripts/build-plugin.ts`
+- [X] T009 Implement version detection from `package.json` in `scripts/build-plugin.ts` (reads current version dynamically - no hardcoded "0.1.0" requirement per FR-009 clarification)
 - [X] T010 Implement directory creation utilities in `scripts/build-plugin.ts` (mkdir, copy functions)
 - [X] T010f Create `hooks/hooks.json` at repository root with SessionStart hook configuration pointing to scripts/setup-env.sh
 - [X] T010g Create `scripts/setup-env.sh` bash script with shebang and CLAUDE_ENV_FILE detection logic
@@ -70,7 +70,7 @@ Source scripts: `.specify/scripts/`
 - [X] T012 [P] [US1] Create marketplace.json manifest generator in `scripts/build-plugin.ts` with marketplace structure per marketplace.schema.json
 - [X] T013 [US1] Implement command file copy logic in `scripts/build-plugin.ts` to copy `.claude/commands/*.md` to `dist/plugin/commands/`
 - [X] T014 [US1] Implement agent file copy logic in `scripts/build-plugin.ts` to copy `.claude/agents/*.md` to `dist/plugin/agents/`
-- [X] T015 [US1] Implement template file copy logic in `scripts/build-plugin.ts` to copy `.specify/templates/*` to `dist/plugin/templates/`
+- [X] T015 [US1] Implement template file copy logic in `scripts/build-plugin.ts` to copy `.specify/templates/*` to `dist/plugin/templates/` (NOTE: skills/ directory copy is intentionally skipped per FR-003 removal - speck-runner.md exists but is deprecated legacy artifact)
 - [X] T016 [US1] Implement script file copy logic in `scripts/build-plugin.ts` to copy `.specify/scripts/*` to `dist/plugin/scripts/`
 - [X] T016a [P] [US1] Implement constitution file copy logic in `scripts/build-plugin.ts` to copy `.specify/memory/constitution.md` to `dist/plugin/memory/` if it exists
 - [X] T016b [P] [US1] Implement .speck/scripts/ copy logic in `scripts/build-plugin.ts` to copy `.speck/scripts/*.ts` to `dist/plugin/scripts/` for speck-runner skill access
@@ -80,6 +80,7 @@ Source scripts: `.specify/scripts/`
 - [X] T020 [US1] Implement manifest JSON validation in `scripts/build-plugin.ts` to verify plugin.json and marketplace.json parse correctly
 - [X] T021 [US1] Implement missing file detection in `scripts/build-plugin.ts` to fail build if required files absent
 - [X] T022 [US1] Add build output logging in `scripts/build-plugin.ts` showing package size, file counts, and validation results
+- [X] T022b [US1] Validate all error messages (size limit FR-025, version format FR-026, missing commands FR-027, executable permissions FR-031) follow FR-024/FR-030 structured pattern with failure type, state, and actionable guidance
 - [X] T022a [US1] Implement BUILD FAILED error message pattern in `scripts/build-plugin.ts` following format: "BUILD FAILED: [description]. [details]. Action: [fix]" per FR-030
 - [X] T023 [US1] Create initial plugin.json manifest in `.claude-plugin/plugin.json` with name "speck", version "0.1.0", required metadata
 - [X] T024 [US1] Create initial marketplace.json manifest in `.claude-plugin/marketplace.json` with Speck plugin entry
@@ -96,9 +97,9 @@ Source scripts: `.specify/scripts/`
 
 ## Phase 4: User Story 4 - Discover Plugin Capabilities (Priority: P2)
 
-**Goal**: Provide comprehensive documentation and marketplace listing content so users can understand Speck's capabilities before installing
+**Goal**: Provide comprehensive documentation and marketplace listing content so users can understand Speck's capabilities before installing (fulfills FR-016 usage documentation requirement via README.md)
 
-**Independent Test**: View generated README.md and verify it clearly explains what Speck does, lists all commands with descriptions, and includes installation instructions
+**Independent Test**: View generated dist/plugin/README.md and verify it clearly explains what Speck does, lists all commands with descriptions, includes installation instructions, and meets FR-016 marketplace display requirements
 
 ### Implementation for User Story 4
 

@@ -15,11 +15,23 @@ Package Speck as an installable Claude Code plugin for distribution via Claude M
 **Primary Dependencies**: Bun shell API, JSON/YAML parsers, file system operations
 **Storage**: File-based (markdown commands, JSON manifests, templates)
 **Testing**: Bun test framework for build script validation
-**Target Platform**: Claude Code 2.0+ plugin system (cross-platform: macOS, Linux, Windows)
+**Target Platform**: Claude Code 2.0.0+ plugin system (cross-platform: macOS, Linux, Windows)
 **Project Type**: Build tooling and packaging (generates plugin artifacts from existing codebase)
 **Performance Goals**: Build completes in <5 seconds, package size under 5MB
-**Constraints**: Must conform to Claude Plugin specification (.claude-plugin/plugin.json + marketplace.json), preserve existing command/agent functionality
+**Constraints**: Must conform to Claude Plugin specification (.claude-plugin/plugin.json + marketplace.json), preserve existing command/agent functionality, git 2.30+ required at runtime (not validated at build time per FR-023-NOTE)
 **Scale/Scope**: Package 20+ slash commands, 2+ agents, 10+ templates, constitution files
+
+**Implementation Patterns (FR-006b, FR-007-NEW, FR-007b, FR-028, FR-029)**:
+
+Session initialization is implemented via:
+- SessionStart hook in `hooks/hooks.json` executes `scripts/setup-env.sh` at session start
+- setup-env.sh bash script detects `CLAUDE_ENV_FILE` environment variable (present in plugin context)
+- If present: writes `export SPECK_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}/.speck"` to `CLAUDE_ENV_FILE`
+- If absent: no action (standalone repository context)
+- Commands use bash parameter expansion pattern: `bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/<script>.ts`
+  - Plugin context: expands to `${CLAUDE_PLUGIN_ROOT}/.speck/scripts/<script>.ts`
+  - Standalone context: expands to `.speck/scripts/<script>.ts`
+- Debugging output: `echo "DEBUG: $(env | grep PLUGIN)"` at command start for path verification
 
 ## Constitution Check
 

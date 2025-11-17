@@ -158,8 +158,11 @@ accurate.
 - **Missing SessionStart hook configuration**: If hooks/hooks.json is missing or doesn't include the SessionStart hook for setup-env.sh, build fails with structured error: "BUILD FAILED: Missing SessionStart hook in hooks/hooks.json. Action: Add hook configuration to execute scripts/setup-env.sh at session start."
 
 **Runtime concerns (plugin context):**
-- **SessionStart hook failure**: If setup-env.sh fails to execute or cannot write to CLAUDE_ENV_FILE, commands fall back to bash default `${SPECK_PLUGIN_ROOT:-".speck"}` which resolves to `.speck` (may fail if scripts not in expected location)
-- **CLAUDE_ENV_FILE not available**: Commands use bash parameter expansion fallback; script execution proceeds with `.speck` path (expected to fail in plugin context where scripts are at `${CLAUDE_PLUGIN_ROOT}/.speck`)
+- **SessionStart hook failure - script not executable**: If setup-env.sh lacks executable permissions (chmod +x not set during build), hook fails silently; commands fall back to `${SPECK_PLUGIN_ROOT:-".speck"}` resolving to `.speck` (fails in plugin context where scripts are at `${CLAUDE_PLUGIN_ROOT}/.speck`)
+- **SessionStart hook failure - CLAUDE_ENV_FILE write error**: If CLAUDE_ENV_FILE path is read-only, directory doesn't exist, or disk is full, write fails; commands fall back to `.speck` path (fails in plugin context)
+- **SessionStart hook failure - bash not available**: If bash interpreter is missing or has different path than `/bin/bash`, hook fails to execute; commands fall back to `.speck` path (fails in plugin context)
+- **SessionStart hook failure - syntax error in script**: If setup-env.sh contains syntax errors, script fails to execute; commands fall back to `.speck` path (fails in plugin context)
+- **CLAUDE_ENV_FILE not available**: Commands use bash parameter expansion fallback; script execution proceeds with `.speck` path (expected behavior in standalone repository context, failure in plugin context where scripts are at `${CLAUDE_PLUGIN_ROOT}/.speck`)
 
 **Note:** Installation, update, failure recovery, dependency validation, and runtime conflicts are handled by the Claude Plugin system and are out of scope for this feature.
 
@@ -171,28 +174,29 @@ accurate.
 - **FR-001**: The build system MUST generate a plugin package containing all Speck slash commands from .claude/commands/ directory (including but not limited to: /speck.specify, /speck.plan, /speck.clarify, /speck.tasks, /speck.implement, /speck.analyze, /speck.constitution, /speck.checklist, /speck.taskstoissues)
 - **FR-002**: The build system MUST include all Speck agent definitions in the plugin package (agents discovered in `.claude/agents/`: speck.transform-bash-to-bun.md, speck.transform-commands.md)
 - **FR-003**: ~~The build system MUST include a single "speck-runner" skill in the plugin package that wraps all script execution with script-name parameter interface~~ (REMOVED - superseded by direct bash execution approach)
+- **FR-003-NOTE**: The .claude/skills/ directory contains legacy speck-runner.md artifact from superseded architecture and is intentionally excluded from plugin package
 - **FR-004**: The build system MUST include all required templates (.specify/templates/*) in the plugin package
 - **FR-005**: The build system MUST include all required scripts (.speck/scripts/*) in the plugin package
 - **FR-006**: The build system MUST include all constitution templates and principles in the plugin package
-- **FR-006b**: The build system MUST include the setup-env.sh bash script that writes `SPECK_PLUGIN_ROOT` environment variable to `CLAUDE_ENV_FILE`
-- **FR-007-NEW**: Slash commands MUST use bash script invocations with the pattern `bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/<script-name>.ts` to allow context-aware path resolution with fallback to standalone repository structure
-- **FR-007b**: Slash commands MUST include debugging output `echo "DEBUG: $(env | grep PLUGIN)"` at the beginning of bash execution steps to verify environment variable setup for troubleshooting path resolution issues
-- **FR-028**: The plugin package MUST include a SessionStart hook that executes a setup script (`scripts/setup-env.sh`) to write `export SPECK_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}/.speck"` to the `CLAUDE_ENV_FILE`, making the plugin scripts directory available to all subsequent bash commands throughout the session
-- **FR-029**: The setup script MUST only write to `CLAUDE_ENV_FILE` when the variable is present (plugin context); in standalone repository context (no `CLAUDE_ENV_FILE`), commands fall back to `.speck` via bash parameter expansion default value
+- **FR-006b**: The plugin package MUST include a session initialization mechanism that makes plugin script paths available to all commands throughout the session
+- **FR-007-NEW**: Slash commands MUST be able to locate and execute scripts in both plugin installation context and standalone repository context without modification
+- **FR-007b**: Slash commands MUST provide diagnostic output to verify script path resolution for troubleshooting
+- **FR-028**: The plugin package MUST include a session initialization hook that establishes the plugin script directory path for use by all subsequent commands
+- **FR-029**: The session initialization mechanism MUST detect execution context (plugin vs standalone repository) and configure paths appropriately for each context
 
 **Plugin Metadata**
 - **FR-007**: The plugin manifest MUST use "Speck" as the plugin name
 - **FR-008**: The plugin manifest MUST declare git repository as the plugin identifier (per Claude Plugin conventions)
-- **FR-009**: The plugin manifest MUST use version "0.1.0" for the initial release
+- **FR-009**: The plugin manifest MUST use semantic version from package.json (expected to be "0.1.0" for initial release, but dynamically read per T009 version detection)
 - **FR-010**: The plugin manifest MUST declare git as a required dependency
 - **FR-011**: The plugin manifest MUST declare shell/bash access as a required dependency
 - **FR-012**: The plugin manifest MUST include version information following semantic versioning format
 - **FR-013**: The plugin manifest MUST include comprehensive metadata: description, author, license, keywords
-- **FR-014**: The plugin manifest MUST specify compatible Claude Code version requirements (minimum version: Claude Code 2.0+ per plan.md technical context)
+- **FR-014**: The plugin manifest MUST specify compatible Claude Code version requirements (minimum version: Claude Code 2.0.0 for plugin system support)
 - **FR-015**: The plugin manifest SHOULD document that user project files (specs/, plans, tasks) are preserved during uninstall (actual preservation handled by Claude Plugin system - no build process validation required)
 
 **Documentation & Marketplace Content**
-- **FR-016**: The plugin package MUST include usage documentation for marketplace display
+- **FR-016**: The plugin package MUST include usage documentation (README.md) for marketplace display, including installation instructions, command reference, quick start guide, and system requirements
 - **FR-017**: The plugin package MUST include a changelog documenting version history with initial 0.1.0 entry
 - **FR-018**: The marketplace listing content MUST include clear description of Speck's capabilities
 - **FR-019**: The marketplace listing content MUST include examples of primary commands with expected outputs
@@ -206,18 +210,19 @@ accurate.
 
 **Build Validation & Error Handling**
 - **FR-024**: The build MUST fail with structured error messages that include: (1) failure type, (2) specific invalid state detected, (3) actionable guidance for resolution (e.g., missing file path and purpose, expected format example, suggested remediation steps)
-- **FR-025**: The build MUST fail with a descriptive error if the total package size exceeds 5MB, including size breakdown by component type
+- **FR-025**: The build MUST fail with a descriptive error if FR-022 size limit is exceeded, including size breakdown by component type (commands, agents, templates, scripts)
 - **FR-026**: The build MUST fail with a descriptive error if the version number doesn't conform to semantic versioning format, including example of correct format
 - **FR-027**: The build MUST validate that all declared slash commands have corresponding implementation files
 - **FR-030**: All build validation errors MUST follow the pattern "BUILD FAILED: [description of what failed]. [Current state details]. Action: [specific steps to fix]"
+- **FR-031**: The build MUST validate that scripts/setup-env.sh has executable permissions set (chmod +x) before copying to dist/plugin/, failing with structured error if permissions are incorrect
 
 ### Key Entities
 
 - **Plugin Package**: The distributable artifact containing all Speck components
   (commands, agents, templates, scripts, SessionStart hook), with metadata, version
   information, and installation instructions
-- **SessionStart Hook**: A Claude Code hook configuration that executes setup-env.sh script when a new Claude session begins; the script writes `export SPECK_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}/.speck"` to `CLAUDE_ENV_FILE`, making the plugin scripts directory path available to all bash commands throughout the session
-- **Setup Script (setup-env.sh)**: Bash script that detects plugin context (presence of `CLAUDE_ENV_FILE`) and writes `SPECK_PLUGIN_ROOT` environment variable for session-persistent path resolution; commands use `${SPECK_PLUGIN_ROOT:-".speck"}` pattern to fall back to `.speck` in standalone repository context
+- **Session Initialization Hook**: A hook configuration that establishes plugin script paths when a new Claude session begins, making the plugin scripts directory available to all commands throughout the session
+- **Context Detection Script**: Script that detects execution context (plugin installation vs standalone repository) and configures environment paths for session-persistent script resolution with appropriate fallback behavior
 - **Marketplace Listing**: The public-facing page in Claude Marketplace showing
   plugin name, description, features, screenshots, version history, ratings, and
   installation button
@@ -245,10 +250,8 @@ accurate.
   functionality and file structure
 - **SC-006**: Users can access complete plugin documentation without leaving the
   Claude Marketplace interface
-- **SC-007**: The plugin package size is under 5MB to ensure fast download and
-  installation
-- **SC-008**: Plugin marketplace page receives an average rating of 4.0+ stars
-  from users (once ratings are available)
+- **SC-007**: Build validation enforces FR-022 package size limit (under 5MB) with 100% failure rate for oversized packages
+- **SC-008**: Post-launch metric: Plugin marketplace page receives an average rating of 4.0+ stars from users within 90 days of initial release (tracked but not validated during build)
 
 ## Scope Boundaries
 
@@ -284,7 +287,7 @@ accurate.
 - Plugin analytics or usage tracking
 - Paid/premium features or pricing tiers
 - Integration with external package managers outside Claude ecosystem
-- Backward compatibility with pre-plugin Speck installations
+- Backward compatibility with pre-plugin Speck installations (NOTE: Forward compatibility is IN SCOPE - plugin commands work in standalone repository context via ${SPECK_PLUGIN_ROOT:-".speck"} fallback per FR-007-NEW)
 
 ## Assumptions
 
