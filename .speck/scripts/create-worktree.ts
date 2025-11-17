@@ -42,6 +42,7 @@ interface WorktreeConfig {
 const ITEMS_TO_COPY = [
   ".env",
   ".envrc",
+  ".claude/settings.local.json",
 ];
 
 /**
@@ -215,7 +216,7 @@ async function getGitConfig(): Promise<{
   ) {
     throw new Error(
       `Directory is named '${currentDirName}' but current branch is '${currentBranch}'\n` +
-        `This script expects to be run from your main worktree on the main/master branch.`
+      `This script expects to be run from your main worktree on the main/master branch.`
     );
   }
 
