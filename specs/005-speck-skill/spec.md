@@ -73,10 +73,10 @@ A user wants to verify their spec.md follows the correct structure. They ask Cla
 
 ### Edge Cases
 
-- What happens when a user references a feature number that doesn't exist (e.g., "Tell me about feature 999")?
-- How does the skill handle specs/plans/tasks that are malformed or missing expected sections?
-- What if user asks about a file type that doesn't exist in Speck structure (e.g., "Show me the deployment.md")?
-- How does Claude distinguish between different features with similar names (e.g., 001-user-auth vs 003-auth-tokens)?
+- **Non-existent feature reference**: When user references a feature that doesn't exist (e.g., "Tell me about feature 999"), search for partial matches in feature directory names and suggest alternatives (e.g., "Feature 999 not found. Did you mean: 099-payment-gateway?")
+- **Malformed or incomplete files**: Parse gracefully, extract whatever sections are available, and warn user about missing or malformed parts (e.g., "This spec.md is missing the mandatory Success Criteria section")
+- **Invalid file type requests**: Explain the requested file doesn't exist in Speck structure, list valid file types (spec.md, plan.md, tasks.md), and suggest which might contain the information they're looking for
+- **Similar feature names in conversation**: Use most recently mentioned feature as context for follow-up questions; when ambiguous (e.g., both "user-auth" and "auth-tokens" recently mentioned), ask user for clarification
 - What if templates are updated but existing specs follow old structure?
 
 ## Requirements *(mandatory)*
@@ -109,13 +109,23 @@ A user wants to verify their spec.md follows the correct structure. They ask Cla
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can ask natural language questions about any Speck artifact (spec/plan/tasks) and receive accurate answers without running slash commands in 95% of cases
-- **SC-002**: Claude correctly identifies and extracts information from specific sections (e.g., "What are the functional requirements?") with 100% accuracy when section exists
+- **SC-001**: Users can ask natural language questions about any Speck artifact (spec/plan/tasks) and receive accurate answers without running slash commands in 95% of cases (measured by: 100 representative question dataset covering all user stories, manual validation that Claude's response correctly extracts requested information, pass threshold: ≥95 correct responses)
+- **SC-002**: Claude correctly identifies and extracts information from specific sections (e.g., "What are the functional requirements?") with 100% accuracy when section exists (accuracy defined as: extracts all content between section header and next same-level header without omissions or hallucinations, correctly handles nested subsections)
 - **SC-003**: Skill activates automatically within 1 conversational turn when user mentions feature numbers, spec/plan/tasks files, or Speck-related questions
-- **SC-004**: Users report 80% reduction in need to manually run `/speck.specify`, `/speck.plan`, or `/speck.tasks` commands for reading/understanding existing artifacts
+- **SC-004**: Users report 80% reduction in need to manually run `/speck.specify`, `/speck.plan`, or `/speck.tasks` commands for reading/understanding existing artifacts (baseline: ~10 manual slash commands per session for reading artifacts, target: ≤2 commands per session)
 - **SC-005**: Claude provides helpful guidance when files or sections are missing, suggesting correct next steps based on Speck workflow (e.g., "Run /speck.specify to create spec first")
 - **SC-006**: Template comparison requests identify missing mandatory sections with 100% accuracy
 - **SC-007**: Users can switch between discussing multiple features in same conversation without confusion or misidentification
+
+## Clarifications
+
+### Session 2025-11-16
+
+- Q: How should the skill activate automatically based on user context? → A: Skill activation via concise, carefully formatted `description` in frontmatter for high trigger likelihood (implementation details deferred to planning)
+- Q: What happens when a user references a feature number that doesn't exist? → A: Search for partial matches and suggest alternatives
+- Q: How does the skill handle specs/plans/tasks that are malformed or missing expected sections? → A: Parse gracefully, extract available sections, warn about missing/malformed parts
+- Q: What if user asks about a file type that doesn't exist in Speck structure? → A: Explain the file doesn't exist in Speck structure, list valid file types, suggest which might contain relevant info
+- Q: How does Claude distinguish between different features with similar names in multi-feature conversations? → A: Use most recently mentioned feature as context, ask for clarification if ambiguous
 
 ## Assumptions
 
@@ -124,4 +134,4 @@ A user wants to verify their spec.md follows the correct structure. They ask Cla
 - Spec, plan, and tasks files use consistent markdown section headers (## for main sections)
 - Users will reference features using either number (e.g., "003"), short-name (e.g., "user-auth"), or full directory name (e.g., "003-user-auth")
 - The skill should be non-destructive - only read and interpret files, never modify them without explicit user request
-- Claude Code's skill system supports auto-activation based on context triggers defined in YAML frontmatter
+- Skill activation relies on concise, carefully formatted `description` field in YAML frontmatter to maximize trigger probability

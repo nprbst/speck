@@ -10,6 +10,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 - TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary) (001-speck-core-project)
 - Claude Code plugin system 2.0+: .claude-plugin/plugin.json manifest, .claude-plugin/marketplace.json listing, Markdown commands/agents with YAML frontmatter, JSON schema validation (002-claude-plugin-packaging)
 - Build tooling: Bun shell API for file operations, JSON/YAML parsing, package size validation (<5MB), semantic versioning from package.json (002-claude-plugin-packaging)
+- Markdown with YAML frontmatter (Claude Code skill format) + Claude Code plugin system 2.0+, existing Speck templates in `.specify/templates/` (005-speck-skill)
+- File-based, reads from `specs/NUM-short-name/` directories and `.specify/templates/` (005-speck-skill)
 
 ## Project Structure
 
@@ -61,11 +63,9 @@ tree dist/plugin/    # Inspect structure
 TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary): Follow standard conventions
 
 ## Recent Changes
+- 005-speck-skill: Added Markdown with YAML frontmatter (Claude Code skill format) + Claude Code plugin system 2.0+, existing Speck templates in `.specify/templates/`
 - 002-claude-plugin-packaging: Added Claude Code plugin system 2.0+ with plugin.json manifest, marketplace.json listing, build tooling for packaging
 - 002-claude-plugin-packaging: Implemented build process with size validation (<5MB), JSON schema contracts, semantic versioning
-- 001-speck-core-project: Added TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary - out of scope after clarification) + Bun runtime, Bun Shell API, GitHub REST API (for fetching releases), Claude Code slash command and agent system
-- 001-speck-core-project: Added TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary) + Bun runtime, Git 2.30+, Claude Code (slash command + agent support)
-- 001-speck-core-project: Added TypeScript 5.3+
 
 
 <!-- MANUAL ADDITIONS START -->
