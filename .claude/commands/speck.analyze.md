@@ -10,17 +10,6 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
-## Script Path Resolution
-
-**IMPORTANT**: Detect execution context before running any scripts:
-
-1. Check if `CLAUDE_PLUGIN_ROOT` environment variable is set (run `echo $CLAUDE_PLUGIN_ROOT`)
-2. Set paths based on context:
-   - **Plugin context** (if CLAUDE_PLUGIN_ROOT is set): Use `$CLAUDE_PLUGIN_ROOT/.speck/scripts/` for scripts
-   - **Standalone context** (if CLAUDE_PLUGIN_ROOT is empty): Use `.speck/scripts/` for scripts
-
-Throughout this command, when you see `.speck/scripts/scriptname.ts`, replace it with the resolved path from above.
-
 ## Goal
 
 Identify inconsistencies, duplications, ambiguities, and underspecified items across the three core artifacts (`spec.md`, `plan.md`, `tasks.md`) before implementation. This command MUST run only after `/speck.tasks` has successfully produced a complete `tasks.md`.

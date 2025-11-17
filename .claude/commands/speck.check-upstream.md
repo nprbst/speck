@@ -14,13 +14,11 @@ the user.
 
 1. Run the check-upstream script:
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/check-upstream.ts
    ```
 
 2. If the user requested JSON output, run with --json flag:
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/check-upstream.ts --json
    ```
 

@@ -18,17 +18,6 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
-## Script Path Resolution
-
-**IMPORTANT**: Detect execution context before running any scripts:
-
-1. Check if `CLAUDE_PLUGIN_ROOT` environment variable is set (run `echo $CLAUDE_PLUGIN_ROOT`)
-2. Set paths based on context:
-   - **Plugin context** (if CLAUDE_PLUGIN_ROOT is set): Use `$CLAUDE_PLUGIN_ROOT/.speck/scripts/` for scripts
-   - **Standalone context** (if CLAUDE_PLUGIN_ROOT is empty): Use `.speck/scripts/` for scripts
-
-Throughout this command, when you see `.speck/scripts/scriptname.ts`, replace it with the resolved path from above.
-
 ## Outline
 
 The text the user typed after `/speck.specify` in the triggering message **is** the feature description. Assume you always have it available in this conversation even if `$ARGUMENTS` appears literally below. Do not ask the user to repeat it unless they provided an empty command.
@@ -51,7 +40,6 @@ Given that feature description, do this:
 
    a. First, fetch all remote branches to ensure we have the latest information:
       ```bash
-      echo "DEBUG: $(env | grep PLUGIN)"
       git fetch --all --prune
       ```
 

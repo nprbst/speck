@@ -15,13 +15,11 @@ provided by the user and present the results.
 1. Extract the version argument from the user's command
 2. Run the pull-upstream script:
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/pull-upstream.ts <version>
    ```
 
 3. If the user requested JSON output, run with --json flag:
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/pull-upstream.ts <version> --json
    ```
 

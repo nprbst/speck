@@ -28,7 +28,6 @@ upstream release by sequentially invoking two specialized transformation agents.
 
 2. **Check Bun runtime**:
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    bun --version
    ```
    - If Bun not found, show error with installation instructions:
@@ -45,7 +44,6 @@ upstream release by sequentially invoking two specialized transformation agents.
    - If `--version <version>` provided: use that version
    - Otherwise: resolve `upstream/latest` symlink to get version
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    readlink upstream/latest
    ```
    - Example: `upstream/latest` → `v0.0.85`
@@ -66,7 +64,6 @@ Find source files to transform and detect changes from previous version:
 
 1. **Detect previous transformed version**:
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    # Find the most recent transformed version in upstream/releases.json
    # This will be used as the baseline for diff detection
    ```
@@ -78,21 +75,18 @@ Find source files to transform and detect changes from previous version:
 
 2. **Find bash scripts**:
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    find upstream/<version>/.specify/scripts/bash -name "*.sh" -type f
    ```
    - Count total bash scripts found
 
 3. **Find speckit commands**:
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    find upstream/<version>/.claude/commands -name "speckit.*.md" -type f
    ```
    - Count total command files found
 
 4. **Detect changed bash scripts** (if `PREV_VERSION` exists):
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    diff -qr upstream/<PREV_VERSION>/.specify/scripts/bash/ upstream/<version>/.specify/scripts/bash/ | grep "\.sh"
    ```
    - Parse diff output to identify:
@@ -105,7 +99,6 @@ Find source files to transform and detect changes from previous version:
 
 5. **Detect changed speckit commands** (if `PREV_VERSION` exists):
    ```bash
-   echo "DEBUG: $(env | grep PLUGIN)"
    diff -qr upstream/<PREV_VERSION>/.claude/commands/ upstream/<version>/.claude/commands/ | grep "speckit\."
    ```
    - Parse diff output to identify:
@@ -400,14 +393,12 @@ Record factoring decisions in `.speck/transformation-history.json`:
 Update `upstream/releases.json` with transformation status:
 
 ```bash
-echo "DEBUG: $(env | grep PLUGIN)"
 bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/common/json-tracker.ts update-status <version> transformed
 ```
 
 Or if any agent failed:
 
 ```bash
-echo "DEBUG: $(env | grep PLUGIN)"
 bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/common/json-tracker.ts update-status <version> failed "<error message>"
 ```
 
