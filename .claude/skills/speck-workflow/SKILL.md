@@ -888,6 +888,32 @@ If skill doesn't activate when expected:
 
 ---
 
+## Slash Command Reference
+
+This skill is for **reading and understanding** existing Speck artifacts. When users need to **create or modify** files, guide them to these slash commands:
+
+| Command | Purpose | Example Trigger Phrase |
+|---------|---------|------------------------|
+| `/speck.specify` | Create or update feature specification | "Run /speck.specify to create a new spec" |
+| `/speck.clarify` | Resolve ambiguities and add missing sections | "Run /speck.clarify to resolve [NEEDS CLARIFICATION] markers" |
+| `/speck.plan` | Generate implementation plan from spec | "Run /speck.plan to create the implementation plan" |
+| `/speck.tasks` | Generate actionable task breakdown | "Run /speck.tasks to create a task list" |
+| `/speck.analyze` | Check cross-artifact consistency and quality | "Run /speck.analyze to validate spec/plan/tasks consistency" |
+| `/speck.implement` | Execute tasks from tasks.md | "Run /speck.implement to start implementation" |
+
+**When to Suggest Commands**:
+- **Missing spec.md** → Suggest `/speck.specify "Feature description"`
+- **[NEEDS CLARIFICATION] markers** → Suggest `/speck.clarify`
+- **Missing plan.md** → Suggest `/speck.plan`
+- **Missing tasks.md** → Suggest `/speck.tasks`
+- **Incomplete sections or new requirements** → Suggest `/speck.clarify` or manual editing
+- **After clarification** → Suggest `/speck.analyze` to check consistency
+- **After task generation** → Suggest `/speck.implement` to execute tasks
+
+**For complete command list**: Direct users to type `/help` in Claude Code.
+
+---
+
 ## Summary
 
 This skill enables natural language interaction with Speck workflow artifacts:

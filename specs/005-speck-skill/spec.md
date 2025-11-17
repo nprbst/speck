@@ -71,13 +71,30 @@ A user wants to verify their spec.md follows the correct structure. They ask Cla
 
 ---
 
+### User Story 5 - Provide Slash Command Guidance (Priority: P2)
+
+A user encounters a workflow gap (missing spec, incomplete plan, or wants to modify artifacts) and Claude provides contextual hints about which Speck slash commands can help, without requiring the user to memorize command syntax.
+
+**Why this priority**: Important for workflow continuity - helps users discover and learn slash commands naturally when needed, reducing friction in the Speck workflow.
+
+**Independent Test**: Can be tested by asking "How do I create a new spec?" and verifying Claude suggests /speck.specify with brief usage guidance.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user asks about a non-existent spec.md, **When** Claude responds about the missing file, **Then** Claude suggests running /speck.specify to create it
+2. **Given** a user has a spec.md with [NEEDS CLARIFICATION] markers, **When** they ask how to resolve them, **Then** Claude mentions /speck.clarify as the appropriate workflow step
+3. **Given** a user asks "What Speck commands are available?", **When** the skill responds, **Then** it lists the main slash commands with 1-sentence descriptions of their purpose
+4. **Given** a user is viewing a spec and asks "What's next?", **When** no plan.md exists, **Then** Claude suggests /speck.plan as the logical next workflow step
+
+---
+
 ### Edge Cases
 
 - **Non-existent feature reference**: When user references a feature that doesn't exist (e.g., "Tell me about feature 999"), search for partial matches in feature directory names and suggest alternatives (e.g., "Feature 999 not found. Did you mean: 099-payment-gateway?")
 - **Malformed or incomplete files**: Parse gracefully, extract whatever sections are available, and warn user about missing or malformed parts (e.g., "This spec.md is missing the mandatory Success Criteria section")
 - **Invalid file type requests**: Explain the requested file doesn't exist in Speck structure, list valid file types (spec.md, plan.md, tasks.md), and suggest which might contain the information they're looking for
 - **Similar feature names in conversation**: Use most recently mentioned feature as context for follow-up questions; when ambiguous (e.g., both "user-auth" and "auth-tokens" recently mentioned), ask user for clarification
-- What if templates are updated but existing specs follow old structure?
+- **Template version mismatches**: When templates are updated but existing specs follow older structure, interpret based on current templates without automatically flagging deviations as errors; only perform explicit template validation when user requests it (e.g., "Does my spec match the template?")
 
 ## Requirements *(mandatory)*
 
@@ -95,10 +112,13 @@ A user wants to verify their spec.md follows the correct structure. They ask Cla
 - **FR-010**: Skill MUST understand acceptance scenario format (Given/When/Then) and extract test conditions correctly
 - **FR-011**: Skill MUST identify mandatory vs optional sections in specs and plans based on template annotations
 - **FR-012**: Skill MUST provide helpful error messages when referenced features, files, or sections cannot be found
+- **FR-013**: Skill MUST include knowledge of core Speck workflow commands (/speck.specify, /speck.plan, /speck.tasks, /speck.clarify, /speck.implement, /speck.analyze) with 1-2 sentence descriptions, and direct users to /help for complete command list
+- **FR-014**: Skill MUST suggest appropriate slash commands when user encounters workflow gaps (e.g., missing spec.md → suggest /speck.specify) without being overly prescriptive
+- **FR-015**: Build script MUST perform `/speck.` to `/speck:` pattern replacement on SKILL.md when packaging the plugin, ensuring command references use the correct plugin-namespaced format
 
 ### Key Entities
 
-- **Skill Definition**: A markdown file in `.claude/skills/` with YAML frontmatter containing name, description, activation triggers, and instructions for interpreting Speck structures
+- **Skill Definition**: A single markdown file (SKILL.md) in `.claude/skills/` with YAML frontmatter containing name, description, activation triggers, and sections organized by workflow sequence: (1) Overview & Activation, (2) File Structure & Locations, (3) Template Interpretation (spec/plan/tasks), (4) Slash Command Reference, (5) Edge Cases & Error Handling
 - **Feature Directory**: A directory following pattern `specs/NUM-short-name/` containing spec.md, plan.md (optional), tasks.md (optional), and checklists/ subdirectory
 - **Spec File**: A spec.md file following template structure with mandatory sections (User Scenarios, Requirements, Success Criteria) and optional sections (Key Entities, Assumptions)
 - **Plan File**: A plan.md file following template structure with Technical Approach, Architecture Decisions, Dependencies, and Scope sections
@@ -109,10 +129,10 @@ A user wants to verify their spec.md follows the correct structure. They ask Cla
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can ask natural language questions about any Speck artifact (spec/plan/tasks) and receive accurate answers without running slash commands in 95% of cases (measured by: 100 representative question dataset covering all user stories, manual validation that Claude's response correctly extracts requested information, pass threshold: ≥95 correct responses)
+- **SC-001**: Users can ask natural language questions about any Speck artifact (spec/plan/tasks) and receive accurate answers without running slash commands in 95% of cases (measured by: 100 representative question dataset covering all user stories from quickstart.md test corpus, manual validation that Claude's response correctly extracts requested information without hallucination or omission, pass threshold: ≥95 correct responses, baseline: current 0% accuracy without skill)
 - **SC-002**: Claude correctly identifies and extracts information from specific sections (e.g., "What are the functional requirements?") with 100% accuracy when section exists (accuracy defined as: extracts all content between section header and next same-level header without omissions or hallucinations, correctly handles nested subsections)
-- **SC-003**: Skill activates automatically within 1 conversational turn when user mentions feature numbers, spec/plan/tasks files, or Speck-related questions
-- **SC-004**: Users report 80% reduction in need to manually run `/speck.specify`, `/speck.plan`, or `/speck.tasks` commands for reading/understanding existing artifacts (baseline: ~10 manual slash commands per session for reading artifacts, target: ≤2 commands per session)
+- **SC-003**: Skill activates automatically within 1 conversational turn when user mentions feature numbers, spec/plan/tasks files, or Speck-related questions (measured by: skill provides relevant response on first user message containing trigger keywords, without user needing to rephrase or invoke /help, baseline: current 0% auto-activation without skill)
+- **SC-004**: Users report 80% reduction in need to manually run `/speck.specify`, `/speck.plan`, or `/speck.tasks` commands for reading/understanding existing artifacts (measured via: developer survey tracking slash command usage per session over 2-week period, baseline: current ~10 manual read-only slash commands per session, target: ≤2 commands per session post-skill deployment)
 - **SC-005**: Claude provides helpful guidance when files or sections are missing, suggesting correct next steps based on Speck workflow (e.g., "Run /speck.specify to create spec first")
 - **SC-006**: Template comparison requests identify missing mandatory sections with 100% accuracy
 - **SC-007**: Users can switch between discussing multiple features in same conversation without confusion or misidentification
@@ -127,6 +147,14 @@ A user wants to verify their spec.md follows the correct structure. They ask Cla
 - Q: What if user asks about a file type that doesn't exist in Speck structure? → A: Explain the file doesn't exist in Speck structure, list valid file types, suggest which might contain relevant info
 - Q: How does Claude distinguish between different features with similar names in multi-feature conversations? → A: Use most recently mentioned feature as context, ask for clarification if ambiguous
 
+### Session 2025-11-17
+
+- Q: Should the skill include slash command knowledge and teaching, or remain purely interpretive? → A: The skill should teach users when to use slash commands, providing hints like "You can run /speck.specify to create a new spec" when appropriate, but remain primarily focused on reading/interpreting existing artifacts
+- Q: Should the skill be split into multiple files for progressive loading, or remain a single organized file? → A: Single SKILL.md file with clear section organization (templates knowledge, structure interpretation, slash command reference), relying on Claude Code's native context management rather than multi-file splitting
+- Q: Which slash commands should be documented in the skill? → A: Core workflow commands (/speck.specify, /speck.plan, /speck.tasks, /speck.clarify, /speck.implement, /speck.analyze) with 1-2 sentence descriptions, plus note directing users to /help for complete list
+- Q: How should the skill handle specs that follow older template structures after templates are updated? → A: Skill interprets based on current templates but doesn't flag structural deviations as errors unless user explicitly asks for template validation (e.g., "Does my spec match the template?")
+- Q: How should content be organized within the single SKILL.md file? → A: Organize by workflow sequence: (1) Overview & Activation, (2) File Structure & Locations, (3) Template Interpretation (spec/plan/tasks), (4) Slash Command Reference, (5) Edge Cases & Error Handling. Build script must perform /speck. → /speck: pattern replacement on SKILL.md
+
 ## Assumptions
 
 - Templates in `.specify/templates/` follow consistent structure and are kept up-to-date with Speck workflow
@@ -135,3 +163,4 @@ A user wants to verify their spec.md follows the correct structure. They ask Cla
 - Users will reference features using either number (e.g., "003"), short-name (e.g., "user-auth"), or full directory name (e.g., "003-user-auth")
 - The skill should be non-destructive - only read and interpret files, never modify them without explicit user request
 - Skill activation relies on concise, carefully formatted `description` field in YAML frontmatter to maximize trigger probability
+- **Priority ordering rationale**: User story priorities (P1-P4) are based on team consensus regarding workflow sequence - users typically read specs first (P1), then plans (P2), then check task status (P3), with template validation being a quality-assurance step (P4). US5 (slash command guidance) is P2 because it enables workflow continuity when gaps are discovered during artifact reading.

@@ -148,7 +148,8 @@ description: "Task list for Speck Workflow Skill implementation"
 - [x] T042 Validate skill frontmatter YAML syntax: ensure valid YAML delimiters `---`, verify description length 80-150 characters, verify name is unique
 - [ ] T043 Run manual validation tests from quickstart.md: test activation with explicit feature references, test activation with file type mentions, test activation with Speck terminology
 - [ ] T043a Validate automatic skill activation: test 10 representative queries (e.g., "What are the requirements for feature 005?", "Tell me about the auth spec", "What tasks remain?") and verify skill activates within 1 turn without user repeating question (validates FR-001, SC-003)
-- [x] T044 Add final skill documentation: usage examples for each user story, troubleshooting section for common activation issues, limitations note (read-only, no file modification)
+- [x] T044 Add final skill documentation: (1) Slash Command Reference section listing core commands (/speck.specify, /speck.plan, /speck.tasks, /speck.clarify, /speck.implement, /speck.analyze) with format "command name | 1-2 sentence purpose | example trigger phrase", (2) usage examples for each user story, (3) troubleshooting section for common activation issues, (4) limitations note (read-only, no file modification) (validates FR-013)
+- [x] T045 Implement /speck. to /speck: pattern replacement in build script: update scripts/build-plugin.ts to perform regex replacement `/speck\.([a-z-]+)` → `/speck:$1` on SKILL.md content during plugin packaging, preserving all other content unchanged (validates FR-015)
 
 **Checkpoint**: ✅ Skill polished and ready for validation testing
 

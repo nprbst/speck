@@ -309,9 +309,25 @@ async function copyPluginFiles(): Promise<FileCounts> {
   // T014a: Copy skills (directory-based structure)
   if (existsSync(config.skillsSourceDir)) {
     const skillsDestDir = join(config.outputDir, 'skills');
+
+    // Copy directory structure first
     await copyDir(config.skillsSourceDir, skillsDestDir);
-    // Count skill directories (each directory contains SKILL.md)
+
+    // Post-process all SKILL.md files to replace /speck. with /speck:
     const entries = await readdir(skillsDestDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const skillMdPath = join(skillsDestDir, entry.name, 'SKILL.md');
+        if (existsSync(skillMdPath)) {
+          let content = await readFile(skillMdPath, 'utf-8');
+          // Replace /speck. with /speck: (plugin-namespaced format)
+          content = content.replace(/\/speck\./g, '/speck:');
+          await writeFile(skillMdPath, content, 'utf-8');
+        }
+      }
+    }
+
+    // Count skill directories (each directory contains SKILL.md)
     counts.skills = entries.filter(entry => entry.isDirectory()).length;
   }
 
