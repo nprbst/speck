@@ -35,7 +35,7 @@ interface BuildConfig {
 
 const config: BuildConfig = {
   sourceRoot: process.cwd(),
-  outputDir: join(process.cwd(), 'dist/plugin'),
+  outputDir: join(process.cwd(), 'dist/plugin/speck'),
   commandsSourceDir: join(process.cwd(), '.claude/commands'),
   agentsSourceDir: join(process.cwd(), '.claude/agents'),
   skillsSourceDir: join(process.cwd(), '.claude/skills'),
@@ -202,7 +202,7 @@ async function generateMarketplaceManifest(): Promise<void> {
     plugins: [
       {
         name: 'speck',
-        source: './',
+        source: './speck',  // Point to speck/ subdirectory
         description: 'Specification and planning workflow framework for Claude Code',
         version: config.version,
         author: {
@@ -223,7 +223,9 @@ async function generateMarketplaceManifest(): Promise<void> {
     ],
   };
 
-  const manifestDir = join(config.outputDir, '.claude-plugin');
+  // Place marketplace.json at root of dist/plugin/, not in speck/
+  const marketplaceRoot = join(config.outputDir, '..');
+  const manifestDir = join(marketplaceRoot, '.claude-plugin');
   await ensureDir(manifestDir);
   await writeFile(
     join(manifestDir, 'marketplace.json'),
@@ -383,9 +385,11 @@ async function copyPluginFiles(): Promise<FileCounts> {
  * T042: Copy CHANGELOG.md
  */
 async function copyChangelog(): Promise<void> {
+  // Place at marketplace root (dist/plugin/), not in speck/
+  const marketplaceRoot = join(config.outputDir, '..');
   const changelogPath = join(config.sourceRoot, 'CHANGELOG.md');
   if (existsSync(changelogPath)) {
-    await copyFile(changelogPath, join(config.outputDir, 'CHANGELOG.md'));
+    await copyFile(changelogPath, join(marketplaceRoot, 'CHANGELOG.md'));
   } else {
     // Create a minimal changelog if it doesn't exist
     const changelog = `# Changelog
@@ -398,7 +402,7 @@ All notable changes to Speck will be documented in this file.
 
 - Initial plugin release
 `;
-    await writeFile(join(config.outputDir, 'CHANGELOG.md'), changelog, 'utf-8');
+    await writeFile(join(marketplaceRoot, 'CHANGELOG.md'), changelog, 'utf-8');
   }
 }
 
@@ -406,103 +410,33 @@ All notable changes to Speck will be documented in this file.
  * T029-T035: Generate README.md
  */
 async function generateReadme(): Promise<void> {
-  const readme = `# Speck - Claude Code Plugin
+  const readme = `# Speck Marketplace
 
-Specification and planning workflow framework for Claude Code.
+Official marketplace for the Speck plugin for Claude Code.
 
 ## About
 
-Speck provides a complete workflow for creating, planning, and implementing features using Claude Code. It includes 9 core slash commands, specialized agents, and templates for generating specifications, implementation plans, and task breakdowns.
+This marketplace provides the Speck plugin, a complete workflow framework for creating, planning, and implementing features using Claude Code.
 
 ## Installation
 
-Install directly from GitHub:
+Install the marketplace:
 
 \`\`\`bash
-/plugin install https://github.com/nprbst/speck
+/marketplace install https://github.com/nprbst/speck-market
 \`\`\`
 
-Or install from a marketplace (if available):
+This will make the Speck plugin available with all its commands and agents.
 
-\`\`\`bash
-/plugin install speck
-\`\`\`
+## Available Plugins
 
-## Quick Start
+### Speck - Specification and Planning Workflow
 
-1. **Create a specification**: Start by describing your feature in natural language
+The core Speck plugin provides a complete workflow framework for feature development:
 
-   \`\`\`bash
-   /speck.specify "Add user authentication to the application"
-   \`\`\`
+#### Features
 
-2. **Generate an implementation plan**: Transform the spec into a technical plan
-
-   \`\`\`bash
-   /speck.plan
-   \`\`\`
-
-3. **Create a task breakdown**: Generate actionable tasks
-
-   \`\`\`bash
-   /speck.tasks
-   \`\`\`
-
-4. **Execute the implementation**: Follow the tasks to build the feature
-
-   \`\`\`bash
-   /speck.implement
-   \`\`\`
-
-## Available Commands
-
-### Core Workflow Commands
-
-- \`/speck.specify\` - Create or update feature specification from natural language
-- \`/speck.clarify\` - Identify underspecified areas and ask clarification questions
-- \`/speck.plan\` - Execute implementation planning workflow
-- \`/speck.tasks\` - Generate actionable, dependency-ordered task list
-- \`/speck.implement\` - Execute the implementation plan
-- \`/speck.analyze\` - Perform cross-artifact consistency analysis
-
-### Utility Commands
-
-- \`/speck.constitution\` - Create or update project constitution
-- \`/speck.checklist\` - Generate custom checklist for current feature
-- \`/speck.taskstoissues\` - Convert tasks into GitHub issues
-
-## System Requirements
-
-- **Git**: Version 2.30.0 or higher
-- **Shell**: Bash shell access
-- **Claude Code**: Version 2.0 or higher
-- **Bun**: Version 1.0 or higher (for script execution)
-
-## Example Workflow
-
-\`\`\`bash
-# 1. Start a new feature specification
-/speck.specify "Implement REST API for user management with CRUD operations"
-
-# 2. Clarify any ambiguous requirements
-/speck.clarify
-
-# 3. Generate implementation plan
-/speck.plan
-
-# 4. Break down into tasks
-/speck.tasks
-
-# 5. Execute implementation
-/speck.implement
-
-# 6. Analyze for consistency
-/speck.analyze
-\`\`\`
-
-## Features
-
-- **9 Core Commands**: Essential workflow from specification to implementation
+- **9 Core Commands**: From specification to implementation
 - **2 Specialized Agents**: Transform scripts and commands automatically
 - **5 Templates**: Handlebars templates for specs, plans, tasks, constitution, and checklists
 - **Runtime Scripts**: Automated workflows for feature management
@@ -527,7 +461,9 @@ Nathan Prabst (nathan@example.com)
 \ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)
 `;
 
-  await writeFile(join(config.outputDir, 'README.md'), readme, 'utf-8');
+  // Place at marketplace root (dist/plugin/), not in speck/
+  const marketplaceRoot = join(config.outputDir, '..');
+  await writeFile(join(marketplaceRoot, 'README.md'), readme, 'utf-8');
 }
 
 // ============================================================================
@@ -617,7 +553,7 @@ async function validateAgents(): Promise<void> {
  */
 async function validateManifests(): Promise<void> {
   const pluginJsonPath = join(config.outputDir, '.claude-plugin/plugin.json');
-  const marketplaceJsonPath = join(config.outputDir, '.claude-plugin/marketplace.json');
+  const marketplaceJsonPath = join(config.outputDir, '../.claude-plugin/marketplace.json');
 
   // Validate plugin.json
   if (!existsSync(pluginJsonPath)) {
@@ -667,7 +603,7 @@ async function validateRequiredFiles(): Promise<void> {
 
   const requiredFiles = [
     { path: join(config.outputDir, '.claude-plugin/plugin.json'), name: 'plugin.json' },
-    { path: join(config.outputDir, '.claude-plugin/marketplace.json'), name: 'marketplace.json' },
+    { path: join(config.outputDir, '../.claude-plugin/marketplace.json'), name: 'marketplace.json' },
   ];
 
   for (const file of requiredFiles) {
