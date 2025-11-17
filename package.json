@@ -19,6 +19,10 @@
     "version:minor": "bun run scripts/version.ts minor",
     "version:major": "bun run scripts/version.ts major",
     "test": "bun test",
+    "test:unit": "bun test tests/build/",
+    "test:visual": "bun run website:build && playwright test tests/visual/",
+    "test:a11y": "bun run website:build && playwright test tests/accessibility/",
+    "test:all": "bun test && bun run test:visual && bun run test:a11y",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "website:sync": "bun website/scripts/sync-docs.ts",
@@ -36,6 +40,8 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "@playwright/test": "^1.56.1",
     "@types/bun": "^1.3.2",
     "@types/node": "^24.10.1",
     "@types/prompts": "^2.4.9",

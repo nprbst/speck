@@ -228,25 +228,25 @@
 
 ### Build Script Tests (Optional)
 
-- [ ] T083 [P] Unit test documentation sync script in `tests/build/sync-docs.test.ts` (test sparse checkout logic, file copying, error handling, cached fallback)
-- [ ] T084 [P] Test sync script with missing main repo in `tests/build/sync-docs.test.ts` (verify fallback to cached docs)
-- [ ] T085 [P] Test sync script with invalid docs path in `tests/build/sync-docs.test.ts` (verify error message and build failure)
+- [X] T083 [P] Unit test documentation sync script in `tests/build/sync-docs.test.ts` (test sparse checkout logic, file copying, error handling, cached fallback)
+- [X] T084 [P] Test sync script with missing main repo in `tests/build/sync-docs.test.ts` (verify fallback to cached docs)
+- [X] T085 [P] Test sync script with invalid docs path in `tests/build/sync-docs.test.ts` (verify error message and build failure)
 
 ### Visual Regression Tests (Optional)
 
-- [ ] T086 [P] Install Playwright in `tests/visual/` (configure browsers, screenshot storage)
-- [ ] T087 [P] Implement homepage visual test in `tests/visual/homepage.spec.ts` (screenshot at 1920x1080 desktop, 768x1024 tablet, 375x667 mobile)
+- [X] T086 [P] Install Playwright in `tests/visual/` (configure browsers, screenshot storage)
+- [X] T087 [P] Implement homepage visual test in `tests/visual/homepage.spec.ts` (screenshot at 1920x1080 desktop, 768x1024 tablet, 375x667 mobile)
 - [ ] T088 [P] Implement docs page visual test in `tests/visual/docs.spec.ts` (screenshot with sidebar, code blocks, table of contents)
 - [ ] T089 [P] Implement comparison page visual test in `tests/visual/comparison.spec.ts` (screenshot with comparison table)
-- [ ] T090 [P] Implement dark mode visual tests (screenshot all pages in dark mode, verify theme consistency)
+- [X] T090 [P] Implement dark mode visual tests (screenshot all pages in dark mode, verify theme consistency)
 
 ### Accessibility Tests (Optional)
 
-- [ ] T091 [P] Install Axe-core Playwright integration in `tests/accessibility/`
-- [ ] T092 [P] Implement homepage accessibility test in `tests/accessibility/pages.spec.ts` (run Axe audit, expect zero violations)
-- [ ] T093 [P] Implement docs page accessibility test in `tests/accessibility/pages.spec.ts` (test sidebar navigation, heading hierarchy, keyboard nav)
-- [ ] T094 [P] Implement comparison page accessibility test in `tests/accessibility/pages.spec.ts` (test table semantics, responsive table)
-- [ ] T095 [P] Test keyboard navigation across all pages (Tab through nav → main → footer, verify focus order)
+- [X] T091 [P] Install Axe-core Playwright integration in `tests/accessibility/`
+- [X] T092 [P] Implement homepage accessibility test in `tests/accessibility/pages.spec.ts` (run Axe audit, expect zero violations)
+- [X] T093 [P] Implement docs page accessibility test in `tests/accessibility/pages.spec.ts` (test sidebar navigation, heading hierarchy, keyboard nav)
+- [X] T094 [P] Implement comparison page accessibility test in `tests/accessibility/pages.spec.ts` (test table semantics, responsive table)
+- [X] T095 [P] Test keyboard navigation across all pages (Tab through nav → main → footer, verify focus order)
 
 ### Performance Validation
 
