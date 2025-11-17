@@ -160,7 +160,7 @@ Task tool parameters:
     **UPSTREAM_VERSION**: <version>
     **PREVIOUS_VERSION**: <PREV_VERSION> (or "none" if first transformation)
     **SOURCE_DIR**: upstream/<version>/.specify/scripts/bash/
-    **OUTPUT_DIR**: ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/
+    **OUTPUT_DIR**: .speck/scripts/
     **CHANGED_BASH_SCRIPTS**:
     [List ONLY the changed bash script paths (new + modified), one per line]
 
@@ -169,7 +169,7 @@ Task tool parameters:
 
     ## Your Task
 
-    Transform ONLY the changed bash scripts listed above into Bun TypeScript equivalents in ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/.
+    Transform ONLY the changed bash scripts listed above into Bun TypeScript equivalents in .speck/scripts/.
 
     Follow the transformation strategy priorities from the agent file:
     1. Pure TypeScript (PREFERRED)
@@ -180,7 +180,7 @@ Task tool parameters:
     1. Read the upstream bash script to understand what changed
     2. Read the existing TypeScript file (if it exists)
     3. Choose transformation strategy
-    4. Generate/update .ts file in ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/
+    4. Generate/update .ts file in .speck/scripts/
     5. ALWAYS update documentation header (even if code unchanged)
     6. Preserve CLI interface 100%
     7. Preserve [SPECK-EXTENSION:START/END] markers if present
@@ -198,7 +198,7 @@ Task tool parameters:
     {
       "bunScriptsGenerated": [
         {
-          "path": "${SPECK_PLUGIN_ROOT:-".speck"}/scripts/X.ts",
+          "path": ".speck/scripts/X.ts",
           "bashSource": "upstream/<version>/.specify/scripts/bash/X.sh",
           "strategy": "pure-typescript | bun-shell | bun-spawn",
           "changeType": "new | modified",
@@ -210,7 +210,7 @@ Task tool parameters:
       ],
       "skipped": [
         {
-          "path": "${SPECK_PLUGIN_ROOT:-".speck"}/scripts/Y.ts",
+          "path": ".speck/scripts/Y.ts",
           "bashSource": "upstream/<version>/.specify/scripts/bash/Y.sh",
           "reason": "Script not in CHANGED_BASH_SCRIPTS list (unchanged from previous version)"
         }
@@ -263,8 +263,8 @@ Task tool parameters:
     **BASH_TO_BUN_MAPPINGS**:
     [Provide the FULL mappings (not just changed scripts) - commands may reference any script]
     Example format:
-    - .specify/scripts/bash/setup-plan.sh → ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/setup-plan.ts
-    - .specify/scripts/bash/check-prerequisites.sh → ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/check-prerequisites.ts
+    - .specify/scripts/bash/setup-plan.sh → .speck/scripts/setup-plan.ts
+    - .specify/scripts/bash/check-prerequisites.sh → .speck/scripts/check-prerequisites.ts
 
     ## Your Task
 
@@ -291,7 +291,7 @@ Task tool parameters:
         {
           "commandName": "speck.X",
           "specKitSource": "upstream/<version>/.claude/commands/speckit.X.md",
-          "scriptReference": "${SPECK_PLUGIN_ROOT:-".speck"}/scripts/Y.ts",
+          "scriptReference": ".speck/scripts/Y.ts",
           "changeType": "new | modified"
         }
       ],
@@ -338,10 +338,10 @@ Record factoring decisions in `.speck/transformation-history.json`:
 
 1. **Initialize transformation entry** (at start of transformation):
    ```typescript
-   import { addTransformationEntry } from "${SPECK_PLUGIN_ROOT:-".speck"}/scripts/common/transformation-history";
+   import { addTransformationEntry } from ".speck/scripts/common/transformation-history";
 
    await addTransformationEntry(
-     "${SPECK_PLUGIN_ROOT:-".speck"}/transformation-history.json",
+     ".speck/transformation-history.json",
      version,
      commitSha, // from upstream/releases.json
      "partial", // Will update to "transformed" or "failed" later
@@ -352,10 +352,10 @@ Record factoring decisions in `.speck/transformation-history.json`:
 2. **Agents record factoring decisions**:
    - When Agent 2 (transform-commands) extracts agents/skills, it should call:
      ```typescript
-     import { addFactoringMapping } from "${SPECK_PLUGIN_ROOT:-".speck"}/scripts/common/transformation-history";
+     import { addFactoringMapping } from ".speck/scripts/common/transformation-history";
 
      await addFactoringMapping(
-       "${SPECK_PLUGIN_ROOT:-".speck"}/transformation-history.json",
+       ".speck/transformation-history.json",
        version,
        {
          source: ".claude/commands/plan.md",
@@ -370,18 +370,18 @@ Record factoring decisions in `.speck/transformation-history.json`:
 
 3. **Update transformation status on completion**:
    ```typescript
-   import { updateTransformationStatus } from "${SPECK_PLUGIN_ROOT:-".speck"}/scripts/common/transformation-history";
+   import { updateTransformationStatus } from ".speck/scripts/common/transformation-history";
 
    // On success:
    await updateTransformationStatus(
-     "${SPECK_PLUGIN_ROOT:-".speck"}/transformation-history.json",
+     ".speck/transformation-history.json",
      version,
      "transformed",
    );
 
    // On failure:
    await updateTransformationStatus(
-     "${SPECK_PLUGIN_ROOT:-".speck"}/transformation-history.json",
+     ".speck/transformation-history.json",
      version,
      "failed",
      errorMessage,
@@ -393,13 +393,13 @@ Record factoring decisions in `.speck/transformation-history.json`:
 Update `upstream/releases.json` with transformation status:
 
 ```bash
-bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/common/json-tracker.ts update-status <version> transformed
+bun run .speck/scripts/common/json-tracker.ts update-status <version> transformed
 ```
 
 Or if any agent failed:
 
 ```bash
-bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/common/json-tracker.ts update-status <version> failed "<error message>"
+bun run .speck/scripts/common/json-tracker.ts update-status <version> failed "<error message>"
 ```
 
 ### 6. Report Results
@@ -412,18 +412,18 @@ Present transformation summary to user:
 ✓ Transformation complete for <version>
 
 Generated:
-  - X Bun TypeScript scripts in ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/
+  - X Bun TypeScript scripts in .speck/scripts/
   - Y /speck.* commands in .claude/commands/
-  - Z factoring mappings recorded in ${SPECK_PLUGIN_ROOT:-".speck"}/transformation-history.json
+  - Z factoring mappings recorded in .speck/transformation-history.json
 
 Status: transformed
 Date: <ISO 8601 timestamp>
 
 Next steps:
   1. Review generated files
-  2. Run tests: bun test tests/${SPECK_PLUGIN_ROOT:-".speck"}-scripts/
+  2. Run tests: bun test tests/.speck-scripts/
   3. Try generated commands (e.g., /speck.plan)
-  4. Check transformation history: ${SPECK_PLUGIN_ROOT:-".speck"}/transformation-history.json
+  4. Check transformation history: .speck/transformation-history.json
 ```
 
 #### Failure Case

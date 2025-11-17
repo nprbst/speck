@@ -89,7 +89,7 @@ Source scripts: `.specify/scripts/`
 - [X] T026a [US1] Update all `.claude/commands/*.md` files to use bash pattern `bun run ${SPECK_PLUGIN_ROOT:-".speck"}/scripts/<script-name>.ts` for script execution
 - [X] T026b [US1] Add debugging output `echo "DEBUG: $(env | grep PLUGIN)"` at the beginning of bash execution steps in all `.claude/commands/*.md` files
 - [X] T027 [US1] Run build script and verify `dist/plugin/` structure matches Claude Plugin format specification
-- [ ] T028 [US1] Test local plugin installation with `/plugin install file:///path/to/dist/plugin` and verify all commands available
+- [X] T028 [US1] Test local plugin installation with `/plugin install file:///path/to/dist/plugin` and verify all commands available
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - plugin builds successfully and installs locally with all commands working
 
