@@ -5,6 +5,16 @@
 **Status**: Draft
 **Input**: User description: "Considering the new work we have implemented in specs 002 and 005, we need to update the website content to reflect. In particular, Speck is now a Claude Plugin so it should be installed using /plugins instead of cloning. Also, Speck now includes a Claude Skill for understanding and working with specs, plans, tasks, etc without requiring the use of /speck* commands."
 
+## Clarifications
+
+### Session 2025-11-17
+
+- Q: How are existing specs/plans/tasks files handled during migration from cloned to plugin installation? → A: Claude Marketplace Plugin system manages plugin updates automatically via `/plugin` > "Manage marketplaces" > "speck-market" > "Update marketplace"
+- Q: What migration approach should the website take for existing git-clone users? → A: No existing users (unreleased); no migration needed
+- Q: What types of examples should be shown for the Speck skill feature? → A: 3-5 representative examples covering different skill use cases (understanding specs, asking about plans, querying tasks status)
+- Q: What decision criteria should guide users when choosing between slash commands and the Speck skill? → A: Skill for exploratory questions/understanding; slash commands for execution/generation tasks
+- Q: How should the website handle Claude Code version compatibility? → A: Document minimum Claude Code version required for plugin support; provide upgrade instructions if version is incompatible
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - New User Installation (Priority: P1)
@@ -39,28 +49,10 @@ Users want to understand how to work with Speck specifications, plans, and tasks
 
 ---
 
-### User Story 3 - Existing User Migration (Priority: P3)
-
-Existing users who installed Speck via git clone need to understand how to migrate to the plugin-based installation method.
-
-**Why this priority**: This affects a smaller audience (early adopters) and is less critical than onboarding new users. Migration guidance is helpful but not essential for the core value proposition.
-
-**Independent Test**: Can be tested by an existing user following migration instructions and successfully transitioning from a cloned repository to the plugin installation.
-
-**Acceptance Scenarios**:
-
-1. **Given** an existing user with a cloned Speck installation, **When** they visit the documentation, **Then** they see guidance on migrating to the plugin-based installation
-2. **Given** an existing user follows migration instructions, **When** they complete the process, **Then** their existing specs/plans/tasks remain accessible
-3. **Given** an existing user completes migration, **When** they use Speck, **Then** all functionality works as expected with the plugin installation
-
----
 
 ### Edge Cases
 
-- What happens when users visit outdated documentation pages that still reference git clone installation?
-- How does the website handle users who have bookmarked old installation pages?
-- What if users are using an older version of Claude Code that doesn't support plugins?
-- How do users know if they're using the plugin version vs a cloned repository version?
+- Users with older Claude Code versions without plugin support will see documented minimum version requirement and upgrade instructions
 
 ## Requirements *(mandatory)*
 
@@ -69,19 +61,18 @@ Existing users who installed Speck via git clone need to understand how to migra
 - **FR-001**: Website MUST display plugin installation instructions using `/plugins` command as the primary installation method
 - **FR-002**: Website MUST document the Speck skill feature and explain its purpose for working with specs, plans, and tasks
 - **FR-003**: Website MUST remove or update all references to git clone as the installation method
-- **FR-004**: Website MUST include prerequisites that specify Claude Code with plugin support is required
-- **FR-005**: Website MUST provide examples of using the Speck skill for common tasks
-- **FR-006**: Website MUST explain when to use slash commands versus the Speck skill
-- **FR-007**: Website MUST include migration guidance for users transitioning from cloned installation to plugin installation
+- **FR-004**: Website MUST document minimum Claude Code version required for plugin support and provide upgrade instructions for incompatible versions
+- **FR-005**: Website MUST provide 3-5 representative examples of using the Speck skill covering different use cases (understanding specs, asking about plans, querying tasks status)
+- **FR-006**: Website MUST explain when to use slash commands versus the Speck skill (skill for exploratory questions/understanding; slash commands for execution/generation tasks)
+- **FR-007**: Website MUST include plugin update instructions using `/plugin` > "Manage marketplaces" > "speck-market" > "Update marketplace" for users keeping Speck current
 - **FR-008**: Website MUST update any quickstart or tutorial content to reflect plugin-based workflow
 - **FR-009**: Website MUST clearly indicate that Speck is now available as a Claude Plugin
-- **FR-010**: Documentation MUST distinguish between plugin-installed and legacy cloned installations where relevant
 
 ### Key Entities
 
 - **Installation Instructions**: Primary content describing how users install Speck via the Claude plugin system, including prerequisites, steps, and verification
 - **Speck Skill Documentation**: Content explaining the Speck skill feature, its capabilities, use cases, and how it complements slash commands
-- **Migration Guide**: Content helping existing users transition from git clone installation to plugin installation, including steps and compatibility notes
+- **Plugin Update Guide**: Content explaining how to update the Speck plugin using the Claude Marketplace system (`/plugin` > "Manage marketplaces" > "speck-market" > "Update marketplace")
 
 ## Success Criteria *(mandatory)*
 
@@ -91,4 +82,4 @@ Existing users who installed Speck via git clone need to understand how to migra
 - **SC-002**: 100% of installation documentation references the `/plugins` method, with zero references to git clone as the primary method
 - **SC-003**: Users can understand the difference between slash commands and the Speck skill within 2 minutes of reading the documentation
 - **SC-004**: Website content accurately reflects features introduced in specs 002 (plugin packaging) and 005 (Speck skill)
-- **SC-005**: Migration instructions allow existing users to transition to plugin installation without data loss or functionality regression
+- **SC-005**: Plugin update instructions clearly explain the Claude Marketplace update workflow
