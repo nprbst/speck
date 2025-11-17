@@ -268,3 +268,64 @@ button {
     animation-duration: 0.001ms !important;
   }
 }
+
+/* ========================================
+   JavaScript Disabled Fallbacks
+   ======================================== */
+
+/* Show navigation links by default when JS is disabled */
+.no-js [data-nav-links] {
+  display: flex !important;
+}
+
+/* Hide mobile menu toggle when JS is disabled (nav always visible) */
+.no-js .mobile-menu-toggle {
+  display: none !important;
+}
+
+/* Show manual copy instruction for code blocks when JS is disabled */
+.no-js .copy-button::after {
+  content: 'Select and copy manually';
+  position: absolute;
+  top: 100%;
+  right: 0;
+  padding: 0.25rem 0.5rem;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  margin-top: 0.25rem;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.no-js .copy-button:hover::after {
+  opacity: 1;
+}
+
+/* ========================================
+   Old Browser Fallbacks
+   ======================================== */
+
+/* Single-column fallback for browsers without CSS Grid */
+@supports not (display: grid) {
+  .docs-layout {
+    display: block !important;
+  }
+
+  .sidebar {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 2rem;
+  }
+
+  .feature-grid {
+    display: block !important;
+  }
+
+  .feature-card {
+    margin-bottom: 1rem;
+  }
+}

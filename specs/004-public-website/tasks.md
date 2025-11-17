@@ -69,9 +69,9 @@
 - [X] T021 [P] Implement global CSS reset in `website/src/styles/global.css` (modern CSS reset, base typography, responsive breakpoints)
 - [X] T022 [P] Implement theme CSS variables in `website/src/styles/theme.css` (CSS custom properties for colors, dark/light mode with prefers-color-scheme, clay accent palette from claude.com)
 - [X] T023 Implement theme toggle inline script in BaseLayout head (prevent FOUC, read localStorage, set data-theme attribute)
-- [ ] T023a [P] Add View Transitions to BaseLayout (import ViewTransitions from 'astro:transitions', add to head for SPA-like navigation)
-- [ ] T023b [P] Add transition:persist directive to Sidebar component (prevent sidebar re-render on page navigation)
-- [ ] T023c [P] Add View Transitions CSS animations in global.css (fade-in/fade-out keyframes, 200ms duration, prefers-reduced-motion support)
+- [X] T023a [P] Add View Transitions to BaseLayout (import ViewTransitions from 'astro:transitions', add to head for SPA-like navigation)
+- [X] T023b [P] Add transition:persist directive to Sidebar component (prevent sidebar re-render on page navigation)
+- [X] T023c [P] Add View Transitions CSS animations in global.css (fade-in/fade-out keyframes, 200ms duration, prefers-reduced-motion support)
 
 **Checkpoint**: Foundation ready - content schema, build scripts, base layout, theme system, and view transitions implemented - user story implementation can now begin
 
@@ -183,38 +183,38 @@
 
 ### Edge Case Handling
 
-- [ ] T060 [P] Implement 404 error page in `website/src/pages/404.astro` (friendly message, link back to homepage, search suggestion)
-- [ ] T061 [P] Implement "Coming Soon" placeholder for incomplete docs sections (message with link to GitHub discussions)
+- [X] T060 [P] Implement 404 error page in `website/src/pages/404.astro` (friendly message, link back to homepage, search suggestion)
+- [X] T061 [P] Implement "Coming Soon" placeholder for incomplete docs sections (message with link to GitHub discussions)
 - [ ] T062 [P] Implement progressive loading for homepage (core content loads first, then images/animations)
-- [ ] T063 [P] Add JavaScript-disabled fallback styles (navigation works without JS, code blocks show manual copy instruction)
-- [ ] T064 [P] Implement mobile landscape header collapse (hamburger menu for narrow landscape screens)
-- [ ] T065 [P] Add clipboard API unavailable fallback in CodeBlock (tooltip "Select and copy manually")
-- [ ] T066 [P] Implement old browser fallback layout (single-column for browsers without CSS Grid support)
+- [X] T063 [P] Add JavaScript-disabled fallback styles (navigation works without JS, code blocks show manual copy instruction)
+- [X] T064 [P] Implement mobile landscape header collapse (hamburger menu for narrow landscape screens)
+- [X] T065 [P] Add clipboard API unavailable fallback in CodeBlock (tooltip "Select and copy manually")
+- [X] T066 [P] Implement old browser fallback layout (single-column for browsers without CSS Grid support)
 
 ### Performance Optimization
 
 - [ ] T067 [P] Optimize images (convert raster images to WebP/AVIF with PNG fallback, use Cloudflare Images)
-- [ ] T068 [P] Implement lazy loading for below-the-fold images (loading="lazy" attribute)
-- [ ] T069 [P] Inline critical CSS for above-the-fold content (Astro does this by default, verify in build output)
-- [ ] T070 [P] Set up font strategy (system font stack initially, preload if custom fonts added later)
+- [X] T068 [P] Implement lazy loading for below-the-fold images (loading="lazy" attribute)
+- [X] T069 [P] Inline critical CSS for above-the-fold content (Astro does this by default, verify in build output)
+- [X] T070 [P] Set up font strategy (system font stack initially, preload if custom fonts added later)
 - [ ] T071 [P] Configure CDN cache headers in Cloudflare Pages (max-age for hashed assets, shorter for HTML)
 
 ### Accessibility Enhancements
 
-- [ ] T072 [P] Add skip-to-content link in BaseLayout (hidden until focused, jumps to main content)
-- [ ] T073 [P] Ensure all interactive elements have focus-visible styles (outline on keyboard focus)
-- [ ] T074 [P] Add ARIA labels to icon-only buttons (theme toggle, mobile menu, copy button)
-- [ ] T075 [P] Verify heading hierarchy across all pages (single h1, no skipped levels)
-- [ ] T076 [P] Add aria-expanded to collapsible navigation elements (sidebar, mobile menu)
-- [ ] T077 [P] Add aria-current="page" to active navigation links
+- [X] T072 [P] Add skip-to-content link in BaseLayout (hidden until focused, jumps to main content)
+- [X] T073 [P] Ensure all interactive elements have focus-visible styles (outline on keyboard focus)
+- [X] T074 [P] Add ARIA labels to icon-only buttons (theme toggle, mobile menu, copy button)
+- [X] T075 [P] Verify heading hierarchy across all pages (single h1, no skipped levels)
+- [X] T076 [P] Add aria-expanded to collapsible navigation elements (sidebar, mobile menu)
+- [X] T077 [P] Add aria-current="page" to active navigation links
 
 ### SEO & Social
 
-- [ ] T078 [P] Create Open Graph image for social sharing in `website/public/images/og-image.png` (1200x630px, Speck branding)
-- [ ] T079 [P] Add Twitter Card metadata to BaseLayout (summary_large_image card type)
-- [ ] T080 [P] Create robots.txt in `website/public/robots.txt` (allow all, sitemap URL)
-- [ ] T081 [P] Generate sitemap.xml (Astro plugin or build script, include all pages with priority/frequency)
-- [ ] T082 [P] Add structured data for organization (JSON-LD in BaseLayout, logo, social links)
+- [X] T078 [P] Create Open Graph image for social sharing in `website/public/images/og-image.png` (1200x630px, Speck branding)
+- [X] T079 [P] Add Twitter Card metadata to BaseLayout (summary_large_image card type)
+- [X] T080 [P] Create robots.txt in `website/public/robots.txt` (allow all, sitemap URL)
+- [X] T081 [P] Generate sitemap.xml (Astro plugin or build script, include all pages with priority/frequency)
+- [X] T082 [P] Add structured data for organization (JSON-LD in BaseLayout, logo, social links)
 
 **Checkpoint**: Edge cases handled, performance optimized, accessibility enhanced, SEO/social configured
 

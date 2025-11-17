@@ -1,0 +1,11 @@
+# Robots.txt for Speck Public Website
+# Allow all crawlers to index all content
+
+User-agent: *
+Allow: /
+
+# Sitemap location (update with actual domain when deployed)
+Sitemap: https://speck.dev/sitemap.xml
+
+# Crawl delay (optional, helps prevent overloading server)
+Crawl-delay: 1

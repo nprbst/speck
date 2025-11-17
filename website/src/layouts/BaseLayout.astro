@@ -20,7 +20,7 @@ const {
   title,
   description,
   canonical = Astro.url.href,
-  ogImage = '/images/og-image.png',
+  ogImage = '/images/og-image.svg',
   ogType = 'website',
   keywords = [],
   bodyClass = '',
@@ -30,8 +30,12 @@ const siteTitle = title.includes('Speck') ? title : `${title} | Speck`;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="no-js">
   <head>
+    <!-- Remove no-js class if JavaScript is enabled -->
+    <script is:inline>
+      document.documentElement.classList.remove('no-js');
+    </script>
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -89,6 +93,25 @@ const siteTitle = title.includes('Speck') ? title : `${title} | Speck`;
 
     <!-- View Transitions for SPA-like navigation -->
     <ViewTransitions />
+
+    <!-- Structured Data (JSON-LD) for SEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Speck",
+        "description": "Opinionated feature specs for Claude Code - Bun-powered, Claude-native workflow tooling",
+        "url": "https://speck.dev",
+        "logo": "https://speck.dev/images/speck-logo.svg",
+        "sameAs": [
+          "https://github.com/nprbst/speck"
+        ],
+        "founder": {
+          "@type": "Person",
+          "name": "Nathan Perbst"
+        }
+      }
+    </script>
   </head>
   <body class={bodyClass}>
     <!-- Skip to main content link for accessibility -->

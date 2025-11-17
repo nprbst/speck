@@ -1,0 +1,159 @@
+---
+/**
+ * Coming Soon Component
+ * Placeholder for incomplete documentation sections
+ */
+
+export interface Props {
+  title?: string;
+  message?: string;
+  githubDiscussionUrl?: string;
+}
+
+const {
+  title = 'Coming Soon',
+  message = 'This section is currently being developed. Check back soon for updates!',
+  githubDiscussionUrl = 'https://github.com/nprbst/speck/discussions',
+} = Astro.props;
+---
+
+<div class="coming-soon">
+  <div class="coming-soon-icon">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+  </div>
+  <h2 class="coming-soon-title">{title}</h2>
+  <p class="coming-soon-message">{message}</p>
+  <div class="coming-soon-actions">
+    <a href={githubDiscussionUrl} class="coming-soon-link" target="_blank" rel="noopener noreferrer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      Join the Discussion
+    </a>
+    <a href="/" class="coming-soon-link secondary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      Back to Homepage
+    </a>
+  </div>
+</div>
+
+<style>
+  .coming-soon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-2xl) var(--space-lg);
+    min-height: 400px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    margin: var(--space-2xl) 0;
+  }
+
+  .coming-soon-icon {
+    color: var(--color-accent);
+    margin-bottom: var(--space-lg);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.05);
+    }
+  }
+
+  .coming-soon-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-md);
+  }
+
+  .coming-soon-message {
+    font-size: 1.125rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xl);
+    max-width: 500px;
+  }
+
+  .coming-soon-actions {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .coming-soon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--color-accent);
+    color: var(--color-bg);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    border: 2px solid var(--color-accent);
+  }
+
+  .coming-soon-link:hover {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .coming-soon-link.secondary {
+    background: transparent;
+    color: var(--color-accent);
+    border: 2px solid var(--color-border);
+  }
+
+  .coming-soon-link.secondary:hover {
+    background: var(--color-bg);
+    border-color: var(--color-accent);
+  }
+
+  .coming-soon-link svg {
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 48em) {
+    .coming-soon {
+      padding: var(--space-xl) var(--space-md);
+      min-height: 300px;
+    }
+
+    .coming-soon-title {
+      font-size: 1.5rem;
+    }
+
+    .coming-soon-message {
+      font-size: 1rem;
+    }
+
+    .coming-soon-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .coming-soon-link {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

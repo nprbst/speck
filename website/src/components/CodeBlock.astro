@@ -181,7 +181,11 @@ const {
         }, 2000);
       } catch (err) {
         console.error('Failed to copy code:', err);
-        // Could show error tooltip here
+        // Show error feedback
+        button.setAttribute('aria-label', 'Select and copy manually');
+        setTimeout(() => {
+          button.setAttribute('aria-label', 'Copy code to clipboard');
+        }, 3000);
       }
     });
   });
