@@ -44,7 +44,7 @@ const categoryNames: Record<string, string> = {
 const categoryOrder = ['getting-started', 'commands', 'concepts', 'examples'];
 ---
 
-<aside class="sidebar">
+<aside class="sidebar" transition:persist>
   <nav class="sidebar-nav" aria-label="Documentation navigation">
     {categoryOrder.filter(cat => categories[cat]).map(category => (
       <section class="sidebar-section">
@@ -66,6 +66,27 @@ const categoryOrder = ['getting-started', 'commands', 'concepts', 'examples'];
     ))}
   </nav>
 </aside>
+
+<script>
+  // Update active state on navigation (needed because sidebar persists with transition:persist)
+  document.addEventListener('astro:page-load', () => {
+    const currentPath = window.location.pathname;
+    const links = document.querySelectorAll('.sidebar-link');
+
+    links.forEach(link => {
+      const href = link.getAttribute('href');
+      const isActive = currentPath === href || currentPath === href + '/';
+
+      if (isActive) {
+        link.classList.add('active');
+        link.setAttribute('aria-current', 'page');
+      } else {
+        link.classList.remove('active');
+        link.removeAttribute('aria-current');
+      }
+    });
+  });
+</script>
 
 <style>
   .sidebar {

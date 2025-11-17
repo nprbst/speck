@@ -12,10 +12,11 @@ Build a static marketing and documentation website for Speck that blends the aes
 ## Technical Context
 
 **Language/Version**: TypeScript 5.3+ with Bun 1.0+ runtime for build scripts
-**Primary Dependencies**: Astro 4.x (static site generator), Cloudflare Images (image optimization), Shiki (syntax highlighting, chosen for better TypeScript support over Prism)
+**Primary Dependencies**: Astro 4.x (static site generator with View Transitions API), Cloudflare Images (image optimization), Shiki (syntax highlighting, chosen for better TypeScript support over Prism)
 **Storage**: N/A (static files only, no database)
 **Testing**: Bun test runner (unit tests for build scripts), Playwright (visual regression tests with screenshot comparison), Axe-core (accessibility testing via Playwright), Lighthouse CI (performance budgets)
 **Target Platform**: Static files deployed to Cloudflare Pages, modern browsers (Chrome/Edge 90+, Firefox 88+, Safari 14+)
+**Navigation**: SPA-like page transitions using Astro View Transitions (native API in Chrome 111+, polyfill for other browsers)
 **Project Type**: Web (static marketing + documentation site)
 **Performance Goals**: <2s core content load on 3G (Lighthouse/WebPageTest), Lighthouse accessibility score 95+, mobile usability score 95+
 **Constraints**: Monthly hosting cost <$5 (Cloudflare Pages free tier), JavaScript-disabled graceful degradation, responsive at 30em/48em/62em breakpoints

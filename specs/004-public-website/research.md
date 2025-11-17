@@ -157,6 +157,90 @@ const sortedDocs = docs.sort((a, b) => a.data.order - b.data.order);
 
 ---
 
+### 3a. View Transitions for SPA-like Navigation
+
+**Decision**: Use Astro's built-in View Transitions API for seamless page navigation without full reloads
+
+**Rationale**:
+- Eliminates full page reloads when navigating between documentation pages
+- Prevents sidebar re-render and hover state flashing
+- Provides smooth fade transitions between pages
+- Native browser API (View Transitions API) with Astro polyfill for unsupported browsers
+- Zero JavaScript required from developer (handled by Astro)
+- Improves perceived performance significantly
+
+**Implementation Pattern**:
+```astro
+---
+// BaseLayout.astro
+import { ViewTransitions } from 'astro:transitions';
+---
+<html>
+  <head>
+    <ViewTransitions />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+```
+
+```astro
+<!-- Sidebar.astro - persist across navigations -->
+<aside class="sidebar" transition:persist>
+  <nav class="sidebar-nav">
+    <!-- navigation links -->
+  </nav>
+</aside>
+
+<script>
+  // Update active state on navigation
+  document.addEventListener('astro:page-load', () => {
+    const currentPath = window.location.pathname;
+    const links = document.querySelectorAll('.sidebar-link');
+    links.forEach(link => {
+      const isActive = currentPath === link.getAttribute('href');
+      link.classList.toggle('active', isActive);
+    });
+  });
+</script>
+```
+
+```css
+/* global.css - customize transition animations */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.2s;
+}
+
+@keyframes fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+```
+
+**Benefits**:
+- **User Experience**: Smooth, app-like navigation
+- **Performance**: Only content area re-renders, not entire page
+- **Accessibility**: Respects `prefers-reduced-motion` automatically
+- **SEO**: Still server-rendered, just enhanced with client-side routing
+- **Bundle Size**: ~15KB for client router (included in Astro)
+
+**Alternatives Considered**:
+- **React/Vue islands (rejected)**: Overkill for simple navigation, adds framework overhead
+- **Custom SPA router (rejected)**: Reinventing the wheel, Astro's solution is native and well-tested
+- **No enhancement (rejected)**: Full page reloads create jarring UX, especially noticeable in docs navigation
+
+**Browser Support**:
+- Chrome 111+ (native View Transitions API)
+- Firefox, Safari (Astro polyfill)
+- Graceful degradation: Falls back to regular navigation if disabled
+
+---
+
 ### 4. Cloudflare Pages Build Configuration
 
 **Decision**: Use Cloudflare Pages GitHub integration with custom build command that runs doc sync, then Astro build

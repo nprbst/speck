@@ -224,3 +224,47 @@ button {
     padding-right: 2rem;
   }
 }
+
+/* ========================================
+   View Transitions
+   ======================================== */
+
+/* Customize page transition animations */
+@view-transition {
+  navigation: auto;
+}
+
+/* Fade transition for page content */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.2s;
+}
+
+/* Faster transition for docs navigation */
+::view-transition-old(root) {
+  animation-name: fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: fade-in;
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.001ms !important;
+  }
+}

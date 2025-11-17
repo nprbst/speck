@@ -69,8 +69,11 @@
 - [X] T021 [P] Implement global CSS reset in `website/src/styles/global.css` (modern CSS reset, base typography, responsive breakpoints)
 - [X] T022 [P] Implement theme CSS variables in `website/src/styles/theme.css` (CSS custom properties for colors, dark/light mode with prefers-color-scheme, clay accent palette from claude.com)
 - [X] T023 Implement theme toggle inline script in BaseLayout head (prevent FOUC, read localStorage, set data-theme attribute)
+- [ ] T023a [P] Add View Transitions to BaseLayout (import ViewTransitions from 'astro:transitions', add to head for SPA-like navigation)
+- [ ] T023b [P] Add transition:persist directive to Sidebar component (prevent sidebar re-render on page navigation)
+- [ ] T023c [P] Add View Transitions CSS animations in global.css (fade-in/fade-out keyframes, 200ms duration, prefers-reduced-motion support)
 
-**Checkpoint**: Foundation ready - content schema, build scripts, base layout, and theme system implemented - user story implementation can now begin
+**Checkpoint**: Foundation ready - content schema, build scripts, base layout, theme system, and view transitions implemented - user story implementation can now begin
 
 ---
 
