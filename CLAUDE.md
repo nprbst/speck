@@ -13,6 +13,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 - Markdown with YAML frontmatter (Claude Code skill format) + Claude Code plugin system 2.0+, existing Speck templates in `.specify/templates/` (005-speck-skill)
 - File-based, reads from `specs/NUM-short-name/` directories and `.specify/templates/` (005-speck-skill)
 - Astro 4.x (static site generator), Cloudflare Pages (hosting), Cloudflare Images (image optimization), Shiki or Prism (syntax highlighting), Playwright (visual regression testing), Axe-core (accessibility testing) (004-public-website)
+- TypeScript 5.7+ (Astro components), Markdown (content) + Astro 5.15+, Shiki 3.15+ (syntax highlighting), Playwright (testing), Axe-core (accessibility) (006-website-content-update)
+- Static site (no database), content files in `website/src/content/docs/` (006-website-content-update)
 
 ## Project Structure
 
@@ -85,13 +87,9 @@ bun test                  # Run all tests (unit, visual, a11y)
 - File naming: PascalCase for components, kebab-case for pages/content
 
 ## Recent Changes
+- 006-website-content-update: Added TypeScript 5.7+ (Astro components), Markdown (content) + Astro 5.15+, Shiki 3.15+ (syntax highlighting), Playwright (testing), Axe-core (accessibility)
 - 005-speck-skill: Added Markdown with YAML frontmatter (Claude Code skill format) + Claude Code plugin system 2.0+, existing Speck templates in `.specify/templates/`
 - 004-public-website: Added Astro 4.x static site generator, Cloudflare Pages deployment, documentation sync from main repo, visual regression testing with Playwright, accessibility testing with Axe-core
-- 002-claude-plugin-packaging: Added Claude Code plugin system 2.0+ with plugin.json manifest, marketplace.json listing, build tooling for packaging
-- 002-claude-plugin-packaging: Implemented build process with size validation (<5MB), JSON schema contracts, semantic versioning
-- 001-speck-core-project: Added TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary - out of scope after clarification) + Bun runtime, Bun Shell API, GitHub REST API (for fetching releases), Claude Code slash command and agent system
-- 001-speck-core-project: Added TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary) + Bun runtime, Git 2.30+, Claude Code (slash command + agent support)
-- 001-speck-core-project: Added TypeScript 5.3+
 
 
 <!-- MANUAL ADDITIONS START -->

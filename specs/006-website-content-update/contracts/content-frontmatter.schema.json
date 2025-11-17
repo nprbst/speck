@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://speck.dev/schemas/content-frontmatter.json",
+  "title": "Markdown Content Frontmatter Schema",
+  "description": "Schema for YAML frontmatter in Speck website documentation pages",
+  "type": "object",
+  "required": ["title", "description", "category", "order"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Page title displayed in navigation and browser tab",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": ["Installation Guide", "Quick Start Guide", "Three-Phase Workflow"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description for SEO and page previews",
+      "minLength": 20,
+      "maxLength": 200,
+      "examples": [
+        "Complete installation and setup instructions for Speck",
+        "Install Speck and run your first command in under 10 minutes"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "description": "Documentation category for organization and navigation",
+      "enum": [
+        "getting-started",
+        "concepts",
+        "commands",
+        "examples",
+        "comparison"
+      ],
+      "examples": ["getting-started", "concepts"]
+    },
+    "order": {
+      "type": "integer",
+      "description": "Sort order within the category (lower numbers appear first)",
+      "minimum": 1,
+      "maximum": 100,
+      "examples": [1, 2, 3]
+    },
+    "lastUpdated": {
+      "type": "string",
+      "description": "Date of last update in YYYY-MM-DD format",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "examples": ["2025-11-17"]
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags for search and filtering",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["installation", "setup", "prerequisites"],
+        ["workflow", "concepts", "beginner"]
+      ]
+    },
+    "draft": {
+      "type": "boolean",
+      "description": "If true, page is not published to production",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}
