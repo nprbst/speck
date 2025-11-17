@@ -311,9 +311,9 @@ async function copyPluginFiles(): Promise<FileCounts> {
   }
 
   // T016: Copy scripts (only scripts needed by published commands/agents)
-  // Copy to .speck/scripts/ to maintain command compatibility
+  // Copy to scripts/ (commands will use $(cat .speck/plugin-path)/scripts/...)
   if (existsSync(config.scriptsSourceDir)) {
-    const scriptsDestDir = join(config.outputDir, '.speck/scripts');
+    const scriptsDestDir = join(config.outputDir, 'scripts');
     await ensureDir(scriptsDestDir);
 
     // Scripts needed by published commands
@@ -354,24 +354,19 @@ async function copyPluginFiles(): Promise<FileCounts> {
     counts.memory = 1;
   }
 
-  // T010i: Copy hooks/hooks.json
-  const hooksSourcePath = join(config.sourceRoot, 'hooks/hooks.json');
-  if (existsSync(hooksSourcePath)) {
+  // T010i & T010j: Copy hooks/ directory (hooks.json and setup-env.sh)
+  const hooksSourceDir = join(config.sourceRoot, 'hooks');
+  if (existsSync(hooksSourceDir)) {
     const hooksDestDir = join(config.outputDir, 'hooks');
-    await ensureDir(hooksDestDir);
-    await copyFile(hooksSourcePath, join(hooksDestDir, 'hooks.json'));
-    counts.hooks++;
-  }
+    await copyDir(hooksSourceDir, hooksDestDir);
 
-  // T010j: Copy scripts/setup-env.sh with executable permissions
-  const setupEnvSourcePath = join(config.sourceRoot, 'scripts/setup-env.sh');
-  if (existsSync(setupEnvSourcePath)) {
-    const scriptsDestDir = join(config.outputDir, 'scripts');
-    await ensureDir(scriptsDestDir);
-    const destPath = join(scriptsDestDir, 'setup-env.sh');
-    await copyFile(setupEnvSourcePath, destPath);
-    // Set executable permissions (0o755 = rwxr-xr-x)
-    await Bun.write(destPath, await Bun.file(destPath).text(), { mode: 0o755 });
+    // Ensure setup-env.sh is executable
+    const setupEnvPath = join(hooksDestDir, 'setup-env.sh');
+    if (existsSync(setupEnvPath)) {
+      await Bun.write(setupEnvPath, await Bun.file(setupEnvPath).text(), { mode: 0o755 });
+    }
+
+    counts.hooks = (await readdir(hooksDestDir)).length;
   }
 
   return counts;
