@@ -68,22 +68,22 @@ Navigate to **Settings → Environment Variables** in your Cloudflare Pages proj
 - Your site will be at: `speck-004-public-website.pages.dev`
 - No configuration needed
 
-**Option 2: Custom domain** (if you own `speck.dev`)
+**Option 2: Custom domain** (if you own `speck.codes`)
 
 1. **In Cloudflare Pages**:
    - Go to **Custom domains** tab
    - Click **"Set up a custom domain"**
-   - Enter: `speck.dev` (or `www.speck.dev`)
+   - Enter: `speck.codes` (or `www.speck.codes`)
 
 2. **DNS Configuration**:
    - If domain is on Cloudflare DNS:
      - DNS records will be added automatically
    - If domain is elsewhere:
-     - Add CNAME record: `speck.dev` → `speck-004-public-website.pages.dev`
+     - Add CNAME record: `speck.codes` → `speck-004-public-website.pages.dev`
 
 3. **Wait for SSL**:
    - Cloudflare will provision free SSL certificate (1-5 minutes)
-   - Site will be available at `https://speck.dev`
+   - Site will be available at `https://speck.codes`
 
 ### T113: Set Up GitHub Webhook
 
@@ -150,7 +150,7 @@ Create `website/functions/_headers` file (Cloudflare Pages will respect this):
 1. **In Cloudflare Dashboard**:
    - Go to **Web Analytics** (top-level navigation, not Pages-specific)
    - Click **"Add a site"**
-   - Enter hostname: `speck.dev` (or your Pages URL)
+   - Enter hostname: `speck.codes` (or your Pages URL)
    - Copy the JavaScript snippet
 
 2. **Add to Website**:
@@ -270,7 +270,7 @@ Option 2: **Manual Deploy** (from Cloudflare Dashboard)
 
 **Using WebPageTest** (3G simulation):
 ```
-URL: https://speck.dev
+URL: https://speck.codes
 Location: Select a location
 Connection: 3G
 ```
@@ -347,7 +347,7 @@ Connection: 3G
 **Using Meta Tags Analyzer**:
 
 1. Visit [metatags.io](https://metatags.io)
-2. Enter deployed URL: `https://speck.dev`
+2. Enter deployed URL: `https://speck.codes`
 3. Click **"Generate"**
 
 **Verify**:
@@ -361,18 +361,18 @@ Connection: 3G
 - [ ] **Favicon**: Displays correctly
 
 **Using Google Search Console**:
-1. Add property: `https://speck.dev`
+1. Add property: `https://speck.codes`
 2. Verify ownership (DNS TXT record or meta tag)
-3. Submit sitemap: `https://speck.dev/sitemap-index.xml`
+3. Submit sitemap: `https://speck.codes/sitemap-index.xml`
 4. Wait 24-48 hours for initial indexing
 
 **Check Sitemap**:
-- Visit `https://speck.dev/sitemap-index.xml`
+- Visit `https://speck.codes/sitemap-index.xml`
 - Confirm all pages listed
 - Verify URLs are absolute (not relative)
 
 **Check Robots.txt**:
-- Visit `https://speck.dev/robots.txt`
+- Visit `https://speck.codes/robots.txt`
 - Confirm `Allow: /`
 - Confirm sitemap reference
 

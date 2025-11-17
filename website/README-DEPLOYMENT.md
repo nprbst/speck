@@ -22,7 +22,7 @@
 **What's Needed**:
 - ⏳ Cloudflare Pages account (free)
 - ⏳ 15-20 minutes for first-time setup
-- ⏳ Optional: Custom domain (e.g., `speck.dev`)
+- ⏳ Optional: Custom domain (e.g., `speck.codes`)
 
 ---
 
@@ -101,7 +101,7 @@ bun run website:preview
 
 ### Verify Deployment
 ```bash
-bun run website:verify https://speck.dev
+bun run website:verify https://speck.codes
 ```
 
 ### Check Build Output

@@ -10,7 +10,7 @@
  * - Accessibility standards are met
  *
  * Usage:
- *   bun website/scripts/verify-deployment.ts https://speck.dev
+ *   bun website/scripts/verify-deployment.ts https://speck.codes
  */
 
 import { $ } from 'bun';
@@ -275,7 +275,7 @@ async function main() {
   if (!baseUrl) {
     log('❌ Error: Please provide a base URL', colors.red);
     log('Usage: bun verify-deployment.ts <base-url>', colors.yellow);
-    log('Example: bun verify-deployment.ts https://speck.dev', colors.yellow);
+    log('Example: bun verify-deployment.ts https://speck.codes', colors.yellow);
     process.exit(1);
   }
 

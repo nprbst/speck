@@ -72,7 +72,7 @@ bun website/scripts/verify-deployment.ts https://speck-004-public-website.pages.
 ## Deployment URLs
 
 - **Preview**: `https://speck-004-public-website.pages.dev`
-- **Custom Domain** (if configured): `https://speck.dev`
+- **Custom Domain** (if configured): `https://speck.codes`
 
 ## Common Issues
 
@@ -130,7 +130,7 @@ bun run website:build
 **Verification Script**:
 ```bash
 # Run daily/weekly checks
-bun website/scripts/verify-deployment.ts https://speck.dev
+bun website/scripts/verify-deployment.ts https://speck.codes
 ```
 
 ## Rollback

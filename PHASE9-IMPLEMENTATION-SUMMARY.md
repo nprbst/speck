@@ -64,10 +64,10 @@ Phase 9 focuses on deploying the Speck public website to Cloudflare Pages and en
 **Usage**:
 ```bash
 # Using npm script
-bun run website:verify https://speck.dev
+bun run website:verify https://speck.codes
 
 # Or directly
-bun website/scripts/verify-deployment.ts https://speck.dev
+bun website/scripts/verify-deployment.ts https://speck.codes
 ```
 
 ### 4. Build Verification
@@ -128,7 +128,7 @@ The following tasks **require human intervention** in the Cloudflare Dashboard:
 **Action**: Configure custom domain or use free subdomain
 **Options**:
 - Free: `speck-004-public-website.pages.dev`
-- Custom: `speck.dev` (requires DNS configuration)
+- Custom: `speck.codes` (requires DNS configuration)
 
 **Guide**: See [website/DEPLOYMENT.md#t112](website/DEPLOYMENT.md#t112-configure-custom-domain)
 
@@ -262,7 +262,7 @@ Phase 9 deployment should meet these targets (verified post-deployment):
 
 ### Optional (Recommended)
 1. **Configure Custom Domain** (10 min)
-   - If you own `speck.dev` or similar domain
+   - If you own `speck.codes` or similar domain
    - See [website/DEPLOYMENT.md#t112](website/DEPLOYMENT.md#t112-configure-custom-domain)
 
 2. **Enable Analytics** (5 min)

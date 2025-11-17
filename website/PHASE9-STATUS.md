@@ -56,12 +56,12 @@ Phase 9 preparation is **100% complete**. All deployment documentation, configur
 
 **Usage**:
 ```bash
-bun website/scripts/verify-deployment.ts https://speck.dev
+bun website/scripts/verify-deployment.ts https://speck.codes
 ```
 
 **Expected Output**:
 ```
-🚀 Verifying deployment: https://speck.dev
+🚀 Verifying deployment: https://speck.codes
 
 📄 Testing Page Accessibility...
 ✓ Homepage (/)
@@ -139,7 +139,7 @@ Node version: 20
 
 **Options**:
 1. **Free subdomain**: `speck-004-public-website.pages.dev` (no configuration needed)
-2. **Custom domain**: `speck.dev` (requires DNS configuration)
+2. **Custom domain**: `speck.codes` (requires DNS configuration)
 
 **Documentation**: See [website/DEPLOYMENT.md](DEPLOYMENT.md#t112-configure-custom-domain)
 
