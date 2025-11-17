@@ -306,12 +306,13 @@ async function copyPluginFiles(): Promise<FileCounts> {
     counts.agents = files.filter(f => f.endsWith('.md')).length;
   }
 
-  // T014a: Copy skills
+  // T014a: Copy skills (directory-based structure)
   if (existsSync(config.skillsSourceDir)) {
     const skillsDestDir = join(config.outputDir, 'skills');
     await copyDir(config.skillsSourceDir, skillsDestDir);
-    const files = await readdir(skillsDestDir);
-    counts.skills = files.filter(f => f.endsWith('.md')).length;
+    // Count skill directories (each directory contains SKILL.md)
+    const entries = await readdir(skillsDestDir, { withFileTypes: true });
+    counts.skills = entries.filter(entry => entry.isDirectory()).length;
   }
 
   // T015: Copy templates

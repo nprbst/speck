@@ -19,7 +19,8 @@ description: "Task list for Speck Workflow Skill implementation"
 
 ## Path Conventions
 
-- **Single skill file**: `.claude/skills/speck-workflow.md`
+- **Skill directory**: `.claude/skills/speck-workflow/` (skill directory structure)
+- **Skill file**: `.claude/skills/speck-workflow/SKILL.md` (main skill implementation)
 - **Templates**: `.specify/templates/*.md` (read-only reference)
 - **Feature directories**: `specs/NUM-short-name/` (read by skill)
 
@@ -27,13 +28,13 @@ description: "Task list for Speck Workflow Skill implementation"
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Create the skill file structure and YAML frontmatter configuration
+**Purpose**: Create the skill directory structure and YAML frontmatter configuration
 
-- [ ] T001 Create `.claude/skills/speck-workflow.md` with YAML frontmatter structure
-- [ ] T002 Write skill description in frontmatter: "Interpret Speck spec, plan, and tasks files. Answer questions about requirements, architecture, and progress without running slash commands." (127 characters)
-- [ ] T003 Add skill name field to frontmatter: "speck-workflow"
+- [x] T001 Create `.claude/skills/speck-workflow/SKILL.md` with YAML frontmatter structure in skill directory
+- [x] T002 Write skill description in frontmatter: "Interpret Speck spec, plan, and tasks files. Answer questions about requirements, architecture, and progress without running slash commands." (127 characters)
+- [x] T003 Add skill name field to frontmatter: "speck-workflow"
 
-**Checkpoint**: Skill file exists with valid YAML frontmatter
+**Checkpoint**: ✅ Skill directory exists with valid SKILL.md and YAML frontmatter
 
 ---
 
@@ -43,14 +44,14 @@ description: "Task list for Speck Workflow Skill implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Document feature discovery patterns in skill instructions: three-tier matching (exact → numeric → fuzzy) with regex patterns from research.md
-- [ ] T005 Document template file locations and structure in skill instructions: `.specify/templates/spec-template.md`, `.specify/templates/plan-template.md`, `.specify/templates/tasks-template.md`
-- [ ] T006 Document section annotation patterns in skill instructions: `*(mandatory)*`, `*(include if...)*`, HTML comment extraction
-- [ ] T007 Document five file states in skill instructions: MISSING, EMPTY, MALFORMED, INCOMPLETE, VALID with recovery guidance
-- [ ] T008 Document error message format in skill instructions: structured format with severity, context, and recovery commands
-- [ ] T009 Add conversation context tracking guidance in skill instructions: recently mentioned features, current feature context, implicit references
+- [x] T004 Document feature discovery patterns in skill instructions: three-tier matching (exact → numeric → fuzzy) with regex patterns from research.md
+- [x] T005 Document template file locations and structure in skill instructions: `.specify/templates/spec-template.md`, `.specify/templates/plan-template.md`, `.specify/templates/tasks-template.md`
+- [x] T006 Document section annotation patterns in skill instructions: `*(mandatory)*`, `*(include if...)*`, HTML comment extraction
+- [x] T007 Document five file states in skill instructions: MISSING, EMPTY, MALFORMED, INCOMPLETE, VALID with recovery guidance
+- [x] T008 Document error message format in skill instructions: structured format with severity, context, and recovery commands
+- [x] T009 Add conversation context tracking guidance in skill instructions: recently mentioned features, current feature context, implicit references
 
-**Checkpoint**: Foundation ready - skill has complete interpretation framework documented
+**Checkpoint**: ✅ Foundation ready - skill has complete interpretation framework documented
 
 ---
 
@@ -62,15 +63,15 @@ description: "Task list for Speck Workflow Skill implementation"
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Add spec.md interpretation instructions: explain H1 title format, metadata block structure, mandatory sections
-- [ ] T011 [US1] Document User Scenarios & Testing section parsing: H3 user story pattern `### User Story N - [Title] (Priority: PN)`, priority extraction, acceptance scenario format (Given/When/Then)
-- [ ] T012 [US1] Document Requirements section parsing: `## Requirements *(mandatory)*` with subsections `### Functional Requirements` (FR-XXX format) and `### Key Entities` (conditional)
-- [ ] T013 [US1] Document Success Criteria section parsing: `## Success Criteria *(mandatory)*` with subsection `### Measurable Outcomes` (SC-XXX format)
-- [ ] T014 [US1] Add instructions for extracting and explaining [NEEDS CLARIFICATION] markers without triggering slash commands
-- [ ] T015 [US1] Add instructions for handling missing/incomplete spec.md files: detect MISSING state, provide "/speck.specify" recovery guidance
-- [ ] T016 [US1] Add instructions for graceful degradation: parse partial specs, warn about missing mandatory sections, return completeness percentage
+- [x] T010 [US1] Add spec.md interpretation instructions: explain H1 title format, metadata block structure, mandatory sections
+- [x] T011 [US1] Document User Scenarios & Testing section parsing: H3 user story pattern `### User Story N - [Title] (Priority: PN)`, priority extraction, acceptance scenario format (Given/When/Then)
+- [x] T012 [US1] Document Requirements section parsing: `## Requirements *(mandatory)*` with subsections `### Functional Requirements` (FR-XXX format) and `### Key Entities` (conditional)
+- [x] T013 [US1] Document Success Criteria section parsing: `## Success Criteria *(mandatory)*` with subsection `### Measurable Outcomes` (SC-XXX format)
+- [x] T014 [US1] Add instructions for extracting and explaining [NEEDS CLARIFICATION] markers without triggering slash commands
+- [x] T015 [US1] Add instructions for handling missing/incomplete spec.md files: detect MISSING state, provide "/speck.specify" recovery guidance
+- [x] T016 [US1] Add instructions for graceful degradation: parse partial specs, warn about missing mandatory sections, return completeness percentage
 
-**Checkpoint**: User Story 1 complete - skill can accurately interpret spec.md structure and answer questions about requirements, user stories, and success criteria
+**Checkpoint**: ✅ User Story 1 complete - skill can accurately interpret spec.md structure and answer questions about requirements, user stories, and success criteria
 
 ---
 
@@ -82,15 +83,15 @@ description: "Task list for Speck Workflow Skill implementation"
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] Add plan.md interpretation instructions: explain H1 title format, metadata block with branch/date/spec link, Summary section
-- [ ] T018 [US2] Document Technical Context section parsing: language, dependencies, storage, testing, platform, performance goals, constraints, scale/scope
-- [ ] T019 [US2] Document Constitution Check section parsing: principle references, PASS/violation status, justifications in Complexity Tracking
-- [ ] T020 [US2] Document Project Structure section parsing: documentation tree (specs/###-feature/), source code tree (extract from code blocks)
-- [ ] T021 [US2] Document Phase sections parsing: Phase 0 research, Phase 1 design artifacts, research.md/data-model.md/contracts/ references
-- [ ] T022 [US2] Add instructions for explaining scope boundaries: In Scope vs Out of Scope sections, decision rationale extraction
-- [ ] T023 [US2] Add instructions for handling missing/incomplete plan.md files: detect MISSING/INCOMPLETE states, suggest "/speck.plan" for missing, "/speck.clarify" for incomplete
+- [x] T017 [US2] Add plan.md interpretation instructions: explain H1 title format, metadata block with branch/date/spec link, Summary section
+- [x] T018 [US2] Document Technical Context section parsing: language, dependencies, storage, testing, platform, performance goals, constraints, scale/scope
+- [x] T019 [US2] Document Constitution Check section parsing: principle references, PASS/violation status, justifications in Complexity Tracking
+- [x] T020 [US2] Document Project Structure section parsing: documentation tree (specs/###-feature/), source code tree (extract from code blocks)
+- [x] T021 [US2] Document Phase sections parsing: Phase 0 research, Phase 1 design artifacts, research.md/data-model.md/contracts/ references
+- [x] T022 [US2] Add instructions for explaining scope boundaries: In Scope vs Out of Scope sections, decision rationale extraction
+- [x] T023 [US2] Add instructions for handling missing/incomplete plan.md files: detect MISSING/INCOMPLETE states, suggest "/speck.plan" for missing, "/speck.clarify" for incomplete
 
-**Checkpoint**: User Story 2 complete - skill can accurately interpret plan.md structure and answer questions about technical approach, architecture, and scope
+**Checkpoint**: ✅ User Story 2 complete - skill can accurately interpret plan.md structure and answer questions about technical approach, architecture, and scope
 
 ---
 
@@ -102,15 +103,15 @@ description: "Task list for Speck Workflow Skill implementation"
 
 ### Implementation for User Story 3
 
-- [ ] T024 [US3] Add tasks.md interpretation instructions: explain YAML frontmatter, H1 title format, Format explanation section
-- [ ] T025 [US3] Document task format parsing: checkbox `- [ ]`, Task ID (T###), [P] parallelizable marker, [Story] label (US1/US2/etc), description with file path
-- [ ] T026 [US3] Document Phase structure parsing: Phase 1 Setup, Phase 2 Foundational, Phase 3+ User Stories, Final Phase Polish
-- [ ] T027 [US3] Document task status detection: unchecked `- [ ]` = pending, checked `- [x]` = completed, "in_progress" marker if present
-- [ ] T028 [US3] Document dependency parsing: Dependencies & Execution Order section, phase completion order, user story independence
-- [ ] T029 [US3] Add instructions for identifying available work: tasks with satisfied dependencies + pending status, checkpoint markers between phases
-- [ ] T030 [US3] Add instructions for handling missing/incomplete tasks.md files: detect MISSING state, suggest "/speck.tasks" recovery guidance
+- [x] T024 [US3] Add tasks.md interpretation instructions: explain YAML frontmatter, H1 title format, Format explanation section
+- [x] T025 [US3] Document task format parsing: checkbox `- [ ]`, Task ID (T###), [P] parallelizable marker, [Story] label (US1/US2/etc), description with file path
+- [x] T026 [US3] Document Phase structure parsing: Phase 1 Setup, Phase 2 Foundational, Phase 3+ User Stories, Final Phase Polish
+- [x] T027 [US3] Document task status detection: unchecked `- [ ]` = pending, checked `- [x]` = completed, "in_progress" marker if present
+- [x] T028 [US3] Document dependency parsing: Dependencies & Execution Order section, phase completion order, user story independence
+- [x] T029 [US3] Add instructions for identifying available work: tasks with satisfied dependencies + pending status, checkpoint markers between phases
+- [x] T030 [US3] Add instructions for handling missing/incomplete tasks.md files: detect MISSING state, suggest "/speck.tasks" recovery guidance
 
-**Checkpoint**: User Story 3 complete - skill can accurately interpret tasks.md structure and answer questions about task status and remaining work
+**Checkpoint**: ✅ User Story 3 complete - skill can accurately interpret tasks.md structure and answer questions about task status and remaining work
 
 ---
 
@@ -122,15 +123,15 @@ description: "Task list for Speck Workflow Skill implementation"
 
 ### Implementation for User Story 4
 
-- [ ] T031 [US4] Add template comparison workflow instructions: load template file from `.specify/templates/`, load actual file from feature directory, extract sections from both
-- [ ] T032 [US4] Document template section extraction: parse `##` and `###` headers, identify mandatory markers `*(mandatory)*`, identify conditional markers `*(include if...)*`
-- [ ] T033 [US4] Document structural comparison logic: check for missing mandatory sections, check for out-of-order sections, check for wrong heading levels (H2 vs H3)
-- [ ] T034 [US4] Document content completeness checking: detect empty sections (header present but no content), detect placeholder markers `[FEATURE]`, `[DATE]`, `TODO`, `[NEEDS CLARIFICATION]`
-- [ ] T035 [US4] Add instructions for extracting section purposes from template comments: parse HTML comments `<!-- ... -->`, extract first line as purpose, parse ACTION REQUIRED/IMPORTANT keywords
-- [ ] T036 [US4] Add instructions for generating comparison report: list missing sections with severity (error for mandatory), suggest specific fixes, calculate completeness percentage
-- [ ] T037 [US4] Add instructions for explaining section purposes when user asks: extract comment text from template for requested section, explain intent and expected content
+- [x] T031 [US4] Add template comparison workflow instructions: load template file from `.specify/templates/`, load actual file from feature directory, extract sections from both
+- [x] T032 [US4] Document template section extraction: parse `##` and `###` headers, identify mandatory markers `*(mandatory)*`, identify conditional markers `*(include if...)*`
+- [x] T033 [US4] Document structural comparison logic: check for missing mandatory sections, check for out-of-order sections, check for wrong heading levels (H2 vs H3)
+- [x] T034 [US4] Document content completeness checking: detect empty sections (header present but no content), detect placeholder markers `[FEATURE]`, `[DATE]`, `TODO`, `[NEEDS CLARIFICATION]`
+- [x] T035 [US4] Add instructions for extracting section purposes from template comments: parse HTML comments `<!-- ... -->`, extract first line as purpose, parse ACTION REQUIRED/IMPORTANT keywords
+- [x] T036 [US4] Add instructions for generating comparison report: list missing sections with severity (error for mandatory), suggest specific fixes, calculate completeness percentage
+- [x] T037 [US4] Add instructions for explaining section purposes when user asks: extract comment text from template for requested section, explain intent and expected content
 
-**Checkpoint**: User Story 4 complete - skill can compare actual files against templates and identify structural issues
+**Checkpoint**: ✅ User Story 4 complete - skill can compare actual files against templates and identify structural issues
 
 ---
 
@@ -138,18 +139,18 @@ description: "Task list for Speck Workflow Skill implementation"
 
 **Purpose**: Refinements that improve the skill across all user stories
 
-- [ ] T038 [P] Add edge case handling instructions: non-existent feature references (suggest alternatives using Levenshtein distance), invalid file type requests (explain valid types), ambiguous feature names (ask for clarification)
-- [ ] T038a [P] Add template version tolerance instructions: when comparing files to templates, ignore minor formatting differences (extra whitespace, comment style variations), focus on structural completeness (mandatory sections present), warn user if template has new sections not in their file but don't mark as error
-- [ ] T039 [P] Add multi-feature conversation handling: maintain conversation context, track recently mentioned features, resolve pronoun references ("it", "that", "the spec")
-- [ ] T040 [P] Add helpful error message templates: feature not found format, file missing format, section incomplete format with recovery commands
-- [ ] T040a [P] Implement error message templates in skill instructions: use templates from T040 for feature-not-found (with Levenshtein suggestions), file-missing (with /speck.* recovery commands), section-incomplete (with completeness %) (validates FR-012)
-- [ ] T041 [P] Document feature number padding logic: recognize "5" as "005", "42" as "042" for consistent matching
-- [ ] T042 Validate skill frontmatter YAML syntax: ensure valid YAML delimiters `---`, verify description length 80-150 characters, verify name is unique
+- [x] T038 [P] Add edge case handling instructions: non-existent feature references (suggest alternatives using Levenshtein distance), invalid file type requests (explain valid types), ambiguous feature names (ask for clarification)
+- [x] T038a [P] Add template version tolerance instructions: when comparing files to templates, ignore minor formatting differences (extra whitespace, comment style variations), focus on structural completeness (mandatory sections present), warn user if template has new sections not in their file but don't mark as error
+- [x] T039 [P] Add multi-feature conversation handling: maintain conversation context, track recently mentioned features, resolve pronoun references ("it", "that", "the spec")
+- [x] T040 [P] Add helpful error message templates: feature not found format, file missing format, section incomplete format with recovery commands
+- [x] T040a [P] Implement error message templates in skill instructions: use templates from T040 for feature-not-found (with Levenshtein suggestions), file-missing (with /speck.* recovery commands), section-incomplete (with completeness %) (validates FR-012)
+- [x] T041 [P] Document feature number padding logic: recognize "5" as "005", "42" as "042" for consistent matching
+- [x] T042 Validate skill frontmatter YAML syntax: ensure valid YAML delimiters `---`, verify description length 80-150 characters, verify name is unique
 - [ ] T043 Run manual validation tests from quickstart.md: test activation with explicit feature references, test activation with file type mentions, test activation with Speck terminology
 - [ ] T043a Validate automatic skill activation: test 10 representative queries (e.g., "What are the requirements for feature 005?", "Tell me about the auth spec", "What tasks remain?") and verify skill activates within 1 turn without user repeating question (validates FR-001, SC-003)
-- [ ] T044 Add final skill documentation: usage examples for each user story, troubleshooting section for common activation issues, limitations note (read-only, no file modification)
+- [x] T044 Add final skill documentation: usage examples for each user story, troubleshooting section for common activation issues, limitations note (read-only, no file modification)
 
-**Checkpoint**: Skill polished and ready for use
+**Checkpoint**: ✅ Skill polished and ready for validation testing
 
 ---
 
@@ -246,7 +247,7 @@ With multiple developers working on same file:
 
 ## Notes
 
-- **Single file approach**: All tasks modify `.claude/skills/speck-workflow.md` - use clear section markers to avoid conflicts
+- **Directory-based skill approach**: Skill implemented in `.claude/skills/speck-workflow/SKILL.md` per Claude Code plugin 2.0 standards
 - **[P] tasks**: Different logical sections, minimal dependencies
 - **[Story] labels**: Track which user story each task serves for traceability
 - **Each user story independently testable**: Can validate spec interpretation without plan interpretation
