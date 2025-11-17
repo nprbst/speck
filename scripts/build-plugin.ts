@@ -39,9 +39,9 @@ const config: BuildConfig = {
   commandsSourceDir: join(process.cwd(), '.claude/commands'),
   agentsSourceDir: join(process.cwd(), '.claude/agents'),
   skillsSourceDir: join(process.cwd(), '.claude/skills'),
-  templatesSourceDir: join(process.cwd(), '.specify/templates'),
+  templatesSourceDir: join(process.cwd(), '.speck/templates'),
   scriptsSourceDir: join(process.cwd(), '.speck/scripts'),
-  memorySourceDir: join(process.cwd(), '.specify/memory'),
+  memorySourceDir: join(process.cwd(), '.speck/memory'),
   version: '', // Will be loaded from package.json
   maxSizeBytes: 5 * 1024 * 1024, // 5MB
   validateCommands: true,
@@ -332,9 +332,9 @@ async function copyPluginFiles(): Promise<FileCounts> {
   }
 
   // T015: Copy templates
-  // Copy to .specify/templates/ to maintain script compatibility
+  // Copy to .speck/templates/ to maintain script compatibility
   if (existsSync(config.templatesSourceDir)) {
-    const templatesDestDir = join(config.outputDir, '.specify/templates');
+    const templatesDestDir = join(config.outputDir, '.speck/templates');
     await copyDir(config.templatesSourceDir, templatesDestDir);
     const files = await readdir(templatesDestDir, { recursive: true });
     counts.templates = files.filter(f => typeof f === 'string').length;
@@ -375,10 +375,10 @@ async function copyPluginFiles(): Promise<FileCounts> {
   }
 
   // T016a: Copy memory/constitution if exists
-  // Copy to .specify/memory/ to maintain script compatibility
+  // Copy to .speck/memory/ to maintain script compatibility
   const constitutionPath = join(config.memorySourceDir, 'constitution.md');
   if (existsSync(constitutionPath)) {
-    const memoryDestDir = join(config.outputDir, '.specify/memory');
+    const memoryDestDir = join(config.outputDir, '.speck/memory');
     await ensureDir(memoryDestDir);
     await copyFile(constitutionPath, join(memoryDestDir, 'constitution.md'));
     counts.memory = 1;
