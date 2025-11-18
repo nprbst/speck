@@ -41,7 +41,7 @@ const config: BuildConfig = {
   skillsSourceDir: join(process.cwd(), '.claude/skills'),
   templatesSourceDir: join(process.cwd(), '.speck/templates'),
   scriptsSourceDir: join(process.cwd(), '.speck/scripts'),
-  memorySourceDir: join(process.cwd(), '.speck/memory'),
+  memorySourceDir: join(process.cwd(), 'upstream/latest/.specify/memory'),
   version: '', // Will be loaded from package.json
   maxSizeBytes: 5 * 1024 * 1024, // 5MB
   validateCommands: true,
