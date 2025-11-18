@@ -332,9 +332,9 @@ async function copyPluginFiles(): Promise<FileCounts> {
   }
 
   // T015: Copy templates
-  // Copy to .speck/templates/ to maintain script compatibility
+  // Copy to templates/ directly under plugin root
   if (existsSync(config.templatesSourceDir)) {
-    const templatesDestDir = join(config.outputDir, '.speck/templates');
+    const templatesDestDir = join(config.outputDir, 'templates');
     await copyDir(config.templatesSourceDir, templatesDestDir);
     const files = await readdir(templatesDestDir, { recursive: true });
     counts.templates = files.filter(f => typeof f === 'string').length;
@@ -375,10 +375,10 @@ async function copyPluginFiles(): Promise<FileCounts> {
   }
 
   // T016a: Copy memory/constitution if exists
-  // Copy to .speck/memory/ to maintain script compatibility
+  // Copy to memory/ directly under plugin root
   const constitutionPath = join(config.memorySourceDir, 'constitution.md');
   if (existsSync(constitutionPath)) {
-    const memoryDestDir = join(config.outputDir, '.speck/memory');
+    const memoryDestDir = join(config.outputDir, 'memory');
     await ensureDir(memoryDestDir);
     await copyFile(constitutionPath, join(memoryDestDir, 'constitution.md'));
     counts.memory = 1;
