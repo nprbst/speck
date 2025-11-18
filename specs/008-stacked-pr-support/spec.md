@@ -14,6 +14,11 @@
 - Q: How should `/speck.plan` and `/speck.tasks` use the `--stacked` flag during the planning phase? → A: Plan user story groupings for future branches, defer branch creation to `/speck.implement` auto-prompts
 - Q: Where should the workflow mode choice (single-branch vs stacked) be recorded when set via `/speck.plan --stacked` or `/speck.tasks --stacked`? → A: Active spec's plan.md file (feature-specific setting)
 - Q: How should the system create PRs when developer confirms branch stacking during `/speck.implement`? → A: Invoke GitHub CLI (`gh pr create`) directly with collected metadata (title, description, base)
+- Q: Where should the interrupt-resume logic live for PR creation workflow in `/speck.branch create`? → A: Split responsibility - script suggests PR by default (exiting early), command/agent handles interaction and re-invokes with either `--skip-pr-prompt` (user declines) or `--create-pr --title "..." --description "..."` (user confirms, agent generates metadata)
+- Q: Should User Story 3 (building a stack) follow the same interrupt-resume pattern as User Story 2, or use a different flow? → A: Same interrupt-resume pattern for consistency - script always exits with suggestion, agent prompts, then re-invokes with appropriate flag
+- Q: How should `--create-pr` flag behave when `gh` CLI is not installed, not authenticated, or fails? → A: Exit with error code and clear message directing user to install/authenticate gh or use `--skip-pr-prompt` to proceed without PR, preserving interrupt-resume contract (fail fast, not silent fallback)
+- Q: Where should PR base branch determination happen - agent or script? → A: Agent determines PR base from branches.json (or defaults to "main") and passes explicitly via `--pr-base <base>` flag for clarity; script can also determine internally as fallback when flag not provided (supports direct script invocation)
+- Q: What format should the script use for PR suggestion output when exiting with suggestion? → A: Structured JSON to stderr with exit code 2 (distinct from error=1, success=0) indicating "suggestion pending", allowing agent to parse suggestion data programmatically while keeping stdout for human-readable messages
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -44,13 +49,13 @@ A developer working on a large feature spec has completed work on the feature br
 
 **Acceptance Scenarios**:
 
-1. **Given** developer is on `007-multi-repo` feature branch with uncommitted changes, **When** developer runs `/speck.branch create "nprbst/db-layer"`, **Then** system displays warning with changed files and suggests committing or stashing before creating new branch
-2. **Given** developer is on `007-multi-repo` feature branch with committed work, **When** developer runs `/speck.branch create "nprbst/db-layer"`, **Then** system displays PR suggestion with auto-generated title, description, and copy-paste `gh pr create` command
-3. **Given** PR suggestion is displayed, **When** developer views the output, **Then** PR title is generated from first substantive commit subject and description from commit messages (or from git diff if commit messages are uninformative like "wip", "fix", "tmp")
-4. **Given** PR suggestion shows `gh pr create` command, **When** developer copies and runs the command, **Then** GitHub CLI creates PR with generated title/body and base determined from branches.json or defaulting to main
-5. **Given** PR is created successfully, **When** developer updates branch metadata with `/speck.branch update`, **Then** branches.json records PR number and status is set to "submitted"
-6. **Given** developer skips PR creation, **When** git branch `nprbst/db-layer` is created, **Then** `.speck/branches.json` records the mapping with status "active" and PR number null
-7. **Given** developer inspects `.speck/branches.json` after branch creation, **Then** file shows branch name, base branch, spec reference, status "active", timestamps, and PR number (null if not created)
+1. **Given** developer is on `007-multi-repo` feature branch with uncommitted changes, **When** developer runs `/speck.branch create "nprbst/db-layer"`, **Then** script exits early with warning showing changed files and suggesting committing or stashing before creating new branch
+2. **Given** developer is on `007-multi-repo` feature branch with committed work, **When** developer runs `/speck.branch create "nprbst/db-layer"` (first invocation), **Then** script exits with PR suggestion showing auto-generated title, description, and prompts command/agent to ask user whether to create PR
+3. **Given** command/agent receives PR suggestion from script, **When** agent prompts user "Create PR for 007-multi-repo before switching? (yes/no)", **Then** user can respond yes (proceed to PR creation) or no (skip PR creation)
+4. **Given** user responds "yes" to PR prompt, **When** agent generates PR metadata from commits/diff and determines PR base from branches.json (or defaults to "main"), **Then** agent re-invokes script with `/speck.branch create "nprbst/db-layer" --create-pr --title "..." --description "..." --pr-base "main"` which creates PR via `gh pr create`, updates branches.json with PR number, and creates new branch
+5. **Given** user responds "no" to PR prompt, **When** agent re-invokes script, **Then** agent calls `/speck.branch create "nprbst/db-layer" --skip-pr-prompt` which creates branch without PR, recording status "active" and PR number null in branches.json
+6. **Given** PR is created successfully via `--create-pr` flag, **When** `gh pr create` returns PR number, **Then** script updates branches.json with PR number and sets status to "submitted"
+7. **Given** developer inspects `.speck/branches.json` after branch creation, **Then** file shows branch name, base branch, spec reference, status ("active" or "submitted"), timestamps, and PR number (integer if created, null otherwise)
 
 ---
 
@@ -64,8 +69,8 @@ A developer has completed work on the first stacked branch and wants to create a
 
 **Acceptance Scenarios**:
 
-1. **Given** developer is on branch `nprbst/db-layer` (based on feature branch `007-multi-repo`) with committed work, **When** developer runs `/speck.branch create "nprbst/api-endpoints"`, **Then** system prompts: "Create PR for nprbst/db-layer before switching? (yes/no)"
-2. **Given** developer answers "yes" to PR prompt, **When** PR is created, **Then** `gh pr create` uses `nprbst/db-layer` with base `007-multi-repo`, updates branches.json with PR number, then creates and switches to new branch
+1. **Given** developer is on branch `nprbst/db-layer` (based on feature branch `007-multi-repo`) with committed work, **When** developer runs `/speck.branch create "nprbst/api-endpoints"` (first invocation), **Then** script exits with PR suggestion for `nprbst/db-layer` and prompts command/agent to ask user whether to create PR
+2. **Given** command/agent receives PR suggestion, **When** agent prompts user "Create PR for nprbst/db-layer before switching? (yes/no)" and user responds "yes", **Then** agent re-invokes script with `/speck.branch create "nprbst/api-endpoints" --create-pr --title "..." --description "..." --pr-base "007-multi-repo"` which creates PR via `gh pr create` with base `007-multi-repo`, updates branches.json with PR number, and creates new branch
 3. **Given** a stack of 3 branches exists with PRs, **When** developer runs `/speck.env`, **Then** output displays the full dependency chain with PR numbers (007-multi-repo PR#1 → db-layer PR#2 → api-endpoints → ui-components)
 4. **Given** developer is on a stacked branch, **When** they run `/speck.branch list`, **Then** output shows all branches for current spec with base dependencies and PR status
 5. **Given** a branch in middle of stack is merged, **When** developer runs `/speck.branch status`, **Then** output indicates which branches need rebasing onto updated base
@@ -152,8 +157,8 @@ A developer using `/speck.implement` completes a user story that represents a na
 - How does system handle merge conflicts when rebasing a stack?
 - What happens when developer creates a branch via git directly (not using `/speck.branch`)?
 - How does system handle switching between single-branch and stacked-branch modes for the same spec?
-- What happens when `gh` CLI is not installed or not authenticated when attempting PR creation?
-- How does system handle PR creation failures (network errors, permission issues, invalid base branch)?
+- What happens when `gh` CLI is not installed or not authenticated when attempting PR creation? → When `--create-pr` flag used: exit with error code and clear message. When PR suggested (no flag): display both gh command and manual URL fallback.
+- How does system handle PR creation failures (network errors, permission issues, invalid base branch)? → Exit with error code and gh CLI's native error message, directing user to fix issue or use `--skip-pr-prompt`.
 - What happens when developer is on a detached HEAD or non-branch ref when stacking prompt appears?
 
 ## Requirements *(mandatory)*
@@ -163,7 +168,7 @@ A developer using `/speck.implement` completes a user story that represents a na
 - **FR-001**: System MUST support traditional single-branch workflow without requiring `.speck/branches.json` file or any stack-related configuration
 - **FR-002**: System MUST allow freeform branch naming patterns (e.g., `username/feature`, `TICKET-123-name`, `feature/description`) alongside existing `NNN-feature-name` format
 - **FR-003**: System MUST maintain centralized branch-to-spec mapping in `.speck/branches.json` at repository root for quick lookups
-- **FR-004**: System MUST provide `/speck.branch create <name> [--base <base-branch>]` command to create new stacked branch with explicit parent dependency (defaults to current branch if --base omitted)
+- **FR-004**: System MUST provide `/speck.branch create <name> [--base <base-branch>] [--skip-pr-prompt] [--create-pr --title "<title>" --description "<desc>" [--pr-base "<pr-base>"]]` command to create new stacked branch with explicit parent dependency (defaults to current branch if --base omitted); script exits with PR suggestion by default unless `--skip-pr-prompt` or `--create-pr` flags provided, enabling interrupt-resume workflow where command/agent handles user interaction; `--pr-base` explicitly specifies PR target base (agent-determined from branches.json or "main" default), with script fallback to internal determination when flag omitted
 - **FR-005**: System MUST update `/speck.env` to display branch stack status when `.speck/branches.json` exists
 - **FR-006**: System MUST provide `/speck.tasks --branch <name> --stories <US1,US2,...>` to generate branch-specific task subsets
 - **FR-007**: System MUST track branch metadata including: branch name, base branch, associated spec ID, PR number (optional), and status (active/submitted/merged)
@@ -185,8 +190,10 @@ A developer using `/speck.implement` completes a user story that represents a na
 - **FR-023**: Command-line flags (`--stacked`, `--single-branch`) MUST override both constitution defaults and plan.md settings when explicitly provided
 - **FR-024**: `/speck.implement` MUST read workflow mode from plan.md (if present), fall back to constitution default, or default to single-branch mode if neither exists
 - **FR-025**: System MUST invoke GitHub CLI (`gh pr create`) directly with collected metadata (title, description, base branch) when developer confirms PR creation
-- **FR-026**: System MUST gracefully handle `gh` CLI unavailability by displaying executable manual command template (`gh pr create --base <base> --title "<title>" --body "<body>"`) OR generating GitHub web URL (`https://github.com/<owner>/<repo>/compare/<base>...<head>?expand=1&title=<encoded-title>`)
-- **FR-027**: PR creation MUST update `.speck/branches.json` with returned PR number and set status to "submitted"
+- **FR-026**: When `--create-pr` flag is provided but `gh` CLI fails (not installed, not authenticated, network error, permission error), script MUST exit with non-zero error code and clear message directing user to either: (1) install/authenticate gh CLI, or (2) re-run with `--skip-pr-prompt` to proceed without PR creation
+- **FR-027**: PR creation MUST update `.speck/branches.json` with returned PR number and set status to "submitted" only when `gh pr create` succeeds
+- **FR-028**: When script exits with PR suggestion (no flags provided), suggestion output MUST include both `gh pr create` command for users with gh CLI AND fallback manual URL (`https://github.com/<owner>/<repo>/compare/<base>...<head>`) for users without gh CLI
+- **FR-029**: Script MUST use distinct exit codes: 0 (success - branch created), 1 (error - operation failed), 2 (suggestion pending - PR opportunity detected, awaiting user decision); when exiting with code 2, script MUST output structured JSON to stderr containing: `{ "type": "pr-suggestion", "branch": "<current-branch>", "suggestedTitle": "...", "suggestedDescription": "...", "suggestedBase": "...", "newBranch": "<target-branch>" }` while displaying human-readable message to stdout
 
 ### Key Entities
 
