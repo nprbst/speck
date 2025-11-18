@@ -5,6 +5,16 @@
 **Status**: Draft
 **Input**: User description: "Add stacked PR support to Speck workflow to enable multiple branches per spec with explicit dependency tracking. Requirements: (1) Support tool-agnostic stacked PR workflows (Graphite, GitHub Stack, manual), (2) Allow freeform branch naming (e.g., 'username/feature-name') alongside existing NNN-feature-name pattern, (3) Centralized branch-to-spec mapping in .speck/branches.json for quick lookups, (4) Branch-aware task generation from day 1 - /speck.tasks should support --branch flag to generate subset of tasks for specific branch in stack, (5) Single-repo only (multi-repo stacking out of scope), (6) Backwards compatible - single-branch specs work unchanged without branches.json, (7) New /speck.branch command for creating stacked branches with base branch dependency, (8) Update /speck.env to display branch stack status. Use cases: Teams that want to break large features into reviewable chunks via stacked PRs, developers using tools like Graphite for stack management, teams with custom branch naming conventions (username prefixes, ticket numbers, etc.). Key insight: Decouple spec identity from single branch name - one spec can have multiple implementation branches with explicit parent-child relationships tracked in metadata."
 
+## Clarifications
+
+### Session 2025-11-18
+
+- Q: When `/speck.implement` reaches a natural boundary (e.g., completed user story), how should it offer to create a stacked PR? → A: Prompt developer to confirm before creating branch (yes/no/skip), then gather metadata interactively
+- Q: What constitutes a "natural boundary" for offering to create a stacked branch during `/speck.implement`? → A: Completed user story (all acceptance scenarios pass for a single US)
+- Q: How should `/speck.plan` and `/speck.tasks` use the `--stacked` flag during the planning phase? → A: Plan user story groupings for future branches, defer branch creation to `/speck.implement` auto-prompts
+- Q: Where should the workflow mode choice (single-branch vs stacked) be recorded when set via `/speck.plan --stacked` or `/speck.tasks --stacked`? → A: Active spec's plan.md file (feature-specific setting)
+- Q: How should the system create PRs when developer confirms branch stacking during `/speck.implement`? → A: Invoke GitHub CLI (`gh pr create`) directly with collected metadata (title, description, base)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Traditional Single-Branch Workflow (Unchanged) (Priority: P1)
@@ -109,6 +119,25 @@ A developer joins a project mid-feature and wants to understand the current stat
 
 ---
 
+### User Story 7 - Automated Stacking During Implementation (Priority: P1)
+
+A developer using `/speck.implement` completes a user story that represents a natural boundary for an independently deployable change. The system detects this boundary and prompts them to optionally create a new stacked branch and PR, enabling seamless workflow without manual branch management.
+
+**Why this priority**: This is the core automation value - reducing friction in stacked PR workflows by intelligently detecting boundaries and offering to stack at the right moments.
+
+**Independent Test**: Can be tested by running `/speck.implement` with stacked-PR mode enabled, completing a user story, and verifying the system prompts for branch creation with appropriate context.
+
+**Acceptance Scenarios**:
+
+1. **Given** developer runs `/speck.implement --stacked` and completes user story US1, **When** all US1 tasks pass, **Then** system prompts: "US1 complete. Create stacked branch for next work? (yes/no/skip)"
+2. **Given** developer answers "yes" to stacking prompt, **When** system gathers metadata, **Then** interactive prompts collect: branch name, PR title, PR description, and confirm current branch as base
+3. **Given** developer answers "no" to stacking prompt, **When** implementation continues, **Then** work proceeds on current branch without creating new branch
+4. **Given** developer answers "skip" to stacking prompt, **When** system processes response, **Then** no further stacking prompts appear during this implementation session
+5. **Given** developer runs `/speck.implement` without `--stacked` flag, **When** user stories complete, **Then** no stacking prompts appear (traditional single-branch mode)
+6. **Given** stacked-PR mode is set as default in constitution, **When** developer runs `/speck.implement`, **Then** system uses stacked mode unless `--single-branch` flag overrides
+
+---
+
 ### Edge Cases
 
 - What happens when a developer tries to create a stacked branch with a base that doesn't exist?
@@ -119,6 +148,9 @@ A developer joins a project mid-feature and wants to understand the current stat
 - How does system handle merge conflicts when rebasing a stack?
 - What happens when developer creates a branch via git directly (not using `/speck.branch`)?
 - How does system handle switching between single-branch and stacked-branch modes for the same spec?
+- What happens when `gh` CLI is not installed or not authenticated when attempting PR creation?
+- How does system handle PR creation failures (network errors, permission issues, invalid base branch)?
+- What happens when developer is on a detached HEAD or non-branch ref when stacking prompt appears?
 
 ## Requirements *(mandatory)*
 
@@ -139,6 +171,17 @@ A developer joins a project mid-feature and wants to understand the current stat
 - **FR-013**: System MUST provide `/speck.branch import` command to auto-detect existing branch relationships from git and populate branches.json
 - **FR-014**: System MUST gracefully handle missing or malformed `.speck/branches.json` by either auto-repairing or prompting user
 - **FR-015**: System MUST support single-repo only (multi-repo stacking explicitly out of scope)
+- **FR-016**: `/speck.implement` MUST detect natural boundaries (completed user stories where all acceptance scenarios pass) and prompt developer to create stacked branch and PR
+- **FR-017**: Stacking prompts MUST offer three response options: "yes" (create branch + PR with interactive metadata collection), "no" (continue on current branch), "skip" (suppress further prompts this session)
+- **FR-018**: `/speck.implement` MUST support `--stacked` flag to enable automated stacking prompts and `--single-branch` flag to disable them
+- **FR-019**: `/speck.plan` and `/speck.tasks` MUST support `--stacked` flag to plan user story groupings for future branches, deferring actual branch creation to `/speck.implement` auto-prompts
+- **FR-020**: Workflow mode choice (single-branch vs stacked) MUST be recorded in active spec's plan.md file as feature-specific metadata when set via `--stacked` or `--single-branch` flags
+- **FR-021**: Constitution file MAY support `defaultWorkflowMode: "single-branch" | "stacked"` setting as repository-wide default, overridden by plan.md feature-specific settings
+- **FR-022**: Command-line flags (`--stacked`, `--single-branch`) MUST override both constitution defaults and plan.md settings when explicitly provided
+- **FR-023**: `/speck.implement` MUST read workflow mode from plan.md (if present), fall back to constitution default, or default to single-branch mode if neither exists
+- **FR-024**: System MUST invoke GitHub CLI (`gh pr create`) directly with collected metadata (title, description, base branch) when developer confirms PR creation
+- **FR-025**: System MUST gracefully handle `gh` CLI unavailability by falling back to suggested manual command or browser URL
+- **FR-026**: PR creation MUST update `.speck/branches.json` with returned PR number and set status to "submitted"
 
 ### Key Entities
 
@@ -161,6 +204,13 @@ A developer joins a project mid-feature and wants to understand the current stat
   - Target branch name
   - Included user stories (array of US IDs)
   - Task IDs (subset of full tasks.md)
+
+- **Stacked Plan Metadata**: Planning annotations for future branch stack structure (when `--stacked` flag used)
+  - Workflow mode setting ("single-branch" | "stacked")
+  - User story groupings (which US belong together for single PR scope)
+  - Suggested branch boundaries (deferred to implementation)
+  - Dependency order hints (US1 → US2 → US3)
+  - Embedded in plan.md as structured frontmatter or metadata section
 
 ## Success Criteria *(mandatory)*
 
@@ -187,3 +237,6 @@ A developer joins a project mid-feature and wants to understand the current stat
 - Spec-to-branch relationships are many-to-many at the git level but Speck enforces one-to-many (one spec, many branches)
 - Teams using stacked PRs understand the concept of base branch dependencies
 - `.speck/branches.json` is version-controlled and committed alongside code changes
+- GitHub CLI (`gh`) is preferred for automated PR creation but system degrades gracefully if unavailable
+- Automated PR creation is GitHub-specific; other platforms (GitLab, Bitbucket) require manual PR creation or custom tooling
+- Developers are authenticated with `gh auth login` before attempting automated PR creation
