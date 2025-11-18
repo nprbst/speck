@@ -16,19 +16,19 @@
 
 ### Tasks
 
-- [ ] T001 Create BranchMapper utility module in .speck/scripts/common/branch-mapper.ts
-- [ ] T002 [P] Define TypeScript interfaces (BranchEntry, BranchMapping, BranchStatus) in .speck/scripts/common/branch-mapper.ts
-- [ ] T003 [P] Implement Zod schemas (BranchEntrySchema, BranchMappingSchema) in .speck/scripts/common/branch-mapper.ts
-- [ ] T004 [P] Implement readBranches() function in .speck/scripts/common/branch-mapper.ts
-- [ ] T005 [P] Implement writeBranches() with atomic write (temp file + rename) in .speck/scripts/common/branch-mapper.ts
-- [ ] T006 [P] Implement rebuildSpecIndex() helper function in .speck/scripts/common/branch-mapper.ts
-- [ ] T007 [P] Implement getSpecForBranch() query function in .speck/scripts/common/branch-mapper.ts
-- [ ] T008 [P] Implement getBranchesForSpec() query function in .speck/scripts/common/branch-mapper.ts
-- [ ] T009 [P] Implement findBranchEntry() query function in .speck/scripts/common/branch-mapper.ts
-- [ ] T010 [P] Implement addBranch() mutation function in .speck/scripts/common/branch-mapper.ts
-- [ ] T011 [P] Implement updateBranchStatus() mutation function in .speck/scripts/common/branch-mapper.ts
-- [ ] T012 [P] Implement removeBranch() mutation function in .speck/scripts/common/branch-mapper.ts
-- [ ] T013 [P] Implement validateBranchMapping() with cycle detection (DFS algorithm) in .speck/scripts/common/branch-mapper.ts
+- [x] T001 Create BranchMapper utility module in .speck/scripts/common/branch-mapper.ts
+- [x] T002 [P] Define TypeScript interfaces (BranchEntry, BranchMapping, BranchStatus) in .speck/scripts/common/branch-mapper.ts
+- [x] T003 [P] Implement Zod schemas (BranchEntrySchema, BranchMappingSchema) in .speck/scripts/common/branch-mapper.ts
+- [x] T004 [P] Implement readBranches() function in .speck/scripts/common/branch-mapper.ts
+- [x] T005 [P] Implement writeBranches() with atomic write (temp file + rename) in .speck/scripts/common/branch-mapper.ts
+- [x] T006 [P] Implement rebuildSpecIndex() helper function in .speck/scripts/common/branch-mapper.ts
+- [x] T007 [P] Implement getSpecForBranch() query function in .speck/scripts/common/branch-mapper.ts
+- [x] T008 [P] Implement getBranchesForSpec() query function in .speck/scripts/common/branch-mapper.ts
+- [x] T009 [P] Implement findBranchEntry() query function in .speck/scripts/common/branch-mapper.ts
+- [x] T010 [P] Implement addBranch() mutation function in .speck/scripts/common/branch-mapper.ts
+- [x] T011 [P] Implement updateBranchStatus() mutation function in .speck/scripts/common/branch-mapper.ts
+- [x] T012 [P] Implement removeBranch() mutation function in .speck/scripts/common/branch-mapper.ts
+- [x] T013 [P] Implement validateBranchMapping() with cycle detection (DFS algorithm) in .speck/scripts/common/branch-mapper.ts
 
 ---
 
@@ -40,15 +40,15 @@
 
 ### Tasks
 
-- [ ] T014 Extend findFeatureDirByPrefix() to check branches.json first (if exists) before falling back to numeric prefix pattern matching in .speck/scripts/common/paths.ts (modifies existing function)
-- [ ] T015 Modify checkFeatureBranch() validation logic to skip NNN-pattern enforcement when branches.json exists and contains current branch in .speck/scripts/common/paths.ts (modifies existing function)
-- [ ] T016 [P] Create validateBranchName() function using git check-ref-format in .speck/scripts/common/paths.ts
-- [ ] T017 [P] Create detectCycle() function for circular dependency detection (DFS) in .speck/scripts/common/branch-mapper.ts
-- [ ] T018 [P] Implement validateStatusTransition() to prevent terminal state transitions in .speck/scripts/common/branch-mapper.ts
-- [ ] T019 [P] Create error classes (StackedModeError, ValidationError, GitError) in .speck/scripts/common/errors.ts
-- [ ] T020 [P] Implement createGitBranch() git operation wrapper in .speck/scripts/common/git-operations.ts
-- [ ] T021 [P] Implement checkBranchMerged() git operation wrapper in .speck/scripts/common/git-operations.ts
-- [ ] T022 [P] Implement listGitBranches() git operation wrapper in .speck/scripts/common/git-operations.ts
+- [x] T014 Extend findFeatureDirByPrefix() to check branches.json first (if exists) before falling back to numeric prefix pattern matching in .speck/scripts/common/paths.ts (modifies existing function)
+- [x] T015 Modify checkFeatureBranch() validation logic to skip NNN-pattern enforcement when branches.json exists and contains current branch in .speck/scripts/common/paths.ts (modifies existing function)
+- [x] T016 [P] Create validateBranchName() function using git check-ref-format in .speck/scripts/common/paths.ts
+- [x] T017 [P] Create detectCycle() function for circular dependency detection (DFS) in .speck/scripts/common/branch-mapper.ts
+- [x] T018 [P] Implement validateStatusTransition() to prevent terminal state transitions in .speck/scripts/common/branch-mapper.ts
+- [x] T019 [P] Create error classes (StackedModeError, ValidationError, GitError) in .speck/scripts/common/errors.ts
+- [x] T020 [P] Implement createGitBranch() git operation wrapper in .speck/scripts/common/git-operations.ts
+- [x] T021 [P] Implement checkBranchMerged() git operation wrapper in .speck/scripts/common/git-operations.ts
+- [x] T022 [P] Implement listGitBranches() git operation wrapper in .speck/scripts/common/git-operations.ts
 
 ---
 
@@ -79,32 +79,32 @@
 
 ### Tasks
 
-- [ ] T027 [US2] Create /speck.branch create command in .claude/commands/speck.branch.md
-- [ ] T028 [US2] Implement command argument parsing (name, --base, --spec) in .claude/commands/speck.branch.md
-- [ ] T029 [US2] Validate branch name using git check-ref-format in .claude/commands/speck.branch.md
-- [ ] T030 [US2] Validate base branch exists using git rev-parse --verify in .claude/commands/speck.branch.md
-- [ ] T031 [US2] Auto-detect or prompt for spec ID if not provided in .claude/commands/speck.branch.md
-- [ ] T031a [US2] Prompt user: "Create PR for <current-branch> before switching? (yes/no)" in .claude/commands/speck.branch.md
-- [ ] T031b [US2] If yes to PR prompt, check if gh CLI is available using `which gh` in .claude/commands/speck.branch.md
-- [ ] T031c [US2] Get commits on current branch not in base: `git log <base>..<current> --format="%s%n%b"` in .claude/commands/speck.branch.md
-- [ ] T031d [US2] Analyze commit messages to determine if substantive (not "wip", "fix", "tmp", etc.) in .claude/commands/speck.branch.md
-- [ ] T031e [US2] If commits are substantive, generate PR title from first commit subject in .claude/commands/speck.branch.md
-- [ ] T031f [US2] If commits are substantive, generate PR body from all commit messages (bulleted list) in .claude/commands/speck.branch.md
-- [ ] T031g [US2] If commits are uninformative, generate title/body from `git diff <base>...<current>` summary in .claude/commands/speck.branch.md
-- [ ] T031h [US2] Display generated PR title and body with prompt: "[e]dit or [c]onfirm" in .claude/commands/speck.branch.md
-- [ ] T031i [US2] If user chooses "edit", allow inline editing of title and body in .claude/commands/speck.branch.md
-- [ ] T031j [US2] Determine PR base branch (main/master for feature branches, base branch for stacked branches) in .claude/commands/speck.branch.md
-- [ ] T031k [US2] Execute gh pr create --title "<title>" --body "<body>" --base <pr-base> in .claude/commands/speck.branch.md
-- [ ] T031l [US2] Parse PR number from gh CLI output in .claude/commands/speck.branch.md
-- [ ] T031m [US2] Update current branch entry in branches.json with PR number and status="submitted" in .claude/commands/speck.branch.md
-- [ ] T031n [US2] Handle gh CLI errors gracefully (not installed, not authenticated, network errors) in .claude/commands/speck.branch.md
-- [ ] T032 [US2] Initialize .speck/branches.json if doesn't exist (empty state: version 1.0.0, branches [], specIndex {}) in .claude/commands/speck.branch.md
-- [ ] T033 [US2] Create BranchEntry with ISO 8601 timestamps and add to branches array in .claude/commands/speck.branch.md
-- [ ] T034 [US2] Update specIndex with new branch mapping in .claude/commands/speck.branch.md
-- [ ] T035 [US2] Create git branch using git branch <name> <base> in .claude/commands/speck.branch.md
-- [ ] T036 [US2] Checkout new branch using git checkout <name> in .claude/commands/speck.branch.md
-- [ ] T037 [US2] Display success message with stack visualization showing PR numbers (tree format) in .claude/commands/speck.branch.md
-- [ ] T038 [US2] Handle error cases (invalid name, base doesn't exist, spec not found) with clear messages in .claude/commands/speck.branch.md
+- [x] T027 [US2] Create /speck.branch create command in .claude/commands/speck.branch.md
+- [x] T028 [US2] Implement command argument parsing (name, --base, --spec) in .claude/commands/speck.branch.md
+- [x] T029 [US2] Validate branch name using git check-ref-format in .claude/commands/speck.branch.md
+- [x] T030 [US2] Validate base branch exists using git rev-parse --verify in .claude/commands/speck.branch.md
+- [x] T031 [US2] Auto-detect or prompt for spec ID if not provided in .claude/commands/speck.branch.md
+- [x] T031a [US2] Prompt user: "Create PR for <current-branch> before switching? (yes/no)" in .claude/commands/speck.branch.md
+- [x] T031b [US2] If yes to PR prompt, check if gh CLI is available using `which gh` in .claude/commands/speck.branch.md
+- [x] T031c [US2] Get commits on current branch not in base: `git log <base>..<current> --format="%s%n%b"` in .claude/commands/speck.branch.md
+- [x] T031d [US2] Analyze commit messages to determine if substantive (not "wip", "fix", "tmp", etc.) in .claude/commands/speck.branch.md
+- [x] T031e [US2] If commits are substantive, generate PR title from first commit subject in .claude/commands/speck.branch.md
+- [x] T031f [US2] If commits are substantive, generate PR body from all commit messages (bulleted list) in .claude/commands/speck.branch.md
+- [x] T031g [US2] If commits are uninformative, generate title/body from `git diff <base>...<current>` summary in .claude/commands/speck.branch.md
+- [x] T031h [US2] Display generated PR title and body with prompt: "[e]dit or [c]onfirm" in .claude/commands/speck.branch.md
+- [x] T031i [US2] If user chooses "edit", allow inline editing of title and body in .claude/commands/speck.branch.md
+- [x] T031j [US2] Determine PR base branch (main/master for feature branches, base branch for stacked branches) in .claude/commands/speck.branch.md
+- [x] T031k [US2] Execute gh pr create --title "<title>" --body "<body>" --base <pr-base> in .claude/commands/speck.branch.md
+- [x] T031l [US2] Parse PR number from gh CLI output in .claude/commands/speck.branch.md
+- [x] T031m [US2] Update current branch entry in branches.json with PR number and status="submitted" in .claude/commands/speck.branch.md
+- [x] T031n [US2] Handle gh CLI errors gracefully (not installed, not authenticated, network errors) in .claude/commands/speck.branch.md
+- [x] T032 [US2] Initialize .speck/branches.json if doesn't exist (empty state: version 1.0.0, branches [], specIndex {}) in .claude/commands/speck.branch.md
+- [x] T033 [US2] Create BranchEntry with ISO 8601 timestamps and add to branches array in .claude/commands/speck.branch.md
+- [x] T034 [US2] Update specIndex with new branch mapping in .claude/commands/speck.branch.md
+- [x] T035 [US2] Create git branch using git branch <name> <base> in .claude/commands/speck.branch.md
+- [x] T036 [US2] Checkout new branch using git checkout <name> in .claude/commands/speck.branch.md
+- [x] T037 [US2] Display success message with stack visualization showing PR numbers (tree format) in .claude/commands/speck.branch.md
+- [x] T038 [US2] Handle error cases (invalid name, base doesn't exist, spec not found) with clear messages in .claude/commands/speck.branch.md
 
 ---
 
@@ -118,16 +118,16 @@
 
 ### Tasks
 
-- [ ] T039 [US3] Extend /speck.branch create to support stacking on non-main branches in .claude/commands/speck.branch.md
-- [ ] T040 [US3] Implement cycle detection before creating branch (detect A → B → C → A patterns) in .claude/commands/speck.branch.md
-- [ ] T041 [US3] Create /speck.branch list command to display all branches for current spec in .claude/commands/speck.branch.md
-- [ ] T042 [US3] Implement dependency chain computation (BranchStack with BranchChain[]) in .claude/commands/speck.branch.md
-- [ ] T043 [US3] Display stack visualization with tree characters (└─, │) in .claude/commands/speck.branch.md
-- [ ] T044 [US3] Add status indicators to branch list (active, submitted PR#, merged, abandoned) in .claude/commands/speck.branch.md
-- [ ] T045 [US3] Implement /speck.branch status command for health checks in .claude/commands/speck.branch.md
-- [ ] T046 [US3] Detect merged branches via git branch --merged <base> in .claude/commands/speck.branch.md
-- [ ] T047 [US3] Detect rebase warnings (base branch merged but current branch not updated) in .claude/commands/speck.branch.md
-- [ ] T048 [US3] Display recommendations for each warning type in .claude/commands/speck.branch.md
+- [x] T039 [US3] Extend /speck.branch create to support stacking on non-main branches in .claude/commands/speck.branch.md
+- [x] T040 [US3] Implement cycle detection before creating branch (detect A → B → C → A patterns) in .claude/commands/speck.branch.md
+- [x] T041 [US3] Create /speck.branch list command to display all branches for current spec in .claude/commands/speck.branch.md
+- [x] T042 [US3] Implement dependency chain computation (BranchStack with BranchChain[]) in .claude/commands/speck.branch.md
+- [x] T043 [US3] Display stack visualization with tree characters (└─, │) in .claude/commands/speck.branch.md
+- [x] T044 [US3] Add status indicators to branch list (active, submitted PR#, merged, abandoned) in .claude/commands/speck.branch.md
+- [x] T045 [US3] Implement /speck.branch status command for health checks in .claude/commands/speck.branch.md
+- [x] T046 [US3] Detect merged branches via git branch --merged <base> in .claude/commands/speck.branch.md
+- [x] T047 [US3] Detect rebase warnings (base branch merged but current branch not updated) in .claude/commands/speck.branch.md
+- [x] T048 [US3] Display recommendations for each warning type in .claude/commands/speck.branch.md
 
 ---
 
@@ -172,10 +172,10 @@
 - [ ] T064 [US5] Validate no cycles created during import in .claude/commands/speck.branch.md
 - [ ] T065 [US5] Add imported branches to branches.json with inferred metadata in .claude/commands/speck.branch.md
 - [ ] T066 [US5] Display import summary (imported count, skipped count, branch → spec mappings) in .claude/commands/speck.branch.md
-- [ ] T067 [US5] Implement /speck.branch update command to manually update branch metadata in .claude/commands/speck.branch.md
-- [ ] T068 [US5] Support --status, --pr, --base flags in update command in .claude/commands/speck.branch.md
-- [ ] T069 [US5] Validate status transitions (cannot transition from merged/abandoned terminal states) in .claude/commands/speck.branch.md
-- [ ] T070 [US5] Update updatedAt timestamp on every metadata change in .claude/commands/speck.branch.md
+- [x] T067 [US5] Implement /speck.branch update command to manually update branch metadata in .claude/commands/speck.branch.md
+- [x] T068 [US5] Support --status, --pr, --base flags in update command in .claude/commands/speck.branch.md
+- [x] T069 [US5] Validate status transitions (cannot transition from merged/abandoned terminal states) in .claude/commands/speck.branch.md
+- [x] T070 [US5] Update updatedAt timestamp on every metadata change in .claude/commands/speck.branch.md
 
 ---
 
@@ -243,17 +243,17 @@
 
 ### Tasks
 
-- [ ] T101 [P] Implement auto-repair for missing specIndex (rebuild from branches array) in .speck/scripts/common/branch-mapper.ts
-- [ ] T102 [P] Implement auto-repair for orphaned index entries (remove from index) in .speck/scripts/common/branch-mapper.ts
-- [ ] T103 [P] Implement auto-repair for invalid timestamps (replace with current time) in .speck/scripts/common/branch-mapper.ts
-- [ ] T104 [P] Handle corrupted JSON with clear recovery instructions (restore from git history) in .speck/scripts/common/branch-mapper.ts
-- [ ] T105 [P] Handle schema version mismatch with migration hints in .speck/scripts/common/branch-mapper.ts
-- [ ] T106 [P] Handle missing required fields in branch entries with detailed error messages in .speck/scripts/common/branch-mapper.ts
-- [ ] T107 [P] Implement /speck.branch delete command to remove branch from metadata in .claude/commands/speck.branch.md
-- [ ] T108 [P] Check for child branches before deletion (require --force if has children) in .claude/commands/speck.branch.md
-- [ ] T109 [P] Display warning that git branch still exists after metadata deletion in .claude/commands/speck.branch.md
-- [ ] T110 [P] Add edge case handling: Base branch doesn't exist in git (clear error message) in .claude/commands/speck.branch.md
-- [ ] T111 [P] Add edge case handling: Circular dependency detection (display full cycle path) in .claude/commands/speck.branch.md
+- [x] T101 [P] Implement auto-repair for missing specIndex (rebuild from branches array) in .speck/scripts/common/branch-mapper.ts
+- [x] T102 [P] Implement auto-repair for orphaned index entries (remove from index) in .speck/scripts/common/branch-mapper.ts
+- [x] T103 [P] Implement auto-repair for invalid timestamps (replace with current time) in .speck/scripts/common/branch-mapper.ts
+- [x] T104 [P] Handle corrupted JSON with clear recovery instructions (restore from git history) in .speck/scripts/common/branch-mapper.ts
+- [x] T105 [P] Handle schema version mismatch with migration hints in .speck/scripts/common/branch-mapper.ts
+- [x] T106 [P] Handle missing required fields in branch entries with detailed error messages in .speck/scripts/common/branch-mapper.ts
+- [x] T107 [P] Implement /speck.branch delete command to remove branch from metadata in .claude/commands/speck.branch.md
+- [x] T108 [P] Check for child branches before deletion (require --force if has children) in .claude/commands/speck.branch.md
+- [x] T109 [P] Display warning that git branch still exists after metadata deletion in .claude/commands/speck.branch.md
+- [x] T110 [P] Add edge case handling: Base branch doesn't exist in git (clear error message) in .claude/commands/speck.branch.md
+- [x] T111 [P] Add edge case handling: Circular dependency detection (display full cycle path) in .claude/commands/speck.branch.md
 - [ ] T112 [P] Add edge case handling: Branch referenced in branches.json no longer exists in git (warning + cleanup option) in .claude/commands/speck.branch.md
 - [ ] T113 [P] Add edge case handling: Malformed branches.json (auto-repair or manual recovery instructions) in .claude/commands/speck.branch.md
 - [ ] T114 [P] Add edge case handling: gh CLI not installed or not authenticated (graceful fallback) in .claude/commands/speck.implement.md

@@ -32,10 +32,161 @@ import {
 } from "./common/git-operations.js";
 import { validateBranchName, getFeaturePaths } from "./common/paths.js";
 import { GitError, ValidationError } from "./common/errors.js";
+import { $ } from "bun";
 
 // ===========================
 // Helpers
 // ===========================
+
+/**
+ * T031b - Check if gh CLI is available
+ */
+async function isGhCliAvailable(): Promise<boolean> {
+  try {
+    const result = await $`which gh`.quiet();
+    return result.exitCode === 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * T031c - Get commits on current branch not in base
+ */
+async function getCommits(baseBranch: string, currentBranch: string, repoRoot: string): Promise<string[]> {
+  try {
+    const result = await $`git -C ${repoRoot} log ${baseBranch}..${currentBranch} --format=%s%n%b`.quiet();
+    if (result.exitCode !== 0) {
+      return [];
+    }
+    return result.stdout.toString().trim().split('\n').filter(line => line.trim());
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * T031d - Analyze commit messages to determine if substantive
+ */
+function isCommitSubstantive(message: string): boolean {
+  const uninformativePatterns = [
+    /^wip/i,
+    /^fix$/i,
+    /^tmp/i,
+    /^temp/i,
+    /^test/i,
+    /^update$/i,
+    /^merge/i,
+    /^rebase/i,
+    /^\./,  // Starting with dot
+  ];
+
+  const normalized = message.trim().toLowerCase();
+  return !uninformativePatterns.some(pattern => pattern.test(normalized)) && normalized.length > 5;
+}
+
+/**
+ * T031e & T031f - Generate PR title and body from commits
+ */
+function generatePRFromCommits(commits: string[]): { title: string; body: string } | null {
+  if (commits.length === 0) {
+    return null;
+  }
+
+  // Filter out empty lines and uninformative commits
+  const substantiveCommits = commits.filter(c => c.trim() && isCommitSubstantive(c));
+
+  if (substantiveCommits.length === 0) {
+    return null;
+  }
+
+  // Title from first commit subject
+  const title = substantiveCommits[0].split('\n')[0];
+
+  // Body as bulleted list of all commits
+  const body = substantiveCommits.map(c => `- ${c.split('\n')[0]}`).join('\n');
+
+  return { title, body };
+}
+
+/**
+ * T031g - Generate title/body from git diff summary
+ */
+async function generatePRFromDiff(baseBranch: string, currentBranch: string, repoRoot: string): Promise<{ title: string; body: string }> {
+  try {
+    const statsResult = await $`git -C ${repoRoot} diff ${baseBranch}...${currentBranch} --stat`.quiet();
+    const stats = statsResult.stdout.toString().trim();
+
+    const diffResult = await $`git -C ${repoRoot} diff ${baseBranch}...${currentBranch} --name-status`.quiet();
+    const files = diffResult.stdout.toString().trim().split('\n').filter(l => l.trim());
+
+    const title = `Update ${currentBranch} (${files.length} files changed)`;
+    const body = `## Changes\n\n${stats}\n\n## Files Modified\n${files.map(f => `- ${f}`).join('\n')}`;
+
+    return { title, body };
+  } catch {
+    return {
+      title: `Update ${currentBranch}`,
+      body: 'Changes made on this branch'
+    };
+  }
+}
+
+/**
+ * T031j - Determine PR base branch
+ */
+function determinePRBase(currentBranch: string, baseBranchFromMetadata: string | null, repoRoot: string): string {
+  // If current branch is tracked in branches.json, use its baseBranch
+  if (baseBranchFromMetadata) {
+    return baseBranchFromMetadata;
+  }
+
+  // Otherwise, assume main/master
+  return 'main';  // Could enhance to check if main or master exists
+}
+
+/**
+ * T031a-T031n - Generate PR metadata suggestion (non-interactive)
+ * Returns PR metadata that can be displayed to the user for manual creation
+ */
+async function generatePRSuggestion(
+  currentBranch: string,
+  baseBranch: string,
+  mapping: BranchMapping,
+  repoRoot: string
+): Promise<{ title: string; body: string; prBase: string } | null> {
+  // T031b - Check gh CLI availability
+  const ghAvailable = await isGhCliAvailable();
+  if (!ghAvailable) {
+    return null;
+  }
+
+  // T031c - Get commits
+  const commits = await getCommits(baseBranch, currentBranch, repoRoot);
+
+  // Check if there are any commits to make a PR from
+  if (commits.length === 0) {
+    return null;
+  }
+
+  // T031e, T031f, T031g - Generate PR metadata
+  let prMetadata = generatePRFromCommits(commits);
+
+  if (!prMetadata) {
+    // Fallback to diff analysis
+    prMetadata = await generatePRFromDiff(baseBranch, currentBranch, repoRoot);
+  }
+
+  // T031j - Determine PR base
+  const currentBranchEntry = findBranchEntry(mapping, currentBranch);
+  const prBase = determinePRBase(currentBranch, currentBranchEntry?.baseBranch || null, repoRoot);
+
+  return {
+    title: prMetadata.title,
+    body: prMetadata.body,
+    prBase
+  };
+}
 
 function displayBranchTree(mapping: BranchMapping, specId: string, currentBranch: string) {
   const branches = mapping.branches.filter((b) => b.specId === specId);
@@ -153,6 +304,31 @@ async function createCommand(args: string[]) {
 
   // T032 - Initialize branches.json if doesn't exist
   let mapping = await readBranches(repoRoot);
+
+  // T031a-T031n - Display PR creation suggestion for current branch (before switching)
+  const currentBranch = await gitGetCurrentBranch(repoRoot);
+
+  // Only suggest PR creation if current branch is different from base (i.e., we're switching branches)
+  if (currentBranch !== baseBranch) {
+    const prSuggestion = await generatePRSuggestion(currentBranch, baseBranch, mapping, repoRoot);
+
+    if (prSuggestion) {
+      console.log(`\n${'='.repeat(60)}`);
+      console.log(`💡 Suggestion: Create PR for '${currentBranch}' before switching`);
+      console.log(`${'='.repeat(60)}`);
+      console.log(`\nGenerated PR details:`);
+      console.log(`  Title: ${prSuggestion.title}`);
+      console.log(`  Base: ${prSuggestion.prBase}`);
+      console.log(`\nDescription:`);
+      console.log(prSuggestion.body.split('\n').map((line: string) => `  ${line}`).join('\n'));
+      console.log(`\n${'-'.repeat(60)}`);
+      console.log(`To create this PR, run:`);
+      console.log(`  gh pr create --base ${prSuggestion.prBase} --title "${prSuggestion.title}" --body "${prSuggestion.body.replace(/"/g, '\\"')}"`);
+      console.log(`\nOr update manually with:`);
+      console.log(`  /speck.branch update ${currentBranch} --status submitted --pr <number>`);
+      console.log(`${'='.repeat(60)}\n`);
+    }
+  }
 
   // T033 - Create BranchEntry with ISO 8601 timestamps
   const now = new Date().toISOString();
