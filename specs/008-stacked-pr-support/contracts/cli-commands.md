@@ -15,8 +15,8 @@ Creates a new stacked branch with explicit parent dependency.
 
 ### Syntax
 ```bash
-speck branch create <name> --base <base-branch> [--spec <spec-id>]
-/speck.branch create <name> --base <base-branch> [--spec <spec-id>]
+speck branch create <name> [--base <base-branch>] [--spec <spec-id>]
+/speck.branch create <name> [--base <base-branch>] [--spec <spec-id>]
 ```
 
 ### Arguments
@@ -27,10 +27,12 @@ speck branch create <name> --base <base-branch> [--spec <spec-id>]
   - No pattern enforcement (freeform naming)
 
 ### Options
-- `--base <base-branch>` (required): Parent branch in dependency chain
+- `--base <base-branch>` (optional): Parent branch in dependency chain
   - Type: string
   - Validation: Must exist in git (`git rev-parse --verify <base>`)
-  - Examples: `main`, `master`, `username/db-layer`
+  - Examples: `008-stacked-pr-support` (feature branch), `username/db-layer` (stacked branch)
+  - Default: Current branch (from `git rev-parse --abbrev-ref HEAD`)
+  - Note: In Speck workflow, base is typically the feature branch (e.g., `007-multi-repo`) or another stacked branch
 - `--spec <spec-id>` (optional): Spec identifier to link branch to
   - Type: string (format: `NNN-feature-name`)
   - Validation: Must reference existing `specs/<spec-id>/` directory
@@ -38,30 +40,32 @@ speck branch create <name> --base <base-branch> [--spec <spec-id>]
 
 ### Behavior
 1. Validate branch name format (git check-ref-format)
-2. Validate base branch exists in git
-3. Detect or prompt for spec ID if not provided
-4. Validate no circular dependencies (DFS cycle detection)
-5. Create `.speck/branches.json` if it doesn't exist (initialize empty)
-6. Add new BranchEntry to branches array
-7. Update specIndex with new branch
-8. Create git branch: `git branch <name> <base>`
-9. Checkout new branch: `git checkout <name>`
-10. Display success message with stack visualization
+2. Determine base branch: use --base value or default to current branch
+3. Validate base branch exists in git
+4. Detect or prompt for spec ID if not provided
+5. Validate no circular dependencies (DFS cycle detection)
+6. Create `.speck/branches.json` if it doesn't exist (initialize empty)
+7. Add new BranchEntry to branches array
+8. Update specIndex with new branch
+9. Create git branch: `git branch <name> <base>`
+10. Checkout new branch: `git checkout <name>`
+11. Display success message with stack visualization
 
 ### Output
 ```
-✓ Created stacked branch 'username/feature-name'
-✓ Based on: main
+Defaulting base to current branch: 008-stacked-pr-support
+✓ Created stacked branch 'username/db-layer'
+✓ Based on: 008-stacked-pr-support
 ✓ Linked to spec: 008-stacked-pr-support
 
 Branch stack:
-  main
-  └─ username/feature-name (current)
+  008-stacked-pr-support
+  └─ username/db-layer (current)
 
 Next steps:
   - Implement feature on this branch
-  - Run /speck.tasks --branch username/feature-name to generate tasks
-  - When ready: /speck.branch create <next-branch> --base username/feature-name
+  - Run /speck.tasks --branch username/db-layer to generate tasks
+  - When ready: /speck.branch create <next-branch>
 ```
 
 ### Error Cases

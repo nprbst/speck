@@ -90,18 +90,26 @@ async function createCommand(args: string[]) {
   // T028 - Parse arguments
   const nameIndex = args.findIndex((arg) => !arg.startsWith("--"));
   if (nameIndex === -1) {
-    throw new Error("Branch name required: /speck.branch create <name> --base <base>");
+    throw new Error("Branch name required: /speck.branch create <name> [--base <base>]");
   }
 
   const name = args[nameIndex];
   const baseFlag = args.indexOf("--base");
   const specFlag = args.indexOf("--spec");
 
-  if (baseFlag === -1 || !args[baseFlag + 1]) {
-    throw new Error("--base flag required: /speck.branch create <name> --base <base>");
+  // Get repository root for git operations
+  const paths = await getFeaturePaths();
+  const repoRoot = paths.REPO_ROOT;
+
+  // Default to current branch if --base not specified
+  let baseBranch: string;
+  if (baseFlag !== -1 && args[baseFlag + 1]) {
+    baseBranch = args[baseFlag + 1];
+  } else {
+    baseBranch = await gitGetCurrentBranch(repoRoot);
+    console.log(`Defaulting base to current branch: ${baseBranch}`);
   }
 
-  const baseBranch = args[baseFlag + 1];
   let specId = specFlag !== -1 ? args[specFlag + 1] : null;
 
   // T029 - Validate branch name
@@ -109,10 +117,6 @@ async function createCommand(args: string[]) {
   if (!isValid) {
     throw new Error(`Invalid branch name: '${name}'. Must be a valid git ref name.`);
   }
-
-  // Get repository root
-  const paths = await getFeaturePaths();
-  const repoRoot = paths.REPO_ROOT;
 
   // T030 - Validate base branch exists
   const baseExists = await branchExists(baseBranch, repoRoot);
@@ -134,7 +138,7 @@ async function createCommand(args: string[]) {
     if (!specId) {
       throw new Error(
         "Could not auto-detect spec ID. Please specify with --spec flag:\n" +
-          "  /speck.branch create <name> --base <base> --spec <spec-id>"
+          "  /speck.branch create <name> [--base <base>] --spec <spec-id>"
       );
     }
   }
@@ -468,7 +472,7 @@ async function main() {
     console.log("Usage: /speck.branch <command> [args]");
     console.log();
     console.log("Commands:");
-    console.log("  create <name> --base <base> [--spec <spec-id>]");
+    console.log("  create <name> [--base <base>] [--spec <spec-id>]");
     console.log("  list [--all]");
     console.log("  status");
     console.log("  update <name> [--status <status>] [--pr <number>] [--base <branch>]");

@@ -9,7 +9,7 @@ Manage stacked PR branches with explicit dependency tracking for multi-PR workfl
 ## Usage
 
 ```bash
-/speck.branch create <name> --base <base-branch> [--spec <spec-id>]
+/speck.branch create <name> [--base <base-branch>] [--spec <spec-id>]
 /speck.branch list [--all]
 /speck.branch status
 /speck.branch update <name> [--status <status>] [--pr <number>] [--base <branch>]
@@ -25,13 +25,19 @@ Creates a new branch in the stack with explicit dependency tracking.
 
 **Arguments:**
 - `<name>` - Branch name (freeform, any valid git ref name)
-- `--base <branch>` - Base branch to stack on (required)
+- `--base <branch>` - Base branch to stack on (optional, defaults to current branch)
 - `--spec <spec-id>` - Spec ID to link to (optional, auto-detected)
 
 **Examples:**
 ```bash
-/speck.branch create username/db-layer --base main
-/speck.branch create feature/api --base username/db-layer --spec 007-multi-repo
+# On branch 008-stacked-pr-support, create first stacked branch
+/speck.branch create username/db-layer
+
+# On branch username/db-layer, create next branch in stack
+/speck.branch create username/api-endpoints
+
+# Explicitly specify base (e.g., to branch from feature branch instead of current)
+/speck.branch create username/ui-layer --base 008-stacked-pr-support
 ```
 
 ### list - View branch stacks

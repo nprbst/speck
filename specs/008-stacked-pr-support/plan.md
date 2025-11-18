@@ -186,8 +186,8 @@ This plan outlines the implementation of stacked PR support for Speck, enabling 
 
 **Command Interfaces**:
 
-1. **`/speck.branch create <name> --base <base-branch>`**
-   - Input: branchName (string), baseBranch (string), optional specId (auto-detect if in feature branch)
+1. **`/speck.branch create <name> [--base <base-branch>]`**
+   - Input: branchName (string), optional baseBranch (string, defaults to current branch), optional specId (auto-detect if in feature branch)
    - Output: Success message, updated `.speck/branches.json`, git branch created
    - Errors: Invalid branch name, base branch doesn't exist, circular dependency detected
 
@@ -259,11 +259,16 @@ File: `contracts/branch-mapping-schema.json`
 
 **30-Second Start**:
 ```bash
-# Create first stacked branch
-/speck.branch create "nprbst/db-layer" --base main
+# Assuming you're on feature branch 008-stacked-pr-support
+
+# Create first stacked branch (based on current feature branch)
+/speck.branch create "nprbst/db-layer"
 
 # Generate branch-specific tasks
 /speck.tasks --branch nprbst/db-layer --stories US1,US2
+
+# Create next branch in stack (on nprbst/db-layer)
+/speck.branch create "nprbst/api-endpoints"
 
 # Implement with automatic stacking prompts
 /speck.implement --stacked

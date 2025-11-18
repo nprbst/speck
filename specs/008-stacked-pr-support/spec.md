@@ -44,9 +44,9 @@ A developer working on a large feature spec wants to break implementation into m
 
 **Acceptance Scenarios**:
 
-1. **Given** a spec exists at `specs/007-multi-repo/spec.md`, **When** developer runs `/speck.branch create "nprbst/db-layer" --base main`, **Then** git branch `nprbst/db-layer` is created and `.speck/branches.json` records the mapping to spec `007-multi-repo`
+1. **Given** a spec exists at `specs/007-multi-repo/spec.md` and developer is on `007-multi-repo` feature branch, **When** developer runs `/speck.branch create "nprbst/db-layer"`, **Then** git branch `nprbst/db-layer` is created with `007-multi-repo` as base and `.speck/branches.json` records the mapping to spec `007-multi-repo`
 2. **Given** first stacked branch is created, **When** developer inspects `.speck/branches.json`, **Then** file shows branch name, base branch, spec reference, and status fields
-3. **Given** developer uses ticket-based naming, **When** they run `/speck.branch create "JIRA-123-api-endpoints" --base main`, **Then** branch is created without enforcing NNN-feature-name pattern
+3. **Given** developer is on `008-stacked-pr-support` and uses ticket-based naming, **When** they run `/speck.branch create "JIRA-123-api-endpoints"`, **Then** branch is created with `008-stacked-pr-support` as base without enforcing NNN-feature-name pattern
 4. **Given** branch is created, **When** developer runs `/speck.env`, **Then** output displays "Branch stack mode: enabled" with current branch and base branch information
 
 ---
@@ -61,8 +61,8 @@ A developer has completed the first PR in a stack and wants to create a second b
 
 **Acceptance Scenarios**:
 
-1. **Given** branch `nprbst/db-layer` exists (based on main), **When** developer runs `/speck.branch create "nprbst/api-endpoints" --base nprbst/db-layer`, **Then** new branch is created and branches.json records `nprbst/db-layer` as the base
-2. **Given** a stack of 3 branches exists, **When** developer runs `/speck.env`, **Then** output displays the full dependency chain (main � db-layer � api-endpoints � ui-components)
+1. **Given** developer is on branch `nprbst/db-layer` (based on feature branch `007-multi-repo`), **When** developer runs `/speck.branch create "nprbst/api-endpoints"`, **Then** new branch is created and branches.json records `nprbst/db-layer` as the base
+2. **Given** a stack of 3 branches exists, **When** developer runs `/speck.env`, **Then** output displays the full dependency chain (007-multi-repo → db-layer → api-endpoints → ui-components)
 3. **Given** developer is on a stacked branch, **When** they run `/speck.branch list`, **Then** output shows all branches for current spec with base dependencies and PR status
 4. **Given** a branch in middle of stack is merged, **When** developer runs `/speck.branch status`, **Then** output indicates which branches need rebasing onto updated base
 
@@ -159,7 +159,7 @@ A developer using `/speck.implement` completes a user story that represents a na
 - **FR-001**: System MUST support traditional single-branch workflow without requiring `.speck/branches.json` file or any stack-related configuration
 - **FR-002**: System MUST allow freeform branch naming patterns (e.g., `username/feature`, `TICKET-123-name`, `feature/description`) alongside existing `NNN-feature-name` format
 - **FR-003**: System MUST maintain centralized branch-to-spec mapping in `.speck/branches.json` at repository root for quick lookups
-- **FR-004**: System MUST provide `/speck.branch create <name> --base <base-branch>` command to create new stacked branch with explicit parent dependency
+- **FR-004**: System MUST provide `/speck.branch create <name> [--base <base-branch>]` command to create new stacked branch with explicit parent dependency (defaults to current branch if --base omitted)
 - **FR-005**: System MUST update `/speck.env` to display branch stack status when `.speck/branches.json` exists
 - **FR-006**: System MUST provide `/speck.tasks --branch <name> --stories <US1,US2,...>` to generate branch-specific task subsets
 - **FR-007**: System MUST track branch metadata including: branch name, base branch, associated spec ID, PR number (optional), and status (active/submitted/merged)
