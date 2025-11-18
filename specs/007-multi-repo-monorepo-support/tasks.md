@@ -21,9 +21,9 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Review existing path resolution code in .speck/scripts/common/paths.ts
-- [ ] T002 [P] Create backup of existing paths.ts to paths.ts.backup
-- [ ] T003 [P] Verify Bun symlink APIs (fs.symlink, readlink, realpath, lstat) work on current platform
+- [X] T001 Review existing path resolution code in .speck/scripts/common/paths.ts
+- [X] T002 [P] Create backup of existing paths.ts to paths.ts.backup
+- [X] T003 [P] Verify Bun symlink APIs (fs.symlink, readlink, realpath, lstat) work on current platform
 
 ---
 
@@ -33,15 +33,15 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Implement detectSpeckRoot() function in .speck/scripts/common/paths.ts following contracts/path-resolution-api.md
-- [ ] T005 Add SpeckConfig interface to .speck/scripts/common/paths.ts (mode, speckRoot, repoRoot, specsDir fields)
-- [ ] T006 Update getFeaturePaths() to call detectSpeckRoot() and return enhanced FeaturePaths with MODE, SPECK_ROOT, SPECS_DIR fields in .speck/scripts/common/paths.ts
-- [ ] T007 Update getFeaturePaths() to use speckRoot for SPEC_FILE and CONTRACTS_DIR paths in .speck/scripts/common/paths.ts
-- [ ] T008 Update getFeaturePaths() to ensure PLAN_FILE, TASKS_FILE, CONSTITUTION always use repoRoot in .speck/scripts/common/paths.ts
-- [ ] T009 Add caching to detectSpeckRoot() to avoid repeated filesystem checks in .speck/scripts/common/paths.ts
-- [ ] T010 Add error handling for broken symlinks (ENOENT on target) in detectSpeckRoot() in .speck/scripts/common/paths.ts
-- [ ] T011 Add error handling for circular symlinks (ELOOP) in detectSpeckRoot() in .speck/scripts/common/paths.ts
-- [ ] T012 Add warning for .speck/root that is not a symlink (fall back to single-repo) in detectSpeckRoot() in .speck/scripts/common/paths.ts
+- [X] T004 Implement detectSpeckRoot() function in .speck/scripts/common/paths.ts following contracts/path-resolution-api.md
+- [X] T005 Add SpeckConfig interface to .speck/scripts/common/paths.ts (mode, speckRoot, repoRoot, specsDir fields)
+- [X] T006 Update getFeaturePaths() to call detectSpeckRoot() and return enhanced FeaturePaths with MODE, SPECK_ROOT, SPECS_DIR fields in .speck/scripts/common/paths.ts
+- [X] T007 Update getFeaturePaths() to use speckRoot for SPEC_FILE and CONTRACTS_DIR paths in .speck/scripts/common/paths.ts
+- [X] T008 Update getFeaturePaths() to ensure PLAN_FILE, TASKS_FILE, CONSTITUTION always use repoRoot in .speck/scripts/common/paths.ts
+- [X] T009 Add caching to detectSpeckRoot() to avoid repeated filesystem checks in .speck/scripts/common/paths.ts
+- [X] T010 Add error handling for broken symlinks (ENOENT on target) in detectSpeckRoot() in .speck/scripts/common/paths.ts
+- [X] T011 Add error handling for circular symlinks (ELOOP) in detectSpeckRoot() in .speck/scripts/common/paths.ts
+- [X] T012 Add warning for .speck/root that is not a symlink (fall back to single-repo) in detectSpeckRoot() in .speck/scripts/common/paths.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -79,25 +79,25 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 ### Implementation for User Story 2
 
-- [ ] T022 [P] [US2] Create linkRepo() function in new file .speck/scripts/link-repo.ts following contracts/link-command-api.md
-- [ ] T023 [P] [US2] Implement input validation in linkRepo() (check targetPath is not empty) in .speck/scripts/link-repo.ts
-- [ ] T024 [P] [US2] Implement target validation in linkRepo() (verify target exists and is directory) in .speck/scripts/link-repo.ts
-- [ ] T025 [US2] Implement relative path calculation in linkRepo() (compute path from .speck/ to target) in .speck/scripts/link-repo.ts
-- [ ] T026 [US2] Implement existing symlink check in linkRepo() (detect same target, different target, non-symlink) in .speck/scripts/link-repo.ts
-- [ ] T027 [US2] Implement symlink creation using fs.symlink(relativePath, '.speck/root', 'dir') in .speck/scripts/link-repo.ts
-- [ ] T028 [US2] Implement verification step in linkRepo() (call detectSpeckRoot and confirm multi-repo mode) in .speck/scripts/link-repo.ts
-- [ ] T029 [US2] Add success reporting in linkRepo() (display speck root, specs dir, next steps) in .speck/scripts/link-repo.ts
-- [ ] T030 [US2] Create CLI entry point at top of .speck/scripts/link-repo.ts (parse args, call linkRepo, handle errors)
-- [ ] T031 [P] [US2] Create slash command file .claude/commands/speck.link.md following contracts/link-command-api.md structure
-- [ ] T032 [P] [US2] Add YAML frontmatter to .claude/commands/speck.link.md (description: "Link repository to multi-repo speck root")
-- [ ] T033 [US2] Add command documentation to .claude/commands/speck.link.md (usage, examples, what it does)
-- [ ] T034 [US2] Add implementation line to .claude/commands/speck.link.md (bun run $PLUGIN_ROOT/scripts/link-repo.ts {{args}})
-- [ ] T035 [US2] Update /speck.env command in .claude/commands/speck.env.md to display multi-repo mode status
-- [ ] T036 [US2] Update /speck.env command in .claude/commands/speck.env.md to show speck root path when in multi-repo mode
-- [ ] T037 [US2] Test linking frontend repo to parent directory (from frontend/, run /speck.link ..)
-- [ ] T038 [US2] Test that detectSpeckRoot() returns mode='multi-repo' after linking
-- [ ] T039 [US2] Test that getFeaturePaths() SPEC_FILE uses speckRoot (parent dir) in multi-repo mode
-- [ ] T040 [US2] Test that getFeaturePaths() PLAN_FILE uses repoRoot (child repo) in multi-repo mode
+- [X] T022 [P] [US2] Create linkRepo() function in new file .speck/scripts/link-repo.ts following contracts/link-command-api.md
+- [X] T023 [P] [US2] Implement input validation in linkRepo() (check targetPath is not empty) in .speck/scripts/link-repo.ts
+- [X] T024 [P] [US2] Implement target validation in linkRepo() (verify target exists and is directory) in .speck/scripts/link-repo.ts
+- [X] T025 [US2] Implement relative path calculation in linkRepo() (compute path from .speck/ to target) in .speck/scripts/link-repo.ts
+- [X] T026 [US2] Implement existing symlink check in linkRepo() (detect same target, different target, non-symlink) in .speck/scripts/link-repo.ts
+- [X] T027 [US2] Implement symlink creation using fs.symlink(relativePath, '.speck/root', 'dir') in .speck/scripts/link-repo.ts
+- [X] T028 [US2] Implement verification step in linkRepo() (call detectSpeckRoot and confirm multi-repo mode) in .speck/scripts/link-repo.ts
+- [X] T029 [US2] Add success reporting in linkRepo() (display speck root, specs dir, next steps) in .speck/scripts/link-repo.ts
+- [X] T030 [US2] Create CLI entry point at top of .speck/scripts/link-repo.ts (parse args, call linkRepo, handle errors)
+- [X] T031 [P] [US2] Create slash command file .claude/commands/speck.link.md following contracts/link-command-api.md structure
+- [X] T032 [P] [US2] Add YAML frontmatter to .claude/commands/speck.link.md (description: "Link repository to multi-repo speck root")
+- [X] T033 [US2] Add command documentation to .claude/commands/speck.link.md (usage, examples, what it does)
+- [X] T034 [US2] Add implementation line to .claude/commands/speck.link.md (bun run $PLUGIN_ROOT/scripts/link-repo.ts {{args}})
+- [X] T035 [US2] Update /speck.env command in .claude/commands/speck.env.md to display multi-repo mode status
+- [X] T036 [US2] Update /speck.env command in .claude/commands/speck.env.md to show speck root path when in multi-repo mode
+- [X] T037 [US2] Test linking frontend repo to parent directory (from frontend/, run /speck.link ..)
+- [X] T038 [US2] Test that detectSpeckRoot() returns mode='multi-repo' after linking
+- [X] T039 [US2] Test that getFeaturePaths() SPEC_FILE uses speckRoot (parent dir) in multi-repo mode
+- [X] T040 [US2] Test that getFeaturePaths() PLAN_FILE uses repoRoot (child repo) in multi-repo mode
 - [ ] T041 [US2] Test creating spec at parent specs/ directory and verify both frontend/backend repos can read it
 - [ ] T042 [US2] Test that /speck.plan in frontend generates plan using frontend's constitution
 - [ ] T043 [US2] Test that /speck.plan in backend generates different plan using backend's constitution
