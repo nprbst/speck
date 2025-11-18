@@ -473,7 +473,7 @@ export async function getFeaturePaths(): Promise<FeaturePaths> {
   const hasGitRepo = await hasGit();
 
   // Use prefix-based lookup to support multiple branches per spec
-  const featureDir = findFeatureDirByPrefix(config.specsDir, currentBranch);
+  const featureDir = await findFeatureDirByPrefix(config.specsDir, currentBranch, config.repoRoot);
   const featureName = path.basename(featureDir);
 
   return {

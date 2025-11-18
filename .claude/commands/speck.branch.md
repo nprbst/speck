@@ -100,8 +100,12 @@ Imports existing git branches into stacked mode.
 ## Implementation
 
 ```bash
-# Determine plugin root
-PLUGIN_ROOT=$(cat "$HOME/.claude/speck-plugin-path" 2>/dev/null || echo ".speck")
+# Determine plugin root (prefer local .speck/scripts, fallback to plugin path)
+if [ -d ".speck/scripts" ]; then
+  PLUGIN_ROOT=".speck"
+else
+  PLUGIN_ROOT=$(cat "$HOME/.claude/speck-plugin-path" 2>/dev/null || echo ".speck")
+fi
 
 # Execute branch management script
 bun run "$PLUGIN_ROOT/scripts/branch-command.ts" {{args}}

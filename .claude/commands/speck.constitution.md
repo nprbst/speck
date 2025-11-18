@@ -19,7 +19,11 @@ You **MUST** consider the user input before proceeding (if not empty).
 Before proceeding, determine the plugin root path by running:
 
 ```bash
-cat "$HOME/.claude/speck-plugin-path" 2>/dev/null || echo ".speck"
+if [ -d ".speck/scripts" ]; then
+  echo ".speck"
+else
+  cat "$HOME/.claude/speck-plugin-path" 2>/dev/null || echo ".speck"
+fi
 ```
 
 Store this value and use `$PLUGIN_ROOT` in all subsequent paths (e.g., `$PLUGIN_ROOT/memory/constitution.md`).

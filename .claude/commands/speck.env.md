@@ -60,7 +60,10 @@ echo ""
 ```bash
 echo "=== Effective Plugin Root ==="
 # Derive plugin root using the same logic as commands should use
-if [ -n "$SPECK_PLUGIN_ROOT" ]; then
+if [ -d ".speck/scripts" ]; then
+  EFFECTIVE_ROOT=".speck"
+  echo "✓ Using local .speck/scripts (preferred)"
+elif [ -n "$SPECK_PLUGIN_ROOT" ]; then
   EFFECTIVE_ROOT="$SPECK_PLUGIN_ROOT"
   echo "✓ Using SPECK_PLUGIN_ROOT environment variable"
 elif [ -f "$HOME/.claude/speck-plugin-path" ]; then
