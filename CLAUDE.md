@@ -15,6 +15,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 - Astro 4.x (static site generator), Cloudflare Pages (hosting), Cloudflare Images (image optimization), Shiki or Prism (syntax highlighting), Playwright (visual regression testing), Axe-core (accessibility testing) (004-public-website)
 - TypeScript 5.7+ (Astro components), Markdown (content) + Astro 5.15+, Shiki 3.15+ (syntax highlighting), Playwright (testing), Axe-core (accessibility) (006-website-content-update)
 - Static site (no database), content files in `website/src/content/docs/` (006-website-content-update)
+- TypeScript 5.3+ with Bun 1.0+ runtime (primary) + Bun Shell API (filesystem operations, symlinks), Git 2.30+, existing Speck path resolution utilities (007-multi-repo-monorepo-support)
+- File-based (symlinks for multi-repo detection, markdown specs at speck root or repo root) (007-multi-repo-monorepo-support)
 
 ## Project Structure
 
@@ -87,9 +89,9 @@ bun test                  # Run all tests (unit, visual, a11y)
 - File naming: PascalCase for components, kebab-case for pages/content
 
 ## Recent Changes
+- 007-multi-repo-monorepo-support: Added TypeScript 5.3+ with Bun 1.0+ runtime (primary) + Bun Shell API (filesystem operations, symlinks), Git 2.30+, existing Speck path resolution utilities
 - 006-website-content-update: Added TypeScript 5.7+ (Astro components), Markdown (content) + Astro 5.15+, Shiki 3.15+ (syntax highlighting), Playwright (testing), Axe-core (accessibility)
 - 005-speck-skill: Added Markdown with YAML frontmatter (Claude Code skill format) + Claude Code plugin system 2.0+, existing Speck templates in `.specify/templates/`
-- 004-public-website: Added Astro 4.x static site generator, Cloudflare Pages deployment, documentation sync from main repo, visual regression testing with Playwright, accessibility testing with Axe-core
 
 
 <!-- MANUAL ADDITIONS START -->
