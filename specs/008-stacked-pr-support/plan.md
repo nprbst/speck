@@ -186,10 +186,13 @@ This plan outlines the implementation of stacked PR support for Speck, enabling 
 
 **Command Interfaces**:
 
-1. **`/speck.branch create <name> [--base <base-branch>]`**
+1. **`/speck.branch create <name> [--base <base-branch>] [--spec <spec-id>]`**
    - Input: branchName (string), optional baseBranch (string, defaults to current branch), optional specId (auto-detect if in feature branch)
-   - Output: Success message, updated `.speck/branches.json`, git branch created
-   - Errors: Invalid branch name, base branch doesn't exist, circular dependency detected
+   - Output: PR suggestion (if commits exist and gh available), success message, updated `.speck/branches.json`, git branch created
+   - Pre-checks:
+     - Uncommitted changes detection (displays warning with changed files, suggests commit/stash)
+     - PR suggestion generation (auto-generates title/body from commits, displays copy-paste gh command)
+   - Errors: Invalid branch name, base branch doesn't exist, circular dependency detected, uncommitted changes present
 
 2. **`/speck.branch list [--all]`**
    - Input: Optional `--all` flag (list all specs vs current spec)
@@ -367,4 +370,29 @@ File: `contracts/branch-mapping-schema.json`
 - Plan file: [/Users/nathan/git/github.com/nprbst/speck/specs/008-stacked-pr-support/plan.md](specs/008-stacked-pr-support/plan.md)
 - Generated artifacts: research.md, data-model.md, contracts/, quickstart.md
 
-**Next step**: Run `/speck.tasks` to generate actionable task breakdown for implementation.
+---
+
+## Implementation Notes
+
+### PR Suggestion Flow (Non-Interactive)
+**Design Decision**: PR creation uses suggestion-based approach instead of interactive prompts to work with Claude Code's command architecture.
+
+**Implementation**:
+- `generatePRSuggestion()`: Auto-generates PR title/body from commits or git diff
+- PR base determined from branches.json metadata or defaults to "main"
+- Commits analyzed between PR base and current branch (not `--base` flag)
+- Displays formatted suggestion with copy-paste `gh pr create` command
+- User manually runs command and updates metadata with `/speck.branch update`
+
+**Key Fix**: When `--base` is omitted, it defaults to current branch for the new branch's parent, but PR suggestion must use the **actual PR base** (from branches.json or "main") to get commits correctly.
+
+### Dirty Working Tree Detection
+**Design Decision**: Prevent accidental loss of uncommitted changes when switching branches.
+
+**Implementation**:
+- Check `git status --porcelain` before creating new branch
+- Display warning with `git diff --stat` showing changed files
+- Suggest options: commit, stash, or abort
+- Throw error to halt branch creation until changes are handled
+
+**Rationale**: Better UX than git's default behavior, explicitly guides user to safe options.

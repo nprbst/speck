@@ -44,13 +44,13 @@ A developer working on a large feature spec has completed work on the feature br
 
 **Acceptance Scenarios**:
 
-1. **Given** developer is on `007-multi-repo` feature branch with committed work, **When** developer runs `/speck.branch create "nprbst/db-layer"`, **Then** system prompts: "Create PR for 007-multi-repo before switching? (yes/no)"
-2. **Given** developer answers "yes" to PR prompt, **When** system analyzes commits, **Then** system generates PR title from first commit subject and description from commit messages (or from git diff if commit messages are uninformative)
-3. **Given** PR title and description are generated, **When** system displays them, **Then** developer can edit or confirm with prompt: "PR title: <generated> [edit/confirm]"
-4. **Given** PR metadata is confirmed, **When** system invokes `gh pr create`, **Then** GitHub CLI creates PR with generated title/body and base as main/master
-5. **Given** PR is created successfully, **When** GitHub CLI returns PR number, **Then** git branch `nprbst/db-layer` is created, `.speck/branches.json` records the mapping, and system switches to new branch
-6. **Given** developer answers "no" to PR prompt, **When** system processes response, **Then** new branch is created immediately without PR creation
-7. **Given** developer inspects `.speck/branches.json` after PR creation, **Then** file shows branch name, base branch, spec reference, status fields, and PR number for the base branch (if PR was created)
+1. **Given** developer is on `007-multi-repo` feature branch with uncommitted changes, **When** developer runs `/speck.branch create "nprbst/db-layer"`, **Then** system displays warning with changed files and suggests committing or stashing before creating new branch
+2. **Given** developer is on `007-multi-repo` feature branch with committed work, **When** developer runs `/speck.branch create "nprbst/db-layer"`, **Then** system displays PR suggestion with auto-generated title, description, and copy-paste `gh pr create` command
+3. **Given** PR suggestion is displayed, **When** developer views the output, **Then** PR title is generated from first substantive commit subject and description from commit messages (or from git diff if commit messages are uninformative like "wip", "fix", "tmp")
+4. **Given** PR suggestion shows `gh pr create` command, **When** developer copies and runs the command, **Then** GitHub CLI creates PR with generated title/body and base determined from branches.json or defaulting to main
+5. **Given** PR is created successfully, **When** developer updates branch metadata with `/speck.branch update`, **Then** branches.json records PR number and status is set to "submitted"
+6. **Given** developer skips PR creation, **When** git branch `nprbst/db-layer` is created, **Then** `.speck/branches.json` records the mapping with status "active" and PR number null
+7. **Given** developer inspects `.speck/branches.json` after branch creation, **Then** file shows branch name, base branch, spec reference, status "active", timestamps, and PR number (null if not created)
 
 ---
 

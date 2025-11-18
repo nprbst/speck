@@ -161,8 +161,12 @@ async function generatePRSuggestion(
     return null;
   }
 
-  // T031c - Get commits
-  const commits = await getCommits(baseBranch, currentBranch, repoRoot);
+  // T031j - Determine PR base (do this FIRST to get commits against correct base)
+  const currentBranchEntry = findBranchEntry(mapping, currentBranch);
+  const prBase = determinePRBase(currentBranch, currentBranchEntry?.baseBranch || null, repoRoot);
+
+  // T031c - Get commits (use PR base, not the --base flag which might equal current branch)
+  const commits = await getCommits(prBase, currentBranch, repoRoot);
 
   // Check if there are any commits to make a PR from
   if (commits.length === 0) {
@@ -174,12 +178,8 @@ async function generatePRSuggestion(
 
   if (!prMetadata) {
     // Fallback to diff analysis
-    prMetadata = await generatePRFromDiff(baseBranch, currentBranch, repoRoot);
+    prMetadata = await generatePRFromDiff(prBase, currentBranch, repoRoot);
   }
-
-  // T031j - Determine PR base
-  const currentBranchEntry = findBranchEntry(mapping, currentBranch);
-  const prBase = determinePRBase(currentBranch, currentBranchEntry?.baseBranch || null, repoRoot);
 
   return {
     title: prMetadata.title,
@@ -252,12 +252,15 @@ async function createCommand(args: string[]) {
   const paths = await getFeaturePaths();
   const repoRoot = paths.REPO_ROOT;
 
+  // Get current branch (for PR suggestion later)
+  const currentBranch = await gitGetCurrentBranch(repoRoot);
+
   // Default to current branch if --base not specified
   let baseBranch: string;
   if (baseFlag !== -1 && args[baseFlag + 1]) {
     baseBranch = args[baseFlag + 1];
   } else {
-    baseBranch = await gitGetCurrentBranch(repoRoot);
+    baseBranch = currentBranch;
     console.log(`Defaulting base to current branch: ${baseBranch}`);
   }
 
@@ -302,32 +305,54 @@ async function createCommand(args: string[]) {
     throw new Error(`Spec directory not found: specs/${specId}/`);
   }
 
+  // Check for uncommitted changes before switching branches
+  const statusResult = await $`git -C ${repoRoot} status --porcelain`.quiet();
+  const hasUncommittedChanges = statusResult.stdout.toString().trim().length > 0;
+
+  if (hasUncommittedChanges) {
+    console.log(`\n${'⚠'.repeat(30)}`);
+    console.log(`⚠ Warning: Current branch '${currentBranch}' has uncommitted changes`);
+    console.log(`${'⚠'.repeat(30)}\n`);
+
+    const diffStat = await $`git -C ${repoRoot} diff --stat`.quiet();
+    console.log('Changed files:');
+    console.log(diffStat.stdout.toString());
+
+    console.log('\nOptions:');
+    console.log('  1. Commit changes now (recommended)');
+    console.log('  2. Stash changes (saves for later)');
+    console.log('  3. Carry changes to new branch (creates new branch with changes)');
+    console.log('  4. Abort branch creation');
+    console.log('\nChoose an option or run one of these commands first:');
+    console.log('  git add . && git commit -m "message"  # Commit changes');
+    console.log('  git stash                              # Stash changes');
+    console.log('\nThen re-run: /speck.branch create ' + args.join(' '));
+
+    throw new Error('Uncommitted changes detected. Please commit or stash changes before creating a new branch.');
+  }
+
   // T032 - Initialize branches.json if doesn't exist
   let mapping = await readBranches(repoRoot);
 
   // T031a-T031n - Display PR creation suggestion for current branch (before switching)
-  const currentBranch = await gitGetCurrentBranch(repoRoot);
+  // Always check for PR opportunity, even when base defaults to current branch
+  const prSuggestion = await generatePRSuggestion(currentBranch, baseBranch, mapping, repoRoot);
 
-  // Only suggest PR creation if current branch is different from base (i.e., we're switching branches)
-  if (currentBranch !== baseBranch) {
-    const prSuggestion = await generatePRSuggestion(currentBranch, baseBranch, mapping, repoRoot);
-
-    if (prSuggestion) {
-      console.log(`\n${'='.repeat(60)}`);
-      console.log(`💡 Suggestion: Create PR for '${currentBranch}' before switching`);
-      console.log(`${'='.repeat(60)}`);
-      console.log(`\nGenerated PR details:`);
-      console.log(`  Title: ${prSuggestion.title}`);
-      console.log(`  Base: ${prSuggestion.prBase}`);
-      console.log(`\nDescription:`);
-      console.log(prSuggestion.body.split('\n').map((line: string) => `  ${line}`).join('\n'));
-      console.log(`\n${'-'.repeat(60)}`);
-      console.log(`To create this PR, run:`);
-      console.log(`  gh pr create --base ${prSuggestion.prBase} --title "${prSuggestion.title}" --body "${prSuggestion.body.replace(/"/g, '\\"')}"`);
-      console.log(`\nOr update manually with:`);
-      console.log(`  /speck.branch update ${currentBranch} --status submitted --pr <number>`);
-      console.log(`${'='.repeat(60)}\n`);
-    }
+  if (prSuggestion) {
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`💡 Suggestion: Create PR for '${currentBranch}' before switching`);
+    console.log(`${'='.repeat(60)}`);
+    console.log(`\nGenerated PR details:`);
+    console.log(`  Title: ${prSuggestion.title}`);
+    console.log(`  Base: ${prSuggestion.prBase}`);
+    console.log(`\nDescription:`);
+    console.log(prSuggestion.body.split('\n').map((line: string) => `  ${line}`).join('\n'));
+    console.log(`\n${'-'.repeat(60)}`);
+    console.log(`To create this PR, run:`);
+    console.log(`  gh pr create --base ${prSuggestion.prBase} --title "${prSuggestion.title}" --body "${prSuggestion.body.replace(/"/g, '\\"')}"`);
+    console.log(`\nOr update manually with:`);
+    console.log(`  /speck.branch update ${currentBranch} --status submitted --pr <number>`);
+    console.log(`${'='.repeat(60)}\n`);
   }
 
   // T033 - Create BranchEntry with ISO 8601 timestamps
