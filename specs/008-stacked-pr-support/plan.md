@@ -13,7 +13,7 @@ This plan outlines the implementation of stacked PR support for Speck, enabling 
 
 **Core Value**: Reduce friction in stacked PR workflows by providing centralized branch metadata, branch-aware task generation, and intelligent automation that detects natural boundaries for creating new branches.
 
-**Workflow Mode**: Stacked (this feature implements stacked PR support)
+**Workflow Mode**: stacked-pr
 
 ---
 
@@ -96,11 +96,12 @@ This plan outlines the implementation of stacked PR support for Speck, enabling 
 - Tool-agnostic workflow (Graphite, GitHub Stack, manual)
 - Success criteria focus on user outcomes, not implementation
 
-**Principle VII - File Format Compatibility**: � NEEDS ATTENTION
+**Principle VII - File Format Compatibility**: ✅ PASS
 - `.speck/branches.json` is Speck-specific metadata (stored outside `specs/`)
 - Spec directory structure unchanged (`specs/008-stacked-pr-support/`)
 - Branch naming allows freeform patterns, preserving `NNN-short-name` compatibility
-- **Verification Required**: Ensure spec-kit users can read plan.md/tasks.md without issues
+- **Verification Required**: Workflow mode metadata stored as Markdown bold text (`**Workflow Mode**: stacked-pr`) in plan.md header
+- Spec-kit compatibility verified: Markdown metadata lines are human-readable and gracefully ignored by spec-kit parsers (no YAML frontmatter)
 
 ### Quality Gate Checklist
 
@@ -175,9 +176,11 @@ This plan outlines the implementation of stacked PR support for Speck, enabling 
    - Operations: Create, Read, Update entry, Rebuild index, Validate integrity
 
 3. **WorkflowModeMetadata** (embedded in plan.md)
-   - Fields: workflowMode ("single-branch" | "stacked"), userStoryGroupings (Record<groupName, usIds[]>), suggestedBoundaries (string[])
+   - Fields: workflowMode ("single-branch" | "stacked-pr"), userStoryGroupings (Record<groupName, usIds[]>), suggestedBoundaries (string[])
    - Validation: userStoryGroupings reference valid US IDs from spec
-   - Storage: YAML frontmatter in plan.md
+   - Storage: Markdown metadata line in plan.md header block (same section as "Feature Branch:", "Spec:", "Status:")
+   - Format: `**Workflow Mode**: single-branch` or `**Workflow Mode**: stacked-pr`
+   - Spec-kit compatibility: Gracefully ignored as regular Markdown bold text if parsed by spec-kit
 
 ### API Contracts (`/contracts/`)
 

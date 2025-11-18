@@ -3,8 +3,8 @@
 **Feature Branch**: `008-stacked-pr-support`
 **Spec**: [spec.md](./spec.md)
 **Plan**: [plan.md](./plan.md)
-**Total Tasks**: 52
-**Estimated Completion**: 5-7 days
+**Total Tasks**: 125
+**Estimated Completion**: 6-8 days
 
 ---
 
@@ -40,8 +40,8 @@
 
 ### Tasks
 
-- [ ] T014 Extend findFeatureDirByPrefix() to check branches.json first in .speck/scripts/common/paths.ts
-- [ ] T015 Modify checkFeatureBranch() to allow freeform names when branches.json exists in .speck/scripts/common/paths.ts
+- [ ] T014 Extend findFeatureDirByPrefix() to check branches.json first (if exists) before falling back to numeric prefix pattern matching in .speck/scripts/common/paths.ts (modifies existing function)
+- [ ] T015 Modify checkFeatureBranch() validation logic to skip NNN-pattern enforcement when branches.json exists and contains current branch in .speck/scripts/common/paths.ts (modifies existing function)
 - [ ] T016 [P] Create validateBranchName() function using git check-ref-format in .speck/scripts/common/paths.ts
 - [ ] T017 [P] Create detectCycle() function for circular dependency detection (DFS) in .speck/scripts/common/branch-mapper.ts
 - [ ] T018 [P] Implement validateStatusTransition() to prevent terminal state transitions in .speck/scripts/common/branch-mapper.ts
@@ -135,7 +135,7 @@
 - [ ] T054 [US4] Validate story IDs exist in spec.md in .claude/commands/speck.tasks.md
 - [ ] T055 [US4] Filter user stories in spec.md by requested IDs in .claude/commands/speck.tasks.md
 - [ ] T056 [US4] Generate tasks for filtered stories only (skip Setup/Foundational if --stories used) in .claude/commands/speck.tasks.md
-- [ ] T057 [US4] Output to tasks.md (or tasks-<branch>.md if --branch specified) in .claude/commands/speck.tasks.md
+- [ ] T057 [US4] Output to spec-dir/tasks.md for full spec (default) OR spec-dir/tasks-<branch-name>.md if --branch flag specified (branch-specific filtered tasks) in .claude/commands/speck.tasks.md
 - [ ] T058 [US4] Display summary showing total tasks, filtered stories, and file path in .claude/commands/speck.tasks.md
 
 ---
@@ -250,6 +250,24 @@
 
 ---
 
+## Phase 11: Constitution Amendment
+
+**Goal**: Update constitution with defaultWorkflowMode setting for repository-wide defaults
+
+**Independent Test**: Constitution file contains valid workflow mode setting with documented schema
+
+### Tasks
+
+- [ ] T119 [P] Draft constitution amendment for defaultWorkflowMode setting in .speck/memory/constitution.md
+- [ ] T120 [P] Define Markdown format: `**Default Workflow Mode**: single-branch` in Workflow Mode Configuration section
+- [ ] T121 [P] Add validation in constitution parser to detect and parse workflow mode setting from .speck/memory/constitution.md
+- [ ] T122 [P] Update constitution version from 1.1.2 to 1.2.0 (MINOR: new governance section) in .speck/memory/constitution.md
+- [ ] T123 [P] Add sync impact report documenting workflow mode setting addition in .speck/memory/constitution.md
+- [ ] T124 [P] Update CLAUDE.md with workflow mode setting via update-agent-context script
+- [ ] T125 [P] Update /speck.transform-upstream to preserve .speck/memory/constitution.md amendments during upstream syncs
+
+---
+
 ## Dependencies & Execution Order
 
 ### Sequential Dependencies
@@ -278,6 +296,7 @@ Phase 2 (Foundational) →
   ├─ US5 (P2) - Tool-agnostic import [Depends on US3]
   └─ US6 (P3) - Stack status [Depends on US3]
 → Phase 10 (Polish)
+→ Phase 11 (Constitution Amendment) [Can run in parallel with Phase 10]
 ```
 
 ---
@@ -312,6 +331,9 @@ Phase 2 (Foundational) →
 ### Phase 10 (Polish)
 - **Parallel Group 8**: T101-T106 (auto-repair functions)
 - **Parallel Group 9**: T110-T116 (edge case handling)
+
+### Phase 11 (Constitution Amendment)
+- **Parallel Group 10**: T119-T125 (all constitution amendment tasks are independent)
 
 ---
 

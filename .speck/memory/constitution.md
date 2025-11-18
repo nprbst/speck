@@ -1,23 +1,29 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.1.1 → 1.1.2
-Modified Principles: V (Claude Code Native) - updated exception from bundled skills to SessionStart hooks pattern
-Added Sections: None
+Version Change: 1.1.2 → 1.2.0
+Modified Principles: None
+Added Sections: "Workflow Mode Configuration" (new section under Development Workflow)
 Removed Sections: None
 
 Templates Requiring Updates:
-  ⚠ .specify/templates/plan-template.md - pending review for constitution alignment
+  ✓ .specify/templates/plan-template.md - add **Workflow Mode** metadata line to header
   ⚠ .specify/templates/spec-template.md - pending review for constitution alignment
   ⚠ .specify/templates/tasks-template.md - pending review for constitution alignment
-  ⚠ .claude/commands/speckit.*.md - pending review for principle references
+  ✓ .claude/commands/speck.implement.md - read workflow mode from constitution
+  ✓ .claude/commands/speck.plan.md - read/write workflow mode metadata
+  ✓ .claude/commands/speck.tasks.md - read workflow mode from constitution
 
-Follow-up TODOs: None
+Follow-up TODOs:
+  - Update plan-template.md to include **Workflow Mode** metadata line
+  - Document workflow mode override hierarchy in /speck.implement command
+  - Add constitution parser for workflow mode setting extraction
 
-Rationale for 1.1.1 (PATCH bump):
-  - Clarification to Principle V allowing plugin bundling skills
-  - Does not change core principle, only clarifies application scope
-  - No breaking changes to governance
+Rationale for 1.2.0 (MINOR bump):
+  - New governance section for workflow mode configuration
+  - Adds repository-wide default setting with override hierarchy
+  - No breaking changes to existing principles or workflows
+  - Backwards compatible (defaults to single-branch if absent)
 -->
 
 # Speck Constitution
@@ -241,6 +247,39 @@ enable incremental delivery and prioritization.
 - Edge cases explicitly documented
 - Success criteria MUST be verifiable without implementation knowledge
 
+## Workflow Mode Configuration
+
+### Default Workflow Mode
+
+**Default Workflow Mode**: single-branch
+
+Projects MAY set a repository-wide default workflow mode for feature implementation.
+This setting determines whether `/speck.implement`, `/speck.plan`, and `/speck.tasks`
+default to single-branch or stacked-PR workflows when no explicit flags are provided.
+
+**Valid Values**:
+- `single-branch`: Traditional single branch per feature (default)
+- `stacked-pr`: Stacked PR workflow with multiple branches per feature
+
+**Override Hierarchy** (highest to lowest priority):
+1. Command-line flags (`--stacked`, `--single-branch`)
+2. Feature-specific setting in plan.md (`**Workflow Mode**: stacked-pr`)
+3. Repository-wide setting in constitution.md (this setting)
+4. Hardcoded default (`single-branch`)
+
+**Rationale**: Teams heavily using stacked PRs can set `stacked-pr` as default to
+reduce friction, while preserving backwards compatibility for single-branch
+workflows. Feature-level and command-level overrides ensure flexibility for
+mixed-mode projects.
+
+**Implementation Requirements**:
+- Parser MUST read markdown line: `**Default Workflow Mode**: <value>`
+- MUST default to `single-branch` if line absent or malformed
+- MUST validate against enum values (reject invalid values with clear error)
+- MUST be documented in feature 008-stacked-pr-support
+
+---
+
 ## Governance
 
 This constitution supersedes all other project practices and conventions.
@@ -270,4 +309,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.1.2 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-16
+**Version**: 1.2.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-18

@@ -171,17 +171,18 @@ A developer using `/speck.implement` completes a user story that represents a na
 - **FR-013**: System MUST provide `/speck.branch import` command to auto-detect existing branch relationships from git and populate branches.json
 - **FR-014**: System MUST gracefully handle missing or malformed `.speck/branches.json` by either auto-repairing or prompting user
 - **FR-015**: System MUST support single-repo only (multi-repo stacking explicitly out of scope)
-- **FR-016**: `/speck.implement` MUST detect natural boundaries (completed user stories where all acceptance scenarios pass) and prompt developer to create stacked branch and PR
-- **FR-017**: Stacking prompts MUST offer three response options: "yes" (create branch + PR with interactive metadata collection), "no" (continue on current branch), "skip" (suppress further prompts this session)
-- **FR-018**: `/speck.implement` MUST support `--stacked` flag to enable automated stacking prompts and `--single-branch` flag to disable them
-- **FR-019**: `/speck.plan` and `/speck.tasks` MUST support `--stacked` flag to plan user story groupings for future branches, deferring actual branch creation to `/speck.implement` auto-prompts
-- **FR-020**: Workflow mode choice (single-branch vs stacked) MUST be recorded in active spec's plan.md file as feature-specific metadata when set via `--stacked` or `--single-branch` flags
-- **FR-021**: Constitution file MAY support `defaultWorkflowMode: "single-branch" | "stacked"` setting as repository-wide default, overridden by plan.md feature-specific settings
-- **FR-022**: Command-line flags (`--stacked`, `--single-branch`) MUST override both constitution defaults and plan.md settings when explicitly provided
-- **FR-023**: `/speck.implement` MUST read workflow mode from plan.md (if present), fall back to constitution default, or default to single-branch mode if neither exists
-- **FR-024**: System MUST invoke GitHub CLI (`gh pr create`) directly with collected metadata (title, description, base branch) when developer confirms PR creation
-- **FR-025**: System MUST gracefully handle `gh` CLI unavailability by falling back to suggested manual command or browser URL
-- **FR-026**: PR creation MUST update `.speck/branches.json` with returned PR number and set status to "submitted"
+- **FR-016**: System MUST define "natural boundary" as a completed user story where all acceptance scenarios pass (as determined by test execution or manual verification)
+- **FR-017**: `/speck.implement` MUST detect natural boundaries (completed user stories where all acceptance scenarios pass) and prompt developer to create stacked branch and PR
+- **FR-018**: Stacking prompts MUST offer three response options: "yes" (create branch + PR with interactive metadata collection), "no" (continue on current branch), "skip" (suppress further prompts this session)
+- **FR-019**: `/speck.implement` MUST support `--stacked` flag to enable automated stacking prompts and `--single-branch` flag to disable them
+- **FR-020**: `/speck.plan` and `/speck.tasks` MUST support `--stacked` flag to plan user story groupings for future branches, deferring actual branch creation to `/speck.implement` auto-prompts
+- **FR-021**: Workflow mode choice (single-branch vs stacked) MUST be recorded in active spec's plan.md file as feature-specific metadata when set via `--stacked` or `--single-branch` flags
+- **FR-022**: Constitution file MUST support `defaultWorkflowMode: "single-branch" | "stacked-pr"` setting as repository-wide default with JSON schema validation (enum constraint), overridden by plan.md feature-specific settings, defaulting to "single-branch" if unspecified
+- **FR-023**: Command-line flags (`--stacked`, `--single-branch`) MUST override both constitution defaults and plan.md settings when explicitly provided
+- **FR-024**: `/speck.implement` MUST read workflow mode from plan.md (if present), fall back to constitution default, or default to single-branch mode if neither exists
+- **FR-025**: System MUST invoke GitHub CLI (`gh pr create`) directly with collected metadata (title, description, base branch) when developer confirms PR creation
+- **FR-026**: System MUST gracefully handle `gh` CLI unavailability by displaying executable manual command template (`gh pr create --base <base> --title "<title>" --body "<body>"`) OR generating GitHub web URL (`https://github.com/<owner>/<repo>/compare/<base>...<head>?expand=1&title=<encoded-title>`)
+- **FR-027**: PR creation MUST update `.speck/branches.json` with returned PR number and set status to "submitted"
 
 ### Key Entities
 
@@ -211,6 +212,12 @@ A developer using `/speck.implement` completes a user story that represents a na
   - Suggested branch boundaries (deferred to implementation)
   - Dependency order hints (US1 → US2 → US3)
   - Embedded in plan.md as structured frontmatter or metadata section
+
+- **Constitution Workflow Settings**: Repository-wide workflow mode configuration
+  - Default workflow mode (enum: "single-branch" | "stacked-pr")
+  - Override hierarchy: CLI flag > plan.md > constitution > "single-branch"
+  - Stored in constitution.md as Markdown metadata line
+  - Validation: Must be valid enum value or absent
 
 ## Success Criteria *(mandatory)*
 

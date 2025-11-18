@@ -181,6 +181,47 @@ Virtual entity representing a dependency chain for visualization. Not persisted,
 
 ---
 
+### ConstitutionWorkflowSettings
+
+**Purpose**: Repository-wide default workflow mode configuration stored in constitution.md
+
+**Fields**:
+- `defaultWorkflowMode`: `"single-branch" | "stacked-pr"` (optional, defaults to "single-branch" if absent)
+
+**Storage Format**:
+```markdown
+**Default Workflow Mode**: single-branch
+```
+Stored in .speck/memory/constitution.md Workflow Mode Configuration section as Markdown metadata line
+
+**Validation Rules**:
+- MUST be valid enum value ("single-branch" or "stacked-pr") if present
+- MUST gracefully default to "single-branch" if line absent or malformed
+- Parser MUST use regex: `^\*\*Default Workflow Mode\*\*:\s*(single-branch|stacked-pr)\s*$`
+
+**Relationships**:
+- Read by `/speck.implement`, `/speck.plan`, `/speck.tasks` for workflow mode defaults
+- Overridden by plan.md **Workflow Mode** metadata (feature-specific)
+- Overridden by CLI flags `--stacked` or `--single-branch` (command-specific)
+
+**Override Hierarchy** (highest to lowest priority):
+1. CLI flag (`--stacked` or `--single-branch`)
+2. Plan.md metadata (`**Workflow Mode**: stacked-pr`)
+3. Constitution setting (`**Default Workflow Mode**: stacked-pr`)
+4. Hardcoded default (`"single-branch"`)
+
+**Example**:
+```typescript
+interface ConstitutionWorkflowSettings {
+  defaultWorkflowMode?: "single-branch" | "stacked-pr";
+}
+
+// Default when absent
+const DEFAULT_WORKFLOW_MODE = "single-branch";
+```
+
+---
+
 ## State Transitions
 
 ### BranchEntry Status Lifecycle
