@@ -15,6 +15,11 @@
 - Q: How should monorepos differ from multi-repo setups? → A: They shouldn't - use the same detection mechanism. Monorepo workspaces are just "repos" in subdirectories.
 - Q: Should specs be versioned separately from code? → A: Out of scope for this feature. The central specs directory can optionally be a git repo, but that's a user choice.
 - Q: What about Windows symlink support? → A: Symlinks work on Windows with developer mode or WSL. For edge cases, document WSL usage or provide copy-mode fallback.
+- Q: When should spec-named branches be created in multi-repo setup? → A: /speck.specify creates branch in parent repo only. /speck.plan creates branch in child repo and validates parent branch exists with matching name.
+- Q: What if parent directory is not a git repo when /speck.specify runs? → A: Prompt user "Parent is not a git repo. Initialize now? [y/n]". If yes, auto-initialize and create spec-named branch.
+- Q: Where do plan.md and tasks.md live in multi-repo child repos? → A: Local specs/NNN-feature/ directory in child repo. Child repos have normal specs/ structure; UX is identical to single-repo.
+- Q: How do child repos access the shared spec.md from parent? → A: Symlink parent's spec.md into child's local specs/NNN-feature/ directory.
+- Q: Where should /speck.specify create spec.md when run from child repo? → A: Prompt user: "Create spec at parent (shared) or local (child-only)?". Supports both cross-repo and single-repo-only specs.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -127,6 +132,8 @@ A team started with a monolithic single-repo project and later split it into fro
   - Spec changes are visible immediately. User must manually re-run `/speck.clarify` or `/speck.plan` to update plans if needed. This is similar to git merge conflicts - manual coordination required.
 - How does `/speck.implement` work when multiple repos are implementing from same spec?
   - Each repo implements its own tasks.md independently. Cross-repo coordination is manual (e.g., backend team deploys API before frontend team integrates).
+- How are relative symlink paths calculated for nested repositories?
+  - Path is calculated from `.speck/` directory to speck root. Example: From `monorepo/packages/ui/.speck/` to `monorepo/`, the relative path is `../..` (traverse up to packages/, then to monorepo/).
 
 ## Requirements *(mandatory)*
 
@@ -144,9 +151,9 @@ A team started with a monolithic single-repo project and later split it into fro
 
 - **FR-006**: System MUST provide `/speck.link <path-to-speck-root>` command to create `.speck/root` symlink
 - **FR-007**: `/speck.link` command MUST validate that target path exists and contains (or can contain) a `specs/` directory
-- **FR-008**: `/speck.link` command MUST create relative symlink paths (not absolute) for portability
+- **FR-008**: `/speck.link` command MUST create relative symlink paths (not absolute) for portability. Relative path MUST be calculated from `.speck/` directory to target directory using minimum necessary parent directory traversals (e.g., `..` for parent, `../..` for grandparent). Symlink creation MUST use `fs.symlink(relativePath, '.speck/root', 'dir')` where `relativePath` contains only `../` sequences and target basename if needed.
 - **FR-009**: System MUST support manual symlink creation (users can create `.speck/root` without using `/speck.link`)
-- **FR-010**: System MUST handle both `ln -s` style symlinks (Unix) and junction points (Windows) transparently
+- **FR-010**: System SHOULD handle both `ln -s` style symlinks (Unix) and junction points (Windows) transparently. Windows support requires Developer Mode or WSL. If symlink creation fails, system MUST provide clear error message with remediation steps.
 
 #### Monorepo Support
 
@@ -177,9 +184,30 @@ A team started with a monolithic single-repo project and later split it into fro
 #### Shared Specs & Contracts
 
 - **FR-025**: System MUST allow multiple repositories to read the same `spec.md` file from shared speck root
-- **FR-026**: System MUST allow each repository to generate its own `plan.md` and `tasks.md` in local `specs/NNN-feature/` directory (not at shared root)
-- **FR-027**: System MUST support shared contracts directory at `[speck-root]/specs/NNN-feature/contracts/` accessible to all linked repos
-- **FR-028**: System MUST track which specs are local vs symlinked in `.gitignore` recommendations (documented, not automated)
+- **FR-026**: System MUST create local `specs/NNN-feature/` directory in child repos to store repo-specific `plan.md` and `tasks.md`
+- **FR-026a**: System MUST create local `specs/NNN-feature/` directory in child repo BEFORE symlinking parent spec.md (if directory does not exist). If directory exists, proceed with symlink creation.
+- **FR-027**: System MUST symlink parent's `[speck-root]/specs/NNN-feature/spec.md` into child's local `specs/NNN-feature/spec.md` location
+- **FR-028**: System MUST maintain identical `specs/` directory structure in child repos as single-repo mode (transparent UX)
+- **FR-029**: System MUST support shared contracts directory at `[speck-root]/specs/NNN-feature/contracts/` accessible to all linked repos (symlinked into child repo)
+- **FR-030**: Child repos MUST commit their local `specs/NNN-feature/plan.md` and `tasks.md` to their own repository (not parent repo)
+- **FR-031**: Child repos MUST NOT commit symlinked files (spec.md, contracts/) to their repository. System MUST automatically add exclusion patterns to child repo's .gitignore during `/speck.link` execution.
+
+#### Spec Creation & Scope
+
+- **FR-032**: `/speck.specify` run from child repo MUST prompt user: "Create spec at parent (shared across repos) or local (child-only)?"
+- **FR-033**: When user chooses "parent (shared)", system MUST create spec.md at `[speck-root]/specs/NNN-feature/spec.md` and symlink into child repo
+- **FR-034**: When user chooses "local (child-only)", system MUST create spec.md directly in child's local `specs/NNN-feature/spec.md` (no symlink)
+- **FR-035**: System MUST support both shared specs (symlinked) and local specs (child-only) coexisting in same multi-repo setup
+
+#### Branch Management (Multi-Repo)
+
+- **FR-036**: `/speck.specify` creating shared spec MUST create spec-named branch in parent repo (speck root) if parent is a git repository
+- **FR-037**: `/speck.specify` creating shared spec MUST prompt user to initialize parent as git repo if not already initialized, then create spec-named branch if user confirms
+- **FR-038**: `/speck.specify` creating local (child-only) spec MUST only create branch in child repo, not parent
+- **FR-039**: `/speck.plan` in multi-repo child repo MUST create spec-named branch in child repo if not already on that branch
+- **FR-040**: `/speck.plan` in multi-repo child repo with shared spec MUST validate that parent repo is on matching spec-named branch, and warn if mismatch detected
+- **FR-041**: `/speck.plan` in multi-repo child repo with local spec MUST skip parent branch validation (no shared spec = no validation needed)
+- **FR-042**: Branch validation MUST only apply when both parent and child are git repositories (skip validation if parent is not a git repo)
 
 ### Key Entities
 
@@ -202,10 +230,10 @@ A team started with a monolithic single-repo project and later split it into fro
 - **SC-001**: 100% of existing single-repo Speck projects work without modification after upgrade
 - **SC-002**: Developer can set up multi-repo configuration in under 2 minutes (run `/speck.link ..` per repo)
 - **SC-003**: Zero new configuration files required for single-repo usage
-- **SC-004**: Multi-repo detection adds less than 10ms overhead to command execution
+- **SC-004**: Multi-repo detection (`detectSpeckRoot()` function) adds less than 10ms overhead to command execution, measured as median time over 100 consecutive runs on reference hardware (2020+ MacBook Pro or equivalent). Single-repo mode MUST complete detection in <2ms median (minimal overhead for default case).
 - **SC-005**: Monorepo and multi-repo setups have identical UX (same commands, same symlink detection)
 - **SC-006**: Documentation clearly explains migration path from single-repo to multi-repo in under 5 steps
-- **SC-007**: `/speck.env` command shows mode (single-repo or multi-repo) and relevant paths in under 1 second
+- **SC-007**: `/speck.env` command shows mode (single-repo or multi-repo) and relevant paths with total execution time under 1 second (including all filesystem checks and git operations) on reference hardware
 - **SC-008**: Developers can determine if a repo is in multi-repo mode by running one command (`/speck.env`) or inspecting one directory (`ls -la .speck/`)
 
 ## Assumptions

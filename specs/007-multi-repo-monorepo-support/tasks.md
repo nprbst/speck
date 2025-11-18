@@ -62,8 +62,10 @@ description: "Task list for multi-repo and monorepo support implementation"
 - [ ] T017 [US1] Verify getFeaturePaths() CONSTITUTION uses repoRoot in single-repo mode in .speck/scripts/common/paths.ts
 - [ ] T018 [US1] Test that /speck.specify creates spec.md at repoRoot/specs/NNN-feature/ in single-repo project
 - [ ] T019 [US1] Test that /speck.plan generates plan.md using local constitution in single-repo project
-- [ ] T020 [US1] Verify no performance regression in single-repo mode (detectSpeckRoot should complete in <2ms)
+- [ ] T020 [US1] Verify no performance regression in single-repo mode (detectSpeckRoot should complete in <2ms median over 100 runs)
 - [ ] T021 [US1] Verify no new configuration files appear in single-repo projects after running commands
+
+**Note**: Performance benchmarks use median of 100 runs to account for filesystem caching. Reference: SC-004 specifies <2ms for single-repo, <10ms for multi-repo.
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - single-repo workflow must be identical to current version
 
@@ -177,9 +179,11 @@ description: "Task list for multi-repo and monorepo support implementation"
 - [ ] T067 When user chooses "local (child-only)", create spec.md directly in child's specs/NNN-feature/ (no symlink)
 - [ ] T068 Support both shared and local specs coexisting in same multi-repo setup
 - [ ] T069 When contracts/ exists at speckRoot/specs/NNN-feature/contracts/, symlink into child's local specs/NNN-feature/contracts/
-- [ ] T070 Add .gitignore recommendation to /speck.link success message: "Add to .gitignore: specs/*/spec.md, specs/*/contracts/"
+- [ ] T070 Add .gitignore entries automatically during /speck.link execution: append patterns to child repo's .gitignore (create if missing): "specs/*/spec.md", "specs/*/contracts/"
+- [ ] T070a Verify .gitignore effectiveness: test that git status ignores symlinked spec.md and contracts/ after /speck.link
 - [ ] T071 Test that child repos do not commit symlinked spec.md to their repository (git status should ignore if .gitignore'd)
 - [ ] T072 Test that child repos DO commit local plan.md and tasks.md to their repository
+- [ ] T072a Verify symlinked files are not tracked by git: run `git status` in child repo with symlinked spec.md, confirm no "untracked files" warning
 
 **Checkpoint**: Shared specs and contracts are working - child repos access parent spec via symlink, generate local plans
 
@@ -220,8 +224,8 @@ description: "Task list for multi-repo and monorepo support implementation"
 - [ ] T088 Test /speck.link with missing argument (should error with usage message)
 - [ ] T089 Test /speck.link with non-existent target (should error "Target does not exist")
 - [ ] T090 Test /speck.link with file (not directory) target (should error "Target is not a directory")
-- [ ] T091 Add error message for Windows without Developer Mode (suggest enabling Dev Mode or using WSL)
-- [ ] T092 Document Windows symlink support in error messages for platforms where symlink creation fails
+- [ ] T091 Implement clear error message when symlink creation fails on Windows without Developer Mode: "Symlink creation failed. Windows requires Developer Mode or WSL for symlink support. Enable Developer Mode in Windows Settings or use WSL."
+- [ ] T092 Add platform detection to linkRepo(): detect Windows platform and provide Windows-specific guidance in error messages when fs.symlink() fails
 
 **Checkpoint**: All edge cases handled gracefully with clear error messages
 
