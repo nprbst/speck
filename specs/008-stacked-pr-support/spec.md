@@ -45,10 +45,12 @@ A developer working on a large feature spec has completed work on the feature br
 **Acceptance Scenarios**:
 
 1. **Given** developer is on `007-multi-repo` feature branch with committed work, **When** developer runs `/speck.branch create "nprbst/db-layer"`, **Then** system prompts: "Create PR for 007-multi-repo before switching? (yes/no)"
-2. **Given** developer answers "yes" to PR prompt, **When** system collects metadata, **Then** interactive prompts collect PR title and description, then invoke `gh pr create` with base as main/master
-3. **Given** PR is created successfully, **When** GitHub CLI returns PR number, **Then** git branch `nprbst/db-layer` is created, `.speck/branches.json` records the mapping, and system switches to new branch
-4. **Given** developer answers "no" to PR prompt, **When** system processes response, **Then** new branch is created immediately without PR creation
-5. **Given** developer inspects `.speck/branches.json` after PR creation, **Then** file shows branch name, base branch, spec reference, status fields, and PR number for the base branch (if PR was created)
+2. **Given** developer answers "yes" to PR prompt, **When** system analyzes commits, **Then** system generates PR title from first commit subject and description from commit messages (or from git diff if commit messages are uninformative)
+3. **Given** PR title and description are generated, **When** system displays them, **Then** developer can edit or confirm with prompt: "PR title: <generated> [edit/confirm]"
+4. **Given** PR metadata is confirmed, **When** system invokes `gh pr create`, **Then** GitHub CLI creates PR with generated title/body and base as main/master
+5. **Given** PR is created successfully, **When** GitHub CLI returns PR number, **Then** git branch `nprbst/db-layer` is created, `.speck/branches.json` records the mapping, and system switches to new branch
+6. **Given** developer answers "no" to PR prompt, **When** system processes response, **Then** new branch is created immediately without PR creation
+7. **Given** developer inspects `.speck/branches.json` after PR creation, **Then** file shows branch name, base branch, spec reference, status fields, and PR number for the base branch (if PR was created)
 
 ---
 

@@ -86,13 +86,18 @@
 - [ ] T031 [US2] Auto-detect or prompt for spec ID if not provided in .claude/commands/speck.branch.md
 - [ ] T031a [US2] Prompt user: "Create PR for <current-branch> before switching? (yes/no)" in .claude/commands/speck.branch.md
 - [ ] T031b [US2] If yes to PR prompt, check if gh CLI is available using `which gh` in .claude/commands/speck.branch.md
-- [ ] T031c [US2] Prompt for PR title with default from spec title or branch name in .claude/commands/speck.branch.md
-- [ ] T031d [US2] Prompt for PR description with default from spec summary in .claude/commands/speck.branch.md
-- [ ] T031e [US2] Determine PR base branch (main/master for feature branches, base branch for stacked branches) in .claude/commands/speck.branch.md
-- [ ] T031f [US2] Execute gh pr create --title "<title>" --body "<body>" --base <pr-base> in .claude/commands/speck.branch.md
-- [ ] T031g [US2] Parse PR number from gh CLI output in .claude/commands/speck.branch.md
-- [ ] T031h [US2] Update current branch entry in branches.json with PR number and status="submitted" in .claude/commands/speck.branch.md
-- [ ] T031i [US2] Handle gh CLI errors gracefully (not installed, not authenticated, network errors) in .claude/commands/speck.branch.md
+- [ ] T031c [US2] Get commits on current branch not in base: `git log <base>..<current> --format="%s%n%b"` in .claude/commands/speck.branch.md
+- [ ] T031d [US2] Analyze commit messages to determine if substantive (not "wip", "fix", "tmp", etc.) in .claude/commands/speck.branch.md
+- [ ] T031e [US2] If commits are substantive, generate PR title from first commit subject in .claude/commands/speck.branch.md
+- [ ] T031f [US2] If commits are substantive, generate PR body from all commit messages (bulleted list) in .claude/commands/speck.branch.md
+- [ ] T031g [US2] If commits are uninformative, generate title/body from `git diff <base>...<current>` summary in .claude/commands/speck.branch.md
+- [ ] T031h [US2] Display generated PR title and body with prompt: "[e]dit or [c]onfirm" in .claude/commands/speck.branch.md
+- [ ] T031i [US2] If user chooses "edit", allow inline editing of title and body in .claude/commands/speck.branch.md
+- [ ] T031j [US2] Determine PR base branch (main/master for feature branches, base branch for stacked branches) in .claude/commands/speck.branch.md
+- [ ] T031k [US2] Execute gh pr create --title "<title>" --body "<body>" --base <pr-base> in .claude/commands/speck.branch.md
+- [ ] T031l [US2] Parse PR number from gh CLI output in .claude/commands/speck.branch.md
+- [ ] T031m [US2] Update current branch entry in branches.json with PR number and status="submitted" in .claude/commands/speck.branch.md
+- [ ] T031n [US2] Handle gh CLI errors gracefully (not installed, not authenticated, network errors) in .claude/commands/speck.branch.md
 - [ ] T032 [US2] Initialize .speck/branches.json if doesn't exist (empty state: version 1.0.0, branches [], specIndex {}) in .claude/commands/speck.branch.md
 - [ ] T033 [US2] Create BranchEntry with ISO 8601 timestamps and add to branches array in .claude/commands/speck.branch.md
 - [ ] T034 [US2] Update specIndex with new branch mapping in .claude/commands/speck.branch.md

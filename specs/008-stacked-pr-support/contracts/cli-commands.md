@@ -47,12 +47,15 @@ speck branch create <name> [--base <base-branch>] [--spec <spec-id>]
 6. **Prompt for PR creation**: "Create PR for <current-branch> before switching? (yes/no)"
 7. If yes to PR prompt:
    a. Check if `gh` CLI is available and authenticated
-   b. Prompt for PR title (default: spec title or branch name)
-   c. Prompt for PR description (default: spec summary)
-   d. Determine PR base (main/master for feature branches, base branch for stacked branches)
-   e. Execute: `gh pr create --title "<title>" --body "<body>" --base <pr-base>`
-   f. Capture PR number from output
-   g. Update current branch entry in branches.json with PR number and status="submitted"
+   b. Get commits on current branch not in base: `git log <base>..<current> --format="%s%n%b"`
+   c. Analyze commit messages: if substantive, use first subject as title and all messages as body
+   d. If commit messages are uninformative (e.g., "wip", "fix"), generate from `git diff <base>...<current>`
+   e. Display generated PR title and body with prompt: "Title: <generated> [edit/confirm]"
+   f. If user chooses "edit", allow inline editing of title and body
+   g. Determine PR base (main/master for feature branches, base branch for stacked branches)
+   h. Execute: `gh pr create --title "<title>" --body "<body>" --base <pr-base>`
+   i. Capture PR number from output
+   j. Update current branch entry in branches.json with PR number and status="submitted"
 8. Create `.speck/branches.json` if it doesn't exist (initialize empty)
 9. Add new BranchEntry to branches array
 10. Update specIndex with new branch
@@ -66,8 +69,18 @@ Defaulting base to current branch: 008-stacked-pr-support
 
 Create PR for 008-stacked-pr-support before switching? (yes/no): yes
 
-PR title [Stacked PR Support]:
-PR description [Feature specification for stacked PR support]:
+Analyzing commits on 008-stacked-pr-support...
+Found 3 commits since main
+
+Generated PR title:
+  feat: implement stacked PR foundation (T001-T038) + amend constitution to v1.3.0
+
+Generated PR description:
+  - feat: implement stacked PR foundation (T001-T038) + amend constitution to v1.3.0
+  - docs: resolve critical analysis blockers and standardize workflow mode terminology
+  - feat: complete planning phase for stacked PR support
+
+[e]dit or [c]onfirm: c
 
 ✓ Created PR #42 for 008-stacked-pr-support → main
 ✓ Updated branch status to 'submitted'
