@@ -44,16 +44,54 @@ speck branch create <name> [--base <base-branch>] [--spec <spec-id>]
 3. Validate base branch exists in git
 4. Detect or prompt for spec ID if not provided
 5. Validate no circular dependencies (DFS cycle detection)
-6. Create `.speck/branches.json` if it doesn't exist (initialize empty)
-7. Add new BranchEntry to branches array
-8. Update specIndex with new branch
-9. Create git branch: `git branch <name> <base>`
-10. Checkout new branch: `git checkout <name>`
-11. Display success message with stack visualization
+6. **Prompt for PR creation**: "Create PR for <current-branch> before switching? (yes/no)"
+7. If yes to PR prompt:
+   a. Check if `gh` CLI is available and authenticated
+   b. Prompt for PR title (default: spec title or branch name)
+   c. Prompt for PR description (default: spec summary)
+   d. Determine PR base (main/master for feature branches, base branch for stacked branches)
+   e. Execute: `gh pr create --title "<title>" --body "<body>" --base <pr-base>`
+   f. Capture PR number from output
+   g. Update current branch entry in branches.json with PR number and status="submitted"
+8. Create `.speck/branches.json` if it doesn't exist (initialize empty)
+9. Add new BranchEntry to branches array
+10. Update specIndex with new branch
+11. Create git branch: `git branch <name> <base>`
+12. Checkout new branch: `git checkout <name>`
+13. Display success message with stack visualization
 
-### Output
+### Output (with PR creation)
 ```
 Defaulting base to current branch: 008-stacked-pr-support
+
+Create PR for 008-stacked-pr-support before switching? (yes/no): yes
+
+PR title [Stacked PR Support]:
+PR description [Feature specification for stacked PR support]:
+
+✓ Created PR #42 for 008-stacked-pr-support → main
+✓ Updated branch status to 'submitted'
+
+✓ Created stacked branch 'username/db-layer'
+✓ Based on: 008-stacked-pr-support
+✓ Linked to spec: 008-stacked-pr-support
+
+Branch stack:
+  008-stacked-pr-support (PR #42)
+  └─ username/db-layer (current)
+
+Next steps:
+  - Implement feature on this branch
+  - Run /speck.tasks --branch username/db-layer to generate tasks
+  - When ready: /speck.branch create <next-branch>
+```
+
+### Output (without PR creation)
+```
+Defaulting base to current branch: 008-stacked-pr-support
+
+Create PR for 008-stacked-pr-support before switching? (yes/no): no
+
 ✓ Created stacked branch 'username/db-layer'
 ✓ Based on: 008-stacked-pr-support
 ✓ Linked to spec: 008-stacked-pr-support

@@ -34,37 +34,39 @@ A developer using Speck with traditional single-branch workflow continues to use
 
 ---
 
-### User Story 2 - Creating First Stacked Branch (Priority: P1)
+### User Story 2 - Creating First Stacked Branch with PR (Priority: P1)
 
-A developer working on a large feature spec wants to break implementation into multiple reviewable PRs. They create the first branch in a stack using freeform naming that matches their team's conventions.
+A developer working on a large feature spec has completed work on the feature branch and wants to create a PR for it while starting the next piece of work. They create a stacked branch, which prompts them to create a PR for the current branch before switching.
 
-**Why this priority**: This is the entry point for stacked PR workflows. Must be frictionless and support flexible naming conventions.
+**Why this priority**: This is the entry point for stacked PR workflows. Must be frictionless, support flexible naming conventions, and offer PR creation at the natural boundary when stacking begins.
 
-**Independent Test**: Can be tested by creating a spec, then using `/speck.branch` to create first stacked branch with custom name, and verifying `.speck/branches.json` is created with correct metadata.
+**Independent Test**: Can be tested by creating a spec, completing work on feature branch, then using `/speck.branch create` to create first stacked branch, verifying PR creation prompt appears and `.speck/branches.json` is created with correct metadata.
 
 **Acceptance Scenarios**:
 
-1. **Given** a spec exists at `specs/007-multi-repo/spec.md` and developer is on `007-multi-repo` feature branch, **When** developer runs `/speck.branch create "nprbst/db-layer"`, **Then** git branch `nprbst/db-layer` is created with `007-multi-repo` as base and `.speck/branches.json` records the mapping to spec `007-multi-repo`
-2. **Given** first stacked branch is created, **When** developer inspects `.speck/branches.json`, **Then** file shows branch name, base branch, spec reference, and status fields
-3. **Given** developer is on `008-stacked-pr-support` and uses ticket-based naming, **When** they run `/speck.branch create "JIRA-123-api-endpoints"`, **Then** branch is created with `008-stacked-pr-support` as base without enforcing NNN-feature-name pattern
-4. **Given** branch is created, **When** developer runs `/speck.env`, **Then** output displays "Branch stack mode: enabled" with current branch and base branch information
+1. **Given** developer is on `007-multi-repo` feature branch with committed work, **When** developer runs `/speck.branch create "nprbst/db-layer"`, **Then** system prompts: "Create PR for 007-multi-repo before switching? (yes/no)"
+2. **Given** developer answers "yes" to PR prompt, **When** system collects metadata, **Then** interactive prompts collect PR title and description, then invoke `gh pr create` with base as main/master
+3. **Given** PR is created successfully, **When** GitHub CLI returns PR number, **Then** git branch `nprbst/db-layer` is created, `.speck/branches.json` records the mapping, and system switches to new branch
+4. **Given** developer answers "no" to PR prompt, **When** system processes response, **Then** new branch is created immediately without PR creation
+5. **Given** developer inspects `.speck/branches.json` after PR creation, **Then** file shows branch name, base branch, spec reference, status fields, and PR number for the base branch (if PR was created)
 
 ---
 
-### User Story 3 - Building a Stack with Dependencies (Priority: P2)
+### User Story 3 - Building a Stack with Dependencies and PRs (Priority: P2)
 
-A developer has completed the first PR in a stack and wants to create a second branch that builds on the first. They need explicit dependency tracking so code review and merging happen in correct order.
+A developer has completed work on the first stacked branch and wants to create a PR for it while continuing with the next piece of work. They create another stacked branch, which prompts for PR creation, establishing a clear dependency chain with reviewable PRs at each level.
 
-**Why this priority**: This enables the core stacked PR value proposition - sequential dependencies with clear parent-child relationships.
+**Why this priority**: This enables the core stacked PR value proposition - sequential dependencies with clear parent-child relationships, where each branch gets its own PR for focused code review.
 
-**Independent Test**: Can be tested by creating two stacked branches with explicit base dependencies and verifying branches.json tracks the chain correctly.
+**Independent Test**: Can be tested by creating two stacked branches with explicit base dependencies, creating PRs at each level, and verifying branches.json tracks the chain correctly with PR numbers.
 
 **Acceptance Scenarios**:
 
-1. **Given** developer is on branch `nprbst/db-layer` (based on feature branch `007-multi-repo`), **When** developer runs `/speck.branch create "nprbst/api-endpoints"`, **Then** new branch is created and branches.json records `nprbst/db-layer` as the base
-2. **Given** a stack of 3 branches exists, **When** developer runs `/speck.env`, **Then** output displays the full dependency chain (007-multi-repo → db-layer → api-endpoints → ui-components)
-3. **Given** developer is on a stacked branch, **When** they run `/speck.branch list`, **Then** output shows all branches for current spec with base dependencies and PR status
-4. **Given** a branch in middle of stack is merged, **When** developer runs `/speck.branch status`, **Then** output indicates which branches need rebasing onto updated base
+1. **Given** developer is on branch `nprbst/db-layer` (based on feature branch `007-multi-repo`) with committed work, **When** developer runs `/speck.branch create "nprbst/api-endpoints"`, **Then** system prompts: "Create PR for nprbst/db-layer before switching? (yes/no)"
+2. **Given** developer answers "yes" to PR prompt, **When** PR is created, **Then** `gh pr create` uses `nprbst/db-layer` with base `007-multi-repo`, updates branches.json with PR number, then creates and switches to new branch
+3. **Given** a stack of 3 branches exists with PRs, **When** developer runs `/speck.env`, **Then** output displays the full dependency chain with PR numbers (007-multi-repo PR#1 → db-layer PR#2 → api-endpoints → ui-components)
+4. **Given** developer is on a stacked branch, **When** they run `/speck.branch list`, **Then** output shows all branches for current spec with base dependencies and PR status
+5. **Given** a branch in middle of stack is merged, **When** developer runs `/speck.branch status`, **Then** output indicates which branches need rebasing onto updated base
 
 ---
 

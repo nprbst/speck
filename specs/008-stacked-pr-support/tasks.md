@@ -84,12 +84,21 @@
 - [ ] T029 [US2] Validate branch name using git check-ref-format in .claude/commands/speck.branch.md
 - [ ] T030 [US2] Validate base branch exists using git rev-parse --verify in .claude/commands/speck.branch.md
 - [ ] T031 [US2] Auto-detect or prompt for spec ID if not provided in .claude/commands/speck.branch.md
+- [ ] T031a [US2] Prompt user: "Create PR for <current-branch> before switching? (yes/no)" in .claude/commands/speck.branch.md
+- [ ] T031b [US2] If yes to PR prompt, check if gh CLI is available using `which gh` in .claude/commands/speck.branch.md
+- [ ] T031c [US2] Prompt for PR title with default from spec title or branch name in .claude/commands/speck.branch.md
+- [ ] T031d [US2] Prompt for PR description with default from spec summary in .claude/commands/speck.branch.md
+- [ ] T031e [US2] Determine PR base branch (main/master for feature branches, base branch for stacked branches) in .claude/commands/speck.branch.md
+- [ ] T031f [US2] Execute gh pr create --title "<title>" --body "<body>" --base <pr-base> in .claude/commands/speck.branch.md
+- [ ] T031g [US2] Parse PR number from gh CLI output in .claude/commands/speck.branch.md
+- [ ] T031h [US2] Update current branch entry in branches.json with PR number and status="submitted" in .claude/commands/speck.branch.md
+- [ ] T031i [US2] Handle gh CLI errors gracefully (not installed, not authenticated, network errors) in .claude/commands/speck.branch.md
 - [ ] T032 [US2] Initialize .speck/branches.json if doesn't exist (empty state: version 1.0.0, branches [], specIndex {}) in .claude/commands/speck.branch.md
 - [ ] T033 [US2] Create BranchEntry with ISO 8601 timestamps and add to branches array in .claude/commands/speck.branch.md
 - [ ] T034 [US2] Update specIndex with new branch mapping in .claude/commands/speck.branch.md
 - [ ] T035 [US2] Create git branch using git branch <name> <base> in .claude/commands/speck.branch.md
 - [ ] T036 [US2] Checkout new branch using git checkout <name> in .claude/commands/speck.branch.md
-- [ ] T037 [US2] Display success message with stack visualization (tree format) in .claude/commands/speck.branch.md
+- [ ] T037 [US2] Display success message with stack visualization showing PR numbers (tree format) in .claude/commands/speck.branch.md
 - [ ] T038 [US2] Handle error cases (invalid name, base doesn't exist, spec not found) with clear messages in .claude/commands/speck.branch.md
 
 ---

@@ -147,7 +147,7 @@ export async function getCurrentBranch(repoRoot: string): Promise<string> {
     throw new GitError("Failed to get current branch");
   }
 
-  const branch = (await result.stdout.text()).trim();
+  const branch = result.stdout.toString().trim();
   if (branch === "HEAD") {
     throw new GitError("Currently in detached HEAD state");
   }
