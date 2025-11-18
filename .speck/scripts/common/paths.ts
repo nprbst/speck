@@ -325,18 +325,54 @@ export async function hasGit(): Promise<boolean> {
 }
 
 /**
+ * Validate branch name using git check-ref-format (T016)
+ *
+ * @param branchName - Branch name to validate
+ * @returns true if valid git ref name, false otherwise
+ */
+export async function validateBranchName(branchName: string): Promise<boolean> {
+  try {
+    const result = await $`git check-ref-format --branch ${branchName}`.quiet();
+    return result.exitCode === 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Check if on a valid feature branch
  *
  * @param branch - Branch name to check
  * @param hasGitRepo - Whether we have a git repo
  * @returns true if valid, false otherwise (prints error to stderr)
  */
-export function checkFeatureBranch(branch: string, hasGitRepo: boolean): boolean {
+export async function checkFeatureBranch(branch: string, hasGitRepo: boolean, repoRoot: string): Promise<boolean> {
   // For non-git repos, we can't enforce branch naming
   if (!hasGitRepo) {
     console.error("[specify] Warning: Git repository not detected; skipped branch validation");
     return true;
   }
+
+  // [STACKED-PR:START] T015 - Skip NNN-pattern enforcement if branches.json exists
+  const branchesFile = path.join(repoRoot, ".speck", "branches.json");
+  if (existsSync(branchesFile)) {
+    try {
+      const content = await fs.readFile(branchesFile, "utf-8");
+      const mapping = JSON.parse(content);
+
+      // Check if current branch is in branches.json
+      if (mapping.branches && Array.isArray(mapping.branches)) {
+        const branchExists = mapping.branches.some((b: any) => b.name === branch);
+        if (branchExists) {
+          // Branch is in stacked mode - no NNN-pattern required
+          return true;
+        }
+      }
+    } catch {
+      // If branches.json is malformed, fall through to traditional validation
+    }
+  }
+  // [STACKED-PR:END]
 
   // Check if branch matches pattern: ###-feature-name
   if (!/^\d{3}-/.test(branch)) {
@@ -364,8 +400,30 @@ export function getFeatureDir(repoRoot: string, branchName: string): string {
  * Both would map to the first directory found starting with "004-"
  *
  * [SPECK-EXTENSION] Updated to accept specsDir parameter for multi-repo support
+ * [STACKED-PR] T014 - Check branches.json first before falling back to numeric prefix
  */
-export function findFeatureDirByPrefix(specsDir: string, branchName: string): string {
+export async function findFeatureDirByPrefix(specsDir: string, branchName: string, repoRoot: string): Promise<string> {
+  // [STACKED-PR:START] T014 - Check branches.json first
+  const branchesFile = path.join(repoRoot, ".speck", "branches.json");
+  if (existsSync(branchesFile)) {
+    try {
+      const content = await fs.readFile(branchesFile, "utf-8");
+      const mapping = JSON.parse(content);
+
+      // Find branch in mapping
+      if (mapping.branches && Array.isArray(mapping.branches)) {
+        const branch = mapping.branches.find((b: any) => b.name === branchName);
+        if (branch && branch.specId) {
+          // Found in branches.json - use specId
+          return path.join(specsDir, branch.specId);
+        }
+      }
+    } catch {
+      // If branches.json is malformed, fall through to traditional lookup
+    }
+  }
+  // [STACKED-PR:END]
+
   // Extract numeric prefix from branch (e.g., "004" from "004-whatever")
   const match = branchName.match(/^(\d{3})-/);
   if (!match) {

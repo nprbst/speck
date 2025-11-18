@@ -1,29 +1,28 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.1.2 → 1.2.0
+Version Change: 1.2.0 → 1.3.0
 Modified Principles: None
-Added Sections: "Workflow Mode Configuration" (new section under Development Workflow)
+Added Sections: "VIII. Command-Implementation Separation" (new principle)
 Removed Sections: None
 
 Templates Requiring Updates:
-  ✓ .specify/templates/plan-template.md - add **Workflow Mode** metadata line to header
-  ⚠ .specify/templates/spec-template.md - pending review for constitution alignment
-  ⚠ .specify/templates/tasks-template.md - pending review for constitution alignment
-  ✓ .claude/commands/speck.implement.md - read workflow mode from constitution
-  ✓ .claude/commands/speck.plan.md - read/write workflow mode metadata
-  ✓ .claude/commands/speck.tasks.md - read workflow mode from constitution
+  ⚠ .claude/commands/*.md - all command files must delegate to scripts, not contain implementations
+  ⚠ .speck/scripts/ - verify all commands have corresponding implementation scripts
+  ✅ Documentation - add guidance on command vs implementation separation
 
 Follow-up TODOs:
-  - Update plan-template.md to include **Workflow Mode** metadata line
-  - Document workflow mode override hierarchy in /speck.implement command
-  - Add constitution parser for workflow mode setting extraction
+  - Audit existing .claude/commands/*.md files for embedded TypeScript
+  - Create implementation script templates/patterns
+  - Document command file structure best practices
+  - Add validation to check-prerequisites.ts to flag implementation code in command files
 
-Rationale for 1.2.0 (MINOR bump):
-  - New governance section for workflow mode configuration
-  - Adds repository-wide default setting with override hierarchy
-  - No breaking changes to existing principles or workflows
-  - Backwards compatible (defaults to single-branch if absent)
+Rationale for 1.3.0 (MINOR bump):
+  - New principle added: Command-Implementation Separation
+  - Establishes clear boundary between declarative command definitions and executable code
+  - Prevents mixing of concerns (markdown documentation vs TypeScript implementation)
+  - No breaking changes to existing principles
+  - Backwards compatible but requires refactoring of non-compliant commands
 -->
 
 # Speck Constitution
@@ -168,6 +167,60 @@ principle.
 - Validation: A project using Speck MUST function correctly if Speck is removed
   and spec-kit is used instead
 
+### VIII. Command-Implementation Separation (NON-NEGOTIABLE)
+
+Claude Code command files (`.claude/commands/*.md`) MUST contain only
+declarative documentation and execution delegation. Implementation logic MUST
+reside in separate TypeScript scripts called via `bun run`.
+
+**Rationale**: Command markdown files serve as user-facing documentation and
+command registration. Embedding TypeScript implementations creates maintenance
+nightmares, prevents code reuse, breaks syntax highlighting, complicates
+testing, and violates separation of concerns. Commands should be thin wrappers
+that delegate to well-structured, testable implementation scripts.
+
+**Implementation Requirements**:
+
+- Command files MUST follow this structure:
+  1. YAML frontmatter (description, tags, version)
+  2. Human-readable documentation (usage, examples, what it does)
+  3. Single implementation section with `bun run $PLUGIN_ROOT/scripts/<name>.ts {{args}}`
+- Command files MUST NOT contain:
+  - TypeScript/JavaScript function definitions
+  - Import statements (except in inline `bun -e` one-liners for environment checks)
+  - Complex conditional logic (delegate to scripts instead)
+  - Inline implementations longer than 5 lines of bash for simple environment setup
+- Implementation scripts MUST:
+  - Live in `.speck/scripts/` or subdirectories
+  - Use TypeScript with proper typing
+  - Be executable via `bun run <script-path> <args>`
+  - Export testable functions
+  - Follow standard CLI patterns (arg parsing, error handling, help text)
+- Validation: Command files MUST be readable as documentation without
+  TypeScript knowledge. Implementation scripts MUST be runnable/testable
+  independently of Claude Code.
+
+**Examples**:
+
+Good (delegating command):
+```markdown
+## Implementation
+\`\`\`bash
+bun run "$PLUGIN_ROOT/scripts/branch-command.ts" {{args}}
+\`\`\`
+```
+
+Bad (embedded implementation):
+```markdown
+## Implementation
+\`\`\`typescript
+async function createBranch(name: string, base: string) {
+  // 50 lines of implementation...
+}
+createBranch(args[0], args[1]);
+\`\`\`
+```
+
 ## Upstream Sync Requirements
 
 ### Release-Based Synchronization
@@ -301,6 +354,7 @@ for existing artifacts.
 - All plans MUST reference constitutional principles where applicable
 - All upstream syncs MUST preserve extension markers
 - All slash commands MUST verify they follow Claude Code native principle
+- All command files MUST delegate to implementation scripts (Principle VIII)
 
 **Versioning Policy**:
 
@@ -309,4 +363,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.2.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-18
+**Version**: 1.3.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-18
