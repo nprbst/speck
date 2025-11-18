@@ -106,6 +106,58 @@ fi
 echo ""
 ```
 
+### 7. Check Multi-Repo Configuration
+
+```bash
+echo "=== Multi-Repo Configuration ==="
+# Detect speck root and mode
+bun -e '
+import { detectSpeckRoot } from "'${EFFECTIVE_ROOT}'/scripts/common/paths.ts";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+try {
+  const config = await detectSpeckRoot();
+
+  if (config.mode === "single-repo") {
+    console.log("Mode: Single-repo");
+    console.log("  Repo Root:", config.repoRoot);
+    console.log("  Specs Directory:", config.specsDir);
+    console.log("");
+    console.log("To enable multi-repo mode:");
+    console.log("  /speck.link <path-to-speck-root>");
+  } else {
+    console.log("Mode: Multi-repo (enabled)");
+    console.log("  Speck Root:", config.speckRoot);
+    console.log("  Repo Root:", config.repoRoot);
+    console.log("  Specs Directory:", config.specsDir);
+    console.log("");
+
+    // Show symlink details
+    const symlinkPath = path.join(config.repoRoot, ".speck", "root");
+    try {
+      const target = await fs.readlink(symlinkPath);
+      console.log("Linked Configuration:");
+      console.log("  .speck/root →", target);
+    } catch (e) {
+      console.log("Warning: Could not read symlink");
+    }
+    console.log("");
+    console.log("Shared:");
+    console.log("  - Specs (spec.md) are stored at speck root");
+    console.log("  - Contracts (contracts/) are stored at speck root");
+    console.log("Local to this repo:");
+    console.log("  - Plans (plan.md) use this repo'\''s constitution");
+    console.log("  - Tasks (tasks.md) are repo-specific");
+    console.log("  - Constitution (.speck/constitution.md) is repo-specific");
+  }
+} catch (error) {
+  console.error("Error detecting speck configuration:", error.message);
+}
+'
+echo ""
+```
+
 ## Summary
 
 After running all checks, provide a summary:

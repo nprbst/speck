@@ -17,13 +17,31 @@
 
 import { existsSync } from "node:fs";
 import { readdirSync } from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 import { $ } from "bun";
+
+// [SPECK-EXTENSION:START] Multi-repo detection
+/**
+ * Speck configuration - detected mode and paths
+ */
+export interface SpeckConfig {
+  mode: 'single-repo' | 'multi-repo';
+  speckRoot: string;     // Directory containing specs/
+  repoRoot: string;      // Git repository root
+  specsDir: string;      // Full path to specs/
+}
+// [SPECK-EXTENSION:END]
 
 /**
  * Feature paths returned by getFeaturePaths()
  */
 export interface FeaturePaths {
+  // [SPECK-EXTENSION:START] Multi-repo fields
+  MODE: 'single-repo' | 'multi-repo';
+  SPECK_ROOT: string;
+  SPECS_DIR: string;
+  // [SPECK-EXTENSION:END]
   REPO_ROOT: string;
   CURRENT_BRANCH: string;
   HAS_GIT: string;
@@ -144,6 +162,106 @@ export async function getRepoRoot(): Promise<string> {
   }
 }
 
+// [SPECK-EXTENSION:START] Multi-repo detection
+/**
+ * Cache for detectSpeckRoot() to avoid repeated filesystem checks
+ */
+let cachedConfig: SpeckConfig | null = null;
+
+/**
+ * Clear the cached speck configuration
+ * Useful when .speck/root symlink is modified
+ */
+export function clearSpeckCache(): void {
+  cachedConfig = null;
+}
+
+/**
+ * Detect speck root and operating mode
+ *
+ * Checks for .speck/root symlink to determine if running in multi-repo mode.
+ * - Single-repo: No symlink, specs at repo root
+ * - Multi-repo: Symlink present, specs at symlink target
+ *
+ * @returns SpeckConfig with mode, speckRoot, repoRoot, specsDir
+ */
+export async function detectSpeckRoot(): Promise<SpeckConfig> {
+  // Return cached result if available
+  if (cachedConfig) {
+    return cachedConfig;
+  }
+
+  const repoRoot = await getRepoRoot();
+  const symlinkPath = path.join(repoRoot, '.speck', 'root');
+
+  try {
+    const stats = await fs.lstat(symlinkPath);
+
+    if (!stats.isSymbolicLink()) {
+      console.warn(
+        'WARNING: .speck/root exists but is not a symlink\n' +
+        'Expected: symlink to speck root directory\n' +
+        'Found: regular file/directory\n' +
+        'Falling back to single-repo mode.\n' +
+        'To enable multi-repo: mv .speck/root .speck/root.backup && /speck.link <path>'
+      );
+      const config: SpeckConfig = {
+        mode: 'single-repo',
+        speckRoot: repoRoot,
+        repoRoot,
+        specsDir: path.join(repoRoot, 'specs')
+      };
+      cachedConfig = config;
+      return config;
+    }
+
+    // Resolve symlink to absolute path
+    const speckRoot = await fs.realpath(symlinkPath);
+
+    // Verify target exists
+    await fs.access(speckRoot);
+
+    const config: SpeckConfig = {
+      mode: 'multi-repo',
+      speckRoot,
+      repoRoot,
+      specsDir: path.join(speckRoot, 'specs')
+    };
+    cachedConfig = config;
+    return config;
+
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      // Symlink does not exist - single-repo mode
+      const config: SpeckConfig = {
+        mode: 'single-repo',
+        speckRoot: repoRoot,
+        repoRoot,
+        specsDir: path.join(repoRoot, 'specs')
+      };
+      cachedConfig = config;
+      return config;
+    }
+
+    if (error.code === 'ELOOP') {
+      throw new Error(
+        'Multi-repo configuration broken: .speck/root contains circular reference\n' +
+        'Fix: rm .speck/root && /speck.link <valid-path>'
+      );
+    }
+
+    // Broken symlink (target does not exist)
+    const target = await fs.readlink(symlinkPath).catch(() => 'unknown');
+    throw new Error(
+      `Multi-repo configuration broken: .speck/root → ${target} (does not exist)\n` +
+      'Fix:\n' +
+      '  1. Remove broken symlink: rm .speck/root\n' +
+      '  2. Link to correct location: /speck.link <path-to-speck-root>'
+    );
+  }
+}
+// [SPECK-EXTENSION:END]
+
 /**
  * Get current branch name
  *
@@ -244,10 +362,10 @@ export function getFeatureDir(repoRoot: string, branchName: string): string {
  *
  * Allows multiple branches to work on the same spec (e.g., 004-fix-bug, 004-add-feature)
  * Both would map to the first directory found starting with "004-"
+ *
+ * [SPECK-EXTENSION] Updated to accept specsDir parameter for multi-repo support
  */
-export function findFeatureDirByPrefix(repoRoot: string, branchName: string): string {
-  const specsDir = path.join(repoRoot, "specs");
-
+export function findFeatureDirByPrefix(specsDir: string, branchName: string): string {
   // Extract numeric prefix from branch (e.g., "004" from "004-whatever")
   const match = branchName.match(/^(\d{3})-/);
   if (!match) {
@@ -287,28 +405,36 @@ export function findFeatureDirByPrefix(repoRoot: string, branchName: string): st
  * Get all feature-related paths
  *
  * This is the main function used by other scripts to get their working environment.
+ *
+ * [SPECK-EXTENSION] Updated to use detectSpeckRoot() for multi-repo support
  */
 export async function getFeaturePaths(): Promise<FeaturePaths> {
-  const repoRoot = await getRepoRoot();
-  const currentBranch = await getCurrentBranch(repoRoot);
+  // [SPECK-EXTENSION:START] Multi-repo path resolution
+  const config = await detectSpeckRoot();
+  const currentBranch = await getCurrentBranch(config.repoRoot);
   const hasGitRepo = await hasGit();
 
   // Use prefix-based lookup to support multiple branches per spec
-  const featureDir = findFeatureDirByPrefix(repoRoot, currentBranch);
+  const featureDir = findFeatureDirByPrefix(config.specsDir, currentBranch);
+  const featureName = path.basename(featureDir);
 
   return {
-    REPO_ROOT: repoRoot,
+    MODE: config.mode,
+    SPECK_ROOT: config.speckRoot,
+    SPECS_DIR: config.specsDir,
+    REPO_ROOT: config.repoRoot,
     CURRENT_BRANCH: currentBranch,
     HAS_GIT: hasGitRepo ? "true" : "false",
     FEATURE_DIR: featureDir,
-    FEATURE_SPEC: path.join(featureDir, "spec.md"),
-    IMPL_PLAN: path.join(featureDir, "plan.md"),
-    TASKS: path.join(featureDir, "tasks.md"),
-    RESEARCH: path.join(featureDir, "research.md"),
-    DATA_MODEL: path.join(featureDir, "data-model.md"),
-    QUICKSTART: path.join(featureDir, "quickstart.md"),
-    CONTRACTS_DIR: path.join(featureDir, "contracts"),
+    FEATURE_SPEC: path.join(featureDir, "spec.md"),  // Uses specsDir (shared in multi-repo)
+    IMPL_PLAN: path.join(config.repoRoot, "specs", featureName, "plan.md"),  // Always local
+    TASKS: path.join(config.repoRoot, "specs", featureName, "tasks.md"),  // Always local
+    RESEARCH: path.join(featureDir, "research.md"),  // Uses specsDir (shared in multi-repo)
+    DATA_MODEL: path.join(featureDir, "data-model.md"),  // Uses specsDir (shared in multi-repo)
+    QUICKSTART: path.join(featureDir, "quickstart.md"),  // Uses specsDir (shared in multi-repo)
+    CONTRACTS_DIR: path.join(featureDir, "contracts"),  // Uses specsDir (shared in multi-repo)
   };
+  // [SPECK-EXTENSION:END]
 }
 
 /**
