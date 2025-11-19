@@ -55,15 +55,15 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Verify detectSpeckRoot() returns mode='single-repo' when .speck/root does not exist in .speck/scripts/common/paths.ts
-- [ ] T014 [US1] Verify detectSpeckRoot() sets speckRoot === repoRoot in single-repo mode in .speck/scripts/common/paths.ts
-- [ ] T015 [US1] Verify getFeaturePaths() SPEC_FILE uses repoRoot in single-repo mode in .speck/scripts/common/paths.ts
-- [ ] T016 [US1] Verify getFeaturePaths() PLAN_FILE, TASKS_FILE use repoRoot in single-repo mode in .speck/scripts/common/paths.ts
-- [ ] T017 [US1] Verify getFeaturePaths() CONSTITUTION uses repoRoot in single-repo mode in .speck/scripts/common/paths.ts
-- [ ] T018 [US1] Test that /speck.specify creates spec.md at repoRoot/specs/NNN-feature/ in single-repo project
-- [ ] T019 [US1] Test that /speck.plan generates plan.md using local constitution in single-repo project
-- [ ] T020 [US1] Verify no performance regression in single-repo mode (detectSpeckRoot should complete in <2ms median over 100 runs)
-- [ ] T021 [US1] Verify no new configuration files appear in single-repo projects after running commands
+- [X] T013 [US1] Verify detectSpeckRoot() returns mode='single-repo' when .speck/root does not exist in .speck/scripts/common/paths.ts
+- [X] T014 [US1] Verify detectSpeckRoot() sets speckRoot === repoRoot in single-repo mode in .speck/scripts/common/paths.ts
+- [X] T015 [US1] Verify getFeaturePaths() SPEC_FILE uses repoRoot in single-repo mode in .speck/scripts/common/paths.ts
+- [X] T016 [US1] Verify getFeaturePaths() PLAN_FILE, TASKS_FILE use repoRoot in single-repo mode in .speck/scripts/common/paths.ts
+- [X] T017 [US1] Verify getFeaturePaths() CONSTITUTION uses repoRoot in single-repo mode in .speck/scripts/common/paths.ts
+- [X] T018 [US1] Test that /speck.specify creates spec.md at repoRoot/specs/NNN-feature/ in single-repo project
+- [X] T019 [US1] Test that /speck.plan generates plan.md using local constitution in single-repo project
+- [X] T020 [US1] Verify no performance regression in single-repo mode (detectSpeckRoot should complete in <2ms median over 100 runs)
+- [X] T021 [US1] Verify no new configuration files appear in single-repo projects after running commands
 
 **Note**: Performance benchmarks use median of 100 runs to account for filesystem caching. Reference: SC-004 specifies <2ms for single-repo, <10ms for multi-repo.
 
@@ -98,10 +98,10 @@ description: "Task list for multi-repo and monorepo support implementation"
 - [X] T038 [US2] Test that detectSpeckRoot() returns mode='multi-repo' after linking
 - [X] T039 [US2] Test that getFeaturePaths() SPEC_FILE uses speckRoot (parent dir) in multi-repo mode
 - [X] T040 [US2] Test that getFeaturePaths() PLAN_FILE uses repoRoot (child repo) in multi-repo mode
-- [ ] T041 [US2] Test creating spec at parent specs/ directory and verify both frontend/backend repos can read it
-- [ ] T042 [US2] Test that /speck.plan in frontend generates plan using frontend's constitution
-- [ ] T043 [US2] Test that /speck.plan in backend generates different plan using backend's constitution
-- [ ] T044 [US2] Verify performance overhead <10ms for multi-repo detection (run detectSpeckRoot 100 times, average <10ms)
+- [X] T041 [US2] Test creating spec at parent specs/ directory and verify both frontend/backend repos can read it
+- [X] T042 [US2] Test that /speck.plan in frontend generates plan using frontend's constitution
+- [X] T043 [US2] Test that /speck.plan in backend generates different plan using backend's constitution
+- [X] T044 [US2] Verify performance overhead <10ms for multi-repo detection (run detectSpeckRoot 100 times, average <10ms)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - single-repo unchanged, multi-repo enables shared specs
 
@@ -115,13 +115,13 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 ### Implementation for User Story 3
 
-- [ ] T045 [US3] Test linking monorepo package from nested directory (from packages/ui/, run /speck.link ../..)
-- [ ] T046 [US3] Verify detectSpeckRoot() works with nested package structures (e.g., monorepo/packages/ui/)
-- [ ] T047 [US3] Test that multiple packages can link to same monorepo root specs/ directory
-- [ ] T048 [US3] Test that each package can have its own .speck/constitution.md with different principles
-- [ ] T049 [US3] Verify /speck.plan in packages/ui/ uses ui package's constitution (e.g., React preferences)
-- [ ] T050 [US3] Verify /speck.plan in packages/api/ uses api package's constitution (e.g., no frontend deps)
-- [ ] T051 [US3] Test that monorepo build tools (npm workspaces) are not affected by .speck/root symlinks
+- [X] T045 [US3] Test linking monorepo package from nested directory (from packages/ui/, run /speck.link ../..)
+- [X] T046 [US3] Verify detectSpeckRoot() works with nested package structures (e.g., monorepo/packages/ui/)
+- [X] T047 [US3] Test that multiple packages can link to same monorepo root specs/ directory
+- [X] T048 [US3] Test that each package can have its own .speck/constitution.md with different principles
+- [X] T049 [US3] Verify /speck.plan in packages/ui/ uses ui package's constitution (e.g., React preferences)
+- [X] T050 [US3] Verify /speck.plan in packages/api/ uses api package's constitution (e.g., no frontend deps)
+- [X] T051 [US3] Test that monorepo build tools (npm workspaces) are not affected by .speck/root symlinks
 
 **Checkpoint**: All user stories should now be independently functional - single-repo, multi-repo, and monorepo all work
 
