@@ -256,3 +256,4 @@ A team started with a monolithic single-repo project and later split it into fro
 - Migration tooling to automatically convert single-repo to multi-repo
 - IDE integration for visualizing multi-repo spec relationships
 - Validation that all linked repos have generated plans for a shared spec
+- Stacked PR workflows in multi-repo child repositories - Feature 008 (Stacked PR Support) is single-repo only. Multi-repo child repos cannot use `/speck.branch` commands to create stacked branches. Child repos must use traditional single-branch workflow. See Feature 008 Out of Scope for details.

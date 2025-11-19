@@ -257,6 +257,21 @@ async function createCommand(args: string[]) {
   const paths = await getFeaturePaths();
   const repoRoot = paths.REPO_ROOT;
 
+  // [REMEDIATION:C1] Check for multi-repo mode
+  // Stacked PR support is single-repo only (Feature 008 FR-015)
+  if (paths.MODE === 'multi-repo') {
+    console.error('\n❌ ERROR: Stacked PR support is currently single-repo only\n');
+    console.error('This repository is in multi-repo mode (linked via .speck/root symlink).\n');
+    console.error('Current configuration:');
+    console.error(`  Repository root: ${paths.REPO_ROOT}`);
+    console.error(`  Speck root:      ${paths.SPECK_ROOT}`);
+    console.error('\nTo use stacked PRs, choose one of:');
+    console.error('  1. Remove multi-repo link:  rm .speck/root');
+    console.error('  2. Use traditional workflow (single branch per spec)');
+    console.error('\nFor current configuration details, run: /speck.env\n');
+    process.exit(1);
+  }
+
   // Get current branch (for PR suggestion later)
   const currentBranch = await gitGetCurrentBranch(repoRoot);
 

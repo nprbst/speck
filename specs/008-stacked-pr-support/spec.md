@@ -258,3 +258,11 @@ A developer using `/speck.implement` completes a user story that represents a na
 - GitHub CLI (`gh`) is preferred for automated PR creation but system degrades gracefully if unavailable
 - Automated PR creation is GitHub-specific; other platforms (GitLab, Bitbucket) require manual PR creation or custom tooling
 - Developers are authenticated with `gh auth login` before attempting automated PR creation
+
+## Out of Scope
+
+- Multi-repo stacked branches - Stacked PR support works only in single-repo mode (FR-015). Using `/speck.branch` commands in multi-repo child repositories (linked via `/speck.link`) will result in a validation error. This is a deliberate constraint to maintain feature simplicity. Future enhancement: Support stacked PRs in multi-repo child repos with independent `.speck/branches.json` per child.
+- Cross-repository branch dependencies - Branches in different repos cannot depend on each other in the stack (no parent-child across repo boundaries)
+- Automated rebase operations - System detects when rebasing is needed but doesn't perform rebase automatically
+- Branch stack visualization in web UI - Status display is CLI-only
+- Integration with non-GitHub PR systems - Automated PR creation requires GitHub CLI (`gh`); GitLab/Bitbucket require manual PR creation
