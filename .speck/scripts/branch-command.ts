@@ -709,10 +709,14 @@ async function importCommand(args: string[]) {
   const patternFlag = args.indexOf("--pattern");
   const pattern = patternFlag !== -1 ? args[patternFlag + 1] : undefined;
 
+  // Check for batch import with spec mappings (from agent)
+  const batchFlag = args.indexOf("--batch");
+  const isBatchMode = batchFlag !== -1;
+
   const paths = await getFeaturePaths();
   const repoRoot = paths.REPO_ROOT;
 
-  // T060 - List all git branches
+  // T060-T061 - List all git branches and infer base branches
   const gitBranches = await listGitBranches(repoRoot, pattern);
 
   if (gitBranches.length === 0) {
@@ -721,51 +725,138 @@ async function importCommand(args: string[]) {
   }
 
   let mapping = await readBranches(repoRoot);
+
+  // Filter out branches already in mapping
+  const newBranches = gitBranches.filter(
+    ({ name }) => !mapping.branches.some((b) => b.name === name)
+  );
+
+  if (newBranches.length === 0) {
+    console.log("All branches are already in stacked mode.");
+    return;
+  }
+
+  // T062 - Get available specs for mapping
+  const specDirs = await fs.readdir(path.join(repoRoot, "specs"));
+  const availableSpecs = specDirs.filter((d) => /^\d{3}-/.test(d));
+
+  if (!isBatchMode) {
+    // T063 - Output branch information as JSON for agent to parse
+    const branchData = newBranches.map(({ name, upstream }) => {
+      // T061-T062 - Parse upstream to infer base
+      let baseBranch = "main";
+      if (upstream) {
+        const upstreamBranch = upstream.replace(/^origin\//, "");
+        if (upstreamBranch && upstreamBranch !== name) {
+          baseBranch = upstreamBranch;
+        }
+      }
+
+      return {
+        name,
+        upstream: upstream || null,
+        inferredBase: baseBranch,
+      };
+    });
+
+    const importData = {
+      type: "import-prompt",
+      branches: branchData,
+      availableSpecs,
+    };
+
+    // Output JSON to stderr for agent parsing
+    console.error(JSON.stringify(importData));
+
+    // Display human-readable summary
+    console.log(`Found ${newBranches.length} branches to import:\n`);
+    branchData.forEach((branch) => {
+      console.log(`• ${branch.name}`);
+      console.log(`  Upstream: ${branch.upstream || "(none)"}`);
+      console.log(`  Inferred base: ${branch.inferredBase}`);
+      console.log();
+    });
+
+    console.log(`Available specs: ${availableSpecs.join(", ")}\n`);
+    console.log("Agent interaction required: Map each branch to a spec.");
+
+    // Exit with code 3 to signal import prompt needed
+    process.exit(3);
+  }
+
+  // Batch mode: Parse spec mappings from arguments
+  // Format: --batch branch1:spec1 branch2:spec2 branch3:skip
+  const mappings = args.slice(batchFlag + 1);
   let imported = 0;
   let skipped = 0;
 
-  console.log(`Found ${gitBranches.length} branches to import:\n`);
+  for (const mappingStr of mappings) {
+    const [branchName, specId] = mappingStr.split(":");
 
-  for (const { name, upstream } of gitBranches) {
-    // Skip if already in mapping
-    if (mapping.branches.some((b) => b.name === name)) {
-      console.log(`⊘ ${name} (already in stacked mode)`);
+    if (!branchName || !specId) {
+      console.log(`⚠ Invalid mapping format: ${mappingStr}`);
+      continue;
+    }
+
+    if (specId === "skip") {
+      console.log(`⊘ Skipped ${branchName}`);
       skipped++;
       continue;
     }
 
-    // T061 - Parse upstream to infer base
+    // Find branch info
+    const branchInfo = newBranches.find((b) => b.name === branchName);
+    if (!branchInfo) {
+      console.log(`⚠ Branch not found: ${branchName}`);
+      continue;
+    }
+
+    // T061 - Infer base branch
     let baseBranch = "main";
-    if (upstream) {
-      const upstreamBranch = upstream.replace(/^origin\//, "");
-      if (upstreamBranch && upstreamBranch !== name) {
+    if (branchInfo.upstream) {
+      const upstreamBranch = branchInfo.upstream.replace(/^origin\//, "");
+      if (upstreamBranch && upstreamBranch !== branchInfo.name) {
         baseBranch = upstreamBranch;
       }
     }
 
-    console.log(`\nBranch: ${name}`);
-    console.log(`  Upstream: ${upstream || "(none)"}`);
-    console.log(`  Inferred base: ${baseBranch}`);
+    // T066 - Create branch entry
+    const now = new Date().toISOString();
+    const entry: BranchEntry = {
+      name: branchName,
+      specId,
+      baseBranch,
+      status: "active",
+      pr: null,
+      createdAt: now,
+      updatedAt: now,
+    };
 
-    // T062 - Prompt for spec mapping
-    const specDirs = await fs.readdir(path.join(repoRoot, "specs"));
-    const specs = specDirs.filter((d) => /^\d{3}-/.test(d));
-
-    console.log(`  Link to spec? (Enter number or 's' to skip)`);
-    specs.forEach((spec, index) => {
-      console.log(`    ${index + 1}. ${spec}`);
+    // T065 - Validate no cycles
+    const cycle = detectCycle(branchName, {
+      ...mapping,
+      branches: [...mapping.branches, entry],
     });
 
-    // For automated execution, skip (would need interactive prompts library in real usage)
-    console.log(`⊘ Skipped ${name} (interactive prompt needed)`);
-    skipped++;
+    if (cycle) {
+      console.log(`⚠ Skipped ${branchName} (would create cycle: ${cycle.join(" → ")})`);
+      skipped++;
+      continue;
+    }
+
+    // T066 - Add to mapping
+    mapping = addBranch(mapping, entry);
+    console.log(`✓ Imported ${branchName} → ${specId}`);
+    imported++;
   }
 
-  // T066 - Display summary
+  // Save mapping
+  await writeBranches(repoRoot, mapping);
+
+  // T067 - Display summary
   console.log(`\n✓ Import complete:`);
   console.log(`  Imported: ${imported}`);
   console.log(`  Skipped: ${skipped}`);
-  console.log(`\nNote: Import requires interactive mode. Run manually in terminal for full functionality.`);
 }
 
 // ===========================

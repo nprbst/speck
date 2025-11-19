@@ -81,13 +81,22 @@ Removes branch from branches.json (does not delete git branch).
 
 ### import - Import existing branches
 
-Imports existing git branches into stacked mode.
+Imports existing git branches into stacked mode with interactive spec mapping.
+
+**Arguments:**
+- `--pattern <pattern>` - Filter branches by pattern (optional, e.g., 'username/*')
 
 **Examples:**
 ```bash
 /speck.branch import --pattern 'username/*'
 /speck.branch import
 ```
+
+**How it works:**
+1. Script lists all git branches (filtered by pattern if provided)
+2. For each branch, infers base branch from git upstream
+3. Prompts you to map each branch to a spec (via agent interaction)
+4. Creates branch entries in branches.json with inferred metadata
 
 ## What This Does
 
@@ -134,11 +143,13 @@ PR_SUGGESTION=$(echo "$STDERR_CONTENT" | grep '^{.*"type":"pr-suggestion"' | hea
 
 After running the script, handle the exit code:
 
-**If EXIT_CODE is 2 and PR_SUGGESTION contains JSON**: A PR opportunity was detected. Parse the JSON and prompt the user.
-
 **If EXIT_CODE is 0**: Command succeeded.
 
-**If EXIT_CODE is 1 or other**: Command failed.
+**If EXIT_CODE is 1**: Command failed with an error.
+
+**If EXIT_CODE is 2 and PR_SUGGESTION contains JSON**: A PR opportunity was detected (create command only). Parse the JSON and prompt the user for PR creation.
+
+**If EXIT_CODE is 3**: Import prompt needed (import command only). Parse JSON from stderr for branch-to-spec mapping.
 
 ## Agent Workflow for PR Suggestions (T031k-T031m)
 
@@ -175,7 +186,64 @@ When you detect exit code 2 with a PR suggestion JSON:
      /speck.branch create {newBranch} --skip-pr-prompt [original flags]
      ```
 
-## Example Agent Interaction
+## Agent Workflow for Import (T060-T067)
+
+When executing `/speck.branch import`, the script may detect branches to import and exit with code 3. You must detect this and interact with the user to map branches to specs.
+
+Check for exit code 3 after running the script:
+
+- **If EXIT_CODE is 3**: Branches need spec mapping. Parse JSON from stderr.
+- **If EXIT_CODE is 0**: Import completed successfully.
+
+When you detect exit code 3:
+
+1. **Parse the JSON** from stderr (T063):
+   ```javascript
+   {
+     "type": "import-prompt",
+     "branches": [
+       {
+         "name": "username/db-layer",
+         "upstream": "origin/main",
+         "inferredBase": "main"
+       },
+       {
+         "name": "username/api-layer",
+         "upstream": "origin/username/db-layer",
+         "inferredBase": "username/db-layer"
+       }
+     ],
+     "availableSpecs": ["007-multi-repo", "008-stacked-pr-support"]
+   }
+   ```
+
+2. **Prompt the user** for each branch (T063-T064):
+   ```
+   I found {count} branches to import. For each branch, please specify which spec to link it to, or type 'skip' to skip:
+
+   Branch: {branch.name}
+   - Upstream: {branch.upstream}
+   - Inferred base: {branch.inferredBase}
+
+   Available specs:
+   1. 007-multi-repo
+   2. 008-stacked-pr-support
+
+   Link to which spec? (Enter number or 'skip')
+   ```
+
+3. **Collect user responses** (T064):
+   - Allow user to enter spec number, spec ID directly, or 'skip'
+   - Build mappings array: `["username/db-layer:007-multi-repo", "username/api-layer:skip"]`
+
+4. **Re-invoke with batch flag** (T066):
+   ```bash
+   /speck.branch import --batch username/db-layer:007-multi-repo username/api-layer:008-stacked-pr-support
+   ```
+
+## Example Agent Interactions
+
+### Example 1: PR Creation
 
 ```
 User: /speck.branch create username/api-layer
@@ -203,4 +271,50 @@ Creating PR for 'username/db-layer'...
 ✓ Created PR #42 for 'username/db-layer'
 ✓ Created stacked branch 'username/api-layer'
 ...
+```
+
+### Example 2: Branch Import
+
+```
+User: /speck.branch import --pattern 'username/*'
+
+[Script finds 2 branches to import and exits with code 3]
+
+Agent: I found 2 branches to import. For each branch, please tell me which spec to link it to:
+
+Branch 1: username/db-layer
+- Upstream: origin/main
+- Inferred base: main
+
+Available specs:
+1. 007-multi-repo
+2. 008-stacked-pr-support
+
+Which spec should this branch be linked to?
+
+User: 007-multi-repo
+
+Agent: Got it. Next branch:
+
+Branch 2: username/api-layer
+- Upstream: origin/username/db-layer
+- Inferred base: username/db-layer
+
+Available specs:
+1. 007-multi-repo
+2. 008-stacked-pr-support
+
+Which spec should this branch be linked to?
+
+User: 1
+
+Agent: [Re-runs] /speck.branch import --batch username/db-layer:007-multi-repo username/api-layer:007-multi-repo
+
+Output:
+✓ Imported username/db-layer → 007-multi-repo
+✓ Imported username/api-layer → 007-multi-repo
+
+✓ Import complete:
+  Imported: 2
+  Skipped: 0
 ```
