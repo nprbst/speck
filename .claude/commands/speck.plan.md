@@ -18,6 +18,12 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## Workflow Mode Detection
+
+Parse command-line flags from user input:
+- `--stacked`: Enable stacked PR workflow mode (write workflow metadata to plan.md)
+- If no flag provided: Default to single-branch mode (no workflow metadata written)
+
 ## Plugin Path Setup
 
 Before proceeding, determine the plugin root path by running:
@@ -40,6 +46,23 @@ Store this value and use `$PLUGIN_ROOT` in all subsequent script paths (e.g., `b
 
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
+   - **If --stacked flag provided**: Add workflow mode metadata to plan.md header
+     - After the "Feature Branch:", "Spec:", "Status:", "Created:" lines in plan.md header
+     - Insert line: `**Workflow Mode**: stacked-pr`
+     - Analyze user stories in spec.md to suggest groupings:
+       - Group related user stories that could be implemented in sequence
+       - Example: US1,US2 (database layer) → US3,US4 (API layer) → US5,US6 (UI layer)
+     - Add section to plan.md (after Executive Summary):
+       ```markdown
+       ## User Story Groupings
+
+       **Suggested Stacking Strategy**:
+       - Branch 1: US1, US2 (Database layer)
+       - Branch 2: US3, US4 (API endpoints)
+       - Branch 3: US5, US6 (UI components)
+
+       These groupings represent natural boundaries for stacked PRs. Each group can be implemented in a separate branch with its own pull request.
+       ```
    - Fill Constitution Check section from constitution
    - Evaluate gates (ERROR if violations unjustified)
    - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)

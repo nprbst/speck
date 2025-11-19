@@ -62,10 +62,10 @@
 
 ### Tasks
 
-- [ ] T023 [US1] Verify /speck.specify creates spec without generating branches.json in .claude/commands/speck.specify.md
-- [ ] T024 [US1] Verify /speck.tasks generates tasks without branch filtering warnings in .claude/commands/speck.tasks.md
-- [ ] T025 [US1] Verify /speck.env shows traditional branch info without stack terminology in .claude/commands/speck.env.md
-- [ ] T026 [US1] Add regression test: Confirm branches.json not created unless /speck.branch create used in specs/008-stacked-pr-support/tests/backwards-compat.test.ts
+- [x] T023 [US1] Verify /speck.specify creates spec without generating branches.json in .claude/commands/speck.specify.md
+- [x] T024 [US1] Verify /speck.tasks generates tasks without branch filtering warnings in .claude/commands/speck.tasks.md
+- [x] T025 [US1] Verify /speck.env shows traditional branch info without stack terminology in .claude/commands/speck.env.md
+- [x] T026 [US1] Add regression test: Confirm branches.json not created unless /speck.branch create used in specs/008-stacked-pr-support/tests/backwards-compat.test.ts
 
 ---
 
@@ -167,14 +167,14 @@
 
 ### Tasks
 
-- [ ] T060 [US5] Implement import subcommand to auto-detect git branch relationships in .speck/scripts/branch-command.ts
-- [ ] T061 [US5] List all git branches using git branch --list --format='%(refname:short) %(upstream:short)' in .speck/scripts/branch-command.ts
-- [ ] T062 [US5] Parse upstream information to infer base branches in .speck/scripts/branch-command.ts
-- [ ] T063 [US5] Agent prompts user interactively for spec mapping (show available specs from specs/ directory) in .claude/commands/speck.branch.md
-- [ ] T064 [US5] Allow user to skip branches during import process in .speck/scripts/branch-command.ts
-- [ ] T065 [US5] Validate no cycles created during import in .speck/scripts/branch-command.ts
-- [ ] T066 [US5] Add imported branches to branches.json with inferred metadata in .speck/scripts/branch-command.ts
-- [ ] T067 [US5] Display import summary (imported count, skipped count, branch → spec mappings) in .speck/scripts/branch-command.ts
+- [x] T060 [US5] Implement import subcommand to auto-detect git branch relationships in .speck/scripts/branch-command.ts
+- [x] T061 [US5] List all git branches using git branch --list --format='%(refname:short) %(upstream:short)' in .speck/scripts/branch-command.ts
+- [x] T062 [US5] Parse upstream information to infer base branches in .speck/scripts/branch-command.ts
+- [x] T063 [US5] Agent prompts user interactively for spec mapping (show available specs from specs/ directory) in .claude/commands/speck.branch.md
+- [x] T064 [US5] Allow user to skip branches during import process in .speck/scripts/branch-command.ts
+- [x] T065 [US5] Validate no cycles created during import in .speck/scripts/branch-command.ts
+- [x] T066 [US5] Add imported branches to branches.json with inferred metadata in .speck/scripts/branch-command.ts
+- [x] T067 [US5] Display import summary (imported count, skipped count, branch → spec mappings) in .speck/scripts/branch-command.ts
 - [x] T068 [US5] Implement update subcommand to manually update branch metadata in .speck/scripts/branch-command.ts
 - [x] T069 [US5] Support --status, --pr, --base flags in update subcommand in .speck/scripts/branch-command.ts
 - [x] T070 [US5] Validate status transitions (cannot transition from merged/abandoned terminal states) in .speck/scripts/branch-command.ts
@@ -219,22 +219,22 @@
 
 ### Tasks
 
-- [ ] T086 [US7] Update /speck.implement agent to support --stacked flag in .claude/commands/speck.implement.md
-- [ ] T087 [US7] Agent reads workflow mode from plan.md metadata line (**Workflow Mode**: stacked-pr) in .claude/commands/speck.implement.md
-- [ ] T088 [US7] Agent falls back to single-branch mode if no workflow mode specified in .claude/commands/speck.implement.md
-- [ ] T089 [US7] Agent detects natural boundaries (completed user story where all acceptance scenarios pass) in .claude/commands/speck.implement.md
-- [ ] T090 [US7] At boundary, agent prompts developer: "US1 complete. Create stacked branch for next work? (yes/no/skip)" in .claude/commands/speck.implement.md
-- [ ] T091 [US7] If "yes": Agent collects metadata interactively (branch name, PR title, PR description) in .claude/commands/speck.implement.md
-- [ ] T092 [US7] Agent uses current branch as base for new stacked branch in .claude/commands/speck.implement.md
-- [ ] T093 [US7] Agent invokes GitHub CLI (gh pr create) with collected metadata in .claude/commands/speck.implement.md
-- [ ] T094 [US7] Agent handles gh CLI unavailability gracefully (fall back to manual command suggestion or browser URL) in .claude/commands/speck.implement.md
-- [ ] T095 [US7] Agent updates branches.json with returned PR number and sets status to "submitted" in .claude/commands/speck.implement.md
-- [ ] T096 [US7] If "no": Agent continues implementation on current branch without creating new branch in .claude/commands/speck.implement.md
-- [ ] T097 [US7] If "skip": Agent suppresses further stacking prompts for this implementation session in .claude/commands/speck.implement.md
-- [ ] T098 [US7] Agent supports --single-branch flag to explicitly disable stacking prompts in .claude/commands/speck.implement.md
-- [ ] T099 [US7] Update /speck.plan agent to support --stacked flag for planning user story groupings in .claude/commands/speck.plan.md
-- [ ] T100 [US7] Agent writes workflow mode metadata to plan.md header line when --stacked flag used in .claude/commands/speck.plan.md
-- [ ] T101 [US7] Agent includes userStoryGroupings in plan.md (map of group name → US IDs) in .claude/commands/speck.plan.md
+- [x] T086 [US7] Update /speck.implement agent to support --stacked flag in .claude/commands/speck.implement.md
+- [x] T087 [US7] Agent reads workflow mode from plan.md metadata line (**Workflow Mode**: stacked-pr) in .claude/commands/speck.implement.md
+- [x] T088 [US7] Agent falls back to single-branch mode if no workflow mode specified in .claude/commands/speck.implement.md
+- [x] T089 [US7] Agent detects natural boundaries (completed user story where all acceptance scenarios pass) in .claude/commands/speck.implement.md
+- [x] T090 [US7] At boundary, agent prompts developer: "US1 complete. Create stacked branch for next work? (yes/no/skip)" in .claude/commands/speck.implement.md
+- [x] T091 [US7] If "yes": Agent collects metadata interactively (branch name, PR title, PR description) in .claude/commands/speck.implement.md
+- [x] T092 [US7] Agent uses current branch as base for new stacked branch in .claude/commands/speck.implement.md
+- [x] T093 [US7] Agent invokes GitHub CLI (gh pr create) with collected metadata in .claude/commands/speck.implement.md
+- [x] T094 [US7] Agent handles gh CLI unavailability gracefully (fall back to manual command suggestion or browser URL) in .claude/commands/speck.implement.md
+- [x] T095 [US7] Agent updates branches.json with returned PR number and sets status to "submitted" in .claude/commands/speck.implement.md
+- [x] T096 [US7] If "no": Agent continues implementation on current branch without creating new branch in .claude/commands/speck.implement.md
+- [x] T097 [US7] If "skip": Agent suppresses further stacking prompts for this implementation session in .claude/commands/speck.implement.md
+- [x] T098 [US7] Agent supports --single-branch flag to explicitly disable stacking prompts in .claude/commands/speck.implement.md
+- [x] T099 [US7] Update /speck.plan agent to support --stacked flag for planning user story groupings in .claude/commands/speck.plan.md
+- [x] T100 [US7] Agent writes workflow mode metadata to plan.md header line when --stacked flag used in .claude/commands/speck.plan.md
+- [x] T101 [US7] Agent includes userStoryGroupings in plan.md (map of group name → US IDs) in .claude/commands/speck.plan.md
 
 ---
 
@@ -259,9 +259,9 @@
 - [x] T112 [P] Add edge case handling: Circular dependency detection (display full cycle path) in .speck/scripts/branch-command.ts
 - [x] T113 [P] Add edge case handling: Branch referenced in branches.json no longer exists in git (warning + cleanup option) in .speck/scripts/branch-command.ts
 - [x] T114 [P] Add edge case handling: Malformed branches.json (auto-repair or manual recovery instructions) in .speck/scripts/branch-command.ts
-- [ ] T115 [P] Add edge case handling: gh CLI not installed or not authenticated (graceful fallback) in .claude/commands/speck.implement.md
-- [ ] T116 [P] Add edge case handling: PR creation failure (network errors, permission issues) in .claude/commands/speck.implement.md
-- [ ] T117 [P] Add edge case handling: Detached HEAD or non-branch ref during stacking prompt (skip prompt) in .claude/commands/speck.implement.md
+- [x] T115 [P] Add edge case handling: gh CLI not installed or not authenticated (graceful fallback) in .claude/commands/speck.implement.md
+- [x] T116 [P] Add edge case handling: PR creation failure (network errors, permission issues) in .claude/commands/speck.implement.md
+- [x] T117 [P] Add edge case handling: Detached HEAD or non-branch ref during stacking prompt (skip prompt) in .claude/commands/speck.implement.md
 - [x] T118 [P] Update CLAUDE.md with stacked PR technology stack (via update-agent-context script) in CLAUDE.md
 - [ ] T119 [P] Write integration tests for backwards compatibility (US1) in specs/008-stacked-pr-support/tests/integration.test.ts
 
