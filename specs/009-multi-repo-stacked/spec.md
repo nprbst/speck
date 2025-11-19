@@ -149,6 +149,122 @@ A developer has manually created git branches across multiple child repos before
 - **FR-022**: System MUST support child repos with different main branch names (main, master, develop) without requiring uniform naming across multi-repo spec
 - **FR-023**: System MUST log only errors and warnings to stderr; success operations produce no log output to maintain clean stdout for parseable command output
 
+### Testing Requirements
+
+**See**: [testing-strategy/](testing-strategy/) directory for complete testing documentation
+
+#### Test Coverage Requirements
+
+- **FR-TEST-001**: Implementation MUST include automated tests covering **minimum 85% of code paths** across all four testing layers
+- **FR-TEST-002**: Test suite MUST include all four testing layers as defined in [testing-strategy/AUTOMATED_TESTING_COMPLETE_STRATEGY_FINAL.md](testing-strategy/AUTOMATED_TESTING_COMPLETE_STRATEGY_FINAL.md):
+  - Layer 1: Contract tests (scripts → agent) - 90 tests minimum
+  - Layer 2: Integration tests (agent → scripts) - 40 tests minimum
+  - Layer 3: E2E tests (single-command workflows) - 30 tests minimum
+  - Layer 4: Multi-step workflow tests (session continuity) - 25 tests minimum
+- **FR-TEST-003**: All 7 manual testing sessions from [testing-strategy/MANUAL_TESTING_PLAN.md](testing-strategy/MANUAL_TESTING_PLAN.md) MUST have corresponding automated test coverage:
+  - Session 1: Single-Repo + Single-Branch (baseline validation)
+  - Session 2: Single-Repo + Stacked-PR
+  - Session 3: Multi-Repo + Single-Branch
+  - Session 4: Multi-Repo Root + Stacked-PR
+  - Session 5: Multi-Repo Child + Stacked-PR (Feature 009 core)
+  - Session 6: Monorepo + Stacked-PR
+  - Session 7: Edge Cases & Error Recovery
+
+#### Layer 1: Contract Tests (Scripts → Agent)
+
+- **FR-TEST-004**: Contract tests MUST validate all script exit codes:
+  - Exit code 0: Successful completion
+  - Exit code 1: Error condition
+  - Exit code 2: PR suggestion prompt needed
+  - Exit code 3: Import mapping prompt needed
+- **FR-TEST-005**: Contract tests MUST validate JSON output schemas for:
+  - PR suggestions (`{"type": "pr-suggestion", "branch": "...", "suggestedTitle": "...", ...}`)
+  - Import prompts (`{"type": "import-prompt", "branches": [...], "availableSpecs": [...]}`)
+  - Command output (`{"session_id": "...", "messages": [...]}`)
+- **FR-TEST-006**: Contract tests MUST validate flag behavior for all commands:
+  - `--create-pr`, `--skip-pr-prompt`, `--pr-base` for branch creation
+  - `--shared-spec`, `--local-spec` for spec creation
+  - `--branch`, `--stories` for task generation
+  - `--all` for aggregate views
+
+#### Layer 2: Integration Tests (Agent → Scripts)
+
+- **FR-TEST-007**: Integration tests MUST verify slash commands invoke correct scripts using `claude -p` non-interactive mode
+- **FR-TEST-008**: Integration tests MUST validate plugin root resolution works correctly:
+  - Local `.speck/scripts` takes precedence
+  - Fallback to `~/.claude/plugins/marketplaces/speck-market/speck`
+- **FR-TEST-009**: Integration tests MUST verify command argument parsing and passing to scripts
+- **FR-TEST-010**: Integration tests MUST validate bash logic in `.claude/commands/*.md` files executes correctly
+
+#### Layer 3: E2E Tests (Single-Command Workflows)
+
+- **FR-TEST-011**: E2E tests MUST use real Claude Code runtime via `claude -p --output-format json`
+- **FR-TEST-012**: E2E tests MUST validate complete single-command workflows:
+  - `/speck.branch create` with PR detection and creation
+  - `/speck.specify` with multi-repo location prompt
+  - `/speck.env` with aggregate status display
+  - `/speck.branch list --all` with multi-repo disambiguation
+- **FR-TEST-013**: E2E tests MUST validate both positive (happy path) and negative (error handling) scenarios
+- **FR-TEST-014**: E2E tests MUST verify final state correctness:
+  - Files created at correct locations
+  - Git branches created and checked out
+  - `.speck/branches.json` updated correctly
+  - Symlinks resolved properly
+
+#### Layer 4: Multi-Step Workflow Tests (Session Continuity)
+
+- **FR-TEST-015**: Multi-step tests MUST use `claude -p --resume <session-id>` to validate session continuity
+- **FR-TEST-016**: Multi-step tests MUST validate complete pipelines:
+  - `specify → plan → tasks` (traditional workflow)
+  - `specify → clarify → plan` (iterative workflow)
+  - `branch create → confirm → stack → status` (stacked PR workflow)
+  - Multi-repo: `specify (root) → plan (child A) → plan (child B)` (cross-repo workflow)
+- **FR-TEST-017**: Multi-step tests MUST validate context preservation across commands:
+  - Feature number remembered from specify to plan
+  - Spec content referenced in plan generation
+  - Branch stack state preserved across stacking operations
+- **FR-TEST-018**: Multi-step tests MUST validate session isolation:
+  - Different repos use different session IDs
+  - Session state doesn't leak between independent workflows
+
+#### Test Infrastructure Requirements
+
+- **FR-TEST-019**: Test suite MUST include helper infrastructure:
+  - `executeClaudeCommand()` - Execute slash commands with session management
+  - `createTestRepo()` - Create single-repo test fixtures
+  - `createMultiRepoTestSetup()` - Create multi-repo test fixtures
+  - `createScriptSpy()` - Track script invocations
+  - Custom assertion matchers (`toContainMatch`, `toHaveScriptCall`)
+- **FR-TEST-020**: Tests MUST use temporary directories with unique names to ensure isolation
+- **FR-TEST-021**: Tests MUST clean up resources (test repos, temp files) in `afterEach` hooks
+- **FR-TEST-022**: CI/CD pipeline MUST run all test layers sequentially:
+  - Contract tests (fail fast, ~30 seconds)
+  - Integration tests (requires Claude Code, ~2 minutes)
+  - E2E tests (requires Claude Code, ~2 minutes)
+  - Multi-step tests (requires Claude Code, ~1 minute)
+
+#### Performance Testing Requirements
+
+- **FR-TEST-023**: Performance tests MUST validate success criteria timing requirements:
+  - SC-003: Branch lookups < 150ms in multi-repo
+  - SC-004: Aggregate status < 1 second for 10 repos, 50 branches
+  - SC-007: Branch import < 5 seconds per repo
+- **FR-TEST-024**: Performance tests MUST benchmark multi-repo detection overhead:
+  - Single-repo detection: < 2ms median (from Feature 007)
+  - Multi-repo detection: < 10ms median (from Feature 007)
+  - Child repo stacking overhead: < 50ms (Feature 009 addition)
+
+#### Regression Testing Requirements
+
+- **FR-TEST-025**: Test suite MUST include regression tests for Features 007 and 008:
+  - All existing Feature 007 tests must pass (multi-repo/monorepo support)
+  - All existing Feature 008 tests must pass (stacked PR support)
+  - Feature 009 must not break existing single-repo or multi-repo workflows
+- **FR-TEST-026**: Regression tests MUST validate backward compatibility:
+  - Single-repo projects work unchanged
+  - Multi-repo without stacking works unchanged
+  - Stacked PR in single-repo works unchanged
+
 ### Key Entities
 
 - **Multi-Repo Branch Stack Entry**: Extends single-repo branch stack entry with multi-repo context
@@ -181,6 +297,8 @@ A developer has manually created git branches across multiple child repos before
 
 ### Measurable Outcomes
 
+#### Functional Success Criteria
+
 - **SC-001**: Developers can create stacked branches in multi-repo child repositories using same `/speck.branch create` command as single-repo mode, with zero command syntax changes
 - **SC-002**: Each child repository maintains independent `.speck/branches.json` without interference from other child repos or root spec
 - **SC-003**: Branch-to-spec lookups in multi-repo child contexts complete in under 150ms (50ms overhead vs. single-repo due to symlink resolution)
@@ -192,6 +310,19 @@ A developer has manually created git branches across multiple child repos before
 - **SC-009**: System gracefully handles up to 20 child repos per spec with independent stacked workflows without performance degradation
 - **SC-010**: Migration from single-repo to multi-repo stacked PR workflow requires zero changes to existing child repo stacked branches
 - **SC-011**: Error and warning messages provide sufficient diagnostic context (repo name, operation, failure reason) to enable troubleshooting without verbose logging
+
+#### Testing Success Criteria
+
+- **SC-TEST-001**: Automated test suite achieves **minimum 85% code coverage** across all four testing layers (contract, integration, E2E, multi-step workflows)
+- **SC-TEST-002**: All **185+ automated tests** (90 contract, 40 integration, 30 E2E, 25+ multi-step) execute successfully in CI/CD pipeline within **5 minutes**
+- **SC-TEST-003**: **Contract tests** (Layer 1) validate 100% of script exit codes (0, 1, 2, 3) and JSON output schemas for all commands
+- **SC-TEST-004**: **Integration tests** (Layer 2) verify 100% of slash commands correctly invoke underlying scripts with proper arguments and plugin root resolution
+- **SC-TEST-005**: **E2E tests** (Layer 3) cover all 7 manual testing sessions with both positive and negative scenarios
+- **SC-TEST-006**: **Multi-step workflow tests** (Layer 4) validate session continuity for complete pipelines: specify→plan→tasks, multi-repo setup, stacked PR creation
+- **SC-TEST-007**: Manual testing checklist (remaining 12% subjective UX validation) completes in **under 2 hours** per release
+- **SC-TEST-008**: **Zero regressions** detected in Features 007 and 008 after Feature 009 implementation (validated via existing test suites)
+- **SC-TEST-009**: All acceptance scenarios from User Stories 1-5 have corresponding automated tests with **100% pass rate**
+- **SC-TEST-010**: Test suite demonstrates **multi-repo + stacked PR integration** across all combinations: single-repo/multi-repo/monorepo × single-branch/stacked-PR
 
 ## Assumptions
 
