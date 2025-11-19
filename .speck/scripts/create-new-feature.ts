@@ -372,9 +372,11 @@ async function main(args: string[]): Promise<number> {
 
   // Determine spec location (speckRoot for shared specs, repoRoot for local specs)
   let specsDir: string;
+  let isSharedSpec = false;
   if (options.sharedSpec && config.mode === 'multi-repo') {
     // T064: Create shared spec at speckRoot
     specsDir = path.join(config.speckRoot, "specs");
+    isSharedSpec = true;
   } else {
     // T067: Create local spec at repoRoot (default behavior)
     specsDir = path.join(repoRoot, "specs");
@@ -428,6 +430,67 @@ async function main(args: string[]): Promise<number> {
   } else {
     console.error(`[specify] Warning: Git repository not detected; skipped branch creation for ${branchName}`);
   }
+
+  // [SPECK-EXTENSION:START] T073-T075: Phase 9 - Branch Management (Multi-Repo)
+  // T073: Create spec-named branch in parent repo when creating shared spec
+  if (isSharedSpec && config.mode === 'multi-repo') {
+    const parentRepoRoot = config.speckRoot;
+
+    // T074: Check if parent is a git repo; if not, prompt user to initialize
+    let parentHasGit = false;
+    try {
+      const result = await $`git -C ${parentRepoRoot} rev-parse --git-dir`.quiet();
+      if (result.exitCode === 0) {
+        parentHasGit = true;
+      }
+    } catch {
+      // Parent is not a git repo
+    }
+
+    if (!parentHasGit) {
+      // T074: Prompt user to initialize parent as git repo
+      console.error(`[specify] Notice: Parent directory is not a git repository: ${parentRepoRoot}`);
+      console.error(`[specify] To enable branch coordination, initialize it as a git repo:`);
+      console.error(`[specify]   cd ${parentRepoRoot} && git init`);
+      console.error(`[specify] Skipping parent branch creation for now.`);
+    } else {
+      // T073: Create spec-named branch in parent repo
+      try {
+        // Check if branch already exists in parent
+        let branchExistsInParent = false;
+        try {
+          const checkResult = await $`git -C ${parentRepoRoot} rev-parse --verify ${branchName}`.quiet();
+          branchExistsInParent = (checkResult.exitCode === 0);
+        } catch {
+          branchExistsInParent = false;
+        }
+
+        if (branchExistsInParent) {
+          // Branch exists, check it out
+          await $`git -C ${parentRepoRoot} checkout ${branchName}`.quiet();
+          if (!options.json) {
+            console.log(`[specify] Checked out existing branch in parent repo: ${branchName}`);
+          }
+        } else {
+          // Create new branch in parent repo
+          const createResult = await $`git -C ${parentRepoRoot} checkout -b ${branchName}`.quiet();
+          if (createResult.exitCode !== 0) {
+            throw new Error(`git checkout -b failed with exit code ${createResult.exitCode}: ${createResult.stderr}`);
+          }
+          if (!options.json) {
+            console.log(`[specify] Created branch in parent repo: ${branchName}`);
+          }
+        }
+      } catch (error) {
+        console.error(`[specify] Warning: Failed to create branch in parent repo: ${error}`);
+        console.error(`[specify] Parent repo: ${parentRepoRoot}`);
+        console.error(`[specify] You may need to manually create the branch: git -C ${parentRepoRoot} checkout -b ${branchName}`);
+      }
+    }
+  }
+  // T075: Skip parent branch creation when creating local (child-only) spec
+  // (handled by if condition above - only runs for shared specs)
+  // [SPECK-EXTENSION:END]
 
   // [SPECK-EXTENSION:START] T064-T066: Handle shared vs local spec creation
   // Create feature directory at the determined location (shared or local)

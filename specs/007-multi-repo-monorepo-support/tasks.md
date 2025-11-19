@@ -197,16 +197,16 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 ### Implementation for Branch Management
 
-- [ ] T073 Update /speck.specify to create spec-named branch in parent repo when creating shared spec (if parent is git repo)
-- [ ] T074 Update /speck.specify to prompt user to initialize parent as git repo if not already initialized, then create spec-named branch on confirm
-- [ ] T075 Update /speck.specify to skip parent branch creation when creating local (child-only) spec
-- [ ] T076 Update /speck.plan to create spec-named branch in child repo if not already on that branch
-- [ ] T077 Update /speck.plan to validate parent repo is on matching spec-named branch when using shared spec (warn if mismatch)
-- [ ] T078 Update /speck.plan to skip parent branch validation when using local (child-only) spec
-- [ ] T079 Update branch validation to skip if parent is not a git repo (only validate when both parent and child are git repos)
-- [ ] T080 Test branch creation: /speck.specify in parent creates branch 001-feature in parent repo
-- [ ] T081 Test branch validation: /speck.plan in child warns if parent is on different branch than child
-- [ ] T082 Test branch skipping: /speck.plan with local spec does not validate parent branch
+- [X] T073 Update /speck.specify to create spec-named branch in parent repo when creating shared spec (if parent is git repo)
+- [X] T074 Update /speck.specify to prompt user to initialize parent as git repo if not already initialized, then create spec-named branch on confirm
+- [X] T075 Update /speck.specify to skip parent branch creation when creating local (child-only) spec
+- [X] T076 Update /speck.plan to create spec-named branch in child repo if not already on that branch
+- [X] T077 Update /speck.plan to validate parent repo is on matching spec-named branch when using shared spec (warn if mismatch)
+- [X] T078 Update /speck.plan to skip parent branch validation when using local (child-only) spec
+- [X] T079 Update branch validation to skip if parent is not a git repo (only validate when both parent and child are git repos)
+- [X] T080 Test branch creation: /speck.specify in parent creates branch 001-feature in parent repo
+- [X] T081 Test branch validation: /speck.plan in child warns if parent is on different branch than child
+- [X] T082 Test branch skipping: /speck.plan with local spec does not validate parent branch
 
 **Checkpoint**: Branch management is coordinated - parent and child repos stay in sync for shared specs
 
