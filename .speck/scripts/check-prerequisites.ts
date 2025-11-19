@@ -45,6 +45,7 @@ interface CheckPrerequisitesOptions {
   requireTasks: boolean;
   includeTasks: boolean;
   pathsOnly: boolean;
+  skipFeatureCheck: boolean;
   help: boolean;
 }
 
@@ -52,6 +53,7 @@ interface CheckPrerequisitesOptions {
  * JSON output for paths-only mode
  */
 interface PathsOnlyOutput {
+  MODE: string;
   REPO_ROOT: string;
   BRANCH: string;
   FEATURE_DIR: string;
@@ -64,6 +66,7 @@ interface PathsOnlyOutput {
  * JSON output for validation mode
  */
 interface ValidationOutput {
+  MODE: string;
   FEATURE_DIR: string;
   AVAILABLE_DOCS: string[];
 }
@@ -77,6 +80,7 @@ function parseArgs(args: string[]): CheckPrerequisitesOptions {
     requireTasks: args.includes("--require-tasks"),
     includeTasks: args.includes("--include-tasks"),
     pathsOnly: args.includes("--paths-only"),
+    skipFeatureCheck: args.includes("--skip-feature-check"),
     help: args.includes("--help") || args.includes("-h"),
   };
 }
@@ -94,6 +98,7 @@ OPTIONS:
   --require-tasks     Require tasks.md to exist (for implementation phase)
   --include-tasks     Include tasks.md in AVAILABLE_DOCS list
   --paths-only        Only output path variables (no prerequisite validation)
+  --skip-feature-check Skip feature directory and plan.md validation (for /speck.specify)
   --help, -h          Show this help message
 
 EXAMPLES:
@@ -114,6 +119,7 @@ EXAMPLES:
 function outputPathsOnly(paths: FeaturePaths, jsonMode: boolean): void {
   if (jsonMode) {
     const output: PathsOnlyOutput = {
+      MODE: paths.MODE,
       REPO_ROOT: paths.REPO_ROOT,
       BRANCH: paths.CURRENT_BRANCH,
       FEATURE_DIR: paths.FEATURE_DIR,
@@ -123,6 +129,7 @@ function outputPathsOnly(paths: FeaturePaths, jsonMode: boolean): void {
     };
     console.log(JSON.stringify(output));
   } else {
+    console.log(`MODE: ${paths.MODE}`);
     console.log(`REPO_ROOT: ${paths.REPO_ROOT}`);
     console.log(`BRANCH: ${paths.CURRENT_BRANCH}`);
     console.log(`FEATURE_DIR: ${paths.FEATURE_DIR}`);
@@ -136,7 +143,7 @@ function outputPathsOnly(paths: FeaturePaths, jsonMode: boolean): void {
  * Check for unknown options
  */
 function checkForUnknownOptions(args: string[]): void {
-  const validOptions = ["--json", "--require-tasks", "--include-tasks", "--paths-only", "--help", "-h"];
+  const validOptions = ["--json", "--require-tasks", "--include-tasks", "--paths-only", "--skip-feature-check", "--help", "-h"];
   for (const arg of args) {
     if (arg.startsWith("--") || arg.startsWith("-")) {
       if (!validOptions.includes(arg)) {
@@ -165,12 +172,15 @@ async function main(args: string[]): Promise<number> {
   const paths = await getFeaturePaths();
   const hasGitRepo = paths.HAS_GIT === "true";
 
-  if (!checkFeatureBranch(paths.CURRENT_BRANCH, hasGitRepo)) {
-    return ExitCode.USER_ERROR;
+  // Skip branch validation if --skip-feature-check is set
+  if (!options.skipFeatureCheck) {
+    if (!(await checkFeatureBranch(paths.CURRENT_BRANCH, hasGitRepo, paths.REPO_ROOT))) {
+      return ExitCode.USER_ERROR;
+    }
   }
 
-  // If paths-only mode, output paths and exit
-  if (options.pathsOnly) {
+  // If paths-only mode OR skip-feature-check mode, output paths and exit
+  if (options.pathsOnly || options.skipFeatureCheck) {
     outputPathsOnly(paths, options.json);
     return ExitCode.SUCCESS;
   }
@@ -231,6 +241,7 @@ async function main(args: string[]): Promise<number> {
   // Output results
   if (options.json) {
     const output: ValidationOutput = {
+      MODE: paths.MODE,
       FEATURE_DIR: paths.FEATURE_DIR,
       AVAILABLE_DOCS: docs,
     };

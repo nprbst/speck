@@ -221,6 +221,31 @@ export async function detectSpeckRoot(): Promise<SpeckConfig> {
     // Verify target exists
     await fs.access(speckRoot);
 
+    // [SPECK-EXTENSION:START] Warn if local specs/ directory exists in multi-repo mode (T062)
+    const localSpecsDir = path.join(repoRoot, 'specs');
+    try {
+      const stats = await fs.stat(localSpecsDir);
+      if (stats.isDirectory() && speckRoot !== repoRoot) {
+        console.warn(
+          'WARNING: Local specs/ directory exists in multi-repo mode\n' +
+          `  Local: ${localSpecsDir}\n` +
+          `  Shared: ${path.join(speckRoot, 'specs')}\n` +
+          'In multi-repo mode, specs are read from the shared speck root.\n' +
+          'The local specs/ directory is ignored.\n' +
+          'To migrate local specs to shared location:\n' +
+          `  1. Copy specs: cp -r ${localSpecsDir}/* ${path.join(speckRoot, 'specs')}/\n` +
+          `  2. Remove local specs: rm -rf ${localSpecsDir}\n`
+        );
+      }
+    } catch (error: any) {
+      // Local specs/ does not exist - this is expected in multi-repo mode
+      if (error.code !== 'ENOENT') {
+        // Log unexpected errors but don't throw - allow multi-repo mode to work
+        console.warn(`Warning: Could not check local specs/ directory: ${error.message}`);
+      }
+    }
+    // [SPECK-EXTENSION:END]
+
     const config: SpeckConfig = {
       mode: 'multi-repo',
       speckRoot,
@@ -552,3 +577,76 @@ export function checkDir(dirPath: string, label: string): string {
     return `  ✗ ${label}`;
   }
 }
+
+// [SPECK-EXTENSION:START] T069: Utility to sync contracts/ from shared to local
+/**
+ * Sync shared contracts/ directory to local repo via symlink
+ *
+ * In multi-repo mode with shared specs, this creates a symlink from
+ * local specs/NNN-feature/contracts/ to shared speckRoot/specs/NNN-feature/contracts/
+ *
+ * @param featureName - Feature directory name (e.g., "007-multi-repo-support")
+ * @returns true if symlink created/already exists, false if not needed
+ */
+export async function syncSharedContracts(featureName: string): Promise<boolean> {
+  const config = await detectSpeckRoot();
+
+  // Only applies to multi-repo mode
+  if (config.mode !== 'multi-repo') {
+    return false;
+  }
+
+  // Check if shared contracts/ exists
+  const sharedContractsDir = path.join(config.speckRoot, 'specs', featureName, 'contracts');
+  if (!existsSync(sharedContractsDir)) {
+    return false;
+  }
+
+  // Create local feature directory if it doesn't exist
+  const localFeatureDir = path.join(config.repoRoot, 'specs', featureName);
+  if (!existsSync(localFeatureDir)) {
+    return false; // Feature dir doesn't exist locally yet
+  }
+
+  const localContractsLink = path.join(localFeatureDir, 'contracts');
+
+  // Check if symlink already exists
+  try {
+    const stats = await fs.lstat(localContractsLink);
+    if (stats.isSymbolicLink()) {
+      // Verify it points to the right location
+      const target = await fs.readlink(localContractsLink);
+      const resolved = await fs.realpath(localContractsLink);
+      if (resolved === sharedContractsDir) {
+        return true; // Already correctly linked
+      }
+      // Pointing to wrong location - remove and recreate
+      await fs.unlink(localContractsLink);
+    } else {
+      // Exists but not a symlink - warn and don't overwrite
+      console.warn(
+        `WARNING: Local contracts/ directory exists but is not a symlink\n` +
+        `  Local: ${localContractsLink}\n` +
+        `  Shared: ${sharedContractsDir}\n` +
+        `  Skipping symlink creation to preserve local data.`
+      );
+      return false;
+    }
+  } catch (error: any) {
+    if (error.code !== 'ENOENT') throw error;
+    // Symlink doesn't exist - we'll create it
+  }
+
+  // Calculate relative path for symlink
+  const relativePath = path.relative(localFeatureDir, sharedContractsDir);
+
+  // Create symlink
+  try {
+    await fs.symlink(relativePath, localContractsLink, 'dir');
+    return true;
+  } catch (error: any) {
+    console.warn(`Warning: Failed to create contracts/ symlink: ${error.message}`);
+    return false;
+  }
+}
+// [SPECK-EXTENSION:END]

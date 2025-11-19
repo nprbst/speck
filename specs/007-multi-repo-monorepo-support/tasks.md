@@ -135,12 +135,12 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 ### Implementation for User Story 4
 
-- [ ] T052 [US4] Verify /speck.env shows "Single-repo mode" when no .speck/root symlink exists
-- [ ] T053 [US4] Verify /speck.env shows "Multi-repo mode: enabled" when .speck/root symlink is valid
-- [ ] T054 [US4] Verify /speck.env displays speck root location in multi-repo mode
-- [ ] T055 [US4] Verify /speck.env displays current repo root in multi-repo mode
-- [ ] T056 [US4] Add helpful message to /speck.env output: "Specs are stored at [speck-root]/specs/ (shared across multiple repos)"
-- [ ] T057 [US4] Test that developer can determine mode by running ls -la .speck/ and seeing root symlink
+- [X] T052 [US4] Verify /speck.env shows "Single-repo mode" when no .speck/root symlink exists
+- [X] T053 [US4] Verify /speck.env shows "Multi-repo mode: enabled" when .speck/root symlink is valid
+- [X] T054 [US4] Verify /speck.env displays speck root location in multi-repo mode
+- [X] T055 [US4] Verify /speck.env displays current repo root in multi-repo mode
+- [X] T056 [US4] Add helpful message to /speck.env output: "Specs are stored at [speck-root]/specs/ (shared across multiple repos)"
+- [X] T057 [US4] Test that developer can determine mode by running ls -la .speck/ and seeing root symlink
 
 **Checkpoint**: Multi-repo configuration is now discoverable - developers can understand setup without documentation
 
@@ -154,11 +154,11 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 ### Implementation for User Story 5
 
-- [ ] T058 [US5] Test migration: Move existing specs/ from single-repo to parent directory
-- [ ] T059 [US5] Test migration: Run /speck.link .. after moving specs
-- [ ] T060 [US5] Verify /speck.plan works on existing spec after migration to multi-repo
-- [ ] T061 [US5] Test edge case: Detect when both local specs/ and .speck/root symlink exist (warn about conflict)
-- [ ] T062 [US5] Add warning in detectSpeckRoot() when local specs/ directory exists in multi-repo mode (symlink takes precedence)
+- [X] T058 [US5] Test migration: Move existing specs/ from single-repo to parent directory
+- [X] T059 [US5] Test migration: Run /speck.link .. after moving specs
+- [X] T060 [US5] Verify /speck.plan works on existing spec after migration to multi-repo
+- [X] T061 [US5] Test edge case: Detect when both local specs/ and .speck/root symlink exist (warn about conflict)
+- [X] T062 [US5] Add warning in detectSpeckRoot() when local specs/ directory exists in multi-repo mode (symlink takes precedence)
 
 **Checkpoint**: Migration path from single-repo to multi-repo is validated - existing specs remain accessible
 
@@ -172,18 +172,18 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 ### Implementation for Shared Specs & Contracts
 
-- [ ] T063 Update /speck.specify command to prompt "Create spec at parent (shared) or local (child-only)?" when run from multi-repo child
-- [ ] T064 When user chooses "parent (shared)", create spec.md at speckRoot/specs/NNN-feature/spec.md
-- [ ] T065 When user chooses "parent (shared)", create local specs/NNN-feature/ directory in child repo
-- [ ] T066 When user chooses "parent (shared)", symlink parent spec.md into child's local specs/NNN-feature/spec.md
-- [ ] T067 When user chooses "local (child-only)", create spec.md directly in child's specs/NNN-feature/ (no symlink)
-- [ ] T068 Support both shared and local specs coexisting in same multi-repo setup
-- [ ] T069 When contracts/ exists at speckRoot/specs/NNN-feature/contracts/, symlink into child's local specs/NNN-feature/contracts/
-- [ ] T070 Add .gitignore entries automatically during /speck.link execution: append patterns to child repo's .gitignore (create if missing): "specs/*/spec.md", "specs/*/contracts/"
-- [ ] T070a Verify .gitignore effectiveness: test that git status ignores symlinked spec.md and contracts/ after /speck.link
-- [ ] T071 Test that child repos do not commit symlinked spec.md to their repository (git status should ignore if .gitignore'd)
-- [ ] T072 Test that child repos DO commit local plan.md and tasks.md to their repository
-- [ ] T072a Verify symlinked files are not tracked by git: run `git status` in child repo with symlinked spec.md, confirm no "untracked files" warning
+- [X] T063 Update /speck.specify command to prompt "Create spec at parent (shared) or local (child-only)?" when run from multi-repo child
+- [X] T064 When user chooses "parent (shared)", create spec.md at speckRoot/specs/NNN-feature/spec.md
+- [X] T065 When user chooses "parent (shared)", create local specs/NNN-feature/ directory in child repo
+- [X] T066 When user chooses "parent (shared)", symlink parent spec.md into child's local specs/NNN-feature/spec.md
+- [X] T067 When user chooses "local (child-only)", create spec.md directly in child's specs/NNN-feature/ (no symlink)
+- [X] T068 Support both shared and local specs coexisting in same multi-repo setup
+- [X] T069 When contracts/ exists at speckRoot/specs/NNN-feature/contracts/, symlink into child's local specs/NNN-feature/contracts/
+- [X] T070 Add .gitignore entries automatically during /speck.link execution: append patterns to child repo's .gitignore (create if missing): "specs/*/spec.md", "specs/*/contracts/"
+- [X] T070a Verify .gitignore effectiveness: test that git status ignores symlinked spec.md and contracts/ after /speck.link
+- [X] T071 Test that child repos do not commit symlinked spec.md to their repository (git status should ignore if .gitignore'd)
+- [X] T072 Test that child repos DO commit local plan.md and tasks.md to their repository
+- [X] T072a Verify symlinked files are not tracked by git: run `git status` in child repo with symlinked spec.md, confirm no "untracked files" warning
 
 **Checkpoint**: Shared specs and contracts are working - child repos access parent spec via symlink, generate local plans
 
@@ -216,16 +216,16 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 **Purpose**: Handle all edge cases identified in spec.md
 
-- [ ] T083 [P] Test broken symlink: .speck/root points to non-existent directory (should error with clear message)
-- [ ] T084 [P] Test circular symlink: .speck/root points to itself (should error with ELOOP message)
-- [ ] T085 [P] Test .speck/root is regular file not symlink (should warn and fall back to single-repo)
-- [ ] T086 [P] Test specs/ exists at both speck root and local repo (should warn local is ignored in multi-repo mode)
-- [ ] T087 Test updating symlink: Run /speck.link with different target (should prompt and update)
-- [ ] T088 Test /speck.link with missing argument (should error with usage message)
-- [ ] T089 Test /speck.link with non-existent target (should error "Target does not exist")
-- [ ] T090 Test /speck.link with file (not directory) target (should error "Target is not a directory")
-- [ ] T091 Implement clear error message when symlink creation fails on Windows without Developer Mode: "Symlink creation failed. Windows requires Developer Mode or WSL for symlink support. Enable Developer Mode in Windows Settings or use WSL."
-- [ ] T092 Add platform detection to linkRepo(): detect Windows platform and provide Windows-specific guidance in error messages when fs.symlink() fails
+- [X] T083 [P] Test broken symlink: .speck/root points to non-existent directory (should error with clear message)
+- [X] T084 [P] Test circular symlink: .speck/root points to itself (should error with ELOOP message)
+- [X] T085 [P] Test .speck/root is regular file not symlink (should warn and fall back to single-repo)
+- [X] T086 [P] Test specs/ exists at both speck root and local repo (should warn local is ignored in multi-repo mode)
+- [X] T087 Test updating symlink: Run /speck.link with different target (should prompt and update)
+- [X] T088 Test /speck.link with missing argument (should error with usage message)
+- [X] T089 Test /speck.link with non-existent target (should error "Target does not exist")
+- [X] T090 Test /speck.link with file (not directory) target (should error "Target is not a directory")
+- [X] T091 Implement clear error message when symlink creation fails on Windows without Developer Mode: "Symlink creation failed. Windows requires Developer Mode or WSL for symlink support. Enable Developer Mode in Windows Settings or use WSL."
+- [X] T092 Add platform detection to linkRepo(): detect Windows platform and provide Windows-specific guidance in error messages when fs.symlink() fails
 
 **Checkpoint**: All edge cases handled gracefully with clear error messages
 
@@ -235,19 +235,19 @@ description: "Task list for multi-repo and monorepo support implementation"
 
 **Purpose**: Final improvements and documentation updates
 
-- [ ] T093 [P] Update CLAUDE.md with multi-repo path resolution patterns and SpeckConfig interface
-- [ ] T094 [P] Add inline code comments to detectSpeckRoot() explaining detection logic
-- [ ] T095 [P] Add inline code comments to linkRepo() explaining validation steps
-- [ ] T096 Verify all path resolution uses speckRoot vs repoRoot correctly throughout codebase
-- [ ] T097 Run all quickstart.md scenarios from spec to validate end-to-end workflows
-- [ ] T098 Create .gitignore template recommendation for multi-repo child repos (specs/*/spec.md, specs/*/contracts/)
-- [ ] T099 Verify success criteria SC-001: 100% single-repo projects work without modification
-- [ ] T100 Verify success criteria SC-002: Multi-repo setup takes <2 minutes (/speck.link per repo)
-- [ ] T101 Verify success criteria SC-003: Zero new config files for single-repo usage
-- [ ] T102 Verify success criteria SC-004: Multi-repo detection adds <10ms overhead
-- [ ] T103 Verify success criteria SC-005: Monorepo and multi-repo have identical UX
-- [ ] T104 Verify success criteria SC-007: /speck.env shows mode and paths in <1 second
-- [ ] T105 Verify success criteria SC-008: Developers can determine mode via /speck.env or ls -la .speck/
+- [X] T093 [P] Update CLAUDE.md with multi-repo path resolution patterns and SpeckConfig interface
+- [X] T094 [P] Add inline code comments to detectSpeckRoot() explaining detection logic
+- [X] T095 [P] Add inline code comments to linkRepo() explaining validation steps
+- [X] T096 Verify all path resolution uses speckRoot vs repoRoot correctly throughout codebase
+- [X] T097 Run all quickstart.md scenarios from spec to validate end-to-end workflows
+- [X] T098 Create .gitignore template recommendation for multi-repo child repos (specs/*/spec.md, specs/*/contracts/)
+- [X] T099 Verify success criteria SC-001: 100% single-repo projects work without modification
+- [X] T100 Verify success criteria SC-002: Multi-repo setup takes <2 minutes (/speck.link per repo)
+- [X] T101 Verify success criteria SC-003: Zero new config files for single-repo usage
+- [X] T102 Verify success criteria SC-004: Multi-repo detection adds <10ms overhead
+- [X] T103 Verify success criteria SC-005: Monorepo and multi-repo have identical UX
+- [X] T104 Verify success criteria SC-007: /speck.env shows mode and paths in <1 second
+- [X] T105 Verify success criteria SC-008: Developers can determine mode via /speck.env or ls -la .speck/
 
 ---
 

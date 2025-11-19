@@ -116,6 +116,9 @@ export async function linkRepo(targetPath: string): Promise<void> {
     );
   }
 
+  // T070: Auto-append .gitignore patterns for symlinked files
+  await addGitignorePatterns(repoRoot);
+
   // Report success
   console.log('✓ Multi-repo mode enabled');
   console.log(`  Speck Root: ${config.speckRoot}`);
@@ -125,6 +128,66 @@ export async function linkRepo(targetPath: string): Promise<void> {
   console.log('  1. Create shared spec: /speck.specify "Feature description"');
   console.log('  2. Generate local plan: /speck.plan');
   console.log('  3. Check configuration: /speck.env');
+}
+
+/**
+ * T070: Add .gitignore patterns for symlinked spec files
+ *
+ * Appends patterns to .gitignore to prevent committing symlinked files:
+ * - specs/*/spec.md (symlinked from shared location)
+ * - specs/*/contracts/ (symlinked from shared location)
+ */
+async function addGitignorePatterns(repoRoot: string): Promise<void> {
+  const gitignorePath = path.join(repoRoot, '.gitignore');
+  const patterns = [
+    '',
+    '# Speck multi-repo: ignore symlinked shared files',
+    'specs/*/spec.md',
+    'specs/*/contracts/',
+  ];
+
+  try {
+    // Read existing .gitignore or create empty content
+    let content = '';
+    try {
+      content = await fs.readFile(gitignorePath, 'utf-8');
+    } catch (error: any) {
+      if (error.code !== 'ENOENT') throw error;
+      // File doesn't exist - we'll create it
+    }
+
+    // Check if patterns already exist
+    const hasSpecPattern = content.includes('specs/*/spec.md');
+    const hasContractsPattern = content.includes('specs/*/contracts/');
+
+    if (hasSpecPattern && hasContractsPattern) {
+      // Patterns already exist
+      return;
+    }
+
+    // Append missing patterns
+    const patternsToAdd: string[] = [];
+    if (!content.endsWith('\n') && content.length > 0) {
+      patternsToAdd.push('');
+    }
+    if (!hasSpecPattern || !hasContractsPattern) {
+      patternsToAdd.push('# Speck multi-repo: ignore symlinked shared files');
+    }
+    if (!hasSpecPattern) {
+      patternsToAdd.push('specs/*/spec.md');
+    }
+    if (!hasContractsPattern) {
+      patternsToAdd.push('specs/*/contracts/');
+    }
+
+    if (patternsToAdd.length > 0) {
+      const newContent = content + '\n' + patternsToAdd.join('\n') + '\n';
+      await fs.writeFile(gitignorePath, newContent, 'utf-8');
+      console.log('✓ Added .gitignore patterns for symlinked files');
+    }
+  } catch (error: any) {
+    console.warn(`Warning: Could not update .gitignore: ${error.message}`);
+  }
 }
 // [SPECK-EXTENSION:END]
 

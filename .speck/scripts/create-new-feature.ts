@@ -26,11 +26,11 @@
  * - Preserved all CLI flags and argument parsing logic
  */
 
-import { existsSync, mkdirSync, readdirSync, copyFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, copyFileSync, symlinkSync } from "node:fs";
 import path from "node:path";
 import { $ } from "bun";
 import { ExitCode } from "./contracts/cli-interface";
-import { getTemplatesDir } from "./common/paths";
+import { getTemplatesDir, detectSpeckRoot } from "./common/paths";
 
 /**
  * CLI options for create-new-feature
@@ -39,6 +39,8 @@ interface CreateFeatureOptions {
   json: boolean;
   shortName?: string;
   number?: number;
+  sharedSpec: boolean;  // T064-T066: Create spec at speckRoot with local symlinks
+  localSpec: boolean;   // T067: Create spec locally in child repo
   help: boolean;
   featureDescription: string;
 }
@@ -58,6 +60,8 @@ interface CreateFeatureOutput {
 function parseArgs(args: string[]): CreateFeatureOptions {
   const options: CreateFeatureOptions = {
     json: false,
+    sharedSpec: false,
+    localSpec: false,
     help: false,
     featureDescription: "",
   };
@@ -90,6 +94,12 @@ function parseArgs(args: string[]): CreateFeatureOptions {
       }
       options.number = num;
       i += 2;
+    } else if (arg === "--shared-spec") {
+      options.sharedSpec = true;
+      i++;
+    } else if (arg === "--local-spec") {
+      options.localSpec = true;
+      i++;
     } else if (arg === "--help" || arg === "-h") {
       options.help = true;
       i++;
@@ -108,17 +118,19 @@ function parseArgs(args: string[]): CreateFeatureOptions {
  */
 function showHelp(): void {
   const scriptName = path.basename(process.argv[1]);
-  console.log(`Usage: ${scriptName} [--json] [--short-name <name>] [--number N] <feature_description>
+  console.log(`Usage: ${scriptName} [--json] [--short-name <name>] [--number N] [--shared-spec | --local-spec] <feature_description>
 
 Options:
   --json              Output in JSON format
   --short-name <name> Provide a custom short name (2-4 words) for the branch
   --number N          Specify branch number manually (overrides auto-detection)
+  --shared-spec       Create spec at speckRoot (multi-repo shared spec with local symlinks)
+  --local-spec        Create spec locally in child repo (single-repo or child-only spec)
   --help, -h          Show this help message
 
 Examples:
   ${scriptName} 'Add user authentication system' --short-name 'user-auth'
-  ${scriptName} 'Implement OAuth2 integration for API' --number 5`);
+  ${scriptName} 'Implement OAuth2 integration for API' --number 5 --shared-spec`);
 }
 
 /**
@@ -336,7 +348,7 @@ async function main(args: string[]): Promise<number> {
     return ExitCode.USER_ERROR;
   }
 
-  // Resolve repository root
+  // Resolve repository root and detect multi-repo mode
   let repoRoot: string;
   let hasGit = false;
 
@@ -355,8 +367,20 @@ async function main(args: string[]): Promise<number> {
     hasGit = false;
   }
 
-  const specsDir = path.join(repoRoot, "specs");
+  // [SPECK-EXTENSION:START] T064-T066: Multi-repo shared spec support
+  const config = await detectSpeckRoot();
+
+  // Determine spec location (speckRoot for shared specs, repoRoot for local specs)
+  let specsDir: string;
+  if (options.sharedSpec && config.mode === 'multi-repo') {
+    // T064: Create shared spec at speckRoot
+    specsDir = path.join(config.speckRoot, "specs");
+  } else {
+    // T067: Create local spec at repoRoot (default behavior)
+    specsDir = path.join(repoRoot, "specs");
+  }
   mkdirSync(specsDir, { recursive: true });
+  // [SPECK-EXTENSION:END]
 
   // Generate branch name
   let branchSuffix: string;
@@ -405,11 +429,12 @@ async function main(args: string[]): Promise<number> {
     console.error(`[specify] Warning: Git repository not detected; skipped branch creation for ${branchName}`);
   }
 
-  // Create feature directory
+  // [SPECK-EXTENSION:START] T064-T066: Handle shared vs local spec creation
+  // Create feature directory at the determined location (shared or local)
   const featureDir = path.join(specsDir, branchName);
   mkdirSync(featureDir, { recursive: true });
 
-  // Copy template if it exists
+  // Copy template to the spec location
   const template = path.join(getTemplatesDir(), "spec-template.md");
   const specFile = path.join(featureDir, "spec.md");
   if (existsSync(template)) {
@@ -418,6 +443,38 @@ async function main(args: string[]): Promise<number> {
     // Create empty spec file
     await Bun.write(specFile, "");
   }
+
+  // T065-T066: If shared spec in multi-repo mode, create local directory and symlink
+  if (options.sharedSpec && config.mode === 'multi-repo') {
+    // T065: Create local specs/NNN-feature/ directory in child repo
+    const localFeatureDir = path.join(repoRoot, "specs", branchName);
+    mkdirSync(localFeatureDir, { recursive: true });
+
+    // T066: Symlink parent spec.md into child's local specs/NNN-feature/
+    const localSpecFile = path.join(localFeatureDir, "spec.md");
+
+    // Calculate relative path from local spec location to shared spec
+    const relativePath = path.relative(localFeatureDir, specFile);
+
+    try {
+      symlinkSync(relativePath, localSpecFile, 'file');
+    } catch (error: any) {
+      if (error.code !== 'EEXIST') {
+        console.error(`Warning: Failed to create symlink for spec.md: ${error.message}`);
+        console.error(`  From: ${localSpecFile}`);
+        console.error(`  To: ${specFile}`);
+      }
+    }
+
+    // T069: Symlink contracts/ directory if it exists at shared location
+    const sharedContractsDir = path.join(featureDir, "contracts");
+    const localContractsLink = path.join(localFeatureDir, "contracts");
+
+    // Note: contracts/ might not exist yet, but we'll check when it gets created
+    // For now, just document that this will be handled by /speck.plan or later commands
+    // Actually, we should add a utility function that can be called to sync contracts/
+  }
+  // [SPECK-EXTENSION:END]
 
   // Set SPECIFY_FEATURE environment variable (note: this only affects this process)
   process.env.SPECIFY_FEATURE = branchName;
