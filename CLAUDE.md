@@ -19,6 +19,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 - File-based (symlinks for multi-repo detection, markdown specs at speck root or repo root) (007-multi-repo-monorepo-support)
 - TypeScript 5.3+ + Bun 1.0+ runtime, Bun Shell API, Git 2.30+, Claude Code plugin system 2.0+ (008-stacked-pr-support)
 - File-based (JSON for `.speck/branches.json`, markdown for specs) (008-stacked-pr-support)
+- TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (filesystem, git operations), Git 2.30+, GitHub CLI (optional for PR creation) (009-multi-repo-stacked)
+- File-based JSON (`.speck/branches.json` per git repository), symlink-based multi-repo detection (009-multi-repo-stacked)
 
 ## Project Structure
 
@@ -91,6 +93,7 @@ bun test                  # Run all tests (unit, visual, a11y)
 - File naming: PascalCase for components, kebab-case for pages/content
 
 ## Recent Changes
+- 009-multi-repo-stacked: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (filesystem, git operations), Git 2.30+, GitHub CLI (optional for PR creation)
 - 008-stacked-pr-support: Added TypeScript 5.3+ + Bun 1.0+ runtime, Bun Shell API, Git 2.30+, Claude Code plugin system 2.0+
 - 007-multi-repo-monorepo-support: Added TypeScript 5.3+ with Bun 1.0+ runtime (primary) + Bun Shell API (filesystem operations, symlinks), Git 2.30+, existing Speck path resolution utilities
 

@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://speck.dev/schemas/branch-mapping-v1.1.0.json",
+  "title": "Branch Mapping File Schema",
+  "description": "Schema for .speck/branches.json supporting single-repo and multi-repo stacked PR workflows",
+  "type": "object",
+  "required": ["version", "branches", "specIndex"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^(1\\.0\\.0|1\\.1\\.0)$",
+      "description": "Schema version (semver). v1.0.0 = single-repo, v1.1.0 = multi-repo support"
+    },
+    "branches": {
+      "type": "array",
+      "description": "Array of all stacked branch entries",
+      "items": {
+        "$ref": "#/definitions/BranchEntry"
+      },
+      "uniqueItems": true
+    },
+    "specIndex": {
+      "type": "object",
+      "description": "Denormalized lookup index mapping specId to branch names",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "minItems": 1,
+        "uniqueItems": true
+      },
+      "patternProperties": {
+        "^\\d{3}-.+$": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "BranchEntry": {
+      "type": "object",
+      "description": "Single branch entry in the stacked PR workflow",
+      "required": ["name", "specId", "baseBranch", "status", "pr", "createdAt", "updatedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Git branch name (freeform, any valid git branch name)"
+        },
+        "specId": {
+          "type": "string",
+          "pattern": "^\\d{3}-.+$",
+          "description": "Feature spec identifier (NNN-feature-name format)"
+        },
+        "baseBranch": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Parent branch in dependency chain (must exist in same repository)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "submitted", "merged", "abandoned"],
+          "description": "Branch lifecycle state"
+        },
+        "pr": {
+          "type": ["number", "null"],
+          "minimum": 1,
+          "description": "Pull request number (positive integer or null if no PR created)"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Branch creation timestamp (ISO 8601 format)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification timestamp (ISO 8601 format)"
+        },
+        "parentSpecId": {
+          "type": "string",
+          "pattern": "^\\d{3}-.+$",
+          "description": "Parent spec ID (multi-repo only, links child repo branch to root spec)"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "version": "1.0.0",
+      "branches": [
+        {
+          "name": "nprbst/db-layer",
+          "specId": "008-stacked-pr-support",
+          "baseBranch": "007-multi-repo-monorepo-support",
+          "status": "active",
+          "pr": 42,
+          "createdAt": "2025-11-19T10:30:00Z",
+          "updatedAt": "2025-11-19T14:22:00Z"
+        }
+      ],
+      "specIndex": {
+        "008-stacked-pr-support": ["nprbst/db-layer"]
+      }
+    },
+    {
+      "version": "1.1.0",
+      "branches": [
+        {
+          "name": "nprbst/auth-db",
+          "specId": "009-multi-repo-stacked",
+          "baseBranch": "main",
+          "status": "merged",
+          "pr": 50,
+          "createdAt": "2025-11-19T08:00:00Z",
+          "updatedAt": "2025-11-19T12:00:00Z",
+          "parentSpecId": "007-multi-repo-monorepo-support"
+        },
+        {
+          "name": "nprbst/auth-api",
+          "specId": "009-multi-repo-stacked",
+          "baseBranch": "nprbst/auth-db",
+          "status": "active",
+          "pr": 51,
+          "createdAt": "2025-11-19T10:00:00Z",
+          "updatedAt": "2025-11-19T15:30:00Z",
+          "parentSpecId": "007-multi-repo-monorepo-support"
+        }
+      ],
+      "specIndex": {
+        "009-multi-repo-stacked": ["nprbst/auth-db", "nprbst/auth-api"]
+      }
+    }
+  ]
+}
