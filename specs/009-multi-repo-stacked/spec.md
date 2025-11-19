@@ -265,6 +265,30 @@ A developer has manually created git branches across multiple child repos before
   - Multi-repo without stacking works unchanged
   - Stacked PR in single-repo works unchanged
 
+#### Hook-Based Testing Requirements
+
+**See**: [testing-strategy/HOOK_BASED_TESTING.md](testing-strategy/HOOK_BASED_TESTING.md) for complete hook-based testing documentation
+
+- **FR-TEST-027**: Test suite MUST use Claude Code hooks for real-time LLM behavior validation and contract compliance monitoring
+- **FR-TEST-028**: Implementation MUST include PostToolUse hook for automatic contract validation:
+  - Exit code validation (0, 1, 2, 3) for all script executions
+  - JSON schema validation for PR suggestions (exit code 2) and import prompts (exit code 3)
+  - Contract violation detection and blocking with clear error messages
+- **FR-TEST-029**: Implementation MUST include UserPromptSubmit + Stop hooks for session context tracking:
+  - Feature ID tracking across multi-step workflows (specify → plan → tasks)
+  - Context switch detection when LLM references different features mid-session
+  - Workflow sequence validation against expected patterns
+- **FR-TEST-030**: Implementation MUST include PreToolUse hook for multi-repo mode detection:
+  - Automatic detection of `.speck-link` symlinks before slash command execution
+  - Real-time injection of multi-repo context into LLM prompts
+  - Validation that agent prompts for parent vs. local spec placement
+- **FR-TEST-031**: Hook infrastructure MUST store logs in `.speck/test-logs/session-<id>.jsonl` for post-execution analysis
+- **FR-TEST-032**: Test helpers MUST parse hook logs and provide assertions:
+  - `toContainWorkflow(workflowName)` - Validate expected workflow sequences
+  - `not.toContainContextSwitch()` - Ensure no feature context loss
+  - `toHaveContractViolations(count)` - Verify contract compliance
+- **FR-TEST-033**: Hooks MUST not interfere with production usage; hook-based validation only active during test execution via test-specific `.claude/settings.json`
+
 ### Key Entities
 
 - **Multi-Repo Branch Stack Entry**: Extends single-repo branch stack entry with multi-repo context
@@ -323,6 +347,9 @@ A developer has manually created git branches across multiple child repos before
 - **SC-TEST-008**: **Zero regressions** detected in Features 007 and 008 after Feature 009 implementation (validated via existing test suites)
 - **SC-TEST-009**: All acceptance scenarios from User Stories 1-5 have corresponding automated tests with **100% pass rate**
 - **SC-TEST-010**: Test suite demonstrates **multi-repo + stacked PR integration** across all combinations: single-repo/multi-repo/monorepo × single-branch/stacked-PR
+- **SC-TEST-011**: **Hook-based validation** achieves **100% contract compliance** detection rate with zero false positives during test execution
+- **SC-TEST-012**: Session context tracking via hooks detects **100% of feature context switches** during multi-step workflows without manual assertions
+- **SC-TEST-013**: Hook logs provide complete audit trail of LLM behavior, enabling post-execution analysis and debugging without verbose logging during tests
 
 ## Assumptions
 

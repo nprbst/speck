@@ -70,6 +70,17 @@ The testing strategy evolved through iterative analysis to achieve **~88% automa
 3. **E2E Tests** (90%): Single-command workflows
 4. **Multi-Step Tests** (95%): Session continuity (specify → plan → tasks)
 
+### 6. [HOOK_BASED_TESTING.md](HOOK_BASED_TESTING.md) 🔥
+**Purpose**: LLM behavior observability and contract compliance via Claude Code hooks
+**Breakthrough**: Real-time validation without explicit assertions
+**Coverage Enhancement**: **88% → ~92% automation**
+
+**Hook-Based Enhancements**:
+1. **PostToolUse**: Automatic contract validation (exit codes, JSON schemas)
+2. **UserPromptSubmit + Stop**: Session context tracking and workflow validation
+3. **PreToolUse**: Multi-repo mode detection and validation
+4. **Complete Audit Trail**: Hook logs provide debugging information
+
 ---
 
 ## Recommended Reading Order
@@ -79,12 +90,18 @@ The testing strategy evolved through iterative analysis to achieve **~88% automa
    - Four-layer testing architecture
    - Implementation examples
 
-2. **For manual test cases**: [MANUAL_TESTING_PLAN.md](MANUAL_TESTING_PLAN.md)
+2. **Then read**: [HOOK_BASED_TESTING.md](HOOK_BASED_TESTING.md)
+   - Hook-enhanced testing strategy
+   - LLM behavior observability
+   - Automatic contract validation
+   - Implementation patterns
+
+3. **For manual test cases**: [MANUAL_TESTING_PLAN.md](MANUAL_TESTING_PLAN.md)
    - Detailed positive/negative scenarios
    - Expected results checklists
    - Basis for automated test conversion
 
-3. **For evolution context** (optional):
+4. **For evolution context** (optional):
    - AUTOMATED_TESTING_FEASIBILITY.md (initial approach)
    - AUTOMATED_TESTING_FEASIBILITY_REVISED.md (contract insight)
    - AUTOMATED_TESTING_COMPLETE_STRATEGY.md (claude -p discovery)
@@ -93,15 +110,22 @@ The testing strategy evolved through iterative analysis to achieve **~88% automa
 
 ## Test Coverage Summary
 
-### Automated (88%)
+### Automated (92% with Hooks)
 
 | Layer | Type | Coverage | Test Count | Time Investment |
 |-------|------|----------|------------|-----------------|
-| 1 | Contract (Scripts→Agent) | 80% | 90 tests | 3 days |
+| 1 | Contract (Scripts→Agent) | 80% → **100%** ⭐ | 90 tests | 3 days |
 | 2 | Integration (Agent→Scripts) | 70% | 40 tests | 2 days |
 | 3 | E2E (Single Command) | 90% | 30 tests | 3 days |
 | 4 | Multi-Step (Session Continuity) | 95% | 25 tests | 2 days |
-| **Total** | **All Layers** | **88%** | **185 tests** | **10 days** |
+| **Hook Enhancement** | **Automatic Validation** | **+4%** | **Hook logs** | **+3 days** |
+| **Total** | **All Layers + Hooks** | **~92%** | **185 tests** | **13 days** |
+
+**Hook Coverage Additions**:
+- ✅ 100% contract compliance detection (exit codes + JSON schemas)
+- ✅ 100% session context tracking (feature context preservation)
+- ✅ 100% multi-repo mode detection validation
+- ✅ Complete LLM behavior audit trail
 
 ### Manual (12%)
 
@@ -197,16 +221,19 @@ tests/
 
 ## Success Criteria
 
-From [AUTOMATED_TESTING_COMPLETE_STRATEGY_FINAL.md](AUTOMATED_TESTING_COMPLETE_STRATEGY_FINAL.md):
+From [AUTOMATED_TESTING_COMPLETE_STRATEGY_FINAL.md](AUTOMATED_TESTING_COMPLETE_STRATEGY_FINAL.md) + [HOOK_BASED_TESTING.md](HOOK_BASED_TESTING.md):
 
-- ✅ **88% automated coverage** (185 tests across 4 layers)
+- ✅ **~92% automated coverage** (185 tests + hook validation across 4 layers)
 - ✅ **Multi-step workflow validation** (session continuity)
 - ✅ **Real Claude Code runtime testing** (not just scripts)
+- ✅ **LLM behavior observability** (hook-based audit trail)
+- ✅ **Automatic contract validation** (zero boilerplate assertions)
 - ✅ **Fast CI/CD feedback** (2-5 minutes vs 4-6 hours manual)
 - ✅ **Regression protection** (catch breaking changes early)
 - ✅ **Living documentation** (tests describe expected behavior)
 
 **ROI**: Automation pays for itself after **3-4 test runs (~6 weeks)**
+**Hook ROI**: +4% coverage, -60% test maintenance effort
 
 ---
 
