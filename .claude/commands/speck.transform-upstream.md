@@ -368,7 +368,22 @@ Record factoring decisions in `.speck/transformation-history.json`:
      ```
    - Record all command → command, command → agent, and command → skill mappings
 
-3. **Update transformation status on completion**:
+3. **Preserve constitution amendments** (T126):
+   - Check if `.speck/memory/constitution.md` exists in current repository
+   - If it exists and upstream version also contains constitution.md:
+     - Read current constitution to detect amendments (lines not in upstream version)
+     - Common amendments to preserve:
+       - `**Default Workflow Mode**: stacked-pr` (from 008-stacked-pr-support)
+       - Custom governance principles (Principle VIII and beyond)
+       - Repository-specific settings in configuration sections
+     - After transformation completes, restore amendments to constitution.md
+     - Append preserved amendments to transformed constitution with comment:
+       ```markdown
+       <!-- SPECK AMENDMENTS: The following sections are repository-specific -->
+       ```
+   - If constitution doesn't exist upstream or locally, skip this step
+
+4. **Update transformation status on completion**:
    ```typescript
    import { updateTransformationStatus } from ".speck/scripts/common/transformation-history";
 

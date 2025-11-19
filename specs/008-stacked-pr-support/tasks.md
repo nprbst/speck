@@ -263,7 +263,7 @@
 - [x] T116 [P] Add edge case handling: PR creation failure (network errors, permission issues) in .claude/commands/speck.implement.md
 - [x] T117 [P] Add edge case handling: Detached HEAD or non-branch ref during stacking prompt (skip prompt) in .claude/commands/speck.implement.md
 - [x] T118 [P] Update CLAUDE.md with stacked PR technology stack (via update-agent-context script) in CLAUDE.md
-- [ ] T119 [P] Write integration tests for backwards compatibility (US1) in specs/008-stacked-pr-support/tests/integration.test.ts
+- [x] T119 [P] Write integration tests for backwards compatibility (US1) in specs/008-stacked-pr-support/tests/integration.test.ts
 
 ---
 
@@ -277,11 +277,11 @@
 
 - [x] T120 [P] Draft constitution amendment for defaultWorkflowMode setting in .speck/memory/constitution.md
 - [x] T121 [P] Define Markdown format: `**Default Workflow Mode**: single-branch` in Workflow Mode Configuration section in .speck/memory/constitution.md
-- [ ] T122 [P] Add validation in path resolution utilities to detect and parse workflow mode setting from .speck/memory/constitution.md in .speck/scripts/common/paths.ts
+- [x] T122 [P] Add validation in path resolution utilities to detect and parse workflow mode setting from .speck/memory/constitution.md in .speck/scripts/common/paths.ts
 - [x] T123 [P] Update constitution version from 1.2.0 to 1.3.0 (MINOR: new governance section for Principle VIII) in .speck/memory/constitution.md
 - [x] T124 [P] Add sync impact report documenting workflow mode setting addition in .speck/memory/constitution.md
-- [ ] T125 [P] Update CLAUDE.md with workflow mode setting via update-agent-context script in CLAUDE.md
-- [ ] T126 [P] Update /speck.transform-upstream to preserve .speck/memory/constitution.md amendments during upstream syncs in .claude/commands/speck.transform-upstream.md
+- [x] T125 [P] Update CLAUDE.md with workflow mode setting via update-agent-context script in CLAUDE.md
+- [x] T126 [P] Update /speck.transform-upstream to preserve .speck/memory/constitution.md amendments during upstream syncs in .claude/commands/speck.transform-upstream.md
 
 ---
 

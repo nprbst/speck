@@ -496,6 +496,39 @@ export async function getFeaturePaths(): Promise<FeaturePaths> {
 }
 
 /**
+ * Read workflow mode from constitution.md
+ *
+ * Searches for: **Default Workflow Mode**: stacked-pr | single-branch
+ *
+ * @returns "stacked-pr" | "single-branch" | null (if not found)
+ */
+export async function getDefaultWorkflowMode(): Promise<"stacked-pr" | "single-branch" | null> {
+  try {
+    const memoryDir = getMemoryDir();
+    const constitutionPath = path.join(memoryDir, "constitution.md");
+
+    if (!existsSync(constitutionPath)) {
+      return null;
+    }
+
+    const content = await fs.readFile(constitutionPath, "utf-8");
+
+    // Search for: **Default Workflow Mode**: stacked-pr
+    // or: **Default Workflow Mode**: single-branch
+    const match = content.match(/^\*\*Default Workflow Mode\*\*:\s*(stacked-pr|single-branch)\s*$/m);
+
+    if (match && (match[1] === "stacked-pr" || match[1] === "single-branch")) {
+      return match[1];
+    }
+
+    return null;
+  } catch (error) {
+    // If file read fails or parsing errors, return null (graceful degradation)
+    return null;
+  }
+}
+
+/**
  * Check if a file exists and print status
  * Used for human-readable output
  */
