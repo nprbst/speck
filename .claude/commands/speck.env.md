@@ -161,6 +161,127 @@ try {
 echo ""
 ```
 
+### 8. Branch Stack Status (US6)
+
+```bash
+echo "=== Branch Stack Status ==="
+# T072-T081: Check for stacked PR mode and display branch stack
+bun -e '
+import { readBranches } from "'${EFFECTIVE_ROOT}'/scripts/common/branch-mapper.ts";
+import { getCurrentBranch } from "'${EFFECTIVE_ROOT}'/scripts/common/git-operations.ts";
+import { detectSpeckRoot } from "'${EFFECTIVE_ROOT}'/scripts/common/paths.ts";
+import path from "node:path";
+import fs from "node:fs/promises";
+
+try {
+  const config = await detectSpeckRoot();
+  const repoRoot = config.repoRoot;
+  const branchesPath = path.join(repoRoot, ".speck", "branches.json");
+
+  // T073: Check if branches.json exists
+  try {
+    await fs.access(branchesPath);
+  } catch {
+    // T074: File absent - stacked mode not enabled
+    console.log("✓ Stacked PR mode: Not enabled");
+    console.log("");
+    console.log("To enable stacked PRs:");
+    console.log("  /speck.branch create <branch-name> --base <base-branch>");
+    console.log("");
+    return;
+  }
+
+  // T075: File present - load branches.json
+  const mapping = await readBranches(repoRoot);
+
+  if (mapping.branches.length === 0) {
+    console.log("✓ Stacked PR mode: Enabled (no branches yet)");
+    console.log("");
+    return;
+  }
+
+  console.log("✓ Stacked PR mode: Enabled");
+  console.log("");
+
+  // T076: Get current branch
+  const currentBranch = await getCurrentBranch(repoRoot);
+
+  // T077: Group branches by specId
+  const specIds = Object.keys(mapping.specIndex);
+
+  // T081: Calculate warnings count (simplified - just count active branches)
+  const warningsCount = mapping.branches.filter(b => b.status === "active" && b.pr === null).length;
+
+  // Display stack for each spec
+  for (const specId of specIds) {
+    const branchNames = mapping.specIndex[specId] || [];
+    const branches = branchNames.map(name =>
+      mapping.branches.find(b => b.name === name)
+    ).filter(Boolean);
+
+    console.log(`Spec: ${specId}`);
+    console.log("Branch Stack:");
+
+    // T078: Build dependency tree for each spec
+    // Find root branches (based on main/master or non-stacked branch)
+    const rootBranches = branches.filter(b =>
+      !branchNames.includes(b.baseBranch)
+    );
+
+    // T079: Display tree visualization with markers
+    function displayTree(branchName, indent = "  ", isLast = true) {
+      const branch = branches.find(b => b.name === branchName);
+      if (!branch) return;
+
+      const marker = isLast ? "└─" : "├─";
+      const isCurrent = branchName === currentBranch;
+
+      // T080: Highlight current branch with "(current)" marker
+      let display = `${indent}${marker} ${branchName}`;
+
+      // Add status indicators
+      if (branch.pr) {
+        display += ` (${branch.status}, PR #${branch.pr})`;
+      } else if (branch.status !== "active") {
+        display += ` (${branch.status})`;
+      }
+
+      if (isCurrent) {
+        display += " (current)";
+      }
+
+      console.log(display);
+
+      // Find children
+      const children = branches.filter(b => b.baseBranch === branchName);
+      children.forEach((child, idx) => {
+        const childIndent = indent + (isLast ? "  " : "│ ");
+        displayTree(child.name, childIndent, idx === children.length - 1);
+      });
+    }
+
+    // Display from base branch
+    rootBranches.forEach((root, idx) => {
+      console.log(`  ${root.baseBranch}`);
+      displayTree(root.name, "  ", idx === rootBranches.length - 1);
+    });
+
+    console.log("");
+  }
+
+  // T082: Display warning summary with hint
+  if (warningsCount > 0) {
+    console.log(`⚠ ${warningsCount} branch(es) may need attention`);
+    console.log("Run /speck.branch status for details");
+  }
+
+} catch (error) {
+  console.error("Error checking branch stack:", error.message);
+}
+'
+echo ""
+```
+
 ## Summary
 
 After running all checks, provide a summary:

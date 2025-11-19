@@ -247,6 +247,11 @@ async function createCommand(args: string[]) {
   const name = args[nameIndex];
   const baseFlag = args.indexOf("--base");
   const specFlag = args.indexOf("--spec");
+  const skipPrPromptFlag = args.includes("--skip-pr-prompt");
+  const createPrFlag = args.includes("--create-pr");
+  const prTitleFlag = args.indexOf("--title");
+  const prDescFlag = args.indexOf("--description");
+  const prBaseFlag = args.indexOf("--pr-base");
 
   // Get repository root for git operations
   const paths = await getFeaturePaths();
@@ -334,25 +339,115 @@ async function createCommand(args: string[]) {
   // T032 - Initialize branches.json if doesn't exist
   let mapping = await readBranches(repoRoot);
 
-  // T031a-T031n - Display PR creation suggestion for current branch (before switching)
-  // Always check for PR opportunity, even when base defaults to current branch
-  const prSuggestion = await generatePRSuggestion(currentBranch, baseBranch, mapping, repoRoot);
+  // T031a-T031j - Check for PR opportunity and handle based on flags
+  // Skip PR prompt if explicitly requested
+  if (!skipPrPromptFlag && !createPrFlag) {
+    const prSuggestion = await generatePRSuggestion(currentBranch, baseBranch, mapping, repoRoot);
 
-  if (prSuggestion) {
-    console.log(`\n${'='.repeat(60)}`);
-    console.log(`💡 Suggestion: Create PR for '${currentBranch}' before switching`);
-    console.log(`${'='.repeat(60)}`);
-    console.log(`\nGenerated PR details:`);
-    console.log(`  Title: ${prSuggestion.title}`);
-    console.log(`  Base: ${prSuggestion.prBase}`);
-    console.log(`\nDescription:`);
-    console.log(prSuggestion.body.split('\n').map((line: string) => `  ${line}`).join('\n'));
-    console.log(`\n${'-'.repeat(60)}`);
-    console.log(`To create this PR, run:`);
-    console.log(`  gh pr create --base ${prSuggestion.prBase} --title "${prSuggestion.title}" --body "${prSuggestion.body.replace(/"/g, '\\"')}"`);
-    console.log(`\nOr update manually with:`);
-    console.log(`  /speck.branch update ${currentBranch} --status submitted --pr <number>`);
-    console.log(`${'='.repeat(60)}\n`);
+    if (prSuggestion) {
+      // T031h - Output structured JSON to stderr for agent to parse
+      const suggestionData = {
+        type: "pr-suggestion",
+        branch: currentBranch,
+        suggestedTitle: prSuggestion.title,
+        suggestedDescription: prSuggestion.body,
+        suggestedBase: prSuggestion.prBase,
+        newBranch: name,
+      };
+      console.error(JSON.stringify(suggestionData));
+
+      // T031i - Display human-readable suggestion to stdout
+      console.log(`\n${'='.repeat(60)}`);
+      console.log(`💡 PR Opportunity: Create PR for '${currentBranch}' before switching`);
+      console.log(`${'='.repeat(60)}`);
+      console.log(`\nSuggested PR details:`);
+      console.log(`  Title: ${prSuggestion.title}`);
+      console.log(`  Base: ${prSuggestion.prBase}`);
+      console.log(`\nDescription:`);
+      console.log(prSuggestion.body.split('\n').map((line: string) => `  ${line}`).join('\n'));
+      console.log(`\n${'-'.repeat(60)}`);
+      console.log(`Option 1: Create PR with gh CLI:`);
+      console.log(`  gh pr create --base ${prSuggestion.prBase} --title "${prSuggestion.title}" --body "${prSuggestion.body.replace(/"/g, '\\"')}"`);
+      console.log(`\nOption 2: Create PR via GitHub URL:`);
+      console.log(`  https://github.com/OWNER/REPO/compare/${prSuggestion.prBase}...${currentBranch}?expand=1&title=${encodeURIComponent(prSuggestion.title)}`);
+      console.log(`\nOption 3: Skip and create branch without PR`);
+      console.log(`${'='.repeat(60)}\n`);
+
+      // T031j - Exit with code 2 (suggestion pending) to trigger agent interaction
+      process.exit(2);
+    }
+  }
+
+  // T031n - Handle --create-pr flag: execute gh pr create
+  if (createPrFlag) {
+    const prTitle = prTitleFlag !== -1 ? args[prTitleFlag + 1] : null;
+    const prDescription = prDescFlag !== -1 ? args[prDescFlag + 1] : null;
+    const prBase = prBaseFlag !== -1 ? args[prBaseFlag + 1] : null;
+
+    if (!prTitle || !prDescription || !prBase) {
+      throw new Error("--create-pr requires --title, --description, and --pr-base flags");
+    }
+
+    console.log(`Creating PR for '${currentBranch}'...`);
+
+    try {
+      // T031n - Execute gh pr create
+      const ghResult = await $`gh pr create --base ${prBase} --title ${prTitle} --body ${prDescription}`.quiet();
+
+      if (ghResult.exitCode !== 0) {
+        // T031p - gh CLI failed
+        throw new Error(`gh pr create failed: ${ghResult.stderr.toString()}`);
+      }
+
+      // T031o - Parse PR number from gh CLI output
+      const output = ghResult.stdout.toString();
+      const prNumberMatch = output.match(/\/pull\/(\d+)/);
+      const prNumber = prNumberMatch ? parseInt(prNumberMatch[1], 10) : null;
+
+      if (prNumber) {
+        console.log(`✓ Created PR #${prNumber} for '${currentBranch}'`);
+
+        // T035 - Update branch entry with PR number and status="submitted"
+        const currentEntry = findBranchEntry(mapping, currentBranch);
+        if (currentEntry) {
+          mapping = updateBranchStatus(mapping, currentBranch, "submitted", prNumber);
+          await writeBranches(repoRoot, mapping);
+        }
+      } else {
+        console.log(`✓ PR created for '${currentBranch}' (could not parse PR number from output)`);
+      }
+    } catch (error) {
+      // T031p - Handle gh CLI errors with clear guidance
+      const errorMsg = error instanceof Error ? error.message : String(error);
+
+      if (errorMsg.includes("gh: command not found") || errorMsg.includes("not found")) {
+        console.error("\n❌ Error: GitHub CLI (gh) is not installed");
+        console.error("\nTo install gh:");
+        console.error("  brew install gh           # macOS");
+        console.error("  sudo apt install gh       # Ubuntu/Debian");
+        console.error("  winget install GitHub.cli # Windows");
+        console.error("\nOr use --skip-pr-prompt to create branch without PR:");
+        console.error(`  /speck.branch create ${name} --skip-pr-prompt`);
+        process.exit(1);
+      }
+
+      if (errorMsg.includes("authentication") || errorMsg.includes("401")) {
+        console.error("\n❌ Error: GitHub CLI is not authenticated");
+        console.error("\nTo authenticate:");
+        console.error("  gh auth login");
+        console.error("\nOr use --skip-pr-prompt to create branch without PR:");
+        console.error(`  /speck.branch create ${name} --skip-pr-prompt`);
+        process.exit(1);
+      }
+
+      // Network or other errors
+      console.error(`\n❌ Error creating PR: ${errorMsg}`);
+      console.error("\nYou can:");
+      console.error("  1. Check your network connection and try again");
+      console.error("  2. Create the PR manually via GitHub web UI");
+      console.error("  3. Use --skip-pr-prompt to create branch without PR");
+      process.exit(1);
+    }
   }
 
   // T033 - Create BranchEntry with ISO 8601 timestamps
@@ -468,6 +563,17 @@ async function statusCommand() {
   console.log(`Spec: ${specId}\n`);
 
   for (const branch of branches) {
+    // T113 - Check if branch still exists in git
+    const exists = await branchExists(branch.name, repoRoot);
+
+    if (!exists) {
+      console.log(`${branch.name} (${branch.status}${branch.pr ? `, PR #${branch.pr}` : ""})`);
+      console.log(`  ⚠ ORPHANED: Branch no longer exists in git`);
+      console.log(`  → Run: /speck.branch delete ${branch.name} (cleanup metadata)`);
+      warnings++;
+      continue; // Skip other checks for non-existent branch
+    }
+
     // T046 - Detect merged branches
     const isMerged = await checkBranchMerged(branch.name, branch.baseBranch, repoRoot);
 

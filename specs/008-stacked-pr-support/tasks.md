@@ -94,9 +94,9 @@
 - [x] T031h [US2] Output structured JSON to stderr: `{ type: "pr-suggestion", branch, suggestedTitle, suggestedDescription, suggestedBase, newBranch }` in .speck/scripts/branch-command.ts
 - [x] T031i [US2] Display human-readable suggestion to stdout with both `gh pr create` command and fallback GitHub URL in .speck/scripts/branch-command.ts
 - [x] T031j [US2] Exit with code 2 (suggestion pending) when PR opportunity detected and no flags provided in .speck/scripts/branch-command.ts
-- [ ] T031k [US2] Implement agent logic in .claude/commands/speck.branch.md to detect exit code 2, parse JSON from stderr, and prompt user in .claude/commands/speck.branch.md
-- [ ] T031l [US2] Agent generates PR metadata and re-invokes script with `--create-pr --title "..." --description "..." --pr-base "..."` if user confirms in .claude/commands/speck.branch.md
-- [ ] T031m [US2] Agent re-invokes script with `--skip-pr-prompt` if user declines PR creation in .claude/commands/speck.branch.md
+- [x] T031k [US2] Implement agent logic in .claude/commands/speck.branch.md to detect exit code 2, parse JSON from stderr, and prompt user in .claude/commands/speck.branch.md
+- [x] T031l [US2] Agent generates PR metadata and re-invokes script with `--create-pr --title "..." --description "..." --pr-base "..."` if user confirms in .claude/commands/speck.branch.md
+- [x] T031m [US2] Agent re-invokes script with `--skip-pr-prompt` if user declines PR creation in .claude/commands/speck.branch.md
 - [x] T031n [US2] When `--create-pr` flag provided: execute `gh pr create --title "<title>" --body "<body>" --base <pr-base>` in .speck/scripts/branch-command.ts
 - [x] T031o [US2] Parse PR number from gh CLI output in .speck/scripts/branch-command.ts
 - [x] T031p [US2] When `--create-pr` fails (gh not installed/authenticated/network error): exit with code 1 and clear error message directing user to install gh or use `--skip-pr-prompt` in .speck/scripts/branch-command.ts
@@ -144,16 +144,16 @@
 
 ### Tasks
 
-- [ ] T050 [US4] Update /speck.tasks agent logic to support --branch <name> flag in .claude/commands/speck.tasks.md
-- [ ] T051 [US4] Update /speck.tasks agent logic to support --stories <US1,US2> flag in .claude/commands/speck.tasks.md
-- [ ] T052 [US4] Agent loads branches.json when --branch flag provided in .claude/commands/speck.tasks.md
-- [ ] T053 [US4] Agent validates branch exists in branches.json in .claude/commands/speck.tasks.md
-- [ ] T054 [US4] Agent parses --stories flag to extract comma-separated US IDs in .claude/commands/speck.tasks.md
-- [ ] T055 [US4] Agent validates story IDs exist in spec.md in .claude/commands/speck.tasks.md
-- [ ] T056 [US4] Agent filters user stories in spec.md by requested IDs in .claude/commands/speck.tasks.md
-- [ ] T057 [US4] Agent generates tasks for filtered stories only (skip Setup/Foundational if --stories used) in .claude/commands/speck.tasks.md
-- [ ] T058 [US4] Agent outputs to spec-dir/tasks.md for full spec (default) OR spec-dir/tasks-<branch-name>.md if --branch flag specified in .claude/commands/speck.tasks.md
-- [ ] T059 [US4] Agent displays summary showing total tasks, filtered stories, and file path in .claude/commands/speck.tasks.md
+- [x] T050 [US4] Update /speck.tasks agent logic to support --branch <name> flag in .claude/commands/speck.tasks.md
+- [x] T051 [US4] Update /speck.tasks agent logic to support --stories <US1,US2> flag in .claude/commands/speck.tasks.md
+- [x] T052 [US4] Agent loads branches.json when --branch flag provided in .claude/commands/speck.tasks.md
+- [x] T053 [US4] Agent validates branch exists in branches.json in .claude/commands/speck.tasks.md
+- [x] T054 [US4] Agent parses --stories flag to extract comma-separated US IDs in .claude/commands/speck.tasks.md
+- [x] T055 [US4] Agent validates story IDs exist in spec.md in .claude/commands/speck.tasks.md
+- [x] T056 [US4] Agent filters user stories in spec.md by requested IDs in .claude/commands/speck.tasks.md
+- [x] T057 [US4] Agent generates tasks for filtered stories only (skip Setup/Foundational if --stories used) in .claude/commands/speck.tasks.md
+- [x] T058 [US4] Agent outputs to spec-dir/tasks.md for full spec (default) OR spec-dir/tasks-<branch-name>.md if --branch flag specified in .claude/commands/speck.tasks.md
+- [x] T059 [US4] Agent displays summary showing total tasks, filtered stories, and file path in .claude/commands/speck.tasks.md
 
 ---
 
@@ -192,20 +192,20 @@
 
 ### Tasks
 
-- [ ] T072 [US6] Update /speck.env agent logic to add Branch Stack Status section (Section 8) in .claude/commands/speck.env.md
-- [ ] T073 [US6] Agent checks if .speck/branches.json exists in .claude/commands/speck.env.md
-- [ ] T074 [US6] If absent, agent shows "✓ Stacked PR mode: Not enabled" with hint to run /speck.branch create in .claude/commands/speck.env.md
-- [ ] T075 [US6] If present, agent loads branches.json and parses branches array in .claude/commands/speck.env.md
-- [ ] T076 [US6] Agent gets current branch using git rev-parse --abbrev-ref HEAD in .claude/commands/speck.env.md
-- [ ] T077 [US6] Agent groups branches by specId in .claude/commands/speck.env.md
-- [ ] T078 [US6] Agent builds dependency tree for each spec (root branches → children recursively) in .claude/commands/speck.env.md
-- [ ] T079 [US6] Agent displays tree visualization with markers (└─, │) and status indicators in .claude/commands/speck.env.md
-- [ ] T080 [US6] Agent highlights current branch with "(current)" marker in .claude/commands/speck.env.md
-- [ ] T081 [US6] Agent calculates warnings count (branches needing rebase, stale branches) in .claude/commands/speck.env.md
-- [ ] T082 [US6] Agent displays warning summary with hint to run /speck.branch status for details in .claude/commands/speck.env.md
-- [ ] T083 [US6] Implement list subcommand --all flag to show branches across all specs in .speck/scripts/branch-command.ts
-- [ ] T084 [US6] Group branches by spec ID when --all flag used in .speck/scripts/branch-command.ts
-- [ ] T085 [US6] Display total count (branches across specs) in .speck/scripts/branch-command.ts
+- [x] T072 [US6] Update /speck.env agent logic to add Branch Stack Status section (Section 8) in .claude/commands/speck.env.md
+- [x] T073 [US6] Agent checks if .speck/branches.json exists in .claude/commands/speck.env.md
+- [x] T074 [US6] If absent, agent shows "✓ Stacked PR mode: Not enabled" with hint to run /speck.branch create in .claude/commands/speck.env.md
+- [x] T075 [US6] If present, agent loads branches.json and parses branches array in .claude/commands/speck.env.md
+- [x] T076 [US6] Agent gets current branch using git rev-parse --abbrev-ref HEAD in .claude/commands/speck.env.md
+- [x] T077 [US6] Agent groups branches by specId in .claude/commands/speck.env.md
+- [x] T078 [US6] Agent builds dependency tree for each spec (root branches → children recursively) in .claude/commands/speck.env.md
+- [x] T079 [US6] Agent displays tree visualization with markers (└─, │) and status indicators in .claude/commands/speck.env.md
+- [x] T080 [US6] Agent highlights current branch with "(current)" marker in .claude/commands/speck.env.md
+- [x] T081 [US6] Agent calculates warnings count (branches needing rebase, stale branches) in .claude/commands/speck.env.md
+- [x] T082 [US6] Agent displays warning summary with hint to run /speck.branch status for details in .claude/commands/speck.env.md
+- [x] T083 [US6] Implement list subcommand --all flag to show branches across all specs in .speck/scripts/branch-command.ts
+- [x] T084 [US6] Group branches by spec ID when --all flag used in .speck/scripts/branch-command.ts
+- [x] T085 [US6] Display total count (branches across specs) in .speck/scripts/branch-command.ts
 
 ---
 
@@ -257,12 +257,12 @@
 - [x] T110 [P] Display warning that git branch still exists after metadata deletion in .speck/scripts/branch-command.ts
 - [x] T111 [P] Add edge case handling: Base branch doesn't exist in git (clear error message) in .speck/scripts/branch-command.ts
 - [x] T112 [P] Add edge case handling: Circular dependency detection (display full cycle path) in .speck/scripts/branch-command.ts
-- [ ] T113 [P] Add edge case handling: Branch referenced in branches.json no longer exists in git (warning + cleanup option) in .speck/scripts/branch-command.ts
-- [ ] T114 [P] Add edge case handling: Malformed branches.json (auto-repair or manual recovery instructions) in .speck/scripts/branch-command.ts
+- [x] T113 [P] Add edge case handling: Branch referenced in branches.json no longer exists in git (warning + cleanup option) in .speck/scripts/branch-command.ts
+- [x] T114 [P] Add edge case handling: Malformed branches.json (auto-repair or manual recovery instructions) in .speck/scripts/branch-command.ts
 - [ ] T115 [P] Add edge case handling: gh CLI not installed or not authenticated (graceful fallback) in .claude/commands/speck.implement.md
 - [ ] T116 [P] Add edge case handling: PR creation failure (network errors, permission issues) in .claude/commands/speck.implement.md
 - [ ] T117 [P] Add edge case handling: Detached HEAD or non-branch ref during stacking prompt (skip prompt) in .claude/commands/speck.implement.md
-- [ ] T118 [P] Update CLAUDE.md with stacked PR technology stack (via update-agent-context script) in CLAUDE.md
+- [x] T118 [P] Update CLAUDE.md with stacked PR technology stack (via update-agent-context script) in CLAUDE.md
 - [ ] T119 [P] Write integration tests for backwards compatibility (US1) in specs/008-stacked-pr-support/tests/integration.test.ts
 
 ---

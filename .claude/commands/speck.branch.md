@@ -105,6 +105,12 @@ Imports existing git branches into stacked mode.
 
 ## Implementation
 
+**Agent Logic for PR Creation (T031k-T031m)**:
+
+When executing `/speck.branch create`, the script may detect a PR opportunity and exit with code 2. You must detect this and interact with the user to offer PR creation.
+
+Execute the command and handle the interrupt-resume pattern:
+
 ```bash
 # Determine plugin root (prefer local .speck/scripts, fallback to plugin path)
 if [ -d ".speck/scripts" ]; then
@@ -113,6 +119,88 @@ else
   PLUGIN_ROOT=$(cat "$HOME/.claude/speck-plugin-path" 2>/dev/null || echo ".speck")
 fi
 
-# Execute branch management script
-bun run "$PLUGIN_ROOT/scripts/branch-command.ts" {{args}}
+# Execute branch management script, capturing stderr for PR suggestions
+STDERR_FILE=$(mktemp)
+bun run "$PLUGIN_ROOT/scripts/branch-command.ts" {{args}} 2>"$STDERR_FILE"
+EXIT_CODE=$?
+
+# Read stderr for PR suggestion JSON
+STDERR_CONTENT=$(cat "$STDERR_FILE")
+rm -f "$STDERR_FILE"
+
+# Check for PR suggestion JSON in stderr
+PR_SUGGESTION=$(echo "$STDERR_CONTENT" | grep '^{.*"type":"pr-suggestion"' | head -1 || echo "")
+```
+
+After running the script, handle the exit code:
+
+**If EXIT_CODE is 2 and PR_SUGGESTION contains JSON**: A PR opportunity was detected. Parse the JSON and prompt the user.
+
+**If EXIT_CODE is 0**: Command succeeded.
+
+**If EXIT_CODE is 1 or other**: Command failed.
+
+## Agent Workflow for PR Suggestions (T031k-T031m)
+
+When you detect exit code 2 with a PR suggestion JSON:
+
+1. **Parse the JSON** from `$PR_SUGGESTION` (T031k):
+   - Extract: `branch`, `suggestedTitle`, `suggestedDescription`, `suggestedBase`, `newBranch`
+
+2. **Prompt the user** (T031k):
+   Display the PR opportunity and ask if they want to create it:
+   ```
+   I detected a PR opportunity for branch '{branch}' before creating '{newBranch}'.
+
+   Suggested PR:
+   - Title: {suggestedTitle}
+   - Base: {suggestedBase}
+   - Description:
+     {suggestedDescription}
+
+   Would you like me to create this PR now?
+   ```
+
+3. **Handle user response**:
+
+   **If user confirms YES** (T031l):
+   - Re-invoke with PR creation flags (preserve original --base and --spec if present):
+     ```bash
+     /speck.branch create {newBranch} --create-pr --title "{suggestedTitle}" --description "{suggestedDescription}" --pr-base "{suggestedBase}" [original flags]
+     ```
+
+   **If user declines NO** (T031m):
+   - Re-invoke with skip flag (preserve original --base and --spec if present):
+     ```bash
+     /speck.branch create {newBranch} --skip-pr-prompt [original flags]
+     ```
+
+## Example Agent Interaction
+
+```
+User: /speck.branch create username/api-layer
+
+[Script detects commits on current branch and exits with code 2]
+
+Agent: I detected a PR opportunity for branch 'username/db-layer' before creating 'username/api-layer'.
+
+Suggested PR:
+- Title: Add database layer
+- Base: main
+- Description:
+  - Implement User model
+  - Add database schema
+  - Set up migrations
+
+Would you like me to create this PR now?
+
+User: Yes
+
+Agent: [Re-runs] /speck.branch create username/api-layer --create-pr --title "Add database layer" --description "..." --pr-base "main"
+
+Output:
+Creating PR for 'username/db-layer'...
+✓ Created PR #42 for 'username/db-layer'
+✓ Created stacked branch 'username/api-layer'
+...
 ```

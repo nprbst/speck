@@ -19,6 +19,20 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## Flag Support
+
+This command supports the following flags for branch-aware task generation (US4):
+
+- `--branch <name>`: Generate tasks for specific branch (requires stacked PR mode)
+- `--stories <US1,US2>`: Filter to specific user stories (comma-separated)
+
+**Examples**:
+```bash
+/speck.tasks --branch username/db-layer --stories US1
+/speck.tasks --stories US1,US2
+/speck.tasks --branch username/api
+```
+
 ## Plugin Path Setup
 
 Before proceeding, determine the plugin root path by running:
@@ -35,25 +49,42 @@ Store this value and use `$PLUGIN_ROOT` in all subsequent script paths (e.g., `b
 
 ## Outline
 
-1. **Setup**: Run `bun run $PLUGIN_ROOT/scripts/check-prerequisites.ts --json` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Parse flags from $ARGUMENTS** (T050-T054):
+   - Check for `--branch <name>` flag and extract branch name
+   - Check for `--stories <US1,US2>` flag and extract comma-separated story IDs
+   - If `--branch` provided: Load `.speck/branches.json` (T052) and validate branch exists (T053)
+   - If `--stories` provided: Store story IDs for filtering (will validate against spec.md later) (T054)
 
-2. **Load design documents**: Read from FEATURE_DIR:
+2. **Setup**: Run `bun run $PLUGIN_ROOT/scripts/check-prerequisites.ts --json` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+
+3. **Load design documents**: Read from FEATURE_DIR:
    - **Required**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)
    - **Optional**: data-model.md (entities), contracts/ (API endpoints), research.md (decisions), quickstart.md (test scenarios)
    - Note: Not all projects have all documents. Generate tasks based on what's available.
 
-3. **Execute task generation workflow**:
+4. **Execute task generation workflow**:
    - Load plan.md and extract tech stack, libraries, project structure
    - Load spec.md and extract user stories with their priorities (P1, P2, P3, etc.)
+   - **If `--stories` flag provided** (T055-T056):
+     - Parse story IDs from flag (e.g., "US1,US2" → ["US1", "US2"])
+     - Validate each story ID exists in spec.md (T055)
+     - Filter user stories to only include requested IDs (T056)
+   - **If `--stories` flag NOT provided**: Use all user stories from spec.md
    - If data-model.md exists: Extract entities and map to user stories
    - If contracts/ exists: Map endpoints to user stories
    - If research.md exists: Extract decisions for setup tasks
+   - **Task generation strategy** (T057):
+     - If `--stories` flag used: Skip Setup/Foundational phases, generate only requested story tasks
+     - If `--stories` flag NOT used: Generate all phases (Setup, Foundational, all user stories, Polish)
    - Generate tasks organized by user story (see Task Generation Rules below)
    - Generate dependency graph showing user story completion order
    - Create parallel execution examples per user story
    - Validate task completeness (each user story has all needed tasks, independently testable)
 
-4. **Generate tasks.md**: Use `$PLUGIN_ROOT/templates/tasks-template.md` as structure, fill with:
+5. **Generate tasks.md** (T058): Use `$PLUGIN_ROOT/templates/tasks-template.md` as structure, fill with:
+   - **Output file path**:
+     - If `--branch` flag provided: `FEATURE_DIR/tasks-<branch-name>.md`
+     - If `--branch` flag NOT provided: `FEATURE_DIR/tasks.md` (default)
    - Correct feature name from plan.md
    - Phase 1: Setup tasks (project initialization)
    - Phase 2: Foundational tasks (blocking prerequisites for all user stories)
@@ -66,7 +97,10 @@ Store this value and use `$PLUGIN_ROOT` in all subsequent script paths (e.g., `b
    - Parallel execution examples per story
    - Implementation strategy section (MVP first, incremental delivery)
 
-5. **Report**: Output path to generated tasks.md and summary:
+6. **Report** (T059): Output path to generated tasks.md and summary:
+   - File path (either `tasks.md` or `tasks-<branch-name>.md`)
+   - If `--branch` flag used: Display branch name and spec ID
+   - If `--stories` flag used: Display filtered story IDs
    - Total task count
    - Task count per user story
    - Parallel opportunities identified
