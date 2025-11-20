@@ -28,7 +28,7 @@
 
 - [X] T001 Review existing Feature 007 (multi-repo support) and Feature 008 (stacked PR) implementations in .speck/scripts/
 - [X] T002 Review existing test infrastructure in tests/ directory
-- [ ] T003 [P] Create test fixtures helper in tests/helpers/multi-repo-fixtures.ts for multi-repo test setup
+- [X] T003 [P] Create test fixtures helper in tests/helpers/multi-repo-fixtures.ts for multi-repo test setup
 
 ---
 
@@ -64,23 +64,23 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T014 [P] [US1] Contract test for branch creation in child repo validates exit code 0 in tests/contract/branch-create-child.test.ts
-- [ ] T015 [P] [US1] Contract test for branch creation validates branches.json schema v1.1.0 with parentSpecId in tests/contract/branch-schema-validation.test.ts
-- [ ] T016 [P] [US1] Contract test for PR suggestion in child repo validates exit code 2 and JSON output in tests/contract/pr-suggestion-child.test.ts
-- [ ] T017 [P] [US1] Contract test for base branch validation rejects cross-repo dependencies with exit code 1 in tests/contract/base-branch-validation.test.ts
-- [ ] T112 [P] [US1] Contract test validates branch creation works with non-standard main branch names (master, develop) in tests/contract/main-branch-names.test.ts
-- [ ] T113 [P] [US1] Contract test for PR title prefix format validates `[repo-name] Original Title` in tests/contract/pr-title-prefix.test.ts
+- [X] T014 [P] [US1] Contract test for branch creation in child repo validates exit code 0 in tests/contract/branch-create-child.test.ts
+- [X] T015 [P] [US1] Contract test for branch creation validates branches.json schema v1.1.0 with parentSpecId in tests/contract/branch-schema-validation.test.ts
+- [X] T016 [P] [US1] Contract test for PR suggestion in child repo validates exit code 2 and JSON output in tests/contract/pr-suggestion-child.test.ts
+- [X] T017 [P] [US1] Contract test for base branch validation rejects cross-repo dependencies with exit code 1 in tests/contract/base-branch-validation.test.ts
+- [X] T112 [P] [US1] Contract test validates branch creation works with non-standard main branch names (master, develop) in tests/contract/main-branch-names.test.ts
+- [X] T113 [P] [US1] Contract test for PR title prefix format validates `[repo-name] Original Title` in tests/contract/pr-title-prefix.test.ts
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Modify branch-command.ts to detect multi-repo child context at entry point in .speck/scripts/branch-command.ts
-- [ ] T019 [US1] Update branch creation logic to add parentSpecId when in child context in .speck/scripts/branch-command.ts
-- [ ] T020 [US1] Add cross-repo base branch validation before git branch creation in .speck/scripts/branch-command.ts
-- [ ] T021 [US1] Update PR suggestion generation to auto-prefix title with [repo-name] in child context in .speck/scripts/branch-command.ts
-- [ ] T022 [US1] Add error handling for symlink resolution failures with diagnostic messages in .speck/scripts/branch-command.ts
-- [ ] T023 [US1] Add warning for missing remote configuration (allow local branch creation) in .speck/scripts/branch-command.ts
+- [X] T018 [US1] Modify branch-command.ts to detect multi-repo child context at entry point in .speck/scripts/branch-command.ts
+- [X] T019 [US1] Update branch creation logic to add parentSpecId when in child context in .speck/scripts/branch-command.ts
+- [X] T020 [US1] Add cross-repo base branch validation before git branch creation in .speck/scripts/branch-command.ts
+- [X] T021 [US1] Update PR suggestion generation to auto-prefix title with [repo-name] in child context in .speck/scripts/branch-command.ts
+- [X] T022 [US1] Add error handling for symlink resolution failures with diagnostic messages in .speck/scripts/branch-command.ts
+- [X] T023 [US1] Add warning for missing remote configuration (allow local branch creation) in .speck/scripts/branch-command.ts
 - [X] T107 [US1] Implement remote URL detection in child repos for PR creation validation in .speck/scripts/common/git-operations.ts
-- [ ] T108 [US1] Add warning message when child repo has no remote but branch creation succeeds in .speck/scripts/branch-command.ts (warn per FR-020: "No remote configured. Branch created locally. PR creation unavailable.")
+- [X] T108 [US1] Add warning message when child repo has no remote but branch creation succeeds in .speck/scripts/branch-command.ts (warn per FR-020: "No remote configured. Branch created locally. PR creation unavailable.")
 
 ### Layer 2 Tests for User Story 1 (Integration Tests)
 
@@ -91,7 +91,7 @@
 
 - [ ] T026 [US1] E2E test for /speck.branch create in child repo validates complete workflow in tests/e2e/branch-create-child-e2e.test.ts
 - [ ] T027 [US1] E2E test for cross-repo base branch error validates error message and alternatives in tests/e2e/cross-repo-validation-e2e.test.ts
-- [ ] T109 [US1] Contract test for no-remote warning validates stderr output format in tests/contract/no-remote-warning.test.ts
+- [X] T109 [US1] Contract test for no-remote warning validates stderr output format in tests/contract/no-remote-warning.test.ts
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - developers can create stacked branches in child repos
 

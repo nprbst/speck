@@ -29,14 +29,49 @@ import {
   checkBranchMerged,
   listGitBranches,
   getCurrentBranch as gitGetCurrentBranch,
+  validateBaseBranch,
+  detectDefaultBranch,
+  detectRemoteUrl,
 } from "./common/git-operations.js";
-import { validateBranchName, getFeaturePaths } from "./common/paths.js";
+import {
+  validateBranchName,
+  getFeaturePaths,
+  detectSpeckRoot,
+  isMultiRepoChild,
+  getChildRepoName,
+  type MultiRepoContextMetadata,
+} from "./common/paths.js";
 import { GitError, ValidationError } from "./common/errors.js";
 import { $ } from "bun";
 
 // ===========================
 // Helpers
 // ===========================
+
+/**
+ * [Feature 009] Detect parent spec ID from speck root
+ * Reads the symlink target's parent spec directory to determine the parent spec ID
+ */
+async function detectParentSpecId(speckRoot: string): Promise<string | null> {
+  try {
+    const specsDir = path.join(speckRoot, "specs");
+    const specs = await fs.readdir(specsDir);
+
+    // Find specs matching pattern NNN-feature-name
+    const validSpecs = specs.filter(spec => /^\d{3}-.+$/.test(spec));
+
+    if (validSpecs.length === 0) {
+      return null;
+    }
+
+    // Return the most recent spec (highest number)
+    // For Feature 009, we expect the parent spec to be something like 007-multi-repo-monorepo-support
+    validSpecs.sort();
+    return validSpecs[validSpecs.length - 1];
+  } catch {
+    return null;
+  }
+}
 
 /**
  * T031b - Check if gh CLI is available
@@ -153,8 +188,23 @@ async function generatePRSuggestion(
   currentBranch: string,
   baseBranch: string,
   mapping: BranchMapping,
-  repoRoot: string
+  repoRoot: string,
+  multiRepoContext?: MultiRepoContextMetadata | null
 ): Promise<{ title: string; body: string; prBase: string } | null> {
+  // T108 - Check for remote URL (Feature 009 FR-020)
+  if (multiRepoContext?.context === 'child') {
+    const remoteUrl = await detectRemoteUrl(repoRoot);
+    if (!remoteUrl) {
+      // T108 - Warn about missing remote but don't block branch creation
+      console.warn('\n⚠️  WARNING: No remote configured for this repository.');
+      console.warn('Branch created locally. PR creation unavailable.');
+      console.warn('\nTo configure remote:');
+      console.warn('  git remote add origin <url>');
+      console.warn('  git push -u origin <branch-name>\n');
+      return null;
+    }
+  }
+
   // T031b - Check gh CLI availability
   const ghAvailable = await isGhCliAvailable();
   if (!ghAvailable) {
@@ -162,8 +212,18 @@ async function generatePRSuggestion(
   }
 
   // T031j - Determine PR base (do this FIRST to get commits against correct base)
+  // T021 - For multi-repo child, use detected default branch (main/master/develop)
   const currentBranchEntry = findBranchEntry(mapping, currentBranch);
-  const prBase = determinePRBase(currentBranch, currentBranchEntry?.baseBranch || null, repoRoot);
+  let prBase: string;
+
+  if (multiRepoContext?.context === 'child') {
+    // Multi-repo child: use child's default branch
+    const defaultBranch = await detectDefaultBranch(repoRoot);
+    prBase = defaultBranch || 'main';
+  } else {
+    // Single-repo or root: use existing logic
+    prBase = determinePRBase(currentBranch, currentBranchEntry?.baseBranch || null, repoRoot);
+  }
 
   // T031c - Get commits (use PR base, not the --base flag which might equal current branch)
   const commits = await getCommits(prBase, currentBranch, repoRoot);
@@ -181,8 +241,14 @@ async function generatePRSuggestion(
     prMetadata = await generatePRFromDiff(prBase, currentBranch, repoRoot);
   }
 
+  // T021 - Add [repo-name] prefix for multi-repo child
+  let title = prMetadata.title;
+  if (multiRepoContext?.childRepoName) {
+    title = `[${multiRepoContext.childRepoName}] ${prMetadata.title}`;
+  }
+
   return {
-    title: prMetadata.title,
+    title,
     body: prMetadata.body,
     prBase
   };
@@ -257,19 +323,23 @@ async function createCommand(args: string[]) {
   const paths = await getFeaturePaths();
   const repoRoot = paths.REPO_ROOT;
 
-  // [REMEDIATION:C1] Check for multi-repo mode
-  // Stacked PR support is single-repo only (Feature 008 FR-015)
-  if (paths.MODE === 'multi-repo') {
-    console.error('\n❌ ERROR: Stacked PR support is currently single-repo only\n');
-    console.error('This repository is in multi-repo mode (linked via .speck/root symlink).\n');
-    console.error('Current configuration:');
-    console.error(`  Repository root: ${paths.REPO_ROOT}`);
-    console.error(`  Speck root:      ${paths.SPECK_ROOT}`);
-    console.error('\nTo use stacked PRs, choose one of:');
-    console.error('  1. Remove multi-repo link:  rm .speck/root');
-    console.error('  2. Use traditional workflow (single branch per spec)');
-    console.error('\nFor current configuration details, run: /speck.env\n');
-    process.exit(1);
+  // [Feature 009] T018 - Detect multi-repo child context
+  const speckConfig = await detectSpeckRoot();
+  const isChild = await isMultiRepoChild();
+
+  // Determine multi-repo context metadata
+  let multiRepoContext: MultiRepoContextMetadata | null = null;
+  if (speckConfig.mode === 'multi-repo') {
+    const context = isChild ? 'child' : 'root';
+    const parentSpecId = isChild ? await detectParentSpecId(speckConfig.speckRoot) : null;
+    const childRepoName = isChild ? getChildRepoName(speckConfig.repoRoot, speckConfig.speckRoot) : null;
+
+    multiRepoContext = {
+      ...speckConfig,
+      context,
+      parentSpecId,
+      childRepoName,
+    };
   }
 
   // Get current branch (for PR suggestion later)
@@ -292,10 +362,14 @@ async function createCommand(args: string[]) {
     throw new Error(`Invalid branch name: '${name}'. Must be a valid git ref name.`);
   }
 
-  // T030 - Validate base branch exists
-  const baseExists = await branchExists(baseBranch, repoRoot);
-  if (!baseExists) {
-    throw new Error(`Base branch '${baseBranch}' does not exist in git`);
+  // T020 - Validate base branch exists (with cross-repo validation for Feature 009)
+  try {
+    await validateBaseBranch(baseBranch, repoRoot);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw error;
   }
 
   // T031 - Auto-detect or prompt for spec ID
@@ -318,7 +392,9 @@ async function createCommand(args: string[]) {
   }
 
   // Validate spec exists
-  const specDir = path.join(repoRoot, "specs", specId);
+  // T022 - Use correct specs directory based on multi-repo context
+  const specsBaseDir = multiRepoContext ? speckConfig.specsDir : path.join(repoRoot, "specs");
+  const specDir = path.join(specsBaseDir, specId);
   try {
     await fs.access(specDir);
   } catch {
@@ -357,7 +433,7 @@ async function createCommand(args: string[]) {
   // T031a-T031j - Check for PR opportunity and handle based on flags
   // Skip PR prompt if explicitly requested
   if (!skipPrPromptFlag && !createPrFlag) {
-    const prSuggestion = await generatePRSuggestion(currentBranch, baseBranch, mapping, repoRoot);
+    const prSuggestion = await generatePRSuggestion(currentBranch, baseBranch, mapping, repoRoot, multiRepoContext);
 
     if (prSuggestion) {
       // T031h - Output structured JSON to stderr for agent to parse
@@ -466,6 +542,7 @@ async function createCommand(args: string[]) {
   }
 
   // T033 - Create BranchEntry with ISO 8601 timestamps
+  // T019 - Add parentSpecId when in multi-repo child context
   const now = new Date().toISOString();
   const entry: BranchEntry = {
     name,
@@ -475,6 +552,7 @@ async function createCommand(args: string[]) {
     pr: null,
     createdAt: now,
     updatedAt: now,
+    ...(multiRepoContext?.parentSpecId && { parentSpecId: multiRepoContext.parentSpecId }),
   };
 
   // T040 - Cycle detection (from US3, but needed here)
