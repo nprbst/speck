@@ -106,6 +106,39 @@ Imports existing git branches into stacked mode with interactive spec mapping.
 4. Detects circular dependencies automatically
 5. Works alongside Graphite, GitHub Stack, or manual git
 
+## Multi-Repo Support (Feature 009)
+
+In multi-repo contexts, branch operations work independently per repository:
+
+**Child Repo Behavior:**
+- Each child repo maintains its own `.speck/branches.json` file
+- Branch stacks are isolated - operations in one child don't affect others
+- PR titles auto-prefixed with `[repo-name]` for clarity
+- Parent spec ID automatically detected from root repo's current branch
+
+**Aggregate Views with --all:**
+```bash
+# From root or any child repo - shows ALL branches across ALL repos
+/speck.branch list --all
+/speck.branch status --all
+```
+
+**Cross-Repo Validation:**
+- Base branches must exist in the same repository (cross-repo dependencies prevented)
+- Clear error messages suggest alternatives (merge-first, contracts, manual coordination)
+
+**Examples:**
+```bash
+# In child repo backend-service
+/speck.branch create nprbst/auth-db --base main
+# Creates branch tracked in backend-service/.speck/branches.json with parentSpecId
+
+# View aggregate across all child repos from root
+cd /path/to/speck-root
+/speck.branch list --all
+# Output groups branches by repository
+```
+
 ## Backwards Compatibility
 
 - If `.speck/branches.json` doesn't exist, traditional single-branch workflow continues

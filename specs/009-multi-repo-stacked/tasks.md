@@ -278,10 +278,10 @@
 
 **Purpose**: Update slash commands and documentation for multi-repo support
 
-- [ ] T086 [P] Update /speck.branch command documentation for multi-repo usage in .claude/commands/speck.branch.md
-- [ ] T087 [P] Update /speck.env command documentation for aggregate status in .claude/commands/speck.env.md
-- [ ] T088 Update CLAUDE.md with Feature 009 technologies (already complete per plan.md)
-- [ ] T089 [P] Add troubleshooting guide for common multi-repo issues in specs/009-multi-repo-stacked/quickstart.md (already exists)
+- [X] T086 [P] Update /speck.branch command documentation for multi-repo usage in .claude/commands/speck.branch.md
+- [X] T087 [P] Update /speck.env command documentation for aggregate status in .claude/commands/speck.env.md
+- [X] T088 Update CLAUDE.md with Feature 009 technologies (already complete per plan.md)
+- [X] T089 [P] Add troubleshooting guide for common multi-repo issues in specs/009-multi-repo-stacked/quickstart.md (already exists)
 
 ---
 

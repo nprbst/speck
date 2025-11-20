@@ -161,11 +161,17 @@ try {
 echo ""
 ```
 
-### 8. Branch Stack Status (US6)
+### 8. Branch Stack Status (US6, US2 for Multi-Repo)
+
+**Multi-Repo Context (Feature 009):**
+- When run from multi-repo root: Shows aggregate status across root + all child repos
+- When run from child repo: Shows local branch stack with parent spec reference
+- Output automatically groups branches by repository for clarity
 
 ```bash
 echo "=== Branch Stack Status ==="
 # T072-T081: Check for stacked PR mode and display branch stack
+# T033-T034: Multi-repo aggregate view when in root context
 bun -e '
 import { readBranches } from "'${EFFECTIVE_ROOT}'/scripts/common/branch-mapper.ts";
 import { getCurrentBranch } from "'${EFFECTIVE_ROOT}'/scripts/common/git-operations.ts";
