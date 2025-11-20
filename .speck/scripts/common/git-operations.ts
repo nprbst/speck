@@ -63,7 +63,7 @@ export async function checkBranchMerged(
       throw new GitError(`Failed to check merged status for '${branchName}'`);
     }
 
-    const output = await result.stdout.text();
+    const output = result.text();
     const mergedBranches = output
       .split("\n")
       .map(line => line.trim().replace(/^\*\s*/, ""))

@@ -112,6 +112,10 @@ export async function createMultiRepoTestFixture(
   await $`git -C ${rootDir} add .`.quiet();
   await $`git -C ${rootDir} commit -m "Initial commit" --allow-empty`.quiet();
 
+  // [Feature 009] Checkout the parent spec branch in root
+  // This allows detectParentSpecId() to correctly identify the parent spec
+  await $`git -C ${rootDir} checkout -b ${parentSpecId}`.quiet();
+
   // Map of child repo name → repo path
   const childRepos = new Map<string, string>();
 

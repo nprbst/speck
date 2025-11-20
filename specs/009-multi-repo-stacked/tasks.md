@@ -82,17 +82,17 @@
 - [X] T023 [US1] Add warning for missing remote configuration (allow local branch creation) in .speck/scripts/branch-command.ts
 - [X] T107 [US1] Implement remote URL detection in child repos for PR creation validation in .speck/scripts/common/git-operations.ts
 - [X] T108 [US1] Add warning message when child repo has no remote but branch creation succeeds in .speck/scripts/branch-command.ts (warn per FR-020: "No remote configured. Branch created locally. PR creation unavailable.")
-- [ ] T108a [US1] Fix detectParentSpecId() to properly identify parent spec (currently returns highest numbered spec instead of actual parent)
+- [X] T108a [US1] Fix detectParentSpecId() to properly identify parent spec (currently returns highest numbered spec instead of actual parent)
 
 ### Layer 2 Tests for User Story 1 (Integration Tests)
 
-- [ ] T024 [P] [US1] Integration test verifies /speck.branch create invokes branch-command.ts with correct args in tests/integration/branch-create-integration.test.ts
-- [ ] T025 [P] [US1] Integration test verifies plugin root resolution for multi-repo child context in tests/integration/plugin-root-resolution.test.ts
+- [X] T024 [P] [US1] Integration test verifies /speck.branch create invokes branch-command.ts with correct args in tests/integration/branch-create-integration.test.ts
+- [X] T025 [P] [US1] Integration test verifies plugin root resolution for multi-repo child context in tests/integration/plugin-root-resolution.test.ts
 
 ### Layer 3 Tests for User Story 1 (E2E Tests)
 
-- [ ] T026 [US1] E2E test for /speck.branch create in child repo validates complete workflow in tests/e2e/branch-create-child-e2e.test.ts
-- [ ] T027 [US1] E2E test for cross-repo base branch error validates error message and alternatives in tests/e2e/cross-repo-validation-e2e.test.ts
+- [X] T026 [US1] E2E test for /speck.branch create in child repo validates complete workflow in tests/e2e/branch-create-child-e2e.test.ts
+- [X] T027 [US1] E2E test for cross-repo base branch error validates error message and alternatives in tests/e2e/cross-repo-validation-e2e.test.ts
 - [X] T109 [US1] Contract test for no-remote warning validates stderr output format in tests/contract/no-remote-warning.test.ts
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - developers can create stacked branches in child repos

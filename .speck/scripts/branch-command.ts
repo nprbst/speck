@@ -50,10 +50,38 @@ import { $ } from "bun";
 
 /**
  * [Feature 009] Detect parent spec ID from speck root
- * Reads the symlink target's parent spec directory to determine the parent spec ID
+ *
+ * Determines the parent spec ID by checking the current git branch at the speck root.
+ * This identifies which spec "owns" the multi-repo setup.
+ *
+ * Logic:
+ * 1. Get current git branch at speck root
+ * 2. If branch matches spec pattern (NNN-feature-name), use that
+ * 3. Otherwise, find the most recent spec directory
+ *
+ * @param speckRoot - Path to the speck root directory
+ * @returns Parent spec ID or null if cannot be determined
  */
 async function detectParentSpecId(speckRoot: string): Promise<string | null> {
   try {
+    // First, try to get the current git branch at the speck root
+    const result = await $`git -C ${speckRoot} symbolic-ref --short HEAD 2>/dev/null || git -C ${speckRoot} rev-parse --short HEAD 2>/dev/null`.quiet();
+    const currentBranch = result.text().trim();
+
+    // Check if the branch name matches the spec pattern (NNN-feature-name)
+    if (currentBranch && /^\d{3}-.+$/.test(currentBranch)) {
+      // Verify that this spec directory actually exists
+      const specDir = path.join(speckRoot, "specs", currentBranch);
+      try {
+        await fs.access(specDir);
+        return currentBranch;
+      } catch {
+        // Branch name looks like a spec but directory doesn't exist
+        // Fall through to alternative detection
+      }
+    }
+
+    // Fallback: Find the most recent spec directory
     const specsDir = path.join(speckRoot, "specs");
     const specs = await fs.readdir(specsDir);
 
@@ -65,7 +93,6 @@ async function detectParentSpecId(speckRoot: string): Promise<string | null> {
     }
 
     // Return the most recent spec (highest number)
-    // For Feature 009, we expect the parent spec to be something like 007-multi-repo-monorepo-support
     validSpecs.sort();
     return validSpecs[validSpecs.length - 1];
   } catch {
