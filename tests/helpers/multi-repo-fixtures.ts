@@ -361,3 +361,148 @@ export async function commitChanges(repoPath: string, message: string): Promise<
   await $`git -C ${repoPath} add .`.quiet();
   await $`git -C ${repoPath} commit -m ${message} --allow-empty`.quiet();
 }
+
+/**
+ * Execute a TypeScript script with Bun runtime
+ *
+ * @param scriptPath - Path to script to execute
+ * @param args - Command-line arguments
+ * @param options - Execution options (cwd, env, etc.)
+ * @returns Script output with exitCode, stdout, stderr
+ */
+export async function executeScript(
+  scriptPath: string,
+  args: string[] = [],
+  options: { cwd?: string; env?: Record<string, string> } = {}
+): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+  try {
+    const proc = Bun.spawn({
+      cmd: ["bun", "run", scriptPath, ...args],
+      cwd: options.cwd || process.cwd(),
+      env: { ...process.env, ...options.env },
+      stdout: "pipe",
+      stderr: "pipe"
+    });
+
+    const stdout = await new Response(proc.stdout).text();
+    const stderr = await new Response(proc.stderr).text();
+    const exitCode = await proc.exited;
+
+    return { exitCode, stdout, stderr };
+  } catch (error) {
+    return {
+      exitCode: 1,
+      stdout: "",
+      stderr: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+
+/**
+ * Simplified multi-repo test setup configuration
+ */
+export interface MultiRepoSetupConfig {
+  childRepos?: string[];                            // Child repo names
+  rootBranches?: Array<{                           // Root repo branches
+    name: string;
+    specId: string;
+    baseBranch: string;
+    status: "active" | "submitted" | "merged" | "abandoned";
+    pr?: number;
+  }>;
+  childBranches?: Record<string, Array<{           // Child repo branches
+    name: string;
+    specId: string;
+    baseBranch: string;
+    status: "active" | "submitted" | "merged" | "abandoned";
+    pr?: number;
+    parentSpecId?: string;
+  }>>;
+}
+
+/**
+ * Simplified test setup result
+ */
+export interface MultiRepoTestSetup {
+  speckRoot: string;
+  rootDir: string;
+  specsDir: string;
+  scriptsDir: string;
+  childRepos: Map<string, string>;
+  cleanup: () => Promise<void>;
+}
+
+/**
+ * Create multi-repo test setup with simplified configuration
+ *
+ * @param config - Setup configuration
+ * @returns Test setup with cleanup function
+ */
+export async function createMultiRepoTestSetup(
+  config: MultiRepoSetupConfig
+): Promise<MultiRepoTestSetup> {
+  const childConfigs: ChildRepoConfig[] = (config.childRepos || []).map(name => ({
+    name,
+    branches: config.childBranches?.[name]?.map(b => ({
+      ...b,
+      pr: b.pr ?? null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }))
+  }));
+
+  const fixture = await createMultiRepoTestFixture(childConfigs);
+
+  // Add root branches if provided
+  if (config.rootBranches && config.rootBranches.length > 0) {
+    const branchMapping: BranchMapping = {
+      version: "1.1.0",
+      branches: config.rootBranches.map(b => ({
+        ...b,
+        pr: b.pr ?? null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })),
+      specIndex: {}
+    };
+
+    // Build specIndex
+    for (const branch of branchMapping.branches) {
+      if (!branchMapping.specIndex[branch.specId]) {
+        branchMapping.specIndex[branch.specId] = [];
+      }
+      branchMapping.specIndex[branch.specId].push(branch.name);
+    }
+
+    // Write branches.json to root
+    const branchesPath = path.join(fixture.rootDir, ".speck", "branches.json");
+    await writeFile(branchesPath, JSON.stringify(branchMapping, null, 2));
+
+    // Create git branches
+    for (const branch of branchMapping.branches) {
+      try {
+        await $`git -C ${fixture.rootDir} branch ${branch.name}`.quiet();
+      } catch (error) {
+        // Ignore if branch already exists
+      }
+    }
+  }
+
+  return {
+    speckRoot: fixture.rootDir,
+    rootDir: fixture.rootDir,
+    specsDir: fixture.specsDir,
+    scriptsDir: fixture.scriptsDir,
+    childRepos: fixture.childRepos,
+    cleanup: fixture.cleanup
+  };
+}
+
+/**
+ * Cleanup multi-repo test setup
+ *
+ * @param setup - Test setup to cleanup
+ */
+export async function cleanupMultiRepoTest(setup: MultiRepoTestSetup): Promise<void> {
+  await setup.cleanup();
+}

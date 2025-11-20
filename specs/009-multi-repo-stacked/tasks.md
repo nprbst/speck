@@ -107,19 +107,19 @@
 
 ### Layer 1 Tests for User Story 2 (Contract Tests)
 
-- [ ] T028 [P] [US2] Contract test for env command validates aggregate status output format in tests/contract/env-aggregate-status.test.ts
-- [ ] T029 [P] [US2] Contract test for branch list --all validates output grouping by repo in tests/contract/branch-list-all.test.ts
-- [ ] T030 [P] [US2] Contract test for branch status --all validates per-repo summaries in tests/contract/branch-status-all.test.ts
+- [X] T028 [P] [US2] Contract test for env command validates aggregate status output format in tests/contract/env-aggregate-status.test.ts
+- [X] T029 [P] [US2] Contract test for branch list --all validates output grouping by repo in tests/contract/branch-list-all.test.ts
+- [X] T030 [P] [US2] Contract test for branch status --all validates per-repo summaries in tests/contract/branch-status-all.test.ts
 
 ### Implementation for User Story 2
 
-- [ ] T031 [P] [US2] Add getAggregatedBranchStatus() function to collect branches across repos in .speck/scripts/common/branch-mapper.ts
-- [ ] T032 [US2] Update env-command.ts to display multi-repo context indicator when in child in .speck/scripts/env-command.ts
-- [ ] T033 [US2] Add aggregate branch status section to /speck.env output when in root context in .speck/scripts/env-command.ts
-- [ ] T034 [US2] Implement tree-based visualization for multi-repo branch stacks in .speck/scripts/env-command.ts
-- [ ] T035 [US2] Add /speck.branch list --all flag support with repo grouping in .speck/scripts/branch-command.ts
-- [ ] T036 [US2] Add /speck.branch status --all flag support with per-repo summaries in .speck/scripts/branch-command.ts
-- [ ] T037 [US2] Add branch name disambiguation by repo in aggregate views in .speck/scripts/branch-command.ts
+- [X] T031 [P] [US2] Add getAggregatedBranchStatus() function to collect branches across repos in .speck/scripts/common/branch-mapper.ts
+- [X] T032 [US2] Update env-command.ts to display multi-repo context indicator when in child in .speck/scripts/env-command.ts
+- [X] T033 [US2] Add aggregate branch status section to /speck.env output when in root context in .speck/scripts/env-command.ts
+- [X] T034 [US2] Implement tree-based visualization for multi-repo branch stacks in .speck/scripts/env-command.ts
+- [X] T035 [US2] Add /speck.branch list --all flag support with repo grouping in .speck/scripts/branch-command.ts
+- [X] T036 [US2] Add /speck.branch status --all flag support with per-repo summaries in .speck/scripts/branch-command.ts
+- [X] T037 [US2] Add branch name disambiguation by repo in aggregate views in .speck/scripts/branch-command.ts
 
 ### Layer 2 Tests for User Story 2 (Integration Tests)
 

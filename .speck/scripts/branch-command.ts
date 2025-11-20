@@ -18,9 +18,12 @@ import {
   getSpecForBranch,
   getBranchesForSpec,
   detectCycle,
+  getAggregatedBranchStatus,
   type BranchEntry,
   type BranchMapping,
   type BranchStatus,
+  type RepoBranchSummary,
+  type AggregatedBranchStatus,
 } from "./common/branch-mapper.js";
 import {
   createGitBranch,
@@ -621,7 +624,21 @@ async function createCommand(args: string[]) {
 async function listCommand(args: string[]) {
   const showAll = args.includes("--all");
   const paths = await getFeaturePaths();
+  const config = await detectSpeckRoot();
   const repoRoot = paths.REPO_ROOT;
+
+  // T035 - Check if --all flag should show multi-repo aggregate
+  if (showAll && config.mode === "multi-repo") {
+    const isChild = await isMultiRepoChild();
+
+    // T035 - Multi-repo root: show aggregate across all repos
+    if (!isChild) {
+      await displayAggregateListAll(config.speckRoot, repoRoot);
+      return;
+    }
+  }
+
+  // Single-repo or child context: show local branches only
   const mapping = await readBranches(repoRoot);
 
   if (mapping.branches.length === 0) {
@@ -634,7 +651,7 @@ async function listCommand(args: string[]) {
   const currentBranch = await gitGetCurrentBranch(repoRoot);
 
   if (showAll) {
-    // T082-T084 - Show branches across all specs
+    // T082-T084 - Show branches across all specs (in current repo)
     const specIds = Object.keys(mapping.specIndex);
 
     for (const specId of specIds) {
@@ -665,9 +682,73 @@ async function listCommand(args: string[]) {
   }
 }
 
-async function statusCommand() {
+/**
+ * T035 [US2] - Display aggregate list across all repositories
+ * T037 [US2] - Handle branch name disambiguation by repo
+ */
+async function displayAggregateListAll(speckRoot: string, repoRoot: string) {
+  const aggregated = await getAggregatedBranchStatus(speckRoot, repoRoot);
+
+  console.log("Branch List (All Repositories)\n");
+
+  // Display root repository
+  if (aggregated.rootRepo && aggregated.rootRepo.branchCount > 0) {
+    console.log("Root Repository:");
+    console.log("Branch             Base           Spec                    PR#   Status");
+    console.log("─".repeat(80));
+
+    const rootMapping = await readBranches(speckRoot);
+    for (const branch of rootMapping.branches) {
+      const prDisplay = branch.pr ? String(branch.pr).padEnd(5) : "-".padEnd(5);
+      console.log(
+        `${branch.name.padEnd(18)} ${branch.baseBranch.padEnd(14)} ${branch.specId.padEnd(23)} ${prDisplay} ${branch.status}`
+      );
+    }
+    console.log("");
+  }
+
+  // Display child repositories (sorted alphabetically)
+  const childNames = Array.from(aggregated.childRepos.keys()).sort();
+
+  for (const childName of childNames) {
+    const summary = aggregated.childRepos.get(childName)!;
+    console.log(`Child: ${childName}`);
+    console.log("Branch             Base           Spec                    PR#   Status");
+    console.log("─".repeat(80));
+
+    const childMapping = await readBranches(summary.repoPath);
+    for (const branch of childMapping.branches) {
+      const prDisplay = branch.pr ? String(branch.pr).padEnd(5) : "-".padEnd(5);
+      console.log(
+        `${branch.name.padEnd(18)} ${branch.baseBranch.padEnd(14)} ${branch.specId.padEnd(23)} ${prDisplay} ${branch.status}`
+      );
+    }
+    console.log("");
+  }
+
+  if (childNames.length === 0 && !aggregated.rootRepo) {
+    console.log("No branches found in any repository.");
+  }
+}
+
+async function statusCommand(args: string[] = []) {
+  const showAll = args.includes("--all");
   const paths = await getFeaturePaths();
+  const config = await detectSpeckRoot();
   const repoRoot = paths.REPO_ROOT;
+
+  // T036 - Check if --all flag should show multi-repo aggregate
+  if (showAll && config.mode === "multi-repo") {
+    const isChild = await isMultiRepoChild();
+
+    // T036 - Multi-repo root: show aggregate status across all repos
+    if (!isChild) {
+      await displayAggregateStatusAll(config.speckRoot, repoRoot);
+      return;
+    }
+  }
+
+  // Single-repo or child context: show local status only
   const mapping = await readBranches(repoRoot);
   const currentBranch = await gitGetCurrentBranch(repoRoot);
   const specId = getSpecForBranch(mapping, currentBranch);
@@ -730,6 +811,83 @@ async function statusCommand() {
   } else {
     console.log(`\n⚠ ${warnings} warning(s) found`);
   }
+}
+
+/**
+ * T036 [US2] - Display aggregate status across all repositories
+ */
+async function displayAggregateStatusAll(speckRoot: string, repoRoot: string) {
+  const aggregated = await getAggregatedBranchStatus(speckRoot, repoRoot);
+
+  console.log("Branch Status (All Repositories)\n");
+
+  // Display root repository
+  if (aggregated.rootRepo && aggregated.rootRepo.branchCount > 0) {
+    console.log("Root Repository:");
+    await displayRepoStatus(speckRoot, aggregated.rootRepo);
+    console.log("");
+  }
+
+  // Display child repositories (sorted alphabetically)
+  const childNames = Array.from(aggregated.childRepos.keys()).sort();
+
+  for (const childName of childNames) {
+    const summary = aggregated.childRepos.get(childName)!;
+    console.log(`Child: ${childName}`);
+    await displayRepoStatus(summary.repoPath, summary);
+    console.log("");
+  }
+
+  if (childNames.length === 0 && !aggregated.rootRepo) {
+    console.log("No branches found in any repository.");
+  }
+}
+
+/**
+ * Display status for a single repository
+ */
+async function displayRepoStatus(repoPath: string, summary: RepoBranchSummary) {
+  const mapping = await readBranches(repoPath);
+
+  // Display summary
+  const counts: string[] = [];
+  if (summary.statusCounts.active > 0) counts.push(`${summary.statusCounts.active} active`);
+  if (summary.statusCounts.submitted > 0) counts.push(`${summary.statusCounts.submitted} submitted`);
+  if (summary.statusCounts.merged > 0) counts.push(`${summary.statusCounts.merged} merged`);
+  if (summary.statusCounts.abandoned > 0) counts.push(`${summary.statusCounts.abandoned} abandoned`);
+
+  if (counts.length > 0) {
+    console.log(`  Total: ${summary.branchCount} branches (${counts.join(", ")})`);
+  }
+
+  // Display dependency tree
+  console.log("  Dependency Tree:");
+  for (const chain of summary.chains) {
+    if (chain.branches.length > 0) {
+      displayBranchChain(chain.branches, mapping);
+    }
+  }
+}
+
+/**
+ * Display branch chain with status indicators
+ */
+function displayBranchChain(branchNames: string[], mapping: BranchMapping) {
+  branchNames.forEach((branchName, idx) => {
+    const branch = mapping.branches.find(b => b.name === branchName);
+    if (!branch) return;
+
+    const marker = idx === 0 ? "    └─" : "       └─";
+    let display = `${marker} ${branchName}`;
+
+    if (branch.pr) {
+      display += ` (${branch.status}, PR #${branch.pr})`;
+    } else if (branch.status !== "active") {
+      display += ` (${branch.status})`;
+    }
+
+    console.log(display);
+  });
 }
 
 async function updateCommand(args: string[]) {
@@ -1011,7 +1169,7 @@ async function main() {
         await listCommand(commandArgs);
         break;
       case "status":
-        await statusCommand();
+        await statusCommand(commandArgs);
         break;
       case "update":
         await updateCommand(commandArgs);

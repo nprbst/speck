@@ -556,3 +556,188 @@ function isValidISOTimestamp(value: string): boolean {
     return false;
   }
 }
+
+// ===========================
+// Multi-Repo Aggregation (Feature 009)
+// ===========================
+
+/**
+ * Repository branch summary for aggregate views
+ */
+export interface RepoBranchSummary {
+  repoPath: string;           // Absolute path to git repository
+  repoName: string;           // Directory name (for display)
+  specId: string | null;      // Current spec ID or null if no branches
+  branchCount: number;        // Total branches
+  statusCounts: {             // Count by status
+    active: number;
+    submitted: number;
+    merged: number;
+    abandoned: number;
+  };
+  chains: BranchChain[];      // Dependency chains
+}
+
+/**
+ * Aggregated branch status across all repositories
+ */
+export interface AggregatedBranchStatus {
+  rootRepo: RepoBranchSummary | null;           // Root repository summary
+  childRepos: Map<string, RepoBranchSummary>;   // Child repo name → summary
+}
+
+/**
+ * T031 [P] [US2] - Collect branches across all repos (root + children)
+ *
+ * Reads .speck/branches.json from root and each child repository,
+ * aggregating into a unified view for multi-repo status displays.
+ *
+ * @param speckRoot - Speck root directory
+ * @param repoRoot - Current repository root
+ * @returns Aggregated branch status with root and child summaries
+ */
+export async function getAggregatedBranchStatus(
+  speckRoot: string,
+  repoRoot: string
+): Promise<AggregatedBranchStatus> {
+  // Import paths module (lazily to avoid circular dependency)
+  const { findChildRepos } = await import("./paths");
+
+  // Read root repository branches
+  let rootRepo: RepoBranchSummary | null = null;
+  try {
+    const rootMapping = await readBranches(speckRoot);
+    if (rootMapping.branches.length > 0) {
+      rootRepo = buildRepoBranchSummary(speckRoot, "root", rootMapping);
+    }
+  } catch (error) {
+    // Root may not have branches.json - not an error
+  }
+
+  // Find and read child repositories
+  const childRepos = new Map<string, RepoBranchSummary>();
+  const childRepoPaths = await findChildRepos(speckRoot);
+
+  for (const childPath of childRepoPaths) {
+    const childName = path.basename(childPath);
+
+    try {
+      const childMapping = await readBranches(childPath);
+      if (childMapping.branches.length > 0) {
+        const summary = buildRepoBranchSummary(childPath, childName, childMapping);
+        childRepos.set(childName, summary);
+      }
+    } catch (error) {
+      // Child may not have branches.json - skip
+      continue;
+    }
+  }
+
+  return {
+    rootRepo,
+    childRepos
+  };
+}
+
+/**
+ * Build repository branch summary from branch mapping
+ *
+ * @param repoPath - Repository path
+ * @param repoName - Repository display name
+ * @param mapping - Branch mapping data
+ * @returns Repository branch summary
+ */
+function buildRepoBranchSummary(
+  repoPath: string,
+  repoName: string,
+  mapping: BranchMapping
+): RepoBranchSummary {
+  // Count branches by status
+  const statusCounts = {
+    active: 0,
+    submitted: 0,
+    merged: 0,
+    abandoned: 0
+  };
+
+  for (const branch of mapping.branches) {
+    statusCounts[branch.status]++;
+  }
+
+  // Get unique spec IDs
+  const specIds = [...new Set(mapping.branches.map(b => b.specId))];
+  const specId = specIds.length === 1 ? specIds[0] : null;
+
+  // Build dependency chains
+  const chains = buildDependencyChains(mapping);
+
+  return {
+    repoPath,
+    repoName,
+    specId,
+    branchCount: mapping.branches.length,
+    statusCounts,
+    chains
+  };
+}
+
+/**
+ * Build dependency chains from branch mapping
+ *
+ * @param mapping - Branch mapping
+ * @returns Array of branch chains (root → leaves)
+ */
+function buildDependencyChains(mapping: BranchMapping): BranchChain[] {
+  const chains: BranchChain[] = [];
+  const processed = new Set<string>();
+
+  // Find root branches (branches whose baseBranch is not in the mapping)
+  const branchNames = new Set(mapping.branches.map(b => b.name));
+  const rootBranches = mapping.branches.filter(
+    b => !branchNames.has(b.baseBranch)
+  );
+
+  // Build chain from each root
+  for (const root of rootBranches) {
+    if (!processed.has(root.name)) {
+      const chain = buildChainFromBranch(root.name, mapping, processed);
+      if (chain.length > 0) {
+        chains.push({ branches: chain });
+      }
+    }
+  }
+
+  return chains;
+}
+
+/**
+ * Recursively build dependency chain from a branch
+ *
+ * @param branchName - Starting branch name
+ * @param mapping - Branch mapping
+ * @param processed - Set of already processed branches
+ * @returns Array of branch names in dependency order
+ */
+function buildChainFromBranch(
+  branchName: string,
+  mapping: BranchMapping,
+  processed: Set<string>
+): string[] {
+  processed.add(branchName);
+
+  // Find children (branches that have this branch as baseBranch)
+  const children = mapping.branches.filter(b => b.baseBranch === branchName);
+
+  if (children.length === 0) {
+    return [branchName];
+  }
+
+  // For simplicity, follow first child (stacked chains are typically linear)
+  // In case of multiple children, we'd need a more complex visualization
+  const firstChild = children[0];
+  if (!processed.has(firstChild.name)) {
+    return [branchName, ...buildChainFromBranch(firstChild.name, mapping, processed)];
+  }
+
+  return [branchName];
+}
