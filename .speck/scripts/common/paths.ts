@@ -487,6 +487,22 @@ export async function getMultiRepoContext(): Promise<MultiRepoContextMetadata> {
       // If we can't read branches.json or it doesn't exist, leave parentSpecId as null
     }
 
+    // T108a - If no parentSpecId found in branches.json, detect from root repo's current branch
+    if (!parentSpecId) {
+      try {
+        const { $ } = await import("bun");
+        const result = await $`git -C ${config.speckRoot} rev-parse --abbrev-ref HEAD`.quiet();
+        const currentBranch = result.stdout.toString().trim();
+
+        // Check if current branch matches spec pattern (NNN-feature-name)
+        if (/^\d{3}-/.test(currentBranch)) {
+          parentSpecId = currentBranch;
+        }
+      } catch {
+        // Ignore errors - leave parentSpecId as null
+      }
+    }
+
     return {
       ...config,
       context: 'child',

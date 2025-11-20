@@ -640,16 +640,12 @@ async function listCommand(args: string[]) {
 
   // T035 - Check if --all flag should show multi-repo aggregate
   if (showAll && config.mode === "multi-repo") {
-    const isChild = await isMultiRepoChild();
-
-    // T035 - Multi-repo root: show aggregate across all repos
-    if (!isChild) {
-      await displayAggregateListAll(config.speckRoot, repoRoot);
-      return;
-    }
+    // T035 - Multi-repo (root or child with --all): show aggregate across all repos
+    await displayAggregateListAll(config.speckRoot, repoRoot);
+    return;
   }
 
-  // Single-repo or child context: show local branches only
+  // Single-repo or child context without --all: show local branches only
   const mapping = await readBranches(repoRoot);
 
   if (mapping.branches.length === 0) {
@@ -756,16 +752,12 @@ async function statusCommand(args: string[] = []) {
 
   // T036 - Check if --all flag should show multi-repo aggregate
   if (showAll && config.mode === "multi-repo") {
-    const isChild = await isMultiRepoChild();
-
-    // T036 - Multi-repo root: show aggregate status across all repos
-    if (!isChild) {
-      await displayAggregateStatusAll(config.speckRoot, repoRoot);
-      return;
-    }
+    // T036 - Multi-repo (root or child with --all): show aggregate status across all repos
+    await displayAggregateStatusAll(config.speckRoot, repoRoot);
+    return;
   }
 
-  // Single-repo or child context: show local status only
+  // Single-repo or child context without --all: show local status only
   const mapping = await readBranches(repoRoot);
 
   let currentBranch = "";

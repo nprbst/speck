@@ -42,7 +42,7 @@ describe("E2E: /speck.branch list --all validates repo grouping and disambiguati
     // Create branch in root repo
     await $`
       cd ${rootRepo} && \
-      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/root-feature --base main --spec 008-stacked-pr-support
+      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/root-feature --base main --spec 008-stacked-pr-support --skip-pr-prompt
     `.quiet();
 
     // Create branches in backend child repo
@@ -100,7 +100,7 @@ describe("E2E: /speck.branch list --all validates repo grouping and disambiguati
     // Create branches in all repos
     await $`
       cd ${rootRepo} && \
-      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/root-feat --base main --spec 008-stacked-pr-support
+      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/root-feat --base main --spec 008-stacked-pr-support --skip-pr-prompt
     `.quiet();
 
     await $`

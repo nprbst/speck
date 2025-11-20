@@ -123,6 +123,10 @@ export async function createMultiRepoTestFixture(
   // This allows detectParentSpecId() to correctly identify the parent spec
   await $`git -C ${rootDir} checkout -b ${parentSpecId}`.quiet();
 
+  // Ensure no uncommitted changes after branch creation
+  await $`git -C ${rootDir} add .`.quiet();
+  await $`git -C ${rootDir} commit -m "Setup parent spec branch" --allow-empty`.quiet();
+
   // Map of child repo name → repo path
   const childRepos = new Map<string, string>();
 
@@ -189,6 +193,10 @@ export async function createMultiRepoTestFixture(
     const childLinkPath = path.join(rootDir, childLinkName);
     await symlink(childDir, childLinkPath, "dir");
   }
+
+  // Commit all symlinks to avoid "uncommitted changes" errors in tests
+  await $`git -C ${rootDir} add .`.quiet();
+  await $`git -C ${rootDir} commit -m "Add child repo symlinks" --allow-empty`.quiet();
 
   // Cleanup function
   const cleanup = async () => {

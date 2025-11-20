@@ -42,7 +42,7 @@ describe("E2E: /speck.env from root validates complete aggregate view", () => {
     // Create branch in root repo
     await $`
       cd ${rootRepo} && \
-      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/root-feature --base main --spec 008-stacked-pr-support
+      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/root-feature --base main --spec 008-stacked-pr-support --skip-pr-prompt
     `.quiet();
 
     // Create branches in backend child repo
