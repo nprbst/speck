@@ -331,11 +331,45 @@ export async function isMultiRepoChild(): Promise<boolean> {
 /**
  * T007 - Get child repository name (Feature 009)
  *
+ * Extracts the child repo name from the .speck-link-* symlink in the speck root.
+ * Falls back to basename if no symlink found (e.g., in single-repo mode).
+ *
  * @param repoRoot - Child repository root path
  * @param speckRoot - Speck root path
- * @returns Directory name of child repo
+ * @returns Directory name of child repo (from symlink name or basename)
  */
-export function getChildRepoName(repoRoot: string, speckRoot: string): string {
+export async function getChildRepoName(repoRoot: string, speckRoot: string): Promise<string> {
+  try {
+    // Resolve repoRoot to absolute path for comparison
+    const resolvedRepoRoot = await fs.realpath(repoRoot);
+
+    // Scan speck root for .speck-link-* symlinks
+    const entries = await fs.readdir(speckRoot, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.isSymbolicLink() && entry.name.startsWith('.speck-link-')) {
+        const symlinkPath = path.join(speckRoot, entry.name);
+
+        try {
+          // Resolve symlink target
+          const targetPath = await fs.realpath(symlinkPath);
+
+          // If this symlink points to our repo, extract name from symlink
+          if (targetPath === resolvedRepoRoot) {
+            // Extract name from .speck-link-{name} pattern
+            return entry.name.replace(/^\.speck-link-/, '');
+          }
+        } catch {
+          // Broken symlink - skip
+          continue;
+        }
+      }
+    }
+  } catch {
+    // If lookup fails, fall back to basename
+  }
+
+  // Fallback: use directory basename (for single-repo mode or if symlink not found)
   return path.basename(repoRoot);
 }
 
@@ -476,7 +510,7 @@ export async function getMultiRepoContext(): Promise<MultiRepoContextMetadata> {
     };
   } else {
     // Child context - extract parentSpecId from branches.json
-    const childRepoName = getChildRepoName(config.repoRoot, config.speckRoot);
+    const childRepoName = await getChildRepoName(config.repoRoot, config.speckRoot);
 
     // Try to determine parent spec by reading from branches.json
     let parentSpecId: string | null = null;

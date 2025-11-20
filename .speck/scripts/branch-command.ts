@@ -362,7 +362,7 @@ async function createCommand(args: string[]) {
   if (speckConfig.mode === 'multi-repo') {
     const context = isChild ? 'child' : 'root';
     const parentSpecId = isChild ? await detectParentSpecId(speckConfig.speckRoot) : null;
-    const childRepoName = isChild ? getChildRepoName(speckConfig.repoRoot, speckConfig.speckRoot) : null;
+    const childRepoName = isChild ? await getChildRepoName(speckConfig.repoRoot, speckConfig.speckRoot) : null;
 
     multiRepoContext = {
       ...speckConfig,
