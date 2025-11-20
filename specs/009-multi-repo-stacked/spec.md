@@ -9,7 +9,7 @@
 
 ### Session 2025-11-19
 
-- Q: When symlink resolution fails (permissions, broken symlinks, filesystem issues), should the system fail fast or attempt degraded operation? → A: Fail fast - Exit with error and diagnostic guidance to fix symlinks
+- Q: When symlink resolution fails (permissions, broken symlinks, filesystem issues), should the system fail fast or attempt degraded operation? → A: Fail fast per FR-001 - Exit with error and diagnostic guidance to fix symlinks (prevents data corruption from wrong-repo operations)
 - Q: If both root and child have `.speck/branches.json` files, how should the system resolve this conflict? → A: No conflict exists - each git repo has exactly one branches.json it cares about; child repos only read their own file, root only reads its own
 - Q: When running `/speck.env` or `/speck.branch list --all` from root, should output include root repo's own branches plus all children, or only children? → A: Root branches + child branches - Complete aggregate view showing all work across entire multi-repo spec
 - Q: How should child repo name be incorporated into PR metadata - as prefix in title, suffix in title, or section in description? → A: Prefix format - `[repo-name] Original PR title` for clear visual identification in PR lists
@@ -114,7 +114,7 @@ A developer has manually created git branches across multiple child repos before
 - What happens when child repo's remote URL changes after stacked branches created?
 - How does system handle child repo with no remote configured (local-only)?
 - What happens when child repo is deleted but parent spec still exists?
-- How does system handle symlink detection failures in multi-repo mode? → System fails fast with error exit and diagnostic message directing user to fix symlink configuration (broken symlinks, permissions issues, filesystem problems)
+- How does system handle symlink detection failures in multi-repo mode? → See FR-001 (fail-fast with diagnostic error)
 - What happens when `.speck/branches.json` exists in both root and child repo - which takes precedence? → No precedence needed - each git repo independently manages its own `.speck/branches.json`; child repo commands only read child's file, root commands only read root's file
 - How does system handle child repo that gets unlinked (symlink removed) while stacked branches exist?
 - What happens when parent spec is deleted but child repos still have `.speck/branches.json` files?
@@ -125,7 +125,7 @@ A developer has manually created git branches across multiple child repos before
 
 ### Functional Requirements
 
-- **FR-001**: System MUST detect when `/speck.branch` commands are invoked from within multi-repo child repository (linked via `/speck.link`) vs. single-repo or multi-repo root context; if symlink resolution fails, system MUST exit with non-zero error code and diagnostic message instructing user to fix symlink configuration
+- **FR-001**: System MUST detect when `/speck.branch` commands are invoked from within multi-repo child repository (linked via `/speck.link`) vs. single-repo or multi-repo root context; if symlink resolution fails (permissions, broken symlinks, filesystem issues), system MUST exit with non-zero error code and diagnostic message instructing user to fix symlink configuration (see Assumptions section for rationale)
 - **FR-002**: System MUST create and maintain separate `.speck/branches.json` file in each git repository that uses stacked PRs; each repo's commands operate only on its own local file (child repo commands read child's file, root repo commands read root's file) with no cross-repo precedence or conflicts
 - **FR-003**: Child repo `.speck/branches.json` MUST include `parentSpecId` field referencing the root spec directory (e.g., "007-multi-repo-monorepo-support")
 - **FR-004**: System MUST validate that base branches for stacked PRs in child repos exist in the same child repo, not in other child repos or root spec
@@ -142,12 +142,12 @@ A developer has manually created git branches across multiple child repos before
 - **FR-015**: `/speck.branch import` command MUST detect and import existing git branch relationships independently per child repo when run from child context
 - **FR-016**: `/speck.branch import --all` command MUST offer to import branches for root repo and all child repos when run from multi-repo root, with interactive selection (root included in selection options)
 - **FR-017**: System MUST validate `.speck/branches.json` schema in child repos matches root spec schema, with additional required `parentSpecId` field for multi-repo contexts
-- **FR-018**: System MUST disambiguate branch names in aggregate views (like `--all` commands) by prefixing with repo identifier (root labeled as "root", children by directory name)
+- **FR-018**: System MUST disambiguate branch names in aggregate views (like `--all` commands) by prefixing with repo identifier using format: `root/<branch-name>` for root repo branches, `<child-repo-dir-name>/<branch-name>` for child repo branches (e.g., "backend-service/auth-layer")
 - **FR-019**: Error messages for cross-repo base branch failures MUST suggest alternatives: completing work in other child first, using shared contracts, or manual PR coordination
 - **FR-020**: System MUST gracefully handle child repos without remotes configured by allowing local branch creation but warning about PR creation limitations
 - **FR-021**: When child repo is unlinked (symlink removed) while `.speck/branches.json` exists, system MUST warn about orphaned branch tracking without deleting data
 - **FR-022**: System MUST support child repos with different main branch names (main, master, develop) without requiring uniform naming across multi-repo spec
-- **FR-023**: System MUST log only errors and warnings to stderr; success operations produce no log output to maintain clean stdout for parseable command output
+- **FR-023**: System MUST log only errors and warnings to stderr per classification: **Errors** (non-zero exit code, operation cannot continue): missing required files, invalid git state, cross-repo dependency validation failures, symlink resolution failures; **Warnings** (exit code 0, operation continues with degraded behavior): remote URL mismatch, orphaned branch tracking, missing remote configuration. Success operations produce no log output to maintain clean stdout for parseable command output.
 
 ### Testing Requirements
 
@@ -155,7 +155,7 @@ A developer has manually created git branches across multiple child repos before
 
 #### Test Coverage Requirements
 
-- **FR-TEST-001**: Implementation MUST include automated tests covering **minimum 85% of code paths** across all four testing layers
+- **FR-TEST-001**: Implementation MUST include automated tests covering **minimum 85% branch coverage** (conditional logic paths) across all four testing layers, measured via Bun's built-in coverage tooling
 - **FR-TEST-002**: Test suite MUST include all four testing layers as defined in [testing-strategy/AUTOMATED_TESTING_COMPLETE_STRATEGY_FINAL.md](testing-strategy/AUTOMATED_TESTING_COMPLETE_STRATEGY_FINAL.md):
   - Layer 1: Contract tests (scripts → agent) - 90 tests minimum
   - Layer 2: Integration tests (agent → scripts) - 40 tests minimum
@@ -245,10 +245,10 @@ A developer has manually created git branches across multiple child repos before
 
 #### Performance Testing Requirements
 
-- **FR-TEST-023**: Performance tests MUST validate success criteria timing requirements:
-  - SC-003: Branch lookups < 150ms in multi-repo
-  - SC-004: Aggregate status < 1 second for 10 repos, 50 branches
-  - SC-007: Branch import < 5 seconds per repo
+- **FR-TEST-023**: Performance tests MUST validate success criteria timing requirements (95th percentile):
+  - SC-003: Branch lookups < 150ms in multi-repo (p95)
+  - SC-004: Aggregate status < 1 second for 10 repos, 50 branches (p95)
+  - SC-007: Branch import < 5 seconds per repo (p95)
 - **FR-TEST-024**: Performance tests MUST benchmark multi-repo detection overhead:
   - Single-repo detection: < 2ms median (from Feature 007)
   - Multi-repo detection: < 10ms median (from Feature 007)
@@ -326,14 +326,14 @@ A developer has manually created git branches across multiple child repos before
 - **SC-001**: Developers can create stacked branches in multi-repo child repositories using same `/speck.branch create` command as single-repo mode, with zero command syntax changes
 - **SC-002**: Each child repository maintains independent `.speck/branches.json` without interference from other child repos or root spec
 - **SC-003**: Branch-to-spec lookups in multi-repo child contexts complete in under 150ms (50ms overhead vs. single-repo due to symlink resolution)
-- **SC-004**: `/speck.env` displays complete multi-repo stack status across all child repos within 1 second for specs with up to 10 child repos and 50 total branches
+- **SC-004**: `/speck.env` displays complete multi-repo stack status with 95th percentile response time under 1 second for specs with up to 10 child repos and 50 total branches (measured via performance tests in Phase 10)
 - **SC-005**: Cross-repo branch dependency validation detects and prevents invalid configurations 100% of the time with clear error messages
 - **SC-006**: Aggregate branch views via `--all` flags correctly disambiguate branch names across child repos without false conflicts
 - **SC-007**: Developers can import existing git branch stacks independently per child repo within 5 seconds per repo
 - **SC-008**: PR creation from child repos targets correct child remote URL 100% of the time without manual configuration
 - **SC-009**: System gracefully handles up to 20 child repos per spec with independent stacked workflows without performance degradation
 - **SC-010**: Migration from single-repo to multi-repo stacked PR workflow requires zero changes to existing child repo stacked branches
-- **SC-011**: Error and warning messages provide sufficient diagnostic context (repo name, operation, failure reason) to enable troubleshooting without verbose logging
+- **SC-011**: Error and warning messages provide complete diagnostic context: 100% of messages include (1) repository name/context (root vs child), (2) operation name (branch create/list/status/import), (3) failure reason (specific error), (4) suggested action or documentation link
 
 #### Testing Success Criteria
 
@@ -354,6 +354,7 @@ A developer has manually created git branches across multiple child repos before
 ## Assumptions
 
 - Multi-repo specs are already configured via `/speck.link` with valid symlinks before stacked PR workflows begin
+- **Symlink integrity is critical for correctness**: Fail-fast on symlink resolution errors (permissions, broken links, filesystem issues) prevents silent data corruption where commands operate on wrong repository context. Degraded operation would risk writing `.speck/branches.json` to incorrect locations or mixing branch metadata across repos. Users must fix symlink configuration before proceeding (diagnostic messages guide resolution).
 - Child repositories have independent git remotes (no shared remote across all children)
 - PR workflows in child repos target the child's remote, not a monorepo remote
 - Developers understand that stacked PR dependencies cannot span repository boundaries

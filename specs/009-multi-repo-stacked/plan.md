@@ -135,7 +135,7 @@ No constitution violations requiring justification.
 **Key Findings**:
 1. **Multi-Repo Detection**: Reuse `detectSpeckRoot()` from Feature 007, add `isMultiRepoChild()` helper
 2. **Branch Metadata**: Extend `BranchEntry` with optional `parentSpecId` field, schema v1.0.0 → v1.1.0
-3. **Branch Lookups**: Sequential aggregation of `.speck/branches.json` files across repos
+3. **Branch Lookups**: Sequential aggregation of `.speck/branches.json` files across repos initially; optimize to parallel Promise.all() if performance tests (T078) fail to meet SC-004 (<1s for 10 repos/50 branches at p95). See T091 for optimization task.
 4. **Cross-Repo Validation**: Validate base branch exists in local git branches only
 5. **Aggregate Status**: Tree-based visualization, context-aware display (root vs child)
 6. **PR Creation**: Auto-prefix title with `[repo-name]`, use child's default branch as PR base

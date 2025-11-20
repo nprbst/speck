@@ -92,6 +92,12 @@ bun test                  # Run all tests (unit, visual, a11y)
 - Component props: Define interfaces in `specs/004-public-website/contracts/components.ts`
 - File naming: PascalCase for components, kebab-case for pages/content
 
+## Terminology Standards
+
+- **Child repo** (preferred): Use consistently instead of "multi-repo child", "child repository", "child repo context"
+- **Root repo** (preferred): Use instead of "multi-repo root", "parent repo" (reserve "parent" for parent spec)
+- **Parent spec**: The root specification directory referenced by `parentSpecId` field
+
 ## Recent Changes
 - 009-multi-repo-stacked: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (filesystem, git operations), Git 2.30+, GitHub CLI (optional for PR creation)
 - 008-stacked-pr-support: Added TypeScript 5.3+ + Bun 1.0+ runtime, Bun Shell API, Git 2.30+, Claude Code plugin system 2.0+
