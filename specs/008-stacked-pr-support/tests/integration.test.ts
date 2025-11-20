@@ -28,6 +28,12 @@ beforeEach(async () => {
   mkdirSync(testRepoDir, { recursive: true });
   process.chdir(testRepoDir);
 
+  // Clear speck cache to ensure fresh detection in test context
+  const { clearSpeckCache } = await import(
+    path.resolve(originalCwd, ".speck/scripts/common/paths.ts")
+  );
+  clearSpeckCache();
+
   // Initialize git repository
   await $`git init`.quiet();
   await $`git config user.email "test@example.com"`.quiet();
@@ -64,6 +70,12 @@ beforeEach(async () => {
 
 afterEach(async () => {
   process.chdir(originalCwd);
+
+  // Clear speck cache after test to avoid cross-test pollution
+  const { clearSpeckCache } = await import(
+    path.resolve(originalCwd, ".speck/scripts/common/paths.ts")
+  );
+  clearSpeckCache();
 
   // Clean up test repository
   if (testRepoDir && existsSync(testRepoDir)) {
@@ -102,11 +114,15 @@ describe("Backwards Compatibility (US1)", () => {
     const { detectSpeckMode } = await import(
       path.resolve(originalCwd, ".speck/scripts/common/paths.ts")
     );
+    const fs = await import("node:fs/promises");
 
     const config = await detectSpeckMode(testRepoDir);
 
     expect(config.mode).toBe("single-repo");
-    expect(config.specsDir).toBe(path.join(testRepoDir, "specs"));
+    // Normalize paths to handle /private/var vs /var symlink on macOS
+    const expectedPath = await fs.realpath(path.join(testRepoDir, "specs"));
+    const actualPath = await fs.realpath(config.specsDir);
+    expect(actualPath).toBe(expectedPath);
   });
 
   test("SC-001.4: No stacked PR warnings in traditional mode", async () => {
@@ -239,7 +255,7 @@ describe("Stacked PR Opt-In (US2)", () => {
 
 describe("Workflow Mode Detection", () => {
   test("T122: getDefaultWorkflowMode reads from constitution.md", async () => {
-    const { getDefaultWorkflowMode } = await import(
+    const { getDefaultWorkflowMode, clearSpeckCache } = await import(
       path.resolve(originalCwd, ".speck/scripts/common/paths.ts")
     );
 
@@ -260,13 +276,16 @@ This setting enables stacked PR workflow by default.
 `
     );
 
+    // Clear cache to ensure fresh detection in test repo
+    clearSpeckCache();
+
     const workflowMode = await getDefaultWorkflowMode();
 
     expect(workflowMode).toBe("stacked-pr");
   });
 
   test("T122: getDefaultWorkflowMode handles single-branch mode", async () => {
-    const { getDefaultWorkflowMode } = await import(
+    const { getDefaultWorkflowMode, clearSpeckCache } = await import(
       path.resolve(originalCwd, ".speck/scripts/common/paths.ts")
     );
 
@@ -280,6 +299,9 @@ This setting enables stacked PR workflow by default.
 **Default Workflow Mode**: single-branch
 `
     );
+
+    // Clear cache to ensure fresh detection in test repo
+    clearSpeckCache();
 
     const workflowMode = await getDefaultWorkflowMode();
 

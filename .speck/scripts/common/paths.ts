@@ -313,6 +313,12 @@ export async function detectSpeckRoot(): Promise<SpeckConfig> {
 }
 
 /**
+ * Backward compatibility alias for detectSpeckRoot
+ * @deprecated Use detectSpeckRoot() instead
+ */
+export const detectSpeckMode = detectSpeckRoot;
+
+/**
  * T006 - Check if current repository is a multi-repo child (Feature 009)
  *
  * @returns true if in multi-repo mode and current repo is NOT the speck root
@@ -755,8 +761,10 @@ export async function getFeaturePaths(): Promise<FeaturePaths> {
  */
 export async function getDefaultWorkflowMode(): Promise<"stacked-pr" | "single-branch" | null> {
   try {
-    const memoryDir = getMemoryDir();
-    const constitutionPath = path.join(memoryDir, "constitution.md");
+    // Use getRepoRoot instead of detectSpeckRoot to avoid cache issues in tests
+    // The constitution file is always at repoRoot/.speck/memory/constitution.md
+    const repoRoot = await getRepoRoot();
+    const constitutionPath = path.join(repoRoot, ".speck/memory/constitution.md");
 
     if (!existsSync(constitutionPath)) {
       return null;

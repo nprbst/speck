@@ -166,8 +166,13 @@ export async function branchExists(
   name: string,
   repoRoot: string
 ): Promise<boolean> {
-  const result = await $`git -C ${repoRoot} rev-parse --verify ${name}`.quiet();
-  return result.exitCode === 0;
+  try {
+    const result = await $`git -C ${repoRoot} rev-parse --verify ${name}`.quiet();
+    return result.exitCode === 0;
+  } catch {
+    // Branch doesn't exist or other error occurred
+    return false;
+  }
 }
 
 /**
