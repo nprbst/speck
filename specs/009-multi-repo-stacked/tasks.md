@@ -29,6 +29,7 @@
 - [X] T001 Review existing Feature 007 (multi-repo support) and Feature 008 (stacked PR) implementations in .speck/scripts/
 - [X] T002 Review existing test infrastructure in tests/ directory
 - [X] T003 [P] Create test fixtures helper in tests/helpers/multi-repo-fixtures.ts for multi-repo test setup
+- [X] T003a [P] Add script isolation to test fixtures - copy .speck/scripts into test root for complete isolation
 
 ---
 
@@ -81,6 +82,7 @@
 - [X] T023 [US1] Add warning for missing remote configuration (allow local branch creation) in .speck/scripts/branch-command.ts
 - [X] T107 [US1] Implement remote URL detection in child repos for PR creation validation in .speck/scripts/common/git-operations.ts
 - [X] T108 [US1] Add warning message when child repo has no remote but branch creation succeeds in .speck/scripts/branch-command.ts (warn per FR-020: "No remote configured. Branch created locally. PR creation unavailable.")
+- [ ] T108a [US1] Fix detectParentSpecId() to properly identify parent spec (currently returns highest numbered spec instead of actual parent)
 
 ### Layer 2 Tests for User Story 1 (Integration Tests)
 

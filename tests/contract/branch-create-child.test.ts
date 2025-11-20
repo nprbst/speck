@@ -38,10 +38,10 @@ describe("Contract: Branch creation in child repo", () => {
   test("T014: Branch creation in child repo exits with code 0", async () => {
     const childRepo = fixture.childRepos.get("backend-service")!;
 
-    // Navigate to child repo and create branch
+    // Navigate to child repo and create branch using isolated scripts
     const result = await $`
       cd ${childRepo} && \
-      bun run ${process.cwd()}/.speck/scripts/branch-command.ts create nprbst/auth-db --base main --spec 009-multi-repo-stacked
+      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/auth-db --base main --spec 009-multi-repo-stacked
     `.nothrow();
 
     // Contract: Exit code 0 on success
@@ -58,7 +58,7 @@ describe("Contract: Branch creation in child repo", () => {
     // Create branch in child repo
     await $`
       cd ${childRepo} && \
-      bun run ${process.cwd()}/.speck/scripts/branch-command.ts create nprbst/auth-db --base main --spec 009-multi-repo-stacked
+      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/auth-db --base main --spec 009-multi-repo-stacked
     `.quiet();
 
     // Contract: branches.json created in child repo (not root)
@@ -76,7 +76,7 @@ describe("Contract: Branch creation in child repo", () => {
     // Create branch in child repo
     await $`
       cd ${childRepo} && \
-      bun run ${process.cwd()}/.speck/scripts/branch-command.ts create nprbst/auth-db --base main --spec 009-multi-repo-stacked
+      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/auth-db --base main --spec 009-multi-repo-stacked
     `.quiet();
 
     // Read branches.json
@@ -95,13 +95,17 @@ describe("Contract: Branch creation in child repo", () => {
     // Create first branch
     await $`
       cd ${childRepo} && \
-      bun run ${process.cwd()}/.speck/scripts/branch-command.ts create nprbst/auth-db --base main --spec 009-multi-repo-stacked
+      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/auth-db --base main --spec 009-multi-repo-stacked
     `.quiet();
+
+    // Commit the changes (branches.json was created)
+    await $`git -C ${childRepo} add .speck/branches.json`.quiet();
+    await $`git -C ${childRepo} commit -m "Add first branch"`.quiet();
 
     // Create second branch stacked on first
     await $`
       cd ${childRepo} && \
-      bun run ${process.cwd()}/.speck/scripts/branch-command.ts create nprbst/auth-api --base nprbst/auth-db
+      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/auth-api --base nprbst/auth-db
     `.quiet();
 
     // Read branches.json

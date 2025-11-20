@@ -11,11 +11,24 @@
  * Created: 2025-11-19
  */
 
-import { mkdtemp, mkdir, writeFile, symlink, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, symlink, rm, cp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { $ } from "bun";
 import type { BranchMapping, BranchEntry } from "../../.speck/scripts/common/branch-mapper.ts";
+
+/**
+ * Copy Speck scripts into test fixture for isolation
+ *
+ * @param targetDir - Directory to copy scripts into (test root)
+ */
+async function copySpeckScripts(targetDir: string): Promise<void> {
+  const sourceScriptsDir = path.join(process.cwd(), ".speck/scripts");
+  const targetScriptsDir = path.join(targetDir, ".speck/scripts");
+
+  // Copy entire scripts directory recursively
+  await cp(sourceScriptsDir, targetScriptsDir, { recursive: true });
+}
 
 /**
  * Multi-repo test environment structure
@@ -23,6 +36,7 @@ import type { BranchMapping, BranchEntry } from "../../.speck/scripts/common/bra
 export interface MultiRepoTestFixture {
   rootDir: string;           // Root repository path
   specsDir: string;          // Root specs directory
+  scriptsDir: string;        // Root scripts directory (isolated copy)
   childRepos: Map<string, string>;  // Child repo name → repo path
   cleanup: () => Promise<void>;     // Cleanup function
 }
@@ -89,6 +103,10 @@ export async function createMultiRepoTestFixture(
 
   // Create .speck directory in root
   await mkdir(path.join(rootDir, ".speck"), { recursive: true });
+
+  // Copy Speck scripts into test root for isolation
+  await copySpeckScripts(rootDir);
+  const scriptsDir = path.join(rootDir, ".speck/scripts");
 
   // Create initial commit in root
   await $`git -C ${rootDir} add .`.quiet();
@@ -166,6 +184,7 @@ export async function createMultiRepoTestFixture(
   return {
     rootDir,
     specsDir,
+    scriptsDir,
     childRepos,
     cleanup
   };
