@@ -348,6 +348,7 @@ async function createCommand(args: string[]) {
   const prTitleFlag = args.indexOf("--title");
   const prDescFlag = args.indexOf("--description");
   const prBaseFlag = args.indexOf("--pr-base");
+  const jsonOutputFlag = args.includes("--json");
 
   // Get repository root for git operations
   const paths = await getFeaturePaths();
@@ -420,7 +421,9 @@ async function createCommand(args: string[]) {
       const match = paths.FEATURE_DIR.match(/\/specs\/([^\/]+)/);
       if (match) {
         specId = match[1];
-        console.log(`Auto-detected spec: ${specId}`);
+        if (!jsonOutputFlag) {
+          console.log(`Auto-detected spec: ${specId}`);
+        }
       }
     }
 
@@ -477,33 +480,44 @@ async function createCommand(args: string[]) {
     const prSuggestion = await generatePRSuggestion(currentBranch, baseBranch, mapping, repoRoot, multiRepoContext);
 
     if (prSuggestion) {
-      // T031h - Output structured JSON to stderr for agent to parse
-      const suggestionData = {
-        type: "pr-suggestion",
-        branch: currentBranch,
-        suggestedTitle: prSuggestion.title,
-        suggestedDescription: prSuggestion.body,
-        suggestedBase: prSuggestion.prBase,
-        newBranch: name,
-      };
-      console.error(JSON.stringify(suggestionData));
+      if (jsonOutputFlag) {
+        // JSON-only output mode: output to stdout with contract-compliant property names
+        const suggestionData = {
+          branch: currentBranch,
+          title: prSuggestion.title,
+          body: prSuggestion.body,
+          base: prSuggestion.prBase,
+        };
+        console.log(JSON.stringify(suggestionData));
+      } else {
+        // T031h - Output structured JSON to stderr for agent to parse
+        const suggestionData = {
+          type: "pr-suggestion",
+          branch: currentBranch,
+          suggestedTitle: prSuggestion.title,
+          suggestedDescription: prSuggestion.body,
+          suggestedBase: prSuggestion.prBase,
+          newBranch: name,
+        };
+        console.error(JSON.stringify(suggestionData));
 
-      // T031i - Display human-readable suggestion to stdout
-      console.log(`\n${'='.repeat(60)}`);
-      console.log(`💡 PR Opportunity: Create PR for '${currentBranch}' before switching`);
-      console.log(`${'='.repeat(60)}`);
-      console.log(`\nSuggested PR details:`);
-      console.log(`  Title: ${prSuggestion.title}`);
-      console.log(`  Base: ${prSuggestion.prBase}`);
-      console.log(`\nDescription:`);
-      console.log(prSuggestion.body.split('\n').map((line: string) => `  ${line}`).join('\n'));
-      console.log(`\n${'-'.repeat(60)}`);
-      console.log(`Option 1: Create PR with gh CLI:`);
-      console.log(`  gh pr create --base ${prSuggestion.prBase} --title "${prSuggestion.title}" --body "${prSuggestion.body.replace(/"/g, '\\"')}"`);
-      console.log(`\nOption 2: Create PR via GitHub URL:`);
-      console.log(`  https://github.com/OWNER/REPO/compare/${prSuggestion.prBase}...${currentBranch}?expand=1&title=${encodeURIComponent(prSuggestion.title)}`);
-      console.log(`\nOption 3: Skip and create branch without PR`);
-      console.log(`${'='.repeat(60)}\n`);
+        // T031i - Display human-readable suggestion to stdout
+        console.log(`\n${'='.repeat(60)}`);
+        console.log(`💡 PR Opportunity: Create PR for '${currentBranch}' before switching`);
+        console.log(`${'='.repeat(60)}`);
+        console.log(`\nSuggested PR details:`);
+        console.log(`  Title: ${prSuggestion.title}`);
+        console.log(`  Base: ${prSuggestion.prBase}`);
+        console.log(`\nDescription:`);
+        console.log(prSuggestion.body.split('\n').map((line: string) => `  ${line}`).join('\n'));
+        console.log(`\n${'-'.repeat(60)}`);
+        console.log(`Option 1: Create PR with gh CLI:`);
+        console.log(`  gh pr create --base ${prSuggestion.prBase} --title "${prSuggestion.title}" --body "${prSuggestion.body.replace(/"/g, '\\"')}"`);
+        console.log(`\nOption 2: Create PR via GitHub URL:`);
+        console.log(`  https://github.com/OWNER/REPO/compare/${prSuggestion.prBase}...${currentBranch}?expand=1&title=${encodeURIComponent(prSuggestion.title)}`);
+        console.log(`\nOption 3: Skip and create branch without PR`);
+        console.log(`${'='.repeat(60)}\n`);
+      }
 
       // T031j - Exit with code 2 (suggestion pending) to trigger agent interaction
       process.exit(2);
