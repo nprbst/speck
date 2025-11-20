@@ -169,3 +169,94 @@ export async function branchExists(
   const result = await $`git -C ${repoRoot} rev-parse --verify ${name}`.quiet();
   return result.exitCode === 0;
 }
+
+/**
+ * T010 - Validate base branch exists in local repository (Feature 009)
+ *
+ * Prevents cross-repo branch dependencies by ensuring base branch
+ * exists in the current repository only.
+ *
+ * @param baseBranch - Base branch name to validate
+ * @param repoRoot - Repository root directory
+ * @throws GitError with suggested alternatives if validation fails
+ */
+export async function validateBaseBranch(
+  baseBranch: string,
+  repoRoot: string
+): Promise<void> {
+  // Get all local git branches
+  const result = await $`git -C ${repoRoot} branch --list ${baseBranch}`.quiet();
+
+  if (result.exitCode !== 0 || !result.stdout.toString().trim()) {
+    // Branch doesn't exist locally
+    throw new GitError(
+      `Base branch '${baseBranch}' does not exist in current repository.\n\n` +
+      `Cross-repo branch dependencies are not supported.\n\n` +
+      `Alternatives:\n` +
+      `  1. Complete work in other repo first and merge to main\n` +
+      `  2. Use shared contracts/APIs for coordination\n` +
+      `  3. Manually coordinate PR merge order across repos`
+    );
+  }
+}
+
+/**
+ * T011 & T111 - Detect default branch name (Feature 009)
+ *
+ * Checks for main, master, or develop branch in order of preference.
+ * Uses git symbolic-ref HEAD to determine the default branch.
+ *
+ * @param repoRoot - Repository root directory
+ * @returns Default branch name (main, master, develop, or null)
+ */
+export async function detectDefaultBranch(repoRoot: string): Promise<string | null> {
+  try {
+    // Try git symbolic-ref to get default branch from origin/HEAD
+    const result = await $`git -C ${repoRoot} symbolic-ref refs/remotes/origin/HEAD`.quiet();
+
+    if (result.exitCode === 0) {
+      const output = result.stdout.toString().trim();
+      // Output format: refs/remotes/origin/main
+      const match = output.match(/refs\/remotes\/origin\/(.+)/);
+      if (match) {
+        return match[1];
+      }
+    }
+  } catch {
+    // Fall through to branch checking
+  }
+
+  // Fallback: Check for existence of common default branches
+  const commonDefaults = ['main', 'master', 'develop'];
+
+  for (const branchName of commonDefaults) {
+    const exists = await branchExists(branchName, repoRoot);
+    if (exists) {
+      return branchName;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * T107 - Detect remote URL in repository (Feature 009)
+ *
+ * Checks if repository has a remote configured.
+ *
+ * @param repoRoot - Repository root directory
+ * @returns Remote URL or null if no remote configured
+ */
+export async function detectRemoteUrl(repoRoot: string): Promise<string | null> {
+  try {
+    const result = await $`git -C ${repoRoot} remote get-url origin`.quiet();
+
+    if (result.exitCode === 0) {
+      return result.stdout.toString().trim();
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}

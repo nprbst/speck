@@ -26,8 +26,8 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Review existing Feature 007 (multi-repo support) and Feature 008 (stacked PR) implementations in .speck/scripts/
-- [ ] T002 Review existing test infrastructure in tests/ directory
+- [X] T001 Review existing Feature 007 (multi-repo support) and Feature 008 (stacked PR) implementations in .speck/scripts/
+- [X] T002 Review existing test infrastructure in tests/ directory
 - [ ] T003 [P] Create test fixtures helper in tests/helpers/multi-repo-fixtures.ts for multi-repo test setup
 
 ---
@@ -38,17 +38,17 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Extend BranchEntry interface with optional parentSpecId field in .speck/scripts/common/branch-mapper.ts
-- [ ] T005 [P] Update JSON schema version from 1.0.0 to 1.1.0 in specs/009-multi-repo-stacked/contracts/branch-mapping-schema.json
-- [ ] T006 [P] Add isMultiRepoChild() helper function to .speck/scripts/common/paths.ts
-- [ ] T007 Add getChildRepoName() helper function to .speck/scripts/common/paths.ts
-- [ ] T008 [P] Add findChildRepos() function to discover child repositories via symlinks in .speck/scripts/common/paths.ts
-- [ ] T009 Extend detectSpeckRoot() to return MultiRepoContextMetadata with context field (single/root/child) in .speck/scripts/common/paths.ts
-- [ ] T010 [P] Add validateBaseBranch() function for cross-repo dependency validation in .speck/scripts/common/git-operations.ts
-- [ ] T011 [P] Add detectDefaultBranch() function to find child repo's main branch in .speck/scripts/common/git-operations.ts
-- [ ] T111 Update detectDefaultBranch() to support main, master, develop branch name detection using git symbolic-ref HEAD in .speck/scripts/common/git-operations.ts per FR-022
-- [ ] T012 Update readBranches() to handle both v1.0.0 and v1.1.0 schema versions in .speck/scripts/common/branch-mapper.ts
-- [ ] T013 Update writeBranches() to use schema v1.1.0 with optional parentSpecId in .speck/scripts/common/branch-mapper.ts
+- [X] T004 Extend BranchEntry interface with optional parentSpecId field in .speck/scripts/common/branch-mapper.ts
+- [X] T005 [P] Update JSON schema version from 1.0.0 to 1.1.0 in specs/009-multi-repo-stacked/contracts/branch-mapping-schema.json
+- [X] T006 [P] Add isMultiRepoChild() helper function to .speck/scripts/common/paths.ts
+- [X] T007 Add getChildRepoName() helper function to .speck/scripts/common/paths.ts
+- [X] T008 [P] Add findChildRepos() function to discover child repositories via symlinks in .speck/scripts/common/paths.ts
+- [X] T009 Extend detectSpeckRoot() to return MultiRepoContextMetadata with context field (single/root/child) in .speck/scripts/common/paths.ts
+- [X] T010 [P] Add validateBaseBranch() function for cross-repo dependency validation in .speck/scripts/common/git-operations.ts
+- [X] T011 [P] Add detectDefaultBranch() function to find child repo's main branch in .speck/scripts/common/git-operations.ts
+- [X] T111 Update detectDefaultBranch() to support main, master, develop branch name detection using git symbolic-ref HEAD in .speck/scripts/common/git-operations.ts per FR-022
+- [X] T012 Update readBranches() to handle both v1.0.0 and v1.1.0 schema versions in .speck/scripts/common/branch-mapper.ts
+- [X] T013 Update writeBranches() to use schema v1.1.0 with optional parentSpecId in .speck/scripts/common/branch-mapper.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -79,7 +79,7 @@
 - [ ] T021 [US1] Update PR suggestion generation to auto-prefix title with [repo-name] in child context in .speck/scripts/branch-command.ts
 - [ ] T022 [US1] Add error handling for symlink resolution failures with diagnostic messages in .speck/scripts/branch-command.ts
 - [ ] T023 [US1] Add warning for missing remote configuration (allow local branch creation) in .speck/scripts/branch-command.ts
-- [ ] T107 [US1] Implement remote URL detection in child repos for PR creation validation in .speck/scripts/common/git-operations.ts
+- [X] T107 [US1] Implement remote URL detection in child repos for PR creation validation in .speck/scripts/common/git-operations.ts
 - [ ] T108 [US1] Add warning message when child repo has no remote but branch creation succeeds in .speck/scripts/branch-command.ts (warn per FR-020: "No remote configured. Branch created locally. PR creation unavailable.")
 
 ### Layer 2 Tests for User Story 1 (Integration Tests)

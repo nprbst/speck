@@ -34,6 +34,7 @@ export interface BranchEntry {
   pr: number | null;      // Pull request number (optional)
   createdAt: string;      // ISO 8601 timestamp
   updatedAt: string;      // ISO 8601 timestamp
+  parentSpecId?: string;  // Parent spec ID (multi-repo child contexts only)
 }
 
 /**
@@ -75,6 +76,7 @@ export const BranchEntrySchema = z.object({
   pr: z.number().int().positive().nullable(),
   createdAt: z.string().datetime({ message: "Invalid ISO 8601 timestamp" }),
   updatedAt: z.string().datetime({ message: "Invalid ISO 8601 timestamp" }),
+  parentSpecId: z.string().regex(/^\d{3}-.+$/, "Parent spec ID must match pattern NNN-feature-name").optional(),
 });
 
 /**
@@ -90,7 +92,7 @@ export const BranchMappingSchema = z.object({
 // Constants
 // ===========================
 
-const CURRENT_VERSION = "1.0.0";
+const CURRENT_VERSION = "1.1.0";  // Updated for multi-repo support (Feature 009)
 const BRANCHES_FILE = ".speck/branches.json";
 
 // ===========================

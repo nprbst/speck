@@ -31,6 +31,16 @@ export interface SpeckConfig {
   repoRoot: string;      // Git repository root
   specsDir: string;      // Full path to specs/
 }
+
+/**
+ * Multi-repo context metadata (Feature 009)
+ * Extended version of SpeckConfig with context information
+ */
+export interface MultiRepoContextMetadata extends SpeckConfig {
+  context: 'single' | 'root' | 'child';  // Execution context
+  parentSpecId: string | null;           // Parent spec ID (child context only)
+  childRepoName: string | null;          // Child directory name (child context only)
+}
 // [SPECK-EXTENSION:END]
 
 /**
@@ -283,6 +293,139 @@ export async function detectSpeckRoot(): Promise<SpeckConfig> {
       '  1. Remove broken symlink: rm .speck/root\n' +
       '  2. Link to correct location: /speck.link <path-to-speck-root>'
     );
+  }
+}
+
+/**
+ * T006 - Check if current repository is a multi-repo child (Feature 009)
+ *
+ * @returns true if in multi-repo mode and current repo is NOT the speck root
+ */
+export async function isMultiRepoChild(): Promise<boolean> {
+  const config = await detectSpeckRoot();
+  return config.mode === 'multi-repo' && config.repoRoot !== config.speckRoot;
+}
+
+/**
+ * T007 - Get child repository name (Feature 009)
+ *
+ * @param repoRoot - Child repository root path
+ * @param speckRoot - Speck root path
+ * @returns Directory name of child repo
+ */
+export function getChildRepoName(repoRoot: string, speckRoot: string): string {
+  return path.basename(repoRoot);
+}
+
+/**
+ * T008 - Find all child repositories via symlinks (Feature 009)
+ *
+ * Scans speck root for .speck-link-* symlinks and returns child repo paths
+ *
+ * @param speckRoot - Speck root directory path
+ * @returns Array of absolute paths to child repositories
+ */
+export async function findChildRepos(speckRoot: string): Promise<string[]> {
+  const childRepos: string[] = [];
+
+  try {
+    const entries = await fs.readdir(speckRoot, { withFileTypes: true });
+
+    for (const entry of entries) {
+      // Look for symlinks matching .speck-link-* pattern
+      if (entry.isSymbolicLink() && entry.name.startsWith('.speck-link-')) {
+        const symlinkPath = path.join(speckRoot, entry.name);
+
+        try {
+          // Resolve symlink to absolute path
+          const targetPath = await fs.realpath(symlinkPath);
+
+          // Verify target is a directory and has .git
+          const gitDir = path.join(targetPath, '.git');
+          try {
+            await fs.access(gitDir);
+            childRepos.push(targetPath);
+          } catch {
+            // Not a git repository - skip
+            console.warn(`Warning: ${entry.name} points to non-git directory: ${targetPath}`);
+          }
+        } catch (error: any) {
+          // Broken symlink - skip with warning
+          console.warn(`Warning: Broken symlink ${entry.name}: ${error.message}`);
+        }
+      }
+    }
+  } catch (error: any) {
+    // If speckRoot doesn't exist or can't be read, return empty array
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+
+  return childRepos;
+}
+
+/**
+ * T009 - Get multi-repo context metadata with context field (Feature 009)
+ *
+ * Extended version of detectSpeckRoot() that determines execution context
+ *
+ * @returns MultiRepoContextMetadata with context, parentSpecId, childRepoName
+ */
+export async function getMultiRepoContext(): Promise<MultiRepoContextMetadata> {
+  const config = await detectSpeckRoot();
+
+  // Single-repo mode
+  if (config.mode === 'single-repo') {
+    return {
+      ...config,
+      context: 'single',
+      parentSpecId: null,
+      childRepoName: null,
+    };
+  }
+
+  // Multi-repo: determine if root or child
+  if (config.repoRoot === config.speckRoot) {
+    // Root context
+    return {
+      ...config,
+      context: 'root',
+      parentSpecId: null,
+      childRepoName: null,
+    };
+  } else {
+    // Child context - extract parentSpecId from .speck/root symlink
+    const childRepoName = getChildRepoName(config.repoRoot, config.speckRoot);
+
+    // Try to determine parent spec by looking at symlink name in speck root
+    let parentSpecId: string | null = null;
+    try {
+      const entries = await fs.readdir(config.speckRoot, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isSymbolicLink() && entry.name.startsWith('.speck-link-')) {
+          const targetPath = await fs.realpath(path.join(config.speckRoot, entry.name));
+          if (targetPath === config.repoRoot) {
+            // Found the symlink for this child repo
+            // Extract spec ID from symlink name if it follows pattern .speck-link-NNN-feature-name
+            const match = entry.name.match(/\.speck-link-(\d{3}-.+)/);
+            if (match) {
+              parentSpecId = match[1];
+            }
+            break;
+          }
+        }
+      }
+    } catch {
+      // If we can't determine parent spec, it's ok - leave as null
+    }
+
+    return {
+      ...config,
+      context: 'child',
+      parentSpecId,
+      childRepoName,
+    };
   }
 }
 // [SPECK-EXTENSION:END]
