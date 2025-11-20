@@ -93,12 +93,19 @@ export async function createMultiRepoTestFixture(
     `# Spec: ${parentSpecId}\n\nTest specification for multi-repo testing.\n`
   );
 
-  // Also create the 009-multi-repo-stacked spec directory (for child branches to reference)
-  const childSpecDir = path.join(specsDir, "009-multi-repo-stacked");
-  await mkdir(childSpecDir, { recursive: true });
+  // Also create common spec directories used by tests
+  const spec009Dir = path.join(specsDir, "009-multi-repo-stacked");
+  await mkdir(spec009Dir, { recursive: true });
   await writeFile(
-    path.join(childSpecDir, "spec.md"),
+    path.join(spec009Dir, "spec.md"),
     `# Spec: 009-multi-repo-stacked\n\nChild spec for multi-repo testing.\n`
+  );
+
+  const spec008Dir = path.join(specsDir, "008-stacked-pr-support");
+  await mkdir(spec008Dir, { recursive: true });
+  await writeFile(
+    path.join(spec008Dir, "spec.md"),
+    `# Spec: 008-stacked-pr-support\n\nStacked PR spec for multi-repo testing.\n`
   );
 
   // Create .speck directory in root
@@ -175,6 +182,12 @@ export async function createMultiRepoTestFixture(
         }
       }
     }
+
+    // [Feature 009] Create .speck-link-* symlink from root to child
+    // This allows findChildRepos() to discover child repositories from root
+    const childLinkName = `.speck-link-${config.name}`;
+    const childLinkPath = path.join(rootDir, childLinkName);
+    await symlink(childDir, childLinkPath, "dir");
   }
 
   // Cleanup function

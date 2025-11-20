@@ -17,7 +17,7 @@
 
 import { readBranches, getAggregatedBranchStatus, type BranchMapping, type RepoBranchSummary } from "./common/branch-mapper.ts";
 import { getCurrentBranch } from "./common/git-operations.ts";
-import { detectSpeckRoot, getMultiRepoContext, findChildRepos } from "./common/paths.ts";
+import { detectSpeckRoot, getMultiRepoContext, findChildReposWithNames } from "./common/paths.ts";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -129,12 +129,23 @@ function displayMultiRepoContext(context: any): void {
  * T033-T034 - Display branch stack status with multi-repo awareness
  */
 async function displayBranchStackStatus(config: any, context: any): Promise<void> {
-  const branchesPath = path.join(config.repoRoot, ".speck", "branches.json");
+  // T033: Check if there are child repos (even in single-repo mode for the root)
+  // This handles the case where root doesn't have .speck/root but has children
+  const childReposMap = await findChildReposWithNames(config.speckRoot);
+  const hasChildRepos = childReposMap.size > 0;
 
-  // Check if stacked PR mode is enabled
+  // Check if root has branches.json
+  const branchesPath = path.join(config.repoRoot, ".speck", "branches.json");
+  let hasBranches = false;
   try {
     await fs.access(branchesPath);
+    hasBranches = true;
   } catch {
+    // No branches.json in root
+  }
+
+  // If no branches and no child repos, show "not enabled" message
+  if (!hasBranches && !hasChildRepos) {
     console.log("Branch Stack Status: Not enabled");
     console.log("");
     console.log("To enable stacked PRs:");
@@ -143,11 +154,14 @@ async function displayBranchStackStatus(config: any, context: any): Promise<void
     return;
   }
 
-  // T033: Multi-repo root displays aggregate status
-  if (context.mode === "multi-repo" && context.context === "root") {
+  // T033: Display aggregate status if:
+  // 1. Multi-repo root context, OR
+  // 2. Single-repo mode BUT has child repos (root with children)
+  if ((context.mode === "multi-repo" && context.context === "root") ||
+      (context.mode === "single-repo" && hasChildRepos)) {
     await displayAggregateStatus(config.speckRoot, config.repoRoot);
   } else {
-    // Single-repo or child context: display local status only
+    // Single-repo without children, or child context: display local status only
     await displayLocalStatus(config.repoRoot);
   }
 }
@@ -201,7 +215,7 @@ function displayRepoSummary(header: string, summary: RepoBranchSummary): void {
   // Display dependency trees
   for (const chain of summary.chains) {
     if (chain.branches.length > 0) {
-      displayBranchChain(chain.branches);
+      displayBranchChain(chain.branches, summary.branches);
     }
   }
 
@@ -211,13 +225,25 @@ function displayRepoSummary(header: string, summary: RepoBranchSummary): void {
 /**
  * T034 - Display branch chain with tree visualization
  */
-function displayBranchChain(branches: string[]): void {
-  if (branches.length === 0) return;
+function displayBranchChain(branchNames: string[], branchEntries: any[]): void {
+  if (branchNames.length === 0) return;
 
-  // Display as a stacked chain: branch1 → branch2 → branch3
-  branches.forEach((branch, idx) => {
+  // Display as a stacked chain with PR numbers and status
+  branchNames.forEach((branchName, idx) => {
     const marker = idx === 0 ? "└─" : "   └─";
-    console.log(`  ${marker} ${branch}`);
+    const branch = branchEntries.find(b => b.name === branchName);
+
+    let display = `  ${marker} ${branchName}`;
+
+    if (branch) {
+      if (branch.pr) {
+        display += ` (${branch.status}, PR #${branch.pr})`;
+      } else if (branch.status !== "active") {
+        display += ` (${branch.status})`;
+      }
+    }
+
+    console.log(display);
   });
 }
 
@@ -235,7 +261,13 @@ async function displayLocalStatus(repoRoot: string): Promise<void> {
     return;
   }
 
-  const currentBranch = await getCurrentBranch(repoRoot);
+  let currentBranch = "";
+  try {
+    currentBranch = await getCurrentBranch(repoRoot);
+  } catch (error) {
+    // Ignore error - repo might have no commits yet
+    currentBranch = "";
+  }
 
   // Group by spec
   const specIds = Object.keys(mapping.specIndex);

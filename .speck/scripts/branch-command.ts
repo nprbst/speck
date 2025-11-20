@@ -373,13 +373,24 @@ async function createCommand(args: string[]) {
   }
 
   // Get current branch (for PR suggestion later)
-  const currentBranch = await gitGetCurrentBranch(repoRoot);
+  let currentBranch = "";
+  try {
+    currentBranch = await gitGetCurrentBranch(repoRoot);
+  } catch (error) {
+    // Ignore error - repo might have no commits yet
+    currentBranch = "";
+  }
 
   // Default to current branch if --base not specified
   let baseBranch: string;
   if (baseFlag !== -1 && args[baseFlag + 1]) {
     baseBranch = args[baseFlag + 1];
   } else {
+    if (!currentBranch) {
+      console.error("Error: No commits in repository. Cannot determine current branch.");
+      console.error("Please create an initial commit first, or specify --base explicitly.");
+      process.exit(1);
+    }
     baseBranch = currentBranch;
     console.log(`Defaulting base to current branch: ${baseBranch}`);
   }
@@ -648,7 +659,13 @@ async function listCommand(args: string[]) {
     return;
   }
 
-  const currentBranch = await gitGetCurrentBranch(repoRoot);
+  let currentBranch = "";
+  try {
+    currentBranch = await gitGetCurrentBranch(repoRoot);
+  } catch (error) {
+    // Ignore error - repo might have no commits yet
+    currentBranch = "";
+  }
 
   if (showAll) {
     // T082-T084 - Show branches across all specs (in current repo)
@@ -750,7 +767,15 @@ async function statusCommand(args: string[] = []) {
 
   // Single-repo or child context: show local status only
   const mapping = await readBranches(repoRoot);
-  const currentBranch = await gitGetCurrentBranch(repoRoot);
+
+  let currentBranch = "";
+  try {
+    currentBranch = await gitGetCurrentBranch(repoRoot);
+  } catch (error) {
+    // Ignore error - repo might have no commits yet
+    currentBranch = "";
+  }
+
   const specId = getSpecForBranch(mapping, currentBranch);
 
   if (!specId) {

@@ -576,6 +576,7 @@ export interface RepoBranchSummary {
     abandoned: number;
   };
   chains: BranchChain[];      // Dependency chains
+  branches: BranchEntry[];    // Full branch details for display (T034 - PR numbers, status)
 }
 
 /**
@@ -601,7 +602,7 @@ export async function getAggregatedBranchStatus(
   repoRoot: string
 ): Promise<AggregatedBranchStatus> {
   // Import paths module (lazily to avoid circular dependency)
-  const { findChildRepos } = await import("./paths");
+  const { findChildReposWithNames } = await import("./paths");
 
   // Read root repository branches
   let rootRepo: RepoBranchSummary | null = null;
@@ -614,13 +615,11 @@ export async function getAggregatedBranchStatus(
     // Root may not have branches.json - not an error
   }
 
-  // Find and read child repositories
+  // Find and read child repositories (using logical names from symlinks)
   const childRepos = new Map<string, RepoBranchSummary>();
-  const childRepoPaths = await findChildRepos(speckRoot);
+  const childRepoMap = await findChildReposWithNames(speckRoot);
 
-  for (const childPath of childRepoPaths) {
-    const childName = path.basename(childPath);
-
+  for (const [childName, childPath] of childRepoMap.entries()) {
     try {
       const childMapping = await readBranches(childPath);
       if (childMapping.branches.length > 0) {
@@ -677,7 +676,8 @@ function buildRepoBranchSummary(
     specId,
     branchCount: mapping.branches.length,
     statusCounts,
-    chains
+    chains,
+    branches: mapping.branches
   };
 }
 
