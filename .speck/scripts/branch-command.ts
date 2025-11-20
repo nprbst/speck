@@ -446,8 +446,13 @@ async function createCommand(args: string[]) {
   }
 
   // Check for uncommitted changes before switching branches
+  // Exclude .speck/branches.json from check as it's metadata managed by branch commands
   const statusResult = await $`git -C ${repoRoot} status --porcelain`.quiet();
-  const hasUncommittedChanges = statusResult.stdout.toString().trim().length > 0;
+  const statusLines = statusResult.stdout.toString()
+    .split('\n')
+    .filter(line => line.trim().length > 0)
+    .filter(line => !line.includes('.speck/branches.json'));
+  const hasUncommittedChanges = statusLines.length > 0;
 
   if (hasUncommittedChanges) {
     console.log(`\n${'⚠'.repeat(30)}`);
