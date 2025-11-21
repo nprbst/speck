@@ -356,6 +356,143 @@ After POC validation:
 4. **User Story 4**: Centralize command registry with dynamic lookup
 5. **User Story 5**: Document patterns in addendum for future reference
 
+## User Story 4: Adding New Commands to the Registry
+
+The centralized command registry makes it easy to add new virtual commands without modifying hook code. This section demonstrates how to add a new command in <30 minutes (SC-008).
+
+### Registry Structure
+
+The command registry is located at [.speck/scripts/commands/index.ts](.speck/scripts/commands/index.ts). Each command entry includes:
+
+- **handler** (optional): Async function implementing command logic
+- **main** (optional): Static import of main function (for lightweight commands)
+- **lazyMain** (optional): Dynamic import of main function (for heavy commands)
+- **parseArgs** (optional): Custom argument parser function
+- **description** (required): Help text shown in CLI
+- **version** (required): Semantic version (e.g., "1.0.0")
+
+### Example: Adding a Simple Command
+
+**Step 1: Create Command Handler**
+
+Create [.speck/scripts/commands/my-command.ts](.speck/scripts/commands/my-command.ts):
+
+```typescript
+import type { CommandHandler, CommandArgs } from "../lib/types";
+
+export const myCommandHandler: CommandHandler = async (args: CommandArgs, context) => {
+  const message = args.message || "Hello from my-command!";
+
+  return {
+    success: true,
+    output: `My Command: ${message}`,
+    exitCode: 0,
+  };
+};
+
+export const parseMyCommandArgs = (commandString: string): CommandArgs => {
+  // Parse "my-command --message 'hello'" -> { message: "hello" }
+  const match = commandString.match(/--message\s+['"]?([^'"]+)['"]?/);
+  return {
+    message: match ? match[1] : undefined,
+  };
+};
+```
+
+**Step 2: Register Command**
+
+Add to [.speck/scripts/commands/index.ts](.speck/scripts/commands/index.ts):
+
+```typescript
+import { myCommandHandler, parseMyCommandArgs } from "./my-command";
+
+export const registry: CommandRegistry = {
+  // ... existing commands ...
+
+  "my-command": {
+    handler: myCommandHandler,
+    parseArgs: parseMyCommandArgs,
+    description: "Demonstrate command registry pattern",
+    version: "1.0.0",
+  },
+};
+```
+
+**Step 3: Test the Command**
+
+```bash
+# CLI mode test
+bun .speck/scripts/speck.ts my-command --message "Testing!"
+
+# Virtual command test (via hook)
+# In Claude: speck-my-command --message "Testing from Claude!"
+```
+
+**That's it!** The command is now available as both:
+- CLI: `bun speck.ts my-command`
+- Virtual: `speck-my-command` (intercepted by hook)
+
+### Example: Adding a Command with Lazy Loading
+
+For heavy commands, use lazy loading to improve hook performance:
+
+```typescript
+// In .speck/scripts/commands/index.ts
+const lazyMyHeavyCommandMain = async (): Promise<MainFunction> => {
+  const module = await import("../my-heavy-command");
+  return module.main;
+};
+
+export const registry: CommandRegistry = {
+  // ... existing commands ...
+
+  "my-heavy-command": {
+    lazyMain: lazyMyHeavyCommandMain,
+    description: "Heavy command with lazy loading",
+    version: "1.0.0",
+  },
+};
+```
+
+### Pattern Decision Tree
+
+**Use `handler` when:**
+- Command is simple (< 50 lines)
+- Logic is inline in command file
+- No external script to delegate to
+
+**Use `main` (static import) when:**
+- Command is lightweight (fast to load)
+- Frequently used (caching benefits)
+- Example: check-prerequisites
+
+**Use `lazyMain` (dynamic import) when:**
+- Command is heavy (slow to load)
+- Infrequently used (avoid startup cost)
+- Example: branch, create-new-feature, setup-plan
+
+### Benefits of Registry Pattern
+
+1. **No Hook Changes**: Hook router uses dynamic lookup, no code changes needed
+2. **Type Safety**: TypeScript validates registry structure at compile time
+3. **Discoverability**: `listCommands()` function returns all available commands
+4. **Testability**: Registry is easily mockable for unit tests
+5. **Fast Addition**: Add commands in <30 minutes following this guide
+
+### Validation
+
+Run the registry tests to verify your command is properly registered:
+
+```bash
+bun test tests/unit/registry.test.ts
+```
+
+The tests validate:
+- Command entry has required fields (description, version)
+- Command has at least one executable (handler, main, or lazyMain)
+- Version follows semantic versioning (X.Y.Z)
+- Command name follows naming convention (lowercase, hyphens)
+
 ## User Story 3: Automatic Prerequisite Checks
 
 The PrePromptSubmit hook automatically runs prerequisite checks before `/speck.*` or `/speck:*` slash commands expand, providing context injection and early error detection.
