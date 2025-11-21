@@ -80,7 +80,7 @@ describe("E2E: /speck.env from root validates complete aggregate view", () => {
     expect(stdout).toMatch(/Multi-Repo|multi-repo/i);
 
     // E2E: Verify root repo section
-    expect(stdout).toMatch(/Root Repository|Root repo/i);
+    expect(stdout).toMatch(/Root \(/i);  // Matches "Root (008-stacked-pr-support):"
     expect(stdout).toContain("nprbst/root-feature");
     expect(stdout).toContain("008-stacked-pr-support");
 

@@ -204,16 +204,18 @@ export async function createMultiRepoTestFixture(
   await $`git -C ${rootDir} add .`.quiet();
   await $`git -C ${rootDir} commit -m "Add child repo symlinks" --allow-empty`.quiet();
 
-  // [Feature 009] Cherry-pick the symlink commit to main branch
+  // [Feature 009] Cherry-pick the symlink commit to main branch (only if there are child repos)
   // This ensures symlinks are available on main branch for tests that create branches from main
-  const symlinkCommit = await $`git -C ${rootDir} rev-parse HEAD`.quiet();
-  const symlinkCommitHash = symlinkCommit.stdout.toString().trim();
+  if (childConfigs.length > 0) {
+    const symlinkCommit = await $`git -C ${rootDir} rev-parse HEAD`.quiet();
+    const symlinkCommitHash = symlinkCommit.stdout.toString().trim();
 
-  await $`git -C ${rootDir} checkout main`.quiet();
-  await $`git -C ${rootDir} cherry-pick ${symlinkCommitHash}`.quiet();
+    await $`git -C ${rootDir} checkout main`.quiet();
+    await $`git -C ${rootDir} cherry-pick ${symlinkCommitHash}`.quiet();
 
-  // Checkout back to parent spec branch for tests that expect to be on that branch
-  await $`git -C ${rootDir} checkout ${parentSpecId}`.quiet();
+    // Checkout back to parent spec branch for tests that expect to be on that branch
+    await $`git -C ${rootDir} checkout ${parentSpecId}`.quiet();
+  }
 
   // Cleanup function
   const cleanup = async () => {
