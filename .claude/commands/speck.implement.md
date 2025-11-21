@@ -17,23 +17,20 @@ Parse command-line flags from user input:
 - `--single-branch`: Explicitly disable stacked PR workflow (suppress all stacking prompts)
 - If no flag provided: Read workflow mode from plan.md or constitution (see step 3a)
 
-## Plugin Path Setup
-
-Before proceeding, determine the plugin root path by running:
-
-```bash
-if [ -d ".speck/scripts" ]; then
-  echo ".speck"
-else
-  cat "$HOME/.claude/speck-plugin-path" 2>/dev/null || echo ".speck"
-fi
-```
-
-Store this value and use `$PLUGIN_ROOT` in all subsequent script paths (e.g., `bun run $PLUGIN_ROOT/scripts/...`).
-
 ## Outline
 
-1. Run `bun run $PLUGIN_ROOT/scripts/check-prerequisites.ts --json --require-tasks --include-tasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. Extract prerequisite context from the auto-injected comment in the prompt:
+   ```
+   <!-- SPECK_PREREQ_CONTEXT
+   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["research.md","tasks.md"]}
+   -->
+   ```
+   Use the FEATURE_DIR and AVAILABLE_DOCS values from this JSON. All paths are absolute.
+
+   **Fallback**: If the comment is not present (backwards compatibility), run:
+   ```bash
+   speck-check-prerequisites --json --require-tasks --include-tasks
+   ```
 
 2. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
    - Scan all checklist files in the checklists/ directory

@@ -142,15 +142,15 @@ Per plan.md Project Structure:
 - [X] T040 [US3] Register PrePromptSubmit hook in .claude-plugin/plugin.json
 - [X] T041 [US3] Add integration test in tests/integration/prereq-check.test.ts validating automatic checks for slash commands (both . and : separators)
 - [X] T042 [US3] Update documentation in quickstart.md with PrePromptSubmit hook behavior and caching explanation
-- [ ] T043a [US3] Create utility function in .speck/scripts/lib/context-parser.ts to parse injected prerequisite context from markdown comments in prompts
-- [ ] T043b [US3] Update slash command template pattern to parse and use injected prerequisite context instead of manually running check-prerequisites
-- [ ] T043c [US3] Update speck.implement.md to remove manual check-prerequisites step and use injected context (with fallback for backwards compatibility)
-- [ ] T043d [US3] Update speck.plan.md, speck.tasks.md, speck.analyze.md, speck.specify.md to use injected context pattern
-- [ ] T043e [US3] Update remaining /speck.* slash commands (branch, clarify, checklist, etc.) to use injected context pattern
-- [ ] T043f [US3] Add integration test validating slash commands can parse and use injected prerequisite context
-- [ ] T043g [US3] Update slash command authoring documentation with context injection pattern
+- [X] T043a [US3] SKIPPED - No context-parser.ts needed (slash commands directly reference injected JSON comment)
+- [X] T043b [US3] Update slash command template pattern to reference injected prerequisite context instead of manually running check-prerequisites
+- [X] T043c [US3] Update speck.implement.md to use injected context (with fallback for backwards compatibility)
+- [X] T043d [US3] Update speck.plan.md, speck.tasks.md, speck.analyze.md, speck.specify.md to use injected context pattern
+- [X] T043e [US3] Update remaining /speck.* slash commands (clarify, checklist, taskstoissues, constitution) to use injected context pattern
+- [X] T043f [US3] Add integration test validating slash commands can parse and use injected prerequisite context
+- [X] T043g [US3] Update slash command authoring documentation with context injection pattern
 
-**Checkpoint**: Automatic prerequisite checks working for all /speck.* and /speck:* slash commands, and commands updated to consume injected context
+**Checkpoint**: ✅ COMPLETE - Automatic prerequisite checks working for all /speck.* and /speck:* slash commands, and commands updated to consume injected context
 
 ---
 

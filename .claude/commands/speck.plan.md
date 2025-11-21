@@ -24,25 +24,23 @@ Parse command-line flags from user input:
 - `--stacked`: Enable stacked PR workflow mode (write workflow metadata to plan.md)
 - If no flag provided: Default to single-branch mode (no workflow metadata written)
 
-## Plugin Path Setup
-
-Before proceeding, determine the plugin root path by running:
-
-```bash
-if [ -d ".speck/scripts" ]; then
-  echo ".speck"
-else
-  cat "$HOME/.claude/speck-plugin-path" 2>/dev/null || echo ".speck"
-fi
-```
-
-Store this value and use `$PLUGIN_ROOT` in all subsequent script paths (e.g., `bun run $PLUGIN_ROOT/scripts/...`).
-
 ## Outline
 
-1. **Setup**: Run `bun run $PLUGIN_ROOT/scripts/setup-plan.ts --json` from repo root and parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Setup**: Extract prerequisite context from the auto-injected comment in the prompt:
+   ```
+   <!-- SPECK_PREREQ_CONTEXT
+   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["spec.md"]}
+   -->
+   ```
+   Use FEATURE_DIR to locate spec.md, plan.md template, and other artifacts.
 
-2. **Load context**: Read FEATURE_SPEC and `$PLUGIN_ROOT/memory/constitution.md`. Load IMPL_PLAN template (already copied).
+   **Fallback**: If the comment is not present (backwards compatibility), run:
+   ```bash
+   speck-setup-plan --json
+   ```
+   Parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH.
+
+2. **Load context**: Read spec.md from FEATURE_DIR and .speck/memory/constitution.md. Load plan.md template (already copied to FEATURE_DIR).
 
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")

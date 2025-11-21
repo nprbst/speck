@@ -33,20 +33,6 @@ This command supports the following flags for branch-aware task generation (US4)
 /speck.tasks --branch username/api
 ```
 
-## Plugin Path Setup
-
-Before proceeding, determine the plugin root path by running:
-
-```bash
-if [ -d ".speck/scripts" ]; then
-  echo ".speck"
-else
-  cat "$HOME/.claude/speck-plugin-path" 2>/dev/null || echo ".speck"
-fi
-```
-
-Store this value and use `$PLUGIN_ROOT` in all subsequent script paths (e.g., `bun run $PLUGIN_ROOT/scripts/...`).
-
 ## Outline
 
 1. **Parse flags from $ARGUMENTS** (T050-T054):
@@ -55,7 +41,18 @@ Store this value and use `$PLUGIN_ROOT` in all subsequent script paths (e.g., `b
    - If `--branch` provided: Load `.speck/branches.json` (T052) and validate branch exists (T053)
    - If `--stories` provided: Store story IDs for filtering (will validate against spec.md later) (T054)
 
-2. **Setup**: Run `bun run $PLUGIN_ROOT/scripts/check-prerequisites.ts --json` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+2. **Setup**: Extract prerequisite context from the auto-injected comment in the prompt:
+   ```
+   <!-- SPECK_PREREQ_CONTEXT
+   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["plan.md","spec.md","research.md"]}
+   -->
+   ```
+   Use the FEATURE_DIR and AVAILABLE_DOCS values from this JSON. All paths are absolute.
+
+   **Fallback**: If the comment is not present (backwards compatibility), run:
+   ```bash
+   speck-check-prerequisites --json
+   ```
 
 3. **Load design documents**: Read from FEATURE_DIR:
    - **Required**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)

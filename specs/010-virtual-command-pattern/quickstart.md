@@ -512,6 +512,158 @@ This will log:
 - Direct function calls (no subprocess spawning)
 - In-memory caching eliminates I/O
 
+### Authoring Slash Commands with Context Injection
+
+When creating or updating `/speck.*` slash commands, follow this pattern to use injected prerequisite context:
+
+**Step 1: Extract Context from Prompt**
+
+Add this instruction at the beginning of your slash command:
+
+```markdown
+1. Extract prerequisite context from the auto-injected comment in the prompt:
+   ```
+   <!-- SPECK_PREREQ_CONTEXT
+   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["spec.md","plan.md"]}
+   -->
+   ```
+   Use the FEATURE_DIR and AVAILABLE_DOCS values from this JSON. All paths are absolute.
+
+   **Fallback**: If the comment is not present (backwards compatibility), run:
+   ```bash
+   speck-check-prerequisites --json [flags]
+   ```
+```
+
+**Step 2: Remove Plugin Path Setup**
+
+Do NOT include the old "Plugin Path Setup" section. The virtual command pattern eliminates the need for path resolution.
+
+**Before (deprecated)**:
+```markdown
+## Plugin Path Setup
+
+Before proceeding, determine the plugin root path by running:
+
+\`\`\`bash
+if [ -d ".speck/scripts" ]; then
+  echo ".speck"
+else
+  cat "$HOME/.claude/speck-plugin-path" 2>/dev/null || echo ".speck"
+fi
+\`\`\`
+
+Store this value and use `$PLUGIN_ROOT` in all subsequent script paths.
+```
+
+**After (correct)**:
+```markdown
+## Outline
+
+1. Extract prerequisite context from the auto-injected comment...
+```
+
+**Step 3: Use Virtual Commands in Fallback**
+
+When specifying fallback commands, use virtual command names (without paths):
+
+```markdown
+**Fallback**: If the comment is not present (backwards compatibility), run:
+\`\`\`bash
+speck-check-prerequisites --json
+\`\`\`
+```
+
+NOT: `bun run $PLUGIN_ROOT/scripts/check-prerequisites.ts --json`
+
+**Step 4: Reference Context Values**
+
+In your slash command instructions, reference the context values directly:
+
+```markdown
+2. Load spec.md from FEATURE_DIR:
+   - Read FEATURE_DIR/spec.md
+   - Parse user stories and requirements
+
+3. Check if tasks.md is available:
+   - If "tasks.md" in AVAILABLE_DOCS: Read FEATURE_DIR/tasks.md
+   - Otherwise: Inform user to run /speck.tasks first
+```
+
+**Command-Specific Flags**
+
+Different commands require different prerequisite check flags. The PrePromptSubmit hook automatically applies the correct flags based on the command:
+
+- `/speck.implement`: `--json --require-tasks --include-tasks`
+- `/speck.analyze`: `--json --require-tasks --include-tasks`
+- `/speck.tasks`: `--json`
+- `/speck.plan`: `--json`
+- `/speck.specify`: Skips check entirely (runs before feature exists)
+- All others: `--json`
+
+**Testing Context Injection**
+
+Test your slash command with both injected context and fallback mode:
+
+```bash
+# Test 1: Simulate injected context
+cat << 'EOF'
+/speck.yourcommand
+
+<!-- SPECK_PREREQ_CONTEXT
+{"MODE":"single-repo","FEATURE_DIR":"/Users/test/specs/010-test","AVAILABLE_DOCS":["spec.md","plan.md"]}
+-->
+EOF
+
+# Test 2: Simulate fallback (no context)
+# Just invoke the command without injected context
+# Should run speck-check-prerequisites as fallback
+```
+
+**Example: Complete Slash Command Template**
+
+```markdown
+---
+description: Your slash command description
+---
+
+## User Input
+
+\`\`\`text
+$ARGUMENTS
+\`\`\`
+
+You **MUST** consider the user input before proceeding (if not empty).
+
+## Outline
+
+1. Extract prerequisite context from the auto-injected comment in the prompt:
+   \`\`\`
+   <!-- SPECK_PREREQ_CONTEXT
+   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["spec.md"]}
+   -->
+   \`\`\`
+   Use FEATURE_DIR to locate spec.md and other artifacts.
+
+   **Fallback**: If the comment is not present (backwards compatibility), run:
+   \`\`\`bash
+   speck-check-prerequisites --json
+   \`\`\`
+
+2. Load required documents from FEATURE_DIR:
+   - Read FEATURE_DIR/spec.md
+   - If "plan.md" in AVAILABLE_DOCS: Read FEATURE_DIR/plan.md
+
+3. Execute your command logic...
+```
+
+**Benefits of This Pattern**:
+- No manual prerequisite checks in slash commands
+- Automatic caching (5-second TTL)
+- Consistent error handling across all commands
+- Backwards compatible with fallback mode
+- Eliminates path resolution complexity
+
 ## Troubleshooting
 
 ### Hook not intercepting commands
