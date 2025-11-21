@@ -200,10 +200,18 @@ All `[NEEDS CLARIFICATION]` markers resolved.
 - Output wrapped in `echo 'escaped text'` for hook mode
 - Validated against injection scenarios
 
+**PrePromptSubmit Hook Integration**:
+- Hook injects prerequisite context as markdown comment into prompt
+- Slash commands parse injected context to extract FEATURE_DIR and AVAILABLE_DOCS
+- Context format: `<!-- Speck Prerequisites Context (auto-injected) --> ... <!-- End Prerequisites Context -->`
+- Fallback to manual check-prerequisites if context not present (backwards compatibility during migration)
+- Eliminates redundant prerequisite checks across slash commands
+
 **Migration Strategy**:
 - POC with 2 commands (test-hello, speck-env)
 - Incremental migration with validation gates
 - One-by-one command migration with output comparison tests
+- Update slash commands to parse injected context instead of running check-prerequisites
 - Deprecation warnings, then removal after one release cycle
 
 ---

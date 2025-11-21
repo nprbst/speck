@@ -74,9 +74,9 @@ A Speck CLI script can operate in two modes: as a standalone command-line tool (
 
 ### User Story 3 - Automatic Prerequisites Check (Priority: P2)
 
-When a user invokes any `/speck.*` slash command, the system automatically runs prerequisite checks (repository mode detection, feature context validation) via PrePromptSubmit hook before the slash command expands. This runs once per command invocation, eliminating the need for each command to manually invoke check-prerequisites.
+When a user invokes any `/speck.*` slash command, the system automatically runs prerequisite checks (repository mode detection, feature context validation) via PrePromptSubmit hook before the slash command expands. The prerequisite context is injected into the prompt as a markdown comment, and slash commands parse this injected context instead of manually running check-prerequisites. This runs once per command invocation, eliminating the need for each command to manually invoke check-prerequisites.
 
-**Why this priority**: Reduces boilerplate, ensures consistent environment validation, and improves user experience by catching configuration issues early. Not P1 because commands can function with manual checks as fallback.
+**Why this priority**: Reduces boilerplate, ensures consistent environment validation, and improves user experience by catching configuration issues early. Not P1 because commands can function with manual checks as fallback during migration.
 
 **Independent Test**: Can be tested by triggering a slash command in an invalid state (e.g., wrong branch) and verifying automatic prerequisite check catches the issue before command expansion.
 
@@ -84,9 +84,10 @@ When a user invokes any `/speck.*` slash command, the system automatically runs 
 
 1. **Given** user invokes `/speck.plan` slash command, **When** PrePromptSubmit hook fires before expansion, **Then** hook automatically runs check-prerequisites and provides context to command
 2. **Given** prerequisite check detects invalid state (e.g., not on feature branch), **When** check fails in PrePromptSubmit, **Then** command aborts with clear error message before expansion
-3. **Given** prerequisite check succeeds in PrePromptSubmit, **When** check provides repository mode and feature context, **Then** context is injected into command environment or prompt context
+3. **Given** prerequisite check succeeds in PrePromptSubmit, **When** check provides repository mode and feature context, **Then** context is injected into prompt as markdown comment and slash command parses it to extract FEATURE_DIR and AVAILABLE_DOCS
 4. **Given** user invokes command directly via CLI (not slash command), **When** command runs, **Then** PrePromptSubmit hook is not triggered (CLI mode bypasses hook)
 5. **Given** prerequisite check runs automatically via PrePromptSubmit, **When** check completes, **Then** execution time adds minimal overhead (< 100ms) and runs only once per slash command
+6. **Given** slash command receives prompt with injected context, **When** command parses context, **Then** command uses injected FEATURE_DIR and AVAILABLE_DOCS instead of running check-prerequisites manually
 
 ---
 
@@ -149,7 +150,7 @@ The project includes a comprehensive addendum document that extracts critical te
 - **FR-003**: Hook system MUST intercept virtual commands matching pattern `speck-<subcommand>` and route to CLI
 - **FR-004**: Hook MUST preserve all command arguments (flags, positional args, quoted strings) when routing
 - **FR-005**: Hook MUST return output in Claude-compatible format using `updatedInput` with echo commands
-- **FR-006**: System MUST support automatic prerequisite checking for slash commands via PrePromptSubmit hook (runs once before command expansion)
+- **FR-006**: System MUST support automatic prerequisite checking for slash commands via PrePromptSubmit hook (runs once before command expansion, injects context into prompt, and slash commands parse injected context instead of running check-prerequisites manually)
 - **FR-007**: CLI MUST provide help text and version information in normal mode
 - **FR-008**: Hook MUST pass through non-matching commands (not starting with `speck-`) without modification
 - **FR-009**: System MUST handle errors gracefully in both modes and propagate exit codes correctly
@@ -172,8 +173,8 @@ The project includes a comprehensive addendum document that extracts critical te
 - **Virtual Command**: User-facing command name (e.g., `speck-branch`) that maps to actual CLI subcommand
 - **Command Registry**: Data structure mapping virtual command names to handler functions and parsers
 - **Hook Router**: Script that receives Bash tool calls via stdin, identifies virtual commands, and routes to CLI
-- **Dual-Mode CLI**: Single executable that operates in both standalone (Commander) and hook-invoked (JSON stdin) modes
-- **Bundled Hook Script**: Single-file minified JavaScript bundle containing CLI and all dependencies for optimal hook execution performance
+- **Dual-Mode CLI**: Single executable that operates in both standalone and hook-invoked modes
+- **Optimized Hook Script**: Preprocessed single-file script containing CLI and dependencies for fast hook execution
 - **Hook Input**: JSON structure containing `tool_input.command` field with the command string to intercept
 - **Hook Output**: JSON structure containing `hookSpecificOutput` with `updatedInput.command` for the substituted command
 - **Command Handler**: Function that implements business logic for a specific subcommand
@@ -185,9 +186,9 @@ The project includes a comprehensive addendum document that extracts critical te
 
 - **SC-001**: Users can invoke all Speck functionality using virtual commands without specifying plugin installation paths
 - **SC-002**: CLI scripts can be tested directly via `bun test` with >90% code coverage for both modes
-- **SC-003**: Hook routing adds <100ms latency to command execution time
+- **SC-003**: Hook routing adds <100ms latency to command execution time (measured from PreToolUse hook trigger to unified CLI execution start, including hook script load, JSON parsing, and subprocess spawn)
 - **SC-004**: Adding new commands requires changes only to command registry, not hook routing logic
-- **SC-005**: Slash command execution time reduces by 30% due to automatic prerequisite caching
+- **SC-005**: Slash command execution time reduces by 30% due to automatic prerequisite caching (baseline: current manual check-prerequisites invocation time per slash command; measured as average time from slash command invocation to command logic execution start)
 - **SC-006**: Zero breaking changes to existing Speck workflows during migration period - all current commands continue working until deprecated one release cycle after full migration
 - **SC-007**: Hook system handles 100% of valid command invocations without falling back to error states
 - **SC-008**: Documentation enables new contributors to add commands in <30 minutes
