@@ -157,7 +157,7 @@ function checkForUnknownOptions(args: string[]): void {
 /**
  * Main function
  */
-async function main(args: string[]): Promise<number> {
+export async function main(args: string[]): Promise<number> {
   // Check for unknown options first
   checkForUnknownOptions(args);
 

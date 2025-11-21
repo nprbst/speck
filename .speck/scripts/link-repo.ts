@@ -191,23 +191,30 @@ async function addGitignorePatterns(repoRoot: string): Promise<void> {
 }
 // [SPECK-EXTENSION:END]
 
-// CLI entry point
-if (import.meta.main) {
-  const args = process.argv.slice(2);
-
+/**
+ * Main function for CLI entry point
+ */
+export async function main(args: string[]): Promise<number> {
   if (args.length === 0) {
     console.error('ERROR: Missing argument\n');
     console.error('Usage: bun run .speck/scripts/link-repo.ts <path>\n');
     console.error('Examples:');
     console.error('  bun run .speck/scripts/link-repo.ts ..');
     console.error('  bun run .speck/scripts/link-repo.ts ../..');
-    process.exit(1);
+    return 1;
   }
 
   try {
     await linkRepo(args[0]);
+    return 0;
   } catch (error: any) {
     console.error('ERROR:', error.message);
-    process.exit(1);
+    return 1;
   }
+}
+
+// CLI entry point
+if (import.meta.main) {
+  const exitCode = await main(process.argv.slice(2));
+  process.exit(exitCode);
 }

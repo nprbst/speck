@@ -25,26 +25,24 @@ import path from "node:path";
 // Main Entry Point
 // ===========================
 
-async function main() {
-  const args = process.argv.slice(2);
-
+export async function main(args: string[] = process.argv.slice(2)): Promise<number> {
   if (args.includes("--help")) {
     showHelp();
-    process.exit(0);
+    return 0;
   }
 
   const jsonOutput = args.includes("--json");
 
   try {
     await displayEnvironmentStatus(jsonOutput);
-    process.exit(0);
+    return 0;
   } catch (error) {
     if (jsonOutput) {
       console.error(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
     } else {
       console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
     }
-    process.exit(1);
+    return 1;
   }
 }
 
@@ -408,4 +406,7 @@ async function displayJsonOutput(config: any, context: any): Promise<void> {
 // Execute
 // ===========================
 
-main();
+if (import.meta.main) {
+  const exitCode = await main();
+  process.exit(exitCode);
+}

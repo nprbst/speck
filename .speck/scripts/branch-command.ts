@@ -389,7 +389,7 @@ async function createCommand(args: string[]) {
     if (!currentBranch) {
       console.error("Error: No commits in repository. Cannot determine current branch.");
       console.error("Please create an initial commit first, or specify --base explicitly.");
-      process.exit(1);
+      return 1;
     }
     baseBranch = currentBranch;
     console.log(`Defaulting base to current branch: ${baseBranch}`);
@@ -524,7 +524,7 @@ async function createCommand(args: string[]) {
       }
 
       // T031j - Exit with code 2 (suggestion pending) to trigger agent interaction
-      process.exit(2);
+      return 2;
     }
   }
 
@@ -578,7 +578,7 @@ async function createCommand(args: string[]) {
         console.error("  winget install GitHub.cli # Windows");
         console.error("\nOr use --skip-pr-prompt to create branch without PR:");
         console.error(`  /speck.branch create ${name} --skip-pr-prompt`);
-        process.exit(1);
+        return 1;
       }
 
       if (errorMsg.includes("authentication") || errorMsg.includes("401")) {
@@ -587,7 +587,7 @@ async function createCommand(args: string[]) {
         console.error("  gh auth login");
         console.error("\nOr use --skip-pr-prompt to create branch without PR:");
         console.error(`  /speck.branch create ${name} --skip-pr-prompt`);
-        process.exit(1);
+        return 1;
       }
 
       // Network or other errors
@@ -596,7 +596,7 @@ async function createCommand(args: string[]) {
       console.error("  1. Check your network connection and try again");
       console.error("  2. Create the PR manually via GitHub web UI");
       console.error("  3. Use --skip-pr-prompt to create branch without PR");
-      process.exit(1);
+      return 1;
     }
   }
 
@@ -1125,7 +1125,7 @@ async function importCommand(args: string[]) {
     console.log("Agent interaction required: Map each branch to a spec.");
 
     // Exit with code 3 to signal import prompt needed
-    process.exit(3);
+    return 3;
   }
 
   // Batch mode: Parse spec mappings from arguments
@@ -1209,8 +1209,7 @@ async function importCommand(args: string[]) {
 // Main CLI
 // ===========================
 
-async function main() {
-  const args = process.argv.slice(2);
+export async function main(args: string[] = process.argv.slice(2)): Promise<number> {
 
   if (args.length === 0) {
     console.log("Usage: /speck.branch <command> [args]");
@@ -1222,7 +1221,7 @@ async function main() {
     console.log("  update <name> [--status <status>] [--pr <number>] [--base <branch>]");
     console.log("  delete <name> [--force]");
     console.log("  import [--pattern <pattern>]");
-    process.exit(1);
+    return 1;
   }
 
   const command = args[0];
@@ -1251,23 +1250,27 @@ async function main() {
       default:
         console.error(`Unknown command: ${command}`);
         console.error("Run '/speck.branch' for usage");
-        process.exit(1);
+        return 1;
     }
   } catch (error) {
     if (error instanceof GitError || error instanceof ValidationError) {
       console.error(`Error: ${error.message}`);
-      process.exit(1);
+      return 1;
     }
     if (error instanceof Error) {
       console.error(`Error: ${error.message}`);
       if (error.stack) {
         console.error(`Stack trace: ${error.stack}`);
       }
-      process.exit(1);
+      return 1;
     }
     console.error(`Unknown error: ${String(error)}`);
-    process.exit(1);
+    return 1;
   }
+  return 0;
 }
 
-main();
+if (import.meta.main) {
+  const exitCode = await main();
+  process.exit(exitCode);
+}

@@ -81,6 +81,7 @@ const branchEntry = registry.branch;
 program
   .command("branch [args...]")
   .description(branchEntry.description)
+  .allowUnknownOption() // Allow flags like --all to pass through
   .action(async (args) => {
     const argsArray = Array.isArray(args) ? args : [args];
     const commandString = `branch ${argsArray.join(" ")}`;
@@ -108,6 +109,7 @@ const checkPrerequisitesEntry = registry["check-prerequisites"]!;
 program
   .command("check-prerequisites [args...]")
   .description(checkPrerequisitesEntry.description)
+  .allowUnknownOption() // Allow --json, --require-tasks, etc. to pass through
   .action(async (args) => {
     const argsArray = Array.isArray(args) ? args : [args];
     const commandString = `check-prerequisites ${argsArray.join(" ")}`;
@@ -135,6 +137,7 @@ const createNewFeatureEntry = registry["create-new-feature"]!;
 program
   .command("create-new-feature [args...]")
   .description(createNewFeatureEntry.description)
+  .allowUnknownOption() // Allow flags to pass through
   .action(async (args) => {
     const argsArray = Array.isArray(args) ? args : [args];
     const commandString = `create-new-feature ${argsArray.join(" ")}`;
@@ -162,6 +165,7 @@ const setupPlanEntry = registry["setup-plan"]!;
 program
   .command("setup-plan [args...]")
   .description(setupPlanEntry.description)
+  .allowUnknownOption() // Allow flags to pass through
   .action(async (args) => {
     const argsArray = Array.isArray(args) ? args : [args];
     const commandString = `setup-plan ${argsArray.join(" ")}`;
@@ -189,6 +193,7 @@ const linkRepoEntry = registry["link-repo"]!;
 program
   .command("link-repo [args...]")
   .description(linkRepoEntry.description)
+  .allowUnknownOption() // Allow flags to pass through
   .action(async (args) => {
     const argsArray = Array.isArray(args) ? args : [args];
     const commandString = `link-repo ${argsArray.join(" ")}`;
@@ -245,7 +250,7 @@ async function runHookMode() {
     await log(`Intercepting speck command: ${command}`);
 
     // Parse command string to extract command name and args
-    // "speck-test-hello world" -> commandName="test-hello", args=["world"]
+    // "speck-check-prerequisites --json" -> commandName="check-prerequisites", args=["--json"]
     const commandMatch = command.match(/^speck-(.+?)(?:\s+(.*))?$/);
     if (!commandMatch) {
       console.error("Failed to parse command:", command);
@@ -255,8 +260,14 @@ async function runHookMode() {
     const [, commandName, argsString = ""] = commandMatch;
     const args = argsString.split(/\s+/).filter((arg) => arg.length > 0);
 
-    // Build argv for Commander: [commandName, ...args]
-    const argv = [commandName, ...args];
+    // Lookup command in registry
+    const commandEntry = registry[commandName];
+    if (!commandEntry) {
+      await log(`Unknown command: ${commandName}`);
+      console.error(`Unknown command: ${commandName}`);
+      console.log(JSON.stringify(passThrough()));
+      return;
+    }
 
     // Capture output
     const originalLog = console.log;
@@ -272,19 +283,41 @@ async function runHookMode() {
       errorOutput += args.join(" ") + "\n";
     };
 
-    // Execute command via Commander
+    // Execute command using main function if available, otherwise fall back to handler
+    let exitCode = 0;
     try {
-      await program.parseAsync(argv, { from: "user" });
+      if (commandEntry.main) {
+        exitCode = await commandEntry.main(args);
+      } else if (commandEntry.handler) {
+        const context: CommandContext = {
+          mode: "hook",
+          rawCommand: command,
+          workingDirectory: process.cwd(),
+          isInteractive: false,
+        };
+        const parsedArgs = commandEntry.parseArgs ? commandEntry.parseArgs(command) : {};
+        const result = await commandEntry.handler(parsedArgs, context);
+        exitCode = result.exitCode;
+        if (result.success && result.output) {
+          output += result.output;
+        }
+        if (!result.success && result.errorOutput) {
+          errorOutput += result.errorOutput;
+        }
+      } else {
+        throw new Error(`Command ${commandName} has neither main nor handler`);
+      }
     } catch (error) {
       // Command execution error - capture in errorOutput
       errorOutput += error instanceof Error ? error.message : String(error);
+      exitCode = 1;
     }
 
     // Restore console
     console.log = originalLog;
     console.error = originalError;
 
-    // Return hook output with echo-wrapped result
+    // Return hook output with captured result
     const result = output.trim() || errorOutput.trim() || "";
     const hookOutput = formatHookOutput(result, hookInput.tool_input);
     await log(`Returning result: ${result.substring(0, 100)}`);

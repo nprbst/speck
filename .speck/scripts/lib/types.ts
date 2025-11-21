@@ -78,10 +78,16 @@ export type CommandHandler<TArgs = unknown> = (
 ) => Promise<CommandResult>;
 
 /**
+ * Main function signature for scripts (returns exit code)
+ */
+export type MainFunction = (args: string[]) => Promise<number>;
+
+/**
  * Registration metadata for a command handler
  */
 export interface CommandRegistryEntry<TArgs = unknown> {
-  handler: CommandHandler<TArgs>;
+  handler?: CommandHandler<TArgs>;
+  main?: MainFunction;
   parseArgs?: ArgumentParser<TArgs>;
   description: string;
   version: string;

@@ -9,32 +9,20 @@
 import type { CommandRegistry } from "../lib/types";
 import { echoHandler } from "./echo";
 import { envHandler } from "./env";
-import { branchHandler, parseBranchArgs } from "./branch";
-import { checkPrerequisitesHandler, parseCheckPrerequisitesArgs } from "./check-prerequisites";
-import { createNewFeatureHandler, parseCreateNewFeatureArgs } from "./create-new-feature";
-import { setupPlanHandler, parseSetupPlanArgs } from "./setup-plan";
-import { linkRepoHandler, parseLinkRepoArgs } from "./link-repo";
+
+// Import the actual script main functions directly
+import { main as checkPrerequisitesMain } from "../check-prerequisites";
+import { main as createNewFeatureMain } from "../create-new-feature";
+import { main as setupPlanMain } from "../setup-plan";
+import { main as linkRepoMain } from "../link-repo";
+import { main as branchMain } from "../branch-command";
+import { main as envMain } from "../env-command";
 
 /**
  * Command registry mapping command names to handlers
  *
  * Key format: Command name without "speck-" prefix (e.g., "env" for "speck-env")
- * Value: CommandRegistryEntry with handler, optional parser, description, version
- *
- * @example
- * To add a new command:
- * ```typescript
- * import { myCommandHandler } from "./my-command";
- *
- * export const registry: CommandRegistry = {
- *   ...registry,
- *   "my-command": {
- *     handler: myCommandHandler,
- *     description: "My command description",
- *     version: "1.0.0"
- *   }
- * };
- * ```
+ * Value: CommandRegistryEntry with handler, description, version, main function
  */
 export const registry: CommandRegistry = {
   echo: {
@@ -44,36 +32,32 @@ export const registry: CommandRegistry = {
   },
   env: {
     handler: envHandler,
+    main: envMain,
     description: "Show Speck environment and configuration info",
     version: "1.0.0",
   },
   branch: {
-    handler: branchHandler,
-    parseArgs: parseBranchArgs,
+    main: branchMain,
     description: "Manage stacked feature branches",
     version: "1.0.0",
   },
   "check-prerequisites": {
-    handler: checkPrerequisitesHandler,
-    parseArgs: parseCheckPrerequisitesArgs,
+    main: checkPrerequisitesMain,
     description: "Validate feature directory structure and prerequisites",
     version: "1.0.0",
   },
   "create-new-feature": {
-    handler: createNewFeatureHandler,
-    parseArgs: parseCreateNewFeatureArgs,
+    main: createNewFeatureMain,
     description: "Create new feature specification directory",
     version: "1.0.0",
   },
   "setup-plan": {
-    handler: setupPlanHandler,
-    parseArgs: parseSetupPlanArgs,
+    main: setupPlanMain,
     description: "Initialize planning workflow",
     version: "1.0.0",
   },
   "link-repo": {
-    handler: linkRepoHandler,
-    parseArgs: parseLinkRepoArgs,
+    main: linkRepoMain,
     description: "Link repository to multi-repo speck root",
     version: "1.0.0",
   },

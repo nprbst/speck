@@ -335,7 +335,7 @@ function generateBranchName(description: string): string {
 /**
  * Main function
  */
-async function main(args: string[]): Promise<number> {
+export async function main(args: string[]): Promise<number> {
   const options = parseArgs(args);
 
   if (options.help) {
