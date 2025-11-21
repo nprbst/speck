@@ -103,10 +103,12 @@ async function main() {
 
     // Forward the CLI's hook output directly to Claude
     console.log(JSON.stringify(cliResult));
+    process.exit(0);
   } catch (error) {
     // Hook-level error: pass through to avoid breaking Claude
     console.error(`Hook error: ${error instanceof Error ? error.message : String(error)}`);
     console.log(JSON.stringify(passThrough()));
+    process.exit(0);
   }
 }
 

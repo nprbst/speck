@@ -130,7 +130,7 @@ async function runHookMode() {
 
     // Return hook output with echo-wrapped result
     const result = output.trim() || errorOutput.trim() || "";
-    const hookOutput = formatHookOutput(result);
+    const hookOutput = formatHookOutput(result, hookInput.tool_input);
     console.log(JSON.stringify(hookOutput));
   } catch (error) {
     // Hook-level error - log to stderr, return empty JSON (pass-through)
