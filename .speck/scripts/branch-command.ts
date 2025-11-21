@@ -635,20 +635,22 @@ async function createCommand(args: string[]) {
   // Write branches.json
   await writeBranches(repoRoot, mapping);
 
-  // T037 - Display success message with stack visualization
-  console.log(`✓ Created stacked branch '${name}'`);
-  console.log(`✓ Based on: ${baseBranch}`);
-  console.log(`✓ Linked to spec: ${specId}`);
-  console.log();
-  console.log("Branch stack:");
+  // T037 - Display success message with stack visualization (skip if JSON output mode)
+  if (!jsonOutputFlag) {
+    console.log(`✓ Created stacked branch '${name}'`);
+    console.log(`✓ Based on: ${baseBranch}`);
+    console.log(`✓ Linked to spec: ${specId}`);
+    console.log();
+    console.log("Branch stack:");
 
-  displayBranchTree(mapping, specId, name);
+    displayBranchTree(mapping, specId, name);
 
-  console.log();
-  console.log("Next steps:");
-  console.log(`  - Implement feature on this branch`);
-  console.log(`  - Run /speck.tasks --branch ${name} to generate tasks`);
-  console.log(`  - When ready: /speck.branch create <next-branch> --base ${name}`);
+    console.log();
+    console.log("Next steps:");
+    console.log(`  - Implement feature on this branch`);
+    console.log(`  - Run /speck.tasks --branch ${name} to generate tasks`);
+    console.log(`  - When ready: /speck.branch create <next-branch> --base ${name}`);
+  }
 }
 
 async function listCommand(args: string[]) {

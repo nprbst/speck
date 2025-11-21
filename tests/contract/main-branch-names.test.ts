@@ -128,6 +128,9 @@ describe("Contract: Non-standard main branch names", () => {
     // Rename main to master
     await $`git -C ${childRepo} branch -m main master`.quiet();
 
+    // Add remote to enable PR suggestion generation
+    await $`git -C ${childRepo} remote add origin https://github.com/test/backend-service.git`.quiet();
+
     // Create first branch with commit
     await $`
       cd ${childRepo} && \
@@ -141,6 +144,11 @@ describe("Contract: Non-standard main branch names", () => {
       cd ${childRepo} && \
       bun run ${process.cwd()}/.speck/scripts/branch-command.ts create nprbst/feature-2 --base nprbst/feature-1 --json
     `.nothrow();
+
+    // Debug: Check if stdout is empty
+    if (!result.stdout.toString().trim()) {
+      throw new Error(`No JSON output. Exit code: ${result.exitCode}, stderr: ${result.stderr.toString()}, stdout: ${result.stdout.toString()}`);
+    }
 
     const prData = JSON.parse(result.stdout.toString());
 

@@ -126,8 +126,8 @@ describe("branch-command.ts status --all - Per-Repo Summaries", () => {
     expect(result.stdout).toMatch(/PR #51|→ PR #51/);
     expect(result.stdout).toMatch(/PR #52|→ PR #52/);
 
-    // Check status indicators
-    expect(result.stdout).toMatch(/\(merged\)|\(active\)|\(submitted\)/);
+    // Check status indicators (format: "(status, PR #N)" or "(status)")
+    expect(result.stdout).toMatch(/\(merged[,)]|\(active[,)]|\(submitted[,)]/);
   });
 
   test("handles repos with no branches gracefully", async () => {

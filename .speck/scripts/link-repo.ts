@@ -134,8 +134,8 @@ export async function linkRepo(targetPath: string): Promise<void> {
  * T070: Add .gitignore patterns for symlinked spec files
  *
  * Appends patterns to .gitignore to prevent committing symlinked files:
- * - specs/*/spec.md (symlinked from shared location)
- * - specs/*/contracts/ (symlinked from shared location)
+ * - specs/STAR/spec.md (symlinked from shared location, STAR = wildcard)
+ * - specs/STAR/contracts/ (symlinked from shared location, STAR = wildcard)
  */
 async function addGitignorePatterns(repoRoot: string): Promise<void> {
   const gitignorePath = path.join(repoRoot, '.gitignore');

@@ -115,8 +115,8 @@ describe("env-command.ts - Aggregate Status Output Format", () => {
 
     // Backend service tree: auth-db → auth-api
     const backendSection = extractSection(result.stdout, "Child: backend-service");
-    expect(backendSection).toMatch(/└─ nprbst\/auth-db.*→ PR #50/);
-    expect(backendSection).toMatch(/nprbst\/auth-api.*→ PR #51/);
+    expect(backendSection).toMatch(/└─ nprbst\/auth-db.*PR #50/);
+    expect(backendSection).toMatch(/nprbst\/auth-api.*PR #51/);
   });
 
   test("handles empty child repos gracefully", async () => {

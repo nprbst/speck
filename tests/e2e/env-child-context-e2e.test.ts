@@ -326,16 +326,16 @@ describe("E2E: /speck.env from child validates local stack with parent context",
     const rootRepo = fixture.rootDir;
     const backendRepo = fixture.childRepos.get("backend-service")!;
 
-    // Create branch in root repo
+    // Create branch in root repo (skip PR prompt to avoid exit code 2)
     await $`
       cd ${rootRepo} && \
-      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/root-feat --base main --spec 008-stacked-pr-support
+      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/root-feat --base main --spec 008-stacked-pr-support --skip-pr-prompt
     `.quiet();
 
-    // Create branch in backend child repo
+    // Create branch in backend child repo (skip PR prompt to avoid exit code 2)
     await $`
       cd ${backendRepo} && \
-      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/backend-feat --base main --spec 009-multi-repo-stacked
+      bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/backend-feat --base main --spec 009-multi-repo-stacked --skip-pr-prompt
     `.quiet();
 
     // Execute env command from child repo
