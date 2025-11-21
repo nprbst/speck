@@ -4,7 +4,30 @@
  * Replaces test-hello for testing hook flow
  */
 
-import type { CommandHandler } from "../lib/types";
+import type { CommandHandler, ArgumentParser } from "../lib/types";
+import { ErrorMessages, errorToResult } from "../lib/error-handler";
+import { successResult } from "../lib/output-formatter";
+
+/**
+ * Parse echo command arguments
+ * Extracts message from command string
+ *
+ * @param commandString - Full command string (e.g., "speck-echo hello world")
+ * @returns Parsed arguments with message field
+ */
+export const parseEchoArgs: ArgumentParser<{ message: string }> = (commandString: string) => {
+  const parts = commandString.trim().split(/\s+/);
+
+  // Remove "speck-echo" or "echo" prefix if present
+  if (parts[0] === 'speck-echo' || parts[0] === 'echo') {
+    parts.shift();
+  }
+
+  // Join remaining parts as the message
+  const message = parts.join(" ");
+
+  return { message };
+};
 
 /**
  * echo command handler
@@ -16,22 +39,15 @@ import type { CommandHandler } from "../lib/types";
  */
 export const echoHandler: CommandHandler<{ message: string }> = async (args) => {
   try {
-    const output = args.message || "";
+    // Validate arguments
+    if (!args.message) {
+      throw ErrorMessages.MISSING_REQUIRED_ARG("message");
+    }
 
-    return {
-      success: true,
-      output,
-      errorOutput: null,
-      exitCode: 0,
-      metadata: { message: args.message },
-    };
+    const output = args.message;
+
+    return successResult(output, { message: args.message });
   } catch (error) {
-    return {
-      success: false,
-      output: "",
-      errorOutput: error instanceof Error ? error.message : String(error),
-      exitCode: 1,
-      metadata: null,
-    };
+    return errorToResult(error instanceof Error ? error : new Error(String(error)));
   }
 };

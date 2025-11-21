@@ -7,7 +7,7 @@
  */
 
 import type { CommandRegistry, MainFunction } from "../lib/types";
-import { echoHandler } from "./echo";
+import { echoHandler, parseEchoArgs } from "./echo";
 import { envHandler } from "./env";
 
 // Lightweight commands: static imports (always loaded)
@@ -53,6 +53,7 @@ const lazyLinkRepoMain = async (): Promise<MainFunction> => {
 export const registry: CommandRegistry = {
   echo: {
     handler: echoHandler,
+    parseArgs: parseEchoArgs,
     description: "Echo back the provided message",
     version: "1.0.0",
   },

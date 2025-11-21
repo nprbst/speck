@@ -5,6 +5,8 @@
 
 import type { CommandHandler, CommandContext, CommandResult } from "../lib/types";
 import { detectSpeckRoot } from "../common/paths";
+import { errorToResult } from "../lib/error-handler";
+import { successResult } from "../lib/output-formatter";
 
 /**
  * env command handler
@@ -33,27 +35,15 @@ export const envHandler: CommandHandler = async (args, context) => {
 
     const output = lines.join("\n");
 
-    return {
-      success: true,
-      output,
-      errorOutput: null,
-      exitCode: 0,
-      metadata: {
-        speckRoot: config.speckRoot,
-        repoRoot: config.repoRoot,
-        configMode: config.mode,
-        executionMode: context.mode,
-        workingDirectory: context.workingDirectory,
-        isInteractive: context.isInteractive,
-      },
-    };
+    return successResult(output, {
+      speckRoot: config.speckRoot,
+      repoRoot: config.repoRoot,
+      configMode: config.mode,
+      executionMode: context.mode,
+      workingDirectory: context.workingDirectory,
+      isInteractive: context.isInteractive,
+    });
   } catch (error) {
-    return {
-      success: false,
-      output: "",
-      errorOutput: error instanceof Error ? error.message : String(error),
-      exitCode: 1,
-      metadata: null,
-    };
+    return errorToResult(error instanceof Error ? error : new Error(String(error)));
   }
 };

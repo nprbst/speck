@@ -10,6 +10,7 @@
 import { $ } from "bun";
 import type { CommandHandler, CommandContext, CommandResult } from "../lib/types";
 import path from "node:path";
+import { errorToResult } from "../lib/error-handler";
 
 /**
  * Check prerequisites command handler arguments
@@ -51,13 +52,6 @@ export const checkPrerequisitesHandler: CommandHandler<CheckPrerequisitesArgs> =
       metadata: null,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      success: false,
-      output: "",
-      errorOutput: `Failed to execute check-prerequisites command: ${errorMessage}`,
-      exitCode: 1,
-      metadata: null,
-    };
+    return errorToResult(error instanceof Error ? error : new Error(String(error)));
   }
 };

@@ -12,6 +12,8 @@ import { formatHookOutput, passThrough } from "./lib/hook-utils";
 import type { CommandContext } from "./lib/types";
 import { registry } from "./commands/index";
 import { appendFile } from "node:fs/promises";
+import { CommandError, formatError, errorToResult } from "./lib/error-handler";
+import { formatOutput } from "./lib/output-formatter";
 
 const SPECK_LOG_FILE = "/private/tmp/.claude-hook-test/speck-hook-log.txt";
 
@@ -27,6 +29,45 @@ program
   .version("0.1.0");
 
 // Register commands from registry
+// Helper function to execute command with consistent error handling
+async function executeCommand(
+  commandName: string,
+  argsArray: string[],
+  context: CommandContext
+) {
+  const commandEntry = registry[commandName];
+  if (!commandEntry) {
+    throw new CommandError(`Command not found: ${commandName}`, 127);
+  }
+
+  try {
+    const commandString = `${commandName} ${argsArray.join(" ")}`;
+    const parsedArgs = commandEntry.parseArgs
+      ? commandEntry.parseArgs(commandString)
+      : {};
+    const result = await commandEntry.handler!(parsedArgs, context);
+
+    // Format output based on mode
+    if (context.mode === "cli") {
+      formatOutput(result, "cli");
+      if (!result.success) {
+        process.exit(result.exitCode);
+      }
+    }
+
+    return result;
+  } catch (error) {
+    const errorResult = errorToResult(error instanceof Error ? error : new Error(String(error)));
+
+    if (context.mode === "cli") {
+      formatOutput(errorResult, "cli");
+      process.exit(errorResult.exitCode);
+    }
+
+    return errorResult;
+  }
+}
+
 // echo command
 const echoEntry = registry.echo!;
 program
@@ -43,7 +84,7 @@ program
       isInteractive: process.stdin.isTTY ?? false,
     };
 
-    const result = await echoEntry.handler({ message }, context);
+    const result = await echoEntry.handler!({ message }, context);
 
     if (result.success) {
       console.log(result.output);
@@ -314,9 +355,12 @@ async function runHookMode() {
         throw new Error(`Command ${commandName} has no main, lazyMain, or handler`);
       }
     } catch (error) {
-      // Command execution error - capture in errorOutput
-      errorOutput += error instanceof Error ? error.message : String(error);
-      exitCode = 1;
+      // Command execution error - capture in errorOutput with proper formatting
+      const errorResult = errorToResult(
+        error instanceof Error ? error : new Error(String(error))
+      );
+      errorOutput += errorResult.errorOutput || "";
+      exitCode = errorResult.exitCode;
     }
 
     // Restore console
@@ -344,8 +388,20 @@ async function runCliMode() {
   try {
     await program.parseAsync(process.argv);
   } catch (error) {
-    console.error("Error:", error instanceof Error ? error.message : String(error));
-    process.exit(1);
+    // Format error for CLI mode
+    const errorMessage = formatError(
+      error instanceof Error ? error : new Error(String(error)),
+      "cli"
+    );
+
+    // Print formatted error
+    if (typeof errorMessage === "string") {
+      console.error(errorMessage);
+    }
+
+    // Exit with appropriate code
+    const exitCode = error instanceof CommandError ? error.exitCode : 1;
+    process.exit(exitCode);
   }
 }
 

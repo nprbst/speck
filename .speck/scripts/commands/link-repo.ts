@@ -10,6 +10,7 @@
 import { $ } from "bun";
 import type { CommandHandler, CommandContext, CommandResult } from "../lib/types";
 import path from "node:path";
+import { errorToResult } from "../lib/error-handler";
 
 /**
  * Link repo command handler arguments
@@ -47,13 +48,6 @@ export const linkRepoHandler: CommandHandler<LinkRepoArgs> = async (args, contex
       metadata: null,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      success: false,
-      output: "",
-      errorOutput: `Failed to execute link-repo command: ${errorMessage}`,
-      exitCode: 1,
-      metadata: null,
-    };
+    return errorToResult(error instanceof Error ? error : new Error(String(error)));
   }
 };

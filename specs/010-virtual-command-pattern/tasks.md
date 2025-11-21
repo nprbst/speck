@@ -114,14 +114,14 @@ Per plan.md Project Structure:
 
 ### Implementation for User Story 2
 
-- [ ] T028 [P] [US2] Implement error handling in .speck/scripts/lib/error-handler.ts (CommandError class, formatError for both modes)
-- [ ] T029 [P] [US2] Create output formatter utility in .speck/scripts/lib/output-formatter.ts (formatCliOutput, formatHookOutput per mode)
-- [ ] T030 [US2] Add comprehensive error handling to CLI entry point in .speck/scripts/speck.ts (catch errors, format per mode, set exit codes)
-- [ ] T031 [US2] Implement argument validation in command handlers (validate required args, return clear error messages)
-- [ ] T032 [US2] Add logging utility in .speck/scripts/lib/logger.ts (mode-aware logging, debug mode support)
-- [ ] T033 [US2] Update all command handlers to use error-handler and output-formatter utilities
-- [ ] T034 [US2] Add unit tests in tests/unit/speck-cli.test.ts validating dual-mode operation for each command
-- [ ] T035 [US2] Add integration test in tests/integration/hook-simulation.test.ts simulating hook JSON stdin/stdout for all commands
+- [X] T028 [P] [US2] Implement error handling in .speck/scripts/lib/error-handler.ts (CommandError class, formatError for both modes)
+- [X] T029 [P] [US2] Create output formatter utility in .speck/scripts/lib/output-formatter.ts (formatCliOutput, formatHookOutput per mode)
+- [X] T030 [US2] Add comprehensive error handling to CLI entry point in .speck/scripts/speck.ts (catch errors, format per mode, set exit codes)
+- [X] T031 [US2] Implement argument validation in command handlers (validate required args, return clear error messages)
+- [X] T032 [US2] Add logging utility in .speck/scripts/lib/logger.ts (mode-aware logging, debug mode support)
+- [X] T033 [US2] Update all command handlers to use error-handler and output-formatter utilities
+- [X] T034 [US2] Add unit tests in tests/unit/speck-cli.test.ts validating dual-mode operation for each command
+- [X] T035 [US2] Add integration test in tests/integration/hook-simulation.test.ts simulating hook JSON stdin/stdout for all commands
 
 **Checkpoint**: Dual-mode CLI fully functional with identical business logic in both modes
 

@@ -10,6 +10,7 @@
 import { $ } from "bun";
 import type { CommandHandler, CommandContext, CommandResult } from "../lib/types";
 import path from "node:path";
+import { errorToResult } from "../lib/error-handler";
 
 /**
  * Branch command handler arguments
@@ -63,13 +64,6 @@ export const branchHandler: CommandHandler<BranchArgs> = async (args, context) =
       metadata: null,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      success: false,
-      output: "",
-      errorOutput: `Failed to execute branch command: ${errorMessage}`,
-      exitCode: 1,
-      metadata: null,
-    };
+    return errorToResult(error instanceof Error ? error : new Error(String(error)));
   }
 };
