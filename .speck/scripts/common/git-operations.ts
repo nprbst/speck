@@ -95,11 +95,11 @@ export async function listGitBranches(
 
     const result = await $`sh -c ${args}`.quiet();
     if (result.exitCode !== 0) {
-      const stderr = await result.stderr.text();
+      const stderr = result.stderr.toString();
       throw new GitError(`Failed to list branches: ${stderr}`);
     }
 
-    const output = await result.stdout.text();
+    const output = result.stdout.toString();
     return output
       .split("\n")
       .filter(Boolean)

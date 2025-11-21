@@ -1032,6 +1032,12 @@ async function importCommand(args: string[]) {
   const paths = await getFeaturePaths();
   const repoRoot = paths.REPO_ROOT;
 
+  // T058 - Detect multi-repo context for parentSpecId
+  const multiRepoContext = await detectSpeckRoot(repoRoot);
+  const parentSpecId = multiRepoContext.context === 'child'
+    ? await detectParentSpecId(repoRoot, multiRepoContext)
+    : null;
+
   // T060-T061 - List all git branches and infer base branches
   const gitBranches = await listGitBranches(repoRoot, pattern);
 
@@ -1052,8 +1058,9 @@ async function importCommand(args: string[]) {
     return;
   }
 
-  // T062 - Get available specs for mapping
-  const specDirs = await fs.readdir(path.join(repoRoot, "specs"));
+  // T062 - Get available specs for mapping (use multiRepoContext.specsDir for child repos)
+  const specsDir = multiRepoContext.specsDir;
+  const specDirs = await fs.readdir(specsDir);
   const availableSpecs = specDirs.filter((d) => /^\d{3}-/.test(d));
 
   if (!isBatchMode) {
@@ -1137,6 +1144,7 @@ async function importCommand(args: string[]) {
     }
 
     // T066 - Create branch entry
+    // T060 - Add parentSpecId for multi-repo child context
     const now = new Date().toISOString();
     const entry: BranchEntry = {
       name: branchName,
@@ -1146,6 +1154,7 @@ async function importCommand(args: string[]) {
       pr: null,
       createdAt: now,
       updatedAt: now,
+      ...(parentSpecId && { parentSpecId }),
     };
 
     // T065 - Validate no cycles
