@@ -148,6 +148,18 @@ export async function createMultiRepoTestFixture(
     const symlinkPath = path.join(speckDir, "root");
     await symlink(rootDir, symlinkPath, "dir");
 
+    // [Feature 009] Create reverse symlink from root to child (.speck-link-{name})
+    // This allows detectSpeckRoot() to identify the root as multi-repo mode
+    const rootLinkPath = path.join(rootDir, `.speck-link-${config.name}`);
+    try {
+      await symlink(childDir, rootLinkPath, "dir");
+    } catch (error: any) {
+      if (error.code !== 'EEXIST') {
+        throw error;
+      }
+      // Symlink already exists, skip (can happen if test fixture is reused)
+    }
+
     // Add git remote if provided
     if (config.remoteUrl) {
       await $`git -C ${childDir} remote add origin ${config.remoteUrl}`.quiet();
@@ -186,17 +198,22 @@ export async function createMultiRepoTestFixture(
         }
       }
     }
-
-    // [Feature 009] Create .speck-link-* symlink from root to child
-    // This allows findChildRepos() to discover child repositories from root
-    const childLinkName = `.speck-link-${config.name}`;
-    const childLinkPath = path.join(rootDir, childLinkName);
-    await symlink(childDir, childLinkPath, "dir");
   }
 
   // Commit all symlinks to avoid "uncommitted changes" errors in tests
   await $`git -C ${rootDir} add .`.quiet();
   await $`git -C ${rootDir} commit -m "Add child repo symlinks" --allow-empty`.quiet();
+
+  // [Feature 009] Cherry-pick the symlink commit to main branch
+  // This ensures symlinks are available on main branch for tests that create branches from main
+  const symlinkCommit = await $`git -C ${rootDir} rev-parse HEAD`.quiet();
+  const symlinkCommitHash = symlinkCommit.stdout.toString().trim();
+
+  await $`git -C ${rootDir} checkout main`.quiet();
+  await $`git -C ${rootDir} cherry-pick ${symlinkCommitHash}`.quiet();
+
+  // Checkout back to parent spec branch for tests that expect to be on that branch
+  await $`git -C ${rootDir} checkout ${parentSpecId}`.quiet();
 
   // Cleanup function
   const cleanup = async () => {

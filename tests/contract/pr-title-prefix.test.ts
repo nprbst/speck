@@ -166,13 +166,13 @@ describe("Contract: PR title prefix format", () => {
     // Create branch with commit
     await $`
       cd ${rootRepo} && \
-      bun run ${process.cwd()}/.speck/scripts/branch-command.ts create nprbst/feature --base main --spec 009-multi-repo-stacked
+      bun run ${process.cwd()}/.speck/scripts/branch-command.ts create nprbst/feature --base main --spec 009-multi-repo-stacked --skip-pr-prompt
     `.quiet();
 
     await writeFile(path.join(rootRepo, "feature.ts"), "export const feature = {};");
     await commitChanges(rootRepo, "Add feature");
 
-    // Create second branch
+    // Create second branch (trigger PR suggestion for nprbst/feature)
     const result = await $`
       cd ${rootRepo} && \
       bun run ${process.cwd()}/.speck/scripts/branch-command.ts create nprbst/feature-2 --base nprbst/feature --json
