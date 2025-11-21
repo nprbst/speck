@@ -5,7 +5,35 @@
 **Status**: Draft
 **Input**: User description: "I would like to improve Speck by using the 'virtual command pattern' to call out to a single dual-mode speck cli with subcommands for each existing script, packaged within the plugin and called by hooks. I would also like to explore automatically running the check-prerequisites script automatically by hooking the /speck slash commands so that they do not need to do the Bash roundtrip themselves. In addition to recording a spec.md file, also please extract the critical knowledge and techniques from the above chat history into a addendum document that we can reference while planning and tasking."
 
+## Clarifications
+
+### Session 2025-11-21
+
+- Q: Should we add a POC user story to validate the hooks-based virtual command pattern before full implementation? → A: Yes, add User Story 0 for POC
+- Q: What should the POC implement to prove feasibility? → A: Test command + one real Speck command (speck-env)
+- Q: Which hook type should trigger automatic prerequisite checks for slash commands? → A: PrePromptSubmit - Check before slash command expansion
+- Q: How should existing individual script files be migrated to the unified CLI? → A: Incremental migration - one-by-one, keep both until validated, then deprecate
+- Q: How long should individual command scripts remain supported after unified CLI is fully implemented? → A: One feature release cycle after all commands migrated and tested
+
 ## User Scenarios & Testing
+
+### User Story 0 - POC: Hook-Based Virtual Command Pattern (Priority: P0)
+
+A developer creates a minimal proof-of-concept demonstrating that Claude Code's PreToolUse hooks can successfully intercept virtual commands, route them to scripts, and return results. The POC implements two commands: a simple test command (`test-hello`) to prove the hook mechanism works, and one real Speck command (`speck-env`) to validate integration with existing infrastructure.
+
+**Why this priority**: P0 (foundational) - Without confirming the hook mechanism works as documented, the entire feature is at risk. This POC must succeed before proceeding with User Stories 1-5.
+
+**Independent Test**: Can be tested by creating a minimal hook script that intercepts both `test-hello` and `speck-env`, routes to appropriate scripts, and verifies Claude displays correct output for both commands.
+
+**Acceptance Scenarios**:
+
+1. **Given** a minimal hook script registered in plugin.json, **When** Claude executes `test-hello world`, **Then** hook intercepts the command and returns "Hello world"
+2. **Given** hook receives JSON stdin with `{"tool_input": {"command": "test-hello world"}}`, **When** hook parses and routes command, **Then** hook returns valid hookSpecificOutput with updatedInput
+3. **Given** hook intercepts `speck-env` command, **When** routed to existing env script, **Then** output matches direct script execution (validates integration)
+4. **Given** hook script fails or returns malformed JSON, **When** Claude attempts execution, **Then** error is clearly reported and doesn't crash Claude
+5. **Given** POC succeeds with both commands, **When** developer reviews implementation, **Then** pattern is documented and ready for production commands
+
+---
 
 ### User Story 1 - Seamless Virtual Command Invocation (Priority: P1)
 
@@ -45,19 +73,19 @@ A Speck CLI script can operate in two modes: as a standalone command-line tool (
 
 ### User Story 3 - Automatic Prerequisites Check (Priority: P2)
 
-When a user invokes any `/speck.*` slash command, the system automatically runs prerequisite checks (repository mode detection, feature context validation) before executing the command, eliminating the need for each command to manually invoke check-prerequisites.
+When a user invokes any `/speck.*` slash command, the system automatically runs prerequisite checks (repository mode detection, feature context validation) via PrePromptSubmit hook before the slash command expands. This runs once per command invocation, eliminating the need for each command to manually invoke check-prerequisites.
 
 **Why this priority**: Reduces boilerplate, ensures consistent environment validation, and improves user experience by catching configuration issues early. Not P1 because commands can function with manual checks as fallback.
 
-**Independent Test**: Can be tested by triggering a slash command in an invalid state (e.g., wrong branch) and verifying automatic prerequisite check catches the issue before command execution.
+**Independent Test**: Can be tested by triggering a slash command in an invalid state (e.g., wrong branch) and verifying automatic prerequisite check catches the issue before command expansion.
 
 **Acceptance Scenarios**:
 
-1. **Given** user invokes `/speck.plan` slash command, **When** command execution begins, **Then** hook automatically runs check-prerequisites and provides context to command
-2. **Given** prerequisite check detects invalid state (e.g., not on feature branch), **When** check fails, **Then** command aborts with clear error message before attempting main logic
-3. **Given** prerequisite check succeeds, **When** check provides repository mode and feature context, **Then** context is available to command without additional script invocations
-4. **Given** user invokes command directly via CLI (not slash command), **When** command runs, **Then** prerequisite check is skipped (CLI mode bypasses hook)
-5. **Given** prerequisite check runs automatically, **When** check completes, **Then** execution time adds minimal overhead (< 100ms)
+1. **Given** user invokes `/speck.plan` slash command, **When** PrePromptSubmit hook fires before expansion, **Then** hook automatically runs check-prerequisites and provides context to command
+2. **Given** prerequisite check detects invalid state (e.g., not on feature branch), **When** check fails in PrePromptSubmit, **Then** command aborts with clear error message before expansion
+3. **Given** prerequisite check succeeds in PrePromptSubmit, **When** check provides repository mode and feature context, **Then** context is injected into command environment or prompt context
+4. **Given** user invokes command directly via CLI (not slash command), **When** command runs, **Then** PrePromptSubmit hook is not triggered (CLI mode bypasses hook)
+5. **Given** prerequisite check runs automatically via PrePromptSubmit, **When** check completes, **Then** execution time adds minimal overhead (< 100ms) and runs only once per slash command
 
 ---
 
@@ -107,6 +135,9 @@ The project includes a comprehensive addendum document that extracts critical te
 - How does system handle commands that produce very large output (> 100KB)?
 - What occurs when git repository is in detached HEAD state?
 - How does system handle symbolic links in plugin installation path?
+- What happens when both individual script and unified CLI implement same command during migration?
+- How does system handle version mismatches between hook router and CLI during incremental rollout?
+- What occurs when user invokes deprecated individual script directly after migration completes?
 
 ## Requirements
 
@@ -117,7 +148,7 @@ The project includes a comprehensive addendum document that extracts critical te
 - **FR-003**: Hook system MUST intercept virtual commands matching pattern `speck-<subcommand>` and route to CLI
 - **FR-004**: Hook MUST preserve all command arguments (flags, positional args, quoted strings) when routing
 - **FR-005**: Hook MUST return output in Claude-compatible format using `updatedInput` with echo commands
-- **FR-006**: System MUST support automatic prerequisite checking for slash commands via hook integration
+- **FR-006**: System MUST support automatic prerequisite checking for slash commands via PrePromptSubmit hook (runs once before command expansion)
 - **FR-007**: CLI MUST provide help text and version information in normal mode
 - **FR-008**: Hook MUST pass through non-matching commands (not starting with `speck-`) without modification
 - **FR-009**: System MUST handle errors gracefully in both modes and propagate exit codes correctly
@@ -129,6 +160,9 @@ The project includes a comprehensive addendum document that extracts critical te
 - **FR-015**: System MUST provide comprehensive tests covering CLI mode, hook mode, and error scenarios
 - **FR-016**: Hook configuration MUST be declared in plugin.json manifest for automatic registration
 - **FR-017**: System MUST provide addendum document extracting key architectural patterns and techniques
+- **FR-018**: System MUST support incremental migration where individual command scripts and unified CLI coexist until all commands validated
+- **FR-019**: Individual command scripts MUST remain functional during migration period to ensure zero breaking changes
+- **FR-020**: Individual command scripts MUST be deprecated and removed one feature release cycle after all commands migrated to unified CLI and tested in production
 
 ### Key Entities
 
@@ -150,7 +184,7 @@ The project includes a comprehensive addendum document that extracts critical te
 - **SC-003**: Hook routing adds <100ms latency to command execution time
 - **SC-004**: Adding new commands requires changes only to command registry, not hook routing logic
 - **SC-005**: Slash command execution time reduces by 30% due to automatic prerequisite caching
-- **SC-006**: Zero breaking changes to existing Speck workflows - all current commands continue working
+- **SC-006**: Zero breaking changes to existing Speck workflows during migration period - all current commands continue working until deprecated one release cycle after full migration
 - **SC-007**: Hook system handles 100% of valid command invocations without falling back to error states
 - **SC-008**: Documentation enables new contributors to add commands in <30 minutes
 - **SC-009**: Test suite validates both CLI and hook modes with identical assertions for each command
