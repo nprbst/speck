@@ -18,6 +18,16 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun \"/Users/nathan/git/github.com/nprbst/speck/.speck/scripts/hooks/pre-prompt-submit.ts\""
+          }
+        ]
+      }
     ]
   }
 }

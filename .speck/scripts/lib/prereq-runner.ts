@@ -185,6 +185,11 @@ export async function runPrerequisiteCheck(
 /**
  * Format prerequisite check result as markdown context for prompt injection
  *
+ * Formats as HTML comment with JSON payload matching the expected format:
+ * <!-- SPECK_PREREQ_CONTEXT
+ * {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["spec.md"]}
+ * -->
+ *
  * @param result - The check result to format
  * @returns Markdown string to inject into prompt
  */
@@ -195,14 +200,15 @@ export function formatPrereqContext(result: PrereqCheckResult): string {
 
   const { FEATURE_DIR, AVAILABLE_DOCS, MODE } = result.output;
 
-  return `
-<!-- Speck Prerequisites Context (auto-injected) -->
-**Feature Directory**: \`${FEATURE_DIR}\`
-**Repository Mode**: ${MODE}
-**Available Docs**: ${AVAILABLE_DOCS.join(", ")}
-${result.cached ? "*(cached result)*" : ""}
-<!-- End Prerequisites Context -->
-`.trim();
+  const contextData = {
+    MODE,
+    FEATURE_DIR,
+    AVAILABLE_DOCS,
+  };
+
+  return `<!-- SPECK_PREREQ_CONTEXT
+${JSON.stringify(contextData)}
+-->`;
 }
 
 /**

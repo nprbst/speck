@@ -1,17 +1,17 @@
 #!/usr/bin/env bun
 
 /**
- * PrePromptSubmit Hook
+ * UserPromptSubmit Hook
  *
  * Automatically runs prerequisite checks before /speck.* slash commands expand.
- * Injects prerequisite context into prompt on success, replaces with error on failure.
+ * Injects prerequisite context as additionalContext on success, blocks on failure.
  *
  * Hook Behavior:
  * - Detects /speck.* slash commands in user prompt
  * - Runs check-prerequisites.ts with appropriate flags
  * - Caches results for 5 seconds to avoid redundant checks
- * - Injects context as markdown comment on success
- * - Replaces prompt with error message on failure
+ * - Injects context as additionalContext (HTML comment with JSON) on success
+ * - Blocks execution with error message on failure
  *
  * @see research.md decision 7 for caching strategy
  */
@@ -21,9 +21,16 @@ import {
   formatPrereqContext,
   formatPrereqError,
 } from "../lib/prereq-runner";
+import { appendFile } from "fs/promises";
+
+const LOG_FILE = "/private/tmp/.claude-hook-test/speck-hook-log.txt";
+
+const log = async (msg: string) => {
+  await appendFile(LOG_FILE, `[${new Date().toISOString()}] [PrePromptSubmit] ${msg}\n`);
+};
 
 /**
- * PrePromptSubmit hook input structure
+ * UserPromptSubmit hook input structure
  */
 interface HookInput {
   prompt: string;
@@ -31,12 +38,14 @@ interface HookInput {
 }
 
 /**
- * PrePromptSubmit hook output structure
+ * UserPromptSubmit hook output structure
  */
 interface HookOutput {
+  decision?: "block";
+  reason?: string;
   hookSpecificOutput?: {
-    hookEventName: "PrePromptSubmit";
-    updatedPrompt?: string;
+    hookEventName: "UserPromptSubmit";
+    additionalContext?: string;
   };
 }
 
@@ -95,43 +104,56 @@ async function main() {
   try {
     // Read hook input from stdin
     const input = await Bun.stdin.text();
+    await log(`Received hook input (length: ${input.length})`);
+
     const hookInput: HookInput = JSON.parse(input);
     const { prompt } = hookInput;
+    await log(`Parsed prompt: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
 
     // Check if this is a /speck.* command
     if (!isSpeckSlashCommand(prompt)) {
       // Pass through for non-speck commands
+      await log(`Not a /speck.* command, passing through`);
       console.log(JSON.stringify({}));
       return;
     }
 
+    const commandMatch = prompt.match(/^\/speck[.:]\w+/);
+    await log(`Detected /speck.* command: ${commandMatch?.[0] ?? 'unknown'}`);
+
     // Determine check options based on command
     const options = getCheckOptions(prompt);
+    await log(`Check options: ${JSON.stringify(options)}`);
 
     // Run prerequisite check (with caching)
     const result = await runPrerequisiteCheck(options, true);
+    await log(`Prerequisite check result: success=${result.success}`);
 
     if (result.success && result.output) {
-      // Inject context into prompt
+      // Inject context as additionalContext
       const context = formatPrereqContext(result);
-      const updatedPrompt = `${prompt}\n\n${context}`;
+      await log(`Formatted context (length: ${context.length})`);
+      await log(`Context preview: ${context.substring(0, 200)}`);
 
       const output: HookOutput = {
         hookSpecificOutput: {
-          hookEventName: "PrePromptSubmit",
-          updatedPrompt,
+          hookEventName: "UserPromptSubmit",
+          additionalContext: context,
         },
       };
 
+      await log(`Returning success with additionalContext`);
       console.log(JSON.stringify(output));
     } else {
-      // Replace prompt with error message (abort command execution)
+      // Block execution with error message
       const errorMessage = formatPrereqError(result.error || "Unknown error");
+      await log(`Blocking with error: ${result.error}`);
 
       const output: HookOutput = {
+        decision: "block",
+        reason: errorMessage,
         hookSpecificOutput: {
-          hookEventName: "PrePromptSubmit",
-          updatedPrompt: errorMessage,
+          hookEventName: "UserPromptSubmit",
         },
       };
 
@@ -139,7 +161,9 @@ async function main() {
     }
   } catch (error) {
     // Malformed input or unexpected error: pass through to avoid breaking Claude
-    console.error(`PrePromptSubmit hook error: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    await log(`Hook error: ${errorMessage}`);
+    console.error(`PrePromptSubmit hook error: ${errorMessage}`);
     console.log(JSON.stringify({}));
   }
 }
