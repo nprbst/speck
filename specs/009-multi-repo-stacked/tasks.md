@@ -231,11 +231,11 @@
 
 **Purpose**: Validate session continuity and complete multi-repo workflows
 
-- [ ] T065 [P] Multi-step test for specify → plan → tasks workflow in multi-repo in tests/multi-step/specify-plan-tasks.test.ts
-- [ ] T066 [P] Multi-step test for branch create → confirm → stack → status workflow in tests/multi-step/branch-workflow.test.ts
-- [ ] T067 [P] Multi-step test for multi-repo: specify (root) → plan (child A) → plan (child B) in tests/multi-step/cross-repo-workflow.test.ts
-- [ ] T068 Multi-step test validates session context preservation across commands in tests/multi-step/session-context.test.ts
-- [ ] T069 Multi-step test validates session isolation between different repos in tests/multi-step/session-isolation.test.ts
+- [X] T065 [P] Multi-step test for specify → plan → tasks workflow in multi-repo in tests/multi-step/specify-plan-tasks.test.ts
+- [X] T066 [P] Multi-step test for branch create → confirm → stack → status workflow in tests/multi-step/branch-workflow.test.ts
+- [X] T067 [P] Multi-step test for multi-repo: specify (root) → plan (child A) → plan (child B) in tests/multi-step/cross-repo-workflow.test.ts
+- [X] T068 Multi-step test validates session context preservation across commands in tests/multi-step/session-context.test.ts
+- [X] T069 Multi-step test validates session isolation between different repos in tests/multi-step/session-isolation.test.ts
 
 ---
 
