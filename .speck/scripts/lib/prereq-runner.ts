@@ -1,0 +1,221 @@
+/**
+ * Prerequisite Check Runner
+ *
+ * Provides functions to run check-prerequisites and cache results
+ * for use in PrePromptSubmit hooks.
+ *
+ * Uses static imports and direct function calls (no subprocess spawning)
+ * for efficient bundling and performance.
+ *
+ * @module prereq-runner
+ */
+
+import { main as checkPrerequisites } from "../check-prerequisites";
+import type { ValidationOutput } from "../check-prerequisites";
+import { getCachedResult, cacheResult, type CachedPrereqResult } from "./prereq-cache";
+
+/**
+ * Result of running prerequisite checks
+ */
+export interface PrereqCheckResult {
+  success: boolean;
+  output: ValidationOutput | null;
+  error: string | null;
+  cached: boolean;
+}
+
+/**
+ * Capture stdout/stderr during prerequisite check
+ */
+function captureOutput(fn: () => Promise<number>): Promise<{
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+}> {
+  return new Promise(async (resolve) => {
+    const originalLog = console.log;
+    const originalError = console.error;
+    let stdout = "";
+    let stderr = "";
+
+    console.log = (...args) => {
+      stdout += args.join(" ") + "\n";
+    };
+
+    console.error = (...args) => {
+      stderr += args.join(" ") + "\n";
+    };
+
+    try {
+      const exitCode = await fn();
+      resolve({ exitCode, stdout: stdout.trim(), stderr: stderr.trim() });
+    } catch (error) {
+      stderr += `Error: ${error.message}\n`;
+      resolve({ exitCode: 2, stdout: stdout.trim(), stderr: stderr.trim() });
+    } finally {
+      console.log = originalLog;
+      console.error = originalError;
+    }
+  });
+}
+
+/**
+ * Run prerequisite checks and return structured result
+ *
+ * @param options - Command options to pass to check-prerequisites
+ * @param useCache - Whether to use cached results (default: true)
+ * @returns Promise resolving to check result
+ */
+export async function runPrerequisiteCheck(
+  options: {
+    requireTasks?: boolean;
+    includeTasks?: boolean;
+    skipFeatureCheck?: boolean;
+  } = {},
+  useCache = true
+): Promise<PrereqCheckResult> {
+  // Check cache first
+  if (useCache) {
+    const cached = getCachedResult();
+    if (cached) {
+      return {
+        success: cached.success,
+        output: cached.output,
+        error: cached.error,
+        cached: true,
+      };
+    }
+  }
+
+  try {
+    // Build command arguments
+    const args = ["--json"];
+    if (options.requireTasks) args.push("--require-tasks");
+    if (options.includeTasks) args.push("--include-tasks");
+    if (options.skipFeatureCheck) args.push("--skip-feature-check");
+
+    // Execute check-prerequisites directly (no subprocess)
+    const { exitCode, stdout, stderr } = await captureOutput(() =>
+      checkPrerequisites(args)
+    );
+
+    if (exitCode === 0) {
+      // Parse JSON output
+      try {
+        const output = JSON.parse(stdout) as ValidationOutput;
+        const result: PrereqCheckResult = {
+          success: true,
+          output,
+          error: null,
+          cached: false,
+        };
+
+        // Cache successful result
+        cacheResult({
+          success: true,
+          output,
+          error: null,
+          timestamp: Date.now(),
+        });
+
+        return result;
+      } catch (parseError) {
+        const error = `Failed to parse check-prerequisites output: ${parseError.message}`;
+
+        const result: PrereqCheckResult = {
+          success: false,
+          output: null,
+          error,
+          cached: false,
+        };
+
+        // Cache failed result
+        cacheResult({
+          success: false,
+          output: null,
+          error,
+          timestamp: Date.now(),
+        });
+
+        return result;
+      }
+    } else {
+      // Check failed - capture stderr
+      const error = stderr || `check-prerequisites exited with code ${exitCode}`;
+
+      const result: PrereqCheckResult = {
+        success: false,
+        output: null,
+        error,
+        cached: false,
+      };
+
+      // Cache failed result
+      cacheResult({
+        success: false,
+        output: null,
+        error,
+        timestamp: Date.now(),
+      });
+
+      return result;
+    }
+  } catch (error) {
+    const errorMsg = `Failed to run check-prerequisites: ${error.message}`;
+
+    const result: PrereqCheckResult = {
+      success: false,
+      output: null,
+      error: errorMsg,
+      cached: false,
+    };
+
+    // Cache failed result
+    cacheResult({
+      success: false,
+      output: null,
+      error: errorMsg,
+      timestamp: Date.now(),
+    });
+
+    return result;
+  }
+}
+
+/**
+ * Format prerequisite check result as markdown context for prompt injection
+ *
+ * @param result - The check result to format
+ * @returns Markdown string to inject into prompt
+ */
+export function formatPrereqContext(result: PrereqCheckResult): string {
+  if (!result.success || !result.output) {
+    return "";
+  }
+
+  const { FEATURE_DIR, AVAILABLE_DOCS, MODE } = result.output;
+
+  return `
+<!-- Speck Prerequisites Context (auto-injected) -->
+**Feature Directory**: \`${FEATURE_DIR}\`
+**Repository Mode**: ${MODE}
+**Available Docs**: ${AVAILABLE_DOCS.join(", ")}
+${result.cached ? "*(cached result)*" : ""}
+<!-- End Prerequisites Context -->
+`.trim();
+}
+
+/**
+ * Format prerequisite check error as user-friendly message
+ *
+ * @param error - The error message from check
+ * @returns User-friendly error message
+ */
+export function formatPrereqError(error: string): string {
+  return `⚠️ **Prerequisite Check Failed**
+
+${error}
+
+Please ensure you're on a valid feature branch and have run the necessary Speck commands.
+`.trim();
+}

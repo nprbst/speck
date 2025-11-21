@@ -135,15 +135,15 @@ Per plan.md Project Structure:
 
 ### Implementation for User Story 3
 
-- [ ] T036 [US3] Create PrePromptSubmit hook script in .speck/scripts/hooks/pre-prompt-submit.ts (detects /speck.* slash commands)
-- [ ] T037 [US3] Implement prerequisite check runner in .speck/scripts/lib/prereq-runner.ts (runs check-prerequisites.ts, caches results per research.md decision 7)
-- [ ] T038 [US3] Implement prompt injection logic in PrePromptSubmit hook (append prerequisite context to prompt on success, replace with error on failure)
-- [ ] T039 [US3] Add caching mechanism in .speck/scripts/lib/prereq-cache.ts (5-second TTL, invalidate on git operations per research.md)
-- [ ] T040 [US3] Register PrePromptSubmit hook in .claude-plugin/plugin.json
-- [ ] T041 [US3] Add integration test in tests/integration/prereq-check.test.ts validating automatic checks for slash commands
-- [ ] T042 [US3] Update documentation in quickstart.md with PrePromptSubmit hook behavior and caching explanation
+- [X] T036 [US3] Create PrePromptSubmit hook script in .speck/scripts/hooks/pre-prompt-submit.ts (detects /speck.* and /speck:* slash commands - supports both standard and plugin-qualified formats)
+- [X] T037 [US3] Implement prerequisite check runner in .speck/scripts/lib/prereq-runner.ts (runs check-prerequisites.ts, caches results per research.md decision 7)
+- [X] T038 [US3] Implement prompt injection logic in PrePromptSubmit hook (append prerequisite context to prompt on success, replace with error on failure)
+- [X] T039 [US3] Add caching mechanism in .speck/scripts/lib/prereq-cache.ts (5-second TTL, invalidate on git operations per research.md)
+- [X] T040 [US3] Register PrePromptSubmit hook in .claude-plugin/plugin.json
+- [X] T041 [US3] Add integration test in tests/integration/prereq-check.test.ts validating automatic checks for slash commands (both . and : separators)
+- [X] T042 [US3] Update documentation in quickstart.md with PrePromptSubmit hook behavior and caching explanation
 
-**Checkpoint**: Automatic prerequisite checks working for all /speck.* slash commands
+**Checkpoint**: Automatic prerequisite checks working for all /speck.* and /speck:* slash commands
 
 ---
 

@@ -356,6 +356,162 @@ After POC validation:
 4. **User Story 4**: Centralize command registry with dynamic lookup
 5. **User Story 5**: Document patterns in addendum for future reference
 
+## User Story 3: Automatic Prerequisite Checks
+
+The PrePromptSubmit hook automatically runs prerequisite checks before `/speck.*` or `/speck:*` slash commands expand, providing context injection and early error detection.
+
+### How It Works
+
+1. **Detection**: Hook intercepts user prompts starting with `/speck.` or `/speck:` (supports both standard and plugin-qualified formats)
+2. **Check Execution**: Runs `check-prerequisites.ts` with command-appropriate flags
+3. **Caching**: Results cached for 5 seconds to avoid redundant checks
+4. **Success**: Injects prerequisite context as markdown comment into prompt
+5. **Failure**: Replaces prompt with error message, preventing command execution
+
+### Implementation
+
+The PrePromptSubmit hook is registered in `.claude-plugin/plugin.json`:
+
+```json
+{
+  "hooks": {
+    "PrePromptSubmit": {
+      "command": "bun .speck/scripts/hooks/pre-prompt-submit.ts"
+    }
+  }
+}
+```
+
+### Command-Specific Check Options
+
+Different `/speck.*` or `/speck:*` commands require different prerequisite checks:
+
+- **`/speck.implement`** or **`/speck:implement`**: Requires `tasks.md` to exist, includes it in available docs
+- **`/speck.analyze`** or **`/speck:analyze`**: Includes `tasks.md` in available docs if present
+- **`/speck.specify`** or **`/speck:specify`**: Skips feature check (runs before feature directory exists)
+- **All others**: Standard check (requires `plan.md`, optional docs)
+
+**Note**: Both `.` and `:` separators are supported to handle both standard slash commands and plugin-qualified commands.
+
+### Caching Behavior
+
+**TTL**: 5 seconds (per research.md decision 7)
+
+**Benefits**:
+- Avoids redundant checks when user runs multiple commands rapidly
+- Reduces latency for subsequent commands
+- Maintains consistency within short time window
+
+**Invalidation**:
+- Automatic after 5 seconds
+- Manual via `invalidateCache()` (e.g., after git operations)
+
+**Cache Statistics**:
+```typescript
+import { getCacheStats } from ".speck/scripts/lib/prereq-cache";
+
+const stats = getCacheStats();
+// { isCached: true, ageMs: 1234, ttlMs: 5000 }
+```
+
+### Context Injection Format
+
+On successful check, the hook injects context as a markdown comment:
+
+```markdown
+/speck.tasks
+
+<!-- Speck Prerequisites Context (auto-injected) -->
+**Feature Directory**: `/Users/you/git/speck/specs/010-virtual-command-pattern`
+**Repository Mode**: single-repo
+**Available Docs**: research.md, data-model.md, contracts/, quickstart.md, tasks.md
+*(cached result)*
+<!-- End Prerequisites Context -->
+```
+
+### Error Handling
+
+On failed check, the hook replaces the prompt with an error message:
+
+```markdown
+⚠️ **Prerequisite Check Failed**
+
+ERROR: Feature directory not found: /path/to/specs/010-missing
+Run /speckit.specify first to create the feature structure.
+
+Please ensure you're on a valid feature branch and have run the necessary Speck commands.
+```
+
+This prevents the slash command from expanding and executing with invalid state.
+
+### Testing
+
+Run integration tests to validate hook behavior:
+
+```bash
+bun test tests/integration/prereq-check.test.ts
+```
+
+**Test Coverage**:
+- ✅ Prerequisite check execution
+- ✅ Result caching and TTL
+- ✅ Cache invalidation
+- ✅ Context formatting
+- ✅ Error formatting
+- ✅ Command detection (`/speck.*` and `/speck:*` patterns)
+- ✅ Command-specific options
+- ✅ Hook input/output simulation
+
+### Manual Testing
+
+**Test 1: Successful Check with Context Injection**
+
+1. Ensure you're on a valid feature branch
+2. In Claude Code, type: `/speck.tasks`
+3. Observe that command executes successfully
+4. Check that prerequisite context is available to the agent
+
+**Test 2: Failed Check with Error Message**
+
+1. Switch to `main` branch (not a feature branch)
+2. In Claude Code, type: `/speck.tasks`
+3. Observe error message about invalid branch
+4. Command should not execute
+
+**Test 3: Cache Behavior**
+
+1. Run `/speck.plan` (uncached)
+2. Immediately run `/speck.tasks` (cached result, faster)
+3. Wait 6 seconds
+4. Run `/speck.analyze` (cache expired, fresh check)
+
+### Debugging
+
+Enable debug logging by setting environment variable:
+
+```bash
+export SPECK_DEBUG=1
+```
+
+This will log:
+- Cache hits/misses
+- Check execution time
+- Prerequisite check output
+- Context injection results
+
+### Performance
+
+**Metrics** (from research.md):
+- Uncached check: ~50-100ms
+- Cached check: <5ms
+- Hook routing overhead: <10ms
+- Total latency: <110ms (well under <100ms goal, but acceptable for UX)
+
+**Optimization**:
+- Static imports and bundling reduce load time
+- Direct function calls (no subprocess spawning)
+- In-memory caching eliminates I/O
+
 ## Troubleshooting
 
 ### Hook not intercepting commands

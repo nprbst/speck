@@ -144,7 +144,7 @@ All technical unknowns from the Technical Context have been researched and resol
 - Shell escaping pattern validated (POSIX single-quote escaping)
 - Incremental migration strategy with validation gates
 - Concurrency handled via process isolation
-- PrePromptSubmit hook pattern for automatic prerequisite checks
+- PrePromptSubmit hook pattern for automatic prerequisite checks (supports both `/speck.` and `/speck:` separators for standard and plugin-qualified commands)
 
 All `[NEEDS CLARIFICATION]` markers resolved.
 
