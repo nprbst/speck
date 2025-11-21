@@ -1,0 +1,1 @@
+../../.speck/scripts/hooks/pre-tool-use.ts

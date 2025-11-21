@@ -30,10 +30,10 @@ Per plan.md Project Structure:
 
 **Purpose**: Project initialization and basic structure for virtual command pattern
 
-- [ ] T001 Install Commander.js dependency via bun add commander
-- [ ] T002 [P] Create TypeScript types file at .speck/scripts/lib/types.ts with HookInput, HookOutput, CommandResult, CommandContext interfaces from contracts/
-- [ ] T003 [P] Create directory structure: .speck/scripts/commands/, .speck/scripts/hooks/, .speck/scripts/lib/
-- [ ] T004 [P] Create base test structure: tests/unit/, tests/integration/
+- [X] T001 Install Commander.js dependency via bun add commander
+- [X] T002 [P] Create TypeScript types file at .speck/scripts/lib/types.ts with HookInput, HookOutput, CommandResult, CommandContext interfaces from contracts/
+- [X] T003 [P] Create directory structure: .speck/scripts/commands/, .speck/scripts/hooks/, .speck/scripts/lib/
+- [X] T004 [P] Create base test structure: tests/unit/, tests/integration/
 
 ---
 
@@ -43,11 +43,11 @@ Per plan.md Project Structure:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 [P] Implement mode detection utility in .speck/scripts/lib/mode-detector.ts (detectMode, readHookInput functions per research.md decision 2)
-- [ ] T006 [P] Implement shell escaping utility in .speck/scripts/lib/shell-escape.ts (POSIX single-quote escaping pattern per research.md decision 4)
-- [ ] T007 [P] Implement hook formatting utility in .speck/scripts/lib/hook-utils.ts (formatHookOutput function wrapping output in echo command)
-- [ ] T008 Create command registry structure in .speck/scripts/commands/index.ts (CommandHandler interface, empty registry object)
-- [ ] T009 Create CLI entry point skeleton in .speck/scripts/speck.ts (Commander setup, mode detection, dual-mode routing per data-model.md)
+- [X] T005 [P] Implement mode detection utility in .speck/scripts/lib/mode-detector.ts (detectMode, readHookInput functions per research.md decision 2)
+- [X] T006 [P] Implement shell escaping utility in .speck/scripts/lib/shell-escape.ts (available for future use cases, but not needed for output per research.md decision 4)
+- [X] T007 [P] Implement hook formatting utility in .speck/scripts/lib/hook-utils.ts (formatHookOutput using cat with heredoc - zero escaping needed per research.md decision 4)
+- [X] T008 Create command registry structure in .speck/scripts/commands/index.ts (CommandHandler interface, empty registry object)
+- [X] T009 Create CLI entry point skeleton in .speck/scripts/speck.ts (Commander setup, mode detection, dual-mode routing per data-model.md)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -61,14 +61,14 @@ Per plan.md Project Structure:
 
 ### POC Validation Tasks
 
-- [ ] T010 [P] [US0] Implement test-hello command handler in .speck/scripts/commands/test-hello.ts (accepts message arg, returns "Hello {message}")
-- [ ] T011 [P] [US0] Implement speck-env command handler in .speck/scripts/commands/env.ts (reads plugin path, returns environment info)
-- [ ] T012 [US0] Register test-hello and speck-env in command registry at .speck/scripts/commands/index.ts
-- [ ] T013 [US0] Implement PreToolUse hook router in .speck/scripts/hooks/pre-tool-use.ts (intercepts speck-* and test-* commands, routes to CLI per research.md decision 1)
-- [ ] T014 [US0] Add hook registration to .claude-plugin/plugin.json (PreToolUse.Bash mapping to pre-tool-use.ts)
-- [ ] T015 [US0] Update CLI entry point in .speck/scripts/speck.ts to support test-hello and env subcommands via Commander
-- [ ] T016 [US0] Implement dual-mode logic in .speck/scripts/speck.ts (CLI mode: normal output, hook mode: JSON response per data-model.md)
-- [ ] T017 [US0] Test POC per quickstart.md Section "Test POC" (validate all 6 test scenarios: CLI modes, hook modes, Claude integration)
+- [X] T010 [P] [US0] Implement test-hello command handler in .speck/scripts/commands/test-hello.ts (accepts message arg, returns "Hello {message}")
+- [X] T011 [P] [US0] Implement speck-env command handler in .speck/scripts/commands/env.ts (reads plugin path, returns environment info)
+- [X] T012 [US0] Register test-hello and speck-env in command registry at .speck/scripts/commands/index.ts
+- [X] T013 [US0] Implement PreToolUse hook router in .speck/scripts/hooks/pre-tool-use.ts (intercepts speck-* and test-* commands, routes to CLI per research.md decision 1)
+- [X] T014 [US0] Add hook registration to .claude-plugin/plugin.json (PreToolUse.Bash mapping to pre-tool-use.ts)
+- [X] T015 [US0] Update CLI entry point in .speck/scripts/speck.ts to support test-hello and env subcommands via Commander
+- [X] T016 [US0] Implement dual-mode logic in .speck/scripts/speck.ts (CLI mode: normal output, hook mode: JSON response per data-model.md)
+- [X] T017 [US0] Test POC per quickstart.md Section "Test POC" (validate all 6 test scenarios: CLI modes, hook modes, Claude integration)
 
 **Checkpoint**: POC validated - hook mechanism proven, ready to expand to production commands
 

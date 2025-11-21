@@ -17,14 +17,25 @@ Based on Technical Context analysis, the following areas require research to res
 - Error handling: stderr vs structured error responses
 - Empty/pass-through response format for non-matching commands
 
-**Decision**: Use documented hook format from Claude Code plugin system 2.0
-**Rationale**: PreToolUse hooks receive JSON via stdin containing `{"tool_input": {"command": "..."}}` and must return JSON with `{"permissionDecision": "allow", "hookSpecificOutput": {"updatedInput": {"command": "echo 'output'"}}}` for interception or empty JSON `{}` for pass-through
-**Alternatives considered**: PrePromptSubmit hooks (rejected: runs before prompt expansion, doesn't intercept tool calls), custom subprocess wrapper (rejected: doesn't integrate with Claude Code's tool system)
+**Decision**: Use documented hook format from Claude Code plugin system 2.0, with cat heredoc for output and smart path detection
+**Rationale**: PreToolUse hooks receive JSON via stdin containing `{"tool_input": {"command": "..."}}` and must return JSON with `{"permissionDecision": "allow", "hookSpecificOutput": {"updatedInput": {"command": "cat << 'EOF'\noutput\nEOF"}}}` for interception or empty JSON `{}` for pass-through. Using cat with heredoc (quoted delimiter) eliminates all escaping concerns - no variable expansion, no quote escaping, complete safety.
+
+**Path Detection Strategy**: Hook detects execution context automatically:
+- Local development: Uses `import.meta.dir` to construct relative path to CLI (e.g., `../speck.ts`)
+- Installed plugin: Reads from `~/.claude/speck-plugin-path` or derives from script location
+- Benefit: Works seamlessly in both development and production without configuration
+
+**Alternatives considered**:
+- echo with single-quote escaping (rejected: requires escaping pattern `'\\''`, error-prone)
+- PrePromptSubmit hooks (rejected: runs before prompt expansion, doesn't intercept tool calls)
+- custom subprocess wrapper (rejected: doesn't integrate with Claude Code's tool system)
+- hardcoded paths (rejected: breaks in development mode, requires configuration)
 
 **References**:
 - Claude Code Hook Documentation (from prior chat context): PreToolUse fires before Bash tool execution
 - Hook response must include `permissionDecision: "allow"` to proceed with modified command
-- Shell injection prevention requires single quote escaping: `text.replace(/'/g, "'\\'''")`
+- Heredoc with quoted delimiter (`<<'EOF'`) prevents all variable expansion and requires zero escaping
+- Bun's `import.meta.dir` provides reliable script location for path resolution
 
 ### 2. Commander.js Dual-Mode Pattern
 
@@ -93,21 +104,31 @@ const registry: Record<string, CommandHandler> = {
 
 **Alternatives considered**: Class-based handlers (rejected: unnecessary complexity for stateless functions), separate registry file per command (rejected: harder to maintain, lookup overhead)
 
-### 4. Shell Escaping for Single Quotes
+### 4. Shell Safety for Output
 
-**Unknown**: Correct escaping pattern for single quotes in hook output, other shell metacharacters requiring escaping
+**Unknown**: How to safely pass command output through bash without escaping concerns
 
 **Research Focus**:
-- Single quote escaping: `'text with 'quotes''` transformation
-- Double quote handling within single-quoted strings
+- Single quote escaping patterns
+- Double quote handling within quoted strings
 - Newline, backtick, and dollar sign escaping
 - Testing shell injection scenarios
 
-**Decision**: Single quote escape pattern: `text.replace(/'/g, "'\\'''")`
-**Rationale**: In single-quoted strings, cannot escape single quote with backslash. Must close quote, add escaped quote, reopen quote: `'it'\''s'` produces "it's". This is the standard POSIX shell escaping pattern.
-**Alternatives considered**: Double-quote wrapping (rejected: requires escaping $, `, \, "), base64 encoding (rejected: requires decode step, less debuggable)
+**Decision**: Use heredoc with quoted delimiter - NO escaping needed
+**Rationale**: Using `cat << 'EOF'\n${output}\nEOF` completely eliminates escaping concerns. The quoted delimiter (`'EOF'`) prevents all variable expansion, quote interpretation, and special character processing. Output is passed literally byte-for-byte. This is safer, simpler, and more maintainable than any escaping pattern.
+**Alternatives considered**:
+- Single quote escaping with `'\\''` pattern (rejected: complex, error-prone, doesn't handle all edge cases)
+- Double-quote wrapping (rejected: requires escaping $, `, \, ")
+- Base64 encoding (rejected: requires decode step, less debuggable, adds complexity)
 
-**Testing**: Validate with strings containing: `It's "quoted" with $vars and `backticks``
+**Benefits of heredoc approach**:
+- Zero escaping logic needed
+- Handles all special characters naturally: `'`, `"`, `$`, `` ` ``, `\`, newlines
+- More readable and maintainable
+- Standard bash pattern, well-understood
+- Impossible to have escaping bugs
+
+**Note**: Shell escaping utilities remain available in `shell-escape.ts` for other use cases (e.g., constructing shell commands, not for output formatting)
 
 ### 5. Migration Strategy from Individual Scripts
 
@@ -200,10 +221,10 @@ if (prompt.match(/^\/speck\./)) {
 
 All technical unknowns have been researched and resolved. Key decisions:
 
-1. **Hook Format**: Use documented PreToolUse JSON structure with `updatedInput` for command substitution
+1. **Hook Format**: Use documented PreToolUse JSON structure with `updatedInput` for command substitution, using cat with heredoc for output (zero escaping)
 2. **Dual-Mode CLI**: Explicit `--hook` flag with TTY fallback, separate output formatting per mode
 3. **Command Registry**: Type-safe registry mapping command names to handlers and parsers
-4. **Shell Escaping**: POSIX single-quote escaping pattern for injection prevention
+4. **Shell Safety**: Heredoc with quoted delimiter (`cat << 'EOF'`) - eliminates all escaping concerns, safer than any escaping pattern
 5. **Migration**: Incremental migration with validation gates and one-release deprecation cycle
 6. **Concurrency**: Process isolation sufficient, no additional locking needed
 7. **Prerequisite Checks**: PrePromptSubmit hook with caching and early abort on failure
