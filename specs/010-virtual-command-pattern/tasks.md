@@ -183,14 +183,14 @@ Per plan.md Project Structure:
 
 ### Implementation for User Story 5
 
-- [ ] T051 [P] [US5] Create addendum document at specs/010-virtual-command-pattern/addendum.md with hook system overview
-- [ ] T052 [P] [US5] Document PreToolUse hook mechanism in addendum.md with code examples from .speck/scripts/hooks/pre-tool-use.ts
-- [ ] T053 [P] [US5] Document dual-mode CLI pattern in addendum.md with examples from .speck/scripts/speck.ts
-- [ ] T054 [P] [US5] Document virtual command pattern in addendum.md with registry architecture and routing logic
-- [ ] T055 [P] [US5] Document testing patterns in addendum.md showing how to test both CLI and hook modes
-- [ ] T056 [P] [US5] Document error handling patterns in addendum.md with hook error propagation examples
-- [ ] T057 [US5] Add architectural diagrams to addendum.md (hook flow, command registry lookup, dual-mode execution)
-- [ ] T058 [US5] Review addendum.md against acceptance scenarios from spec.md (covers all key concepts with complete examples)
+- [X] T051 [P] [US5] Create addendum document at specs/010-virtual-command-pattern/addendum.md with hook system overview
+- [X] T052 [P] [US5] Document PreToolUse hook mechanism in addendum.md with code examples from .speck/scripts/hooks/pre-tool-use.ts
+- [X] T053 [P] [US5] Document dual-mode CLI pattern in addendum.md with examples from .speck/scripts/speck.ts
+- [X] T054 [P] [US5] Document virtual command pattern in addendum.md with registry architecture and routing logic
+- [X] T055 [P] [US5] Document testing patterns in addendum.md showing how to test both CLI and hook modes
+- [X] T056 [P] [US5] Document error handling patterns in addendum.md with hook error propagation examples
+- [X] T057 [US5] Add architectural diagrams to addendum.md (hook flow, command registry lookup, dual-mode execution)
+- [X] T058 [US5] Review addendum.md against acceptance scenarios from spec.md (covers all key concepts with complete examples)
 
 **Checkpoint**: Knowledge base complete and ready for future contributors
 
