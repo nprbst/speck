@@ -158,6 +158,13 @@ function checkForUnknownOptions(args: string[]): void {
  * Main function
  */
 export async function main(args: string[]): Promise<number> {
+  // DEPRECATION WARNING: This individual script is deprecated
+  // Prerequisite checks are now automatically performed by PrePromptSubmit hook
+  // For manual checks, use: bun .speck/scripts/speck.ts env
+  if (!args.includes("--json") && process.stdout.isTTY) {
+    console.warn("\x1b[33m⚠️  DEPRECATION WARNING: Direct invocation deprecated. Prerequisites are now auto-checked via PrePromptSubmit hook.\x1b[0m\n");
+  }
+
   // Check for unknown options first
   checkForUnknownOptions(args);
 

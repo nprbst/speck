@@ -1210,6 +1210,12 @@ async function importCommand(args: string[]) {
 // ===========================
 
 export async function main(args: string[] = process.argv.slice(2)): Promise<number> {
+  // DEPRECATION WARNING: This individual script is deprecated
+  // Use the unified CLI instead: bun .speck/scripts/speck.ts branch
+  // Or use the virtual command: speck-branch
+  if (process.stdout.isTTY) {
+    console.warn("\x1b[33m⚠️  DEPRECATION WARNING: This script is deprecated. Use 'speck-branch' virtual command or 'bun .speck/scripts/speck.ts branch' instead.\x1b[0m\n");
+  }
 
   if (args.length === 0) {
     console.log("Usage: /speck.branch <command> [args]");

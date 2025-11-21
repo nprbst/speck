@@ -70,6 +70,14 @@ export const registry: CommandRegistry = {
   },
   "check-prerequisites": {
     main: checkPrerequisitesMain,
+    parseArgs: (commandString: string) => {
+      const parts = commandString.trim().split(/\s+/);
+      // Remove command name if present
+      if (parts[0] === 'speck-check-prerequisites' || parts[0] === 'check-prerequisites') {
+        parts.shift();
+      }
+      return parts;
+    },
     description: "Validate feature directory structure and prerequisites",
     version: "1.0.0",
   },

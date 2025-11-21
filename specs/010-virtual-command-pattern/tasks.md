@@ -202,13 +202,13 @@ Per plan.md Project Structure:
 
 ### Migration Tasks
 
-- [ ] T059 Create migration validation tests in tests/integration/migration-validation.test.ts (compare unified CLI output to individual script output for each command)
-- [ ] T060 [P] Add deprecation warning to individual check-prerequisites.sh script (direct users to speck-env virtual command)
-- [ ] T061 [P] Add deprecation warning to individual branch.ts script (direct users to speck-branch virtual command)
-- [ ] T062 [P] Add deprecation warning to remaining individual scripts per migration strategy in research.md
-- [ ] T063 Run migration validation tests to verify unified CLI produces identical output to individual scripts
-- [ ] T064 Update CLAUDE.md with new technologies (Commander.js, hook system patterns per constitution principle)
-- [ ] T065 **[CRITICAL]** Audit all slash command files in .claude/commands/ for embedded TypeScript and refactor to delegate to unified CLI per constitution principle VIII (NON-NEGOTIABLE)
+- [X] T059 Create migration validation tests in tests/integration/migration-validation.test.ts (compare unified CLI output to individual script output for each command)
+- [X] T060 [P] Add deprecation warning to individual check-prerequisites.sh script (direct users to speck-env virtual command)
+- [X] T061 [P] Add deprecation warning to individual branch.ts script (direct users to speck-branch virtual command)
+- [X] T062 [P] Add deprecation warning to remaining individual scripts per migration strategy in research.md
+- [X] T063 Run migration validation tests to verify unified CLI produces identical output to individual scripts
+- [X] T064 Update CLAUDE.md with new technologies (Commander.js, hook system patterns per constitution principle)
+- [X] T065 **[CRITICAL]** Audit all slash command files in .claude/commands/ for embedded TypeScript and refactor to delegate to unified CLI per constitution principle VIII (NON-NEGOTIABLE)
 
 ### Performance Validation Tasks
 

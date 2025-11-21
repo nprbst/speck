@@ -153,23 +153,29 @@ program
   .allowUnknownOption() // Allow --json, --require-tasks, etc. to pass through
   .action(async (args) => {
     const argsArray = Array.isArray(args) ? args : [args];
-    const commandString = `check-prerequisites ${argsArray.join(" ")}`;
 
-    const context: CommandContext = {
-      mode: detectMode(),
-      rawCommand: commandString,
-      workingDirectory: process.cwd(),
-      isInteractive: process.stdin.isTTY ?? false,
-    };
+    // Handle main-based commands differently
+    if (checkPrerequisitesEntry.main) {
+      const exitCode = await checkPrerequisitesEntry.main(argsArray);
+      process.exit(exitCode);
+    } else if (checkPrerequisitesEntry.handler) {
+      const commandString = `check-prerequisites ${argsArray.join(" ")}`;
+      const context: CommandContext = {
+        mode: detectMode(),
+        rawCommand: commandString,
+        workingDirectory: process.cwd(),
+        isInteractive: process.stdin.isTTY ?? false,
+      };
 
-    const parsedArgs = checkPrerequisitesEntry.parseArgs!(commandString);
-    const result = await checkPrerequisitesEntry.handler(parsedArgs, context);
+      const parsedArgs = checkPrerequisitesEntry.parseArgs!(commandString);
+      const result = await checkPrerequisitesEntry.handler(parsedArgs, context);
 
-    if (result.success) {
-      console.log(result.output);
-    } else {
-      console.error(result.errorOutput);
-      process.exit(result.exitCode);
+      if (result.success) {
+        console.log(result.output);
+      } else {
+        console.error(result.errorOutput);
+        process.exit(result.exitCode);
+      }
     }
   });
 

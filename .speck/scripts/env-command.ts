@@ -26,6 +26,13 @@ import path from "node:path";
 // ===========================
 
 export async function main(args: string[] = process.argv.slice(2)): Promise<number> {
+  // DEPRECATION WARNING: This individual script is deprecated
+  // Use the unified CLI instead: bun .speck/scripts/speck.ts env
+  // Or use the virtual command: speck-env
+  if (!args.includes("--json") && process.stdout.isTTY) {
+    console.warn("\x1b[33m⚠️  DEPRECATION WARNING: This script is deprecated. Use 'speck-env' virtual command or 'bun .speck/scripts/speck.ts env' instead.\x1b[0m\n");
+  }
+
   if (args.includes("--help")) {
     showHelp();
     return 0;
