@@ -1,7 +1,7 @@
 import { test, expect, describe, beforeEach, afterEach } from 'bun:test';
 import { $ } from 'bun';
 import { existsSync, mkdirSync, rmSync } from 'fs';
-import { readFile, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { setupHookMatchers, parseHookLog, getContractViolations } from '../helpers/hook-assertions';
 
 setupHookMatchers();
@@ -45,8 +45,8 @@ describe('Hook Infrastructure Tests', () => {
 
       const events = await parseHookLog(testLogPath);
       expect(events.length).toBeGreaterThan(0);
-      expect(events[0].type).toBe('contract-validation');
-      expect(events[0].exitCode).toBe(0);
+      expect(events[0]?.type).toBe('contract-validation');
+      expect(events[0]?.exitCode).toBe(0);
     });
 
     test('should validate exit code 2 with valid PR suggestion JSON', async () => {
@@ -157,8 +157,8 @@ describe('Hook Infrastructure Tests', () => {
       const events = await parseHookLog(testLogPath);
       const contextEvents = events.filter((e) => e.type === 'session-context');
       expect(contextEvents.length).toBeGreaterThan(0);
-      expect(contextEvents[0].featureId).toBe('009');
-      expect(contextEvents[0].featureName).toBe('009-multi-repo-stacked');
+      expect(contextEvents[0]?.featureId).toBe('009');
+      expect(contextEvents[0]?.featureName).toBe('009-multi-repo-stacked');
     });
 
     test('should track command references in prompts', async () => {
@@ -175,7 +175,7 @@ describe('Hook Infrastructure Tests', () => {
       const events = await parseHookLog(testLogPath);
       const contextEvents = events.filter((e) => e.type === 'session-context');
       expect(contextEvents.length).toBeGreaterThan(0);
-      expect(contextEvents[0].command).toBe('speck.branch');
+      expect(contextEvents[0]?.command).toBe('speck.branch');
     });
   });
 
@@ -227,7 +227,7 @@ describe('Hook Infrastructure Tests', () => {
       const events = await parseHookLog(testLogPath);
       const workflowEvents = events.filter((e) => e.type === 'workflow-complete');
       expect(workflowEvents.length).toBeGreaterThan(0);
-      expect(workflowEvents[0].workflow).toBe('specify-plan-tasks');
+      expect(workflowEvents[0]?.workflow).toBe('specify-plan-tasks');
     });
   });
 
@@ -248,8 +248,8 @@ describe('Hook Infrastructure Tests', () => {
       const events = await parseHookLog(testLogPath);
       const detectionEvents = events.filter((e) => e.type === 'multi-repo-detection');
       expect(detectionEvents.length).toBeGreaterThan(0);
-      expect(detectionEvents[0].mode).toBe('single-repo');
-      expect(detectionEvents[0].speckLinkExists).toBe(false);
+      expect(detectionEvents[0]?.mode).toBe('single-repo');
+      expect(detectionEvents[0]?.speckLinkExists).toBe(false);
     });
 
     test('should skip validation for non-SlashCommand tools', async () => {
