@@ -19,10 +19,13 @@
     "version:minor": "bun run scripts/version.ts minor",
     "version:major": "bun run scripts/version.ts major",
     "test": "bun test",
+    "test:hooks": "bun test tests/hooks/",
     "test:unit": "bun test tests/build/",
     "test:visual": "bun run website:build && playwright test tests/visual/",
     "test:a11y": "bun run website:build && playwright test tests/accessibility/",
     "test:all": "bun test && bun run test:visual && bun run test:a11y",
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "website:sync": "bun website/scripts/sync-docs.ts",
@@ -32,6 +35,7 @@
     "website:verify": "bun website/scripts/verify-deployment.ts"
   },
   "dependencies": {
+    "ajv": "^8.17.1",
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
     "handlebars": "^4.7.8",

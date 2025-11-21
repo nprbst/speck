@@ -243,13 +243,13 @@
 
 **Purpose**: Implement hook-based LLM behavior validation and contract compliance monitoring
 
-- [ ] T070 [P] Implement PostToolUse hook for exit code validation in tests/hooks/post-tool-use.ts
-- [ ] T071 [P] Implement PostToolUse hook for JSON schema validation in tests/hooks/post-tool-use.ts
-- [ ] T072 [P] Implement UserPromptSubmit hook for feature ID tracking in tests/hooks/user-prompt-submit.ts
-- [ ] T073 [P] Implement PreToolUse hook for multi-repo mode detection in tests/hooks/pre-tool-use.ts
-- [ ] T074 Create hook log storage in .speck/test-logs/ directory structure in tests/hooks/log-storage.ts
-- [ ] T075 [P] Create hook log parser and assertion helpers in tests/helpers/hook-assertions.ts
-- [ ] T076 Create test-specific .claude/settings.json configuration for hook activation in tests/fixtures/test-settings.json
+- [X] T070 [P] Implement PostToolUse hook for exit code validation in .speck/hooks/validate-contract.ts
+- [X] T071 [P] Implement PostToolUse hook for JSON schema validation in .speck/hooks/validate-contract.ts
+- [X] T072 [P] Implement UserPromptSubmit hook for feature ID tracking in .speck/hooks/track-session-context.ts
+- [X] T073 [P] Implement PreToolUse hook for multi-repo mode detection in .speck/hooks/validate-multi-repo-detection.ts
+- [X] T074 Create hook log storage in .speck/test-logs/ directory structure (created via hooks)
+- [X] T075 [P] Create hook log parser and assertion helpers in tests/helpers/hook-assertions.ts
+- [X] T076 Create test-specific .claude/settings.json configuration for hook activation in tests/fixtures/.claude/settings.json
 
 ---
 

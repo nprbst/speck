@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["type", "branches", "availableSpecs"],
+  "properties": {
+    "type": { "const": "import-prompt" },
+    "branches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["branchName", "baseBranch"],
+        "properties": {
+          "branchName": { "type": "string" },
+          "baseBranch": { "type": "string" }
+        }
+      }
+    },
+    "availableSpecs": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
