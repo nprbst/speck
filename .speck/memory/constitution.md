@@ -1,7 +1,7 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.2.0 → 1.3.0
+Version Change: 1.2.0 → 1.3.1
 Modified Principles: None
 Added Sections: "VIII. Command-Implementation Separation" (new principle)
 Removed Sections: None
@@ -23,6 +23,9 @@ Rationale for 1.3.0 (MINOR bump):
   - Prevents mixing of concerns (markdown documentation vs TypeScript implementation)
   - No breaking changes to existing principles
   - Backwards compatible but requires refactoring of non-compliant commands
+
+Rationale for 1.3.1 (PATCH bump):
+  - Clarifications, simplifications and corrections.
 -->
 
 # Speck Constitution
@@ -42,7 +45,7 @@ maintainability.
 
 **Implementation Requirements**:
 
-- Track upstream spec-kit version in `.speck/upstream-tracker.json`
+- Track upstream spec-kit version in `upstream/releases.json`
 - Mark all Speck-specific code with `[SPECK-EXTENSION:START/END]` boundaries
 - Provide `/speck.transform-upstream` command for semantic synchronization
 - Generate sync reports documenting changes, preserved extensions, and conflicts
@@ -63,7 +66,6 @@ enhancements during sync defeats the purpose of the derivative architecture.
 - Transformation tools MUST never modify content within extension boundaries
 - Conflicts between upstream changes and extensions MUST halt sync and request
   human resolution
-- Extension manifest (`extension-markers.json`) MUST be kept current
 
 ### III. Specification-First Development
 
@@ -103,7 +105,7 @@ gates ensure consistency and completeness without manual oversight burden.
 ### V. Claude Code Native
 
 All workflows MUST be optimized for Claude Code as the primary development
-environment. Slash commands, agents, skills and plugins are first-class
+environment. Slash-commands, agents, skills, hooks and plugins are first-class
 citizens.
 
 **Rationale**: Speck exists to make spec-kit workflows seamless in Claude Code.
@@ -117,9 +119,9 @@ proposition.
 - Agents MUST be used for long-running, iterative processes (clarification,
   transformation)
 - Skills MUST extract reusable patterns (template rendering, validation)
-- Exception: SessionStart hooks MAY establish runtime environment configuration (e.g., script path resolution) when plugin context requires session-persistent state not achievable through individual command execution
-- TypeScript CLI MUST provide identical functionality for non-Claude Code users
-  (parity requirement: <1% behavioral deviation per SC-005)
+- Exception: SessionStart hooks MAY establish runtime environment configuration 
+  (e.g., script path resolution) when plugin context requires session-persistent 
+  state not achievable through individual command execution
 
 ### VI. Technology Agnosticism
 
@@ -200,44 +202,21 @@ that delegate to well-structured, testable implementation scripts.
   TypeScript knowledge. Implementation scripts MUST be runnable/testable
   independently of Claude Code.
 
-**Examples**:
-
-Good (delegating command):
-```markdown
-## Implementation
-\`\`\`bash
-bun run "$PLUGIN_ROOT/scripts/branch-command.ts" {{args}}
-\`\`\`
-```
-
-Bad (embedded implementation):
-```markdown
-## Implementation
-\`\`\`typescript
-async function createBranch(name: string, base: string) {
-  // 50 lines of implementation...
-}
-createBranch(args[0], args[1]);
-\`\`\`
-```
-
 ## Upstream Sync Requirements
 
 ### Release-Based Synchronization
 
-Speck MUST sync with upstream spec-kit via GitHub Releases, not git subtree or
-direct repository cloning.
+Speck MUST sync with upstream spec-kit via GitHub Releases.
 
 **Rationale**: Release-based sync provides versioned, immutable snapshots for
 clean diffing. Avoids git history overhead and ensures stable reference points.
 
 **Implementation Requirements**:
 
-- Track releases in `upstream/.release-info.json`
+- Track releases in `upstream/releases.json`
 - Maintain at least previous release for tree diffing
-- Use symlink `upstream/spec-kit/current` pointing to active version
-- Commands: `/speck.check-upstream-releases`, `/speck.download-upstream`,
-  `/speck.diff-upstream-releases`
+- Use symlink `upstream/spec-kit/latest` pointing to active version
+- Commands: `/speck.check-upstream`, `/speck.pull-upstream`
 
 ### Semantic Transformation
 
@@ -315,7 +294,7 @@ default to single-branch or stacked-PR workflows when no explicit flags are prov
 - `stacked-pr`: Stacked PR workflow with multiple branches per feature
 
 **Override Hierarchy** (highest to lowest priority):
-1. Command-line flags (`--stacked`, `--single-branch`)
+1. Command-line flags (`--stacked-pr`, `--single-branch`)
 2. Feature-specific setting in plan.md (`**Workflow Mode**: stacked-pr`)
 3. Repository-wide setting in constitution.md (this setting)
 4. Hardcoded default (`single-branch`)
@@ -353,7 +332,7 @@ for existing artifacts.
 - All specifications MUST pass quality checklist validation
 - All plans MUST reference constitutional principles where applicable
 - All upstream syncs MUST preserve extension markers
-- All slash commands MUST verify they follow Claude Code native principle
+- All slash commands MUST follow Claude Code native principle
 - All command files MUST delegate to implementation scripts (Principle VIII)
 
 **Versioning Policy**:
@@ -363,4 +342,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.3.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-18
+**Version**: 1.3.1 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-20

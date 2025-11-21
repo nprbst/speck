@@ -208,7 +208,7 @@
 ### Layer 1 Tests for User Story 5 (Contract Tests)
 
 - [X] T056 [P] [US5] Contract test for import exit code 3 (interactive prompt) in tests/contract/import-prompt.test.ts (5 tests created, 5 passing)
-- [X] T057 [P] [US5] Contract test validates import JSON schema for multi-repo in tests/contract/import-json-schema.test.ts (5 tests created, 0 passing - needs fixture fix)
+- [X] T057 [P] [US5] Contract test validates import JSON schema for multi-repo in tests/contract/import-json-schema.test.ts (5 tests created, 5 passing - FIXED ✅)
 
 ### Implementation for User Story 5
 
@@ -220,7 +220,7 @@
 
 ### Layer 3 Tests for User Story 5 (E2E Tests)
 
-- [ ] T063 [US5] E2E test for /speck.branch import in child repo validates complete import in tests/e2e/import-child-e2e.test.ts (not started)
+- [X] T063 [US5] E2E test for /speck.branch import in child repo validates complete import in tests/e2e/import-child-e2e.test.ts (7 tests, all passing ✅)
 - [ ] T064 [US5] E2E test for /speck.branch import --all validates interactive selection in tests/e2e/import-all-e2e.test.ts (not started)
 
 **Checkpoint**: All 5 user stories are now complete and independently testable

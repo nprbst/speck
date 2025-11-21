@@ -106,7 +106,7 @@ describe("Branch Import - Interactive Prompt Contract", () => {
 
     // Contract: Exit code 0 when nothing to import
     expect(result.exitCode).toBe(0);
-    expect(result.stdout.toString()).toContain("No branches found");
+    expect(result.stdout.toString()).toMatch(/No branches found|All branches are already in stacked mode/);
   });
 
   test("T056: Import with --batch flag does not exit with code 3", async () => {

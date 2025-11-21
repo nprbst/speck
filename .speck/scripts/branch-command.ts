@@ -42,6 +42,7 @@ import {
   detectSpeckRoot,
   isMultiRepoChild,
   getChildRepoName,
+  getMultiRepoContext,
   type MultiRepoContextMetadata,
 } from "./common/paths.js";
 import { GitError, ValidationError } from "./common/errors.js";
@@ -1033,9 +1034,9 @@ async function importCommand(args: string[]) {
   const repoRoot = paths.REPO_ROOT;
 
   // T058 - Detect multi-repo context for parentSpecId
-  const multiRepoContext = await detectSpeckRoot(repoRoot);
+  const multiRepoContext = await getMultiRepoContext();
   const parentSpecId = multiRepoContext.context === 'child'
-    ? await detectParentSpecId(repoRoot, multiRepoContext)
+    ? await detectParentSpecId(multiRepoContext.speckRoot)
     : null;
 
   // T060-T061 - List all git branches and infer base branches
@@ -1048,9 +1049,12 @@ async function importCommand(args: string[]) {
 
   let mapping = await readBranches(repoRoot);
 
-  // Filter out branches already in mapping
+  // Get default branch to exclude from import
+  const defaultBranch = await detectDefaultBranch(repoRoot);
+
+  // Filter out branches already in mapping and default branch
   const newBranches = gitBranches.filter(
-    ({ name }) => !mapping.branches.some((b) => b.name === name)
+    ({ name }) => !mapping.branches.some((b) => b.name === name) && name !== defaultBranch
   );
 
   if (newBranches.length === 0) {

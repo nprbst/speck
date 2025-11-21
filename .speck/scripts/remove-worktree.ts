@@ -7,7 +7,7 @@
  * Supports both interactive and programmatic usage via JSON output.
  *
  * Transformation Date: 2025-11-15
- * Source: augusthealth/frontend/master/bin/remove-worktree (bash)
+ * Source: remove-worktree.sh (bash)
  * Strategy: Bun Shell API with non-interactive defaults
  *
  * Key differences from bash version:
@@ -200,8 +200,8 @@ async function getWorktreeInfo(
     if (isMainWorktree) {
       throw new Error(
         "Cannot remove the main worktree\n" +
-          "This is the primary worktree of the repository.\n" +
-          "You can only remove secondary worktrees created with 'git worktree add'."
+        "This is the primary worktree of the repository.\n" +
+        "You can only remove secondary worktrees created with 'git worktree add'."
       );
     }
   } catch (error) {
@@ -215,8 +215,8 @@ async function getWorktreeInfo(
   if (worktreeDirName === "main" || worktreeDirName === "master") {
     throw new Error(
       `Cannot remove worktree with directory name '${worktreeDirName}'\n` +
-        "This appears to be your primary worktree directory.\n" +
-        "Only remove secondary worktrees (e.g., ../feature-branch)."
+      "This appears to be your primary worktree directory.\n" +
+      "Only remove secondary worktrees (e.g., ../feature-branch)."
     );
   }
 

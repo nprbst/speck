@@ -7,7 +7,7 @@
  * Supports both interactive and programmatic usage via JSON output.
  *
  * Transformation Date: 2025-11-15
- * Source: augusthealth/frontend/master/bin/create-worktree (bash)
+ * Source: create-worktree.sh (bash)
  * Strategy: Bun Shell API with non-interactive defaults
  *
  * Key differences from bash version:

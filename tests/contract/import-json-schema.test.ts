@@ -147,6 +147,7 @@ describe("Branch Import - Multi-Repo JSON Schema", () => {
       // Copy scripts
       const scriptsSource = fixture.scriptsDir;
       const scriptsDest = path.join(singleRepoRoot, ".speck/scripts");
+      await fs.promises.mkdir(path.dirname(scriptsDest), { recursive: true });
       await $`cp -r ${scriptsSource} ${scriptsDest}`.quiet();
 
       // Create manual branch
