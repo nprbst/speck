@@ -8,9 +8,16 @@
 
 import { Command } from "commander";
 import { detectMode, readHookInput } from "./lib/mode-detector";
-import { formatHookOutput } from "./lib/hook-utils";
+import { formatHookOutput, passThrough } from "./lib/hook-utils";
 import type { CommandContext } from "./lib/types";
 import { registry } from "./commands/index";
+import { appendFile } from "node:fs/promises";
+
+const SPECK_LOG_FILE = "/private/tmp/.claude-hook-test/speck-hook-log.txt";
+
+const log = async (msg: string) => {
+  await appendFile(SPECK_LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`);
+};
 
 const program = new Command();
 
@@ -20,20 +27,23 @@ program
   .version("0.1.0");
 
 // Register commands from registry
-// test-hello command
-const testHelloEntry = registry["test-hello"]!;
+// echo command
+const echoEntry = registry.echo!;
 program
-  .command("test-hello [message]")
-  .description(testHelloEntry.description)
-  .action(async (message = "world") => {
+  .command("echo <message...>")
+  .description(echoEntry.description)
+  .action(async (messageArray) => {
+    // Commander captures variadic args as an array
+    const message = Array.isArray(messageArray) ? messageArray.join(" ") : String(messageArray);
+
     const context: CommandContext = {
       mode: detectMode(),
-      rawCommand: `test-hello ${message}`,
+      rawCommand: `echo ${message}`,
       workingDirectory: process.cwd(),
       isInteractive: process.stdin.isTTY ?? false,
     };
 
-    const result = await testHelloEntry.handler({ message }, context);
+    const result = await echoEntry.handler({ message }, context);
 
     if (result.success) {
       console.log(result.output);
@@ -87,10 +97,21 @@ async function runHookMode() {
     const hookInput = await readHookInput();
     const { command } = hookInput.tool_input;
 
+    await log(`Speck hook called - Command: ${command}`);
+
+    // Only intercept commands matching speck-* pattern
+    if (!command.match(/^speck-/)) {
+      // Not a virtual command - pass through
+      await log(`Skip (not speck-*): ${command}`);
+      console.log(JSON.stringify(passThrough()));
+      return;
+    }
+
+    await log(`Intercepting speck command: ${command}`);
+
     // Parse command string to extract command name and args
     // "speck-test-hello world" -> commandName="test-hello", args=["world"]
-    // "test-hello world" -> commandName="test-hello", args=["world"]
-    const commandMatch = command.match(/^(?:speck-)?(.+?)(?:\s+(.*))?$/);
+    const commandMatch = command.match(/^speck-(.+?)(?:\s+(.*))?$/);
     if (!commandMatch) {
       console.error("Failed to parse command:", command);
       process.exit(1);
@@ -131,9 +152,11 @@ async function runHookMode() {
     // Return hook output with echo-wrapped result
     const result = output.trim() || errorOutput.trim() || "";
     const hookOutput = formatHookOutput(result, hookInput.tool_input);
+    await log(`Returning result: ${result.substring(0, 100)}`);
     console.log(JSON.stringify(hookOutput));
   } catch (error) {
     // Hook-level error - log to stderr, return empty JSON (pass-through)
+    await log(`Hook error: ${error instanceof Error ? error.message : String(error)}`);
     console.error("Hook error:", error instanceof Error ? error.message : String(error));
     console.log("{}");
     process.exit(1);

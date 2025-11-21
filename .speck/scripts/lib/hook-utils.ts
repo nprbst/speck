@@ -34,9 +34,9 @@ import type { HookOutput, InterceptedCommand, HookInput } from "./types";
  */
 export function formatHookOutput(output: string, originalInput?: HookInput["tool_input"]): InterceptedCommand {
   return {
-    permissionDecision: "allow",
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
+      permissionDecision: "allow",
       updatedInput: {
         ...originalInput, // Preserve original fields like description, timeout, etc.
         command: `cat << 'OUTPUT_EOF'\n${output}\nOUTPUT_EOF`,

@@ -7,7 +7,7 @@
  */
 
 import type { CommandRegistry } from "../lib/types";
-import { testHelloHandler, parseTestHelloArgs } from "./test-hello";
+import { echoHandler } from "./echo";
 import { envHandler } from "./env";
 
 /**
@@ -32,11 +32,10 @@ import { envHandler } from "./env";
  * ```
  */
 export const registry: CommandRegistry = {
-  "test-hello": {
-    handler: testHelloHandler,
-    parseArgs: parseTestHelloArgs,
-    description: "POC test command for hook validation",
-    version: "0.1.0",
+  echo: {
+    handler: echoHandler,
+    description: "Echo back the provided message",
+    version: "1.0.0",
   },
   env: {
     handler: envHandler,

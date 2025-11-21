@@ -78,8 +78,9 @@ async function main() {
 
     // Route to unified CLI
     const output: HookOutput = {
-      permissionDecision: 'allow',
       hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'allow',
         updatedInput: {
           command: `bun run $HOME/.claude/speck-plugin-path/scripts/speck.ts --hook <<'HOOK_INPUT_EOF'\n${input}\nHOOK_INPUT_EOF`
         }
@@ -188,8 +189,9 @@ export interface HookInput {
 }
 
 export interface HookOutput {
-  permissionDecision: 'allow';
   hookSpecificOutput: {
+    hookEventName: 'PreToolUse';
+    permissionDecision: 'allow';
     updatedInput: {
       command: string;
     };
@@ -216,8 +218,9 @@ export function formatHookOutput(output: string): HookOutput {
   const escaped = output.replace(/'/g, "'\\''");
 
   return {
-    permissionDecision: 'allow',
     hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: 'allow',
       updatedInput: {
         command: `echo '${escaped}'`
       }
@@ -267,8 +270,9 @@ echo '{"tool_name":"Bash","tool_input":{"command":"test-hello world"}}' | \
 Expected output (JSON):
 ```json
 {
-  "permissionDecision": "allow",
   "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "allow",
     "updatedInput": {
       "command": "echo 'Hello world'"
     }
@@ -297,8 +301,9 @@ echo '{"tool_name":"Bash","tool_input":{"command":"speck-env"}}' | \
 Expected output (JSON):
 ```json
 {
-  "permissionDecision": "allow",
   "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "allow",
     "updatedInput": {
       "command": "echo 'Plugin root: /Users/you/.claude/plugins/speck'"
     }

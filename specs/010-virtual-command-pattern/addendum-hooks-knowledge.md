@@ -65,17 +65,15 @@ Claude Code provides a hook system that can intercept tool calls before executio
     "updatedInput": {
       "command": "bun /path/to/actual/script.ts branch list",
       "description": "List branches for current spec"
-    },
-    "permissionDecisionReason": "Routed speck-branch to plugin script"
+    }
   }
 }
 ```
 
 **Critical Fields**:
 - `hookEventName`: Must be `"PreToolUse"`
-- `permissionDecision`: `"allow"` | `"block"` | `"modify"`
+- `permissionDecision`: `"allow"` INSIDE hookSpecificOutput (not at top level)
 - `updatedInput`: Replacement tool parameters (same structure as original `tool_input`)
-- `permissionDecisionReason`: Human-readable explanation for logging
 
 ### Empty Pass-Through
 
@@ -152,7 +150,6 @@ const output = {
       command: replacementCommand,
       description: data.tool_input?.description ?? "",
     },
-    permissionDecisionReason: `Routed ${PLUGIN_NAME}-${subcommand} to plugin CLI`,
   },
 };
 
@@ -203,7 +200,6 @@ const output = {
       command: `echo '${escapedResult}'`,
       description: data.tool_input?.description ?? "",
     },
-    permissionDecisionReason: `Executed ${PLUGIN_NAME} ${subcommand}`,
   },
 };
 ```

@@ -54,7 +54,7 @@ interface HookInput {
 
 // Derived from hook-output.schema.json
 type HookOutput =
-  | { permissionDecision: "allow"; hookSpecificOutput: { updatedInput: { command: string } } }
+  | { hookSpecificOutput: { hookEventName: "PreToolUse"; permissionDecision: "allow"; updatedInput: { command: string } } }
   | {};
 
 // Derived from command-result.schema.json
@@ -77,7 +77,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"speck-env"}}' | \
   ajv validate -s hook-input.schema.json -d -
 
 # Validate hook output
-echo '{"permissionDecision":"allow","hookSpecificOutput":{"updatedInput":{"command":"echo hello"}}}' | \
+echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","updatedInput":{"command":"echo hello"}}}' | \
   ajv validate -s hook-output.schema.json -d -
 ```
 

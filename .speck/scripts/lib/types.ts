@@ -24,9 +24,9 @@ export type HookOutput = InterceptedCommand | PassThrough;
  * Hook intercepts and modifies the command
  */
 export interface InterceptedCommand {
-  permissionDecision: "allow";
   hookSpecificOutput: {
     hookEventName: "PreToolUse";
+    permissionDecision: "allow";
     updatedInput: {
       command: string;
     };

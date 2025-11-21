@@ -8,17 +8,22 @@
       "title": "Intercepted Command",
       "description": "Hook intercepts and modifies the command",
       "type": "object",
-      "required": ["permissionDecision", "hookSpecificOutput"],
+      "required": ["hookSpecificOutput"],
       "properties": {
-        "permissionDecision": {
-          "type": "string",
-          "const": "allow",
-          "description": "Must be 'allow' to proceed with modified command"
-        },
         "hookSpecificOutput": {
           "type": "object",
-          "required": ["updatedInput"],
+          "required": ["hookEventName", "permissionDecision", "updatedInput"],
           "properties": {
+            "hookEventName": {
+              "type": "string",
+              "const": "PreToolUse",
+              "description": "Must be 'PreToolUse' for PreToolUse hooks"
+            },
+            "permissionDecision": {
+              "type": "string",
+              "const": "allow",
+              "description": "Must be 'allow' to proceed with modified command"
+            },
             "updatedInput": {
               "type": "object",
               "required": ["command"],
@@ -51,16 +56,18 @@
   ],
   "examples": [
     {
-      "permissionDecision": "allow",
       "hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": "allow",
         "updatedInput": {
           "command": "echo 'Plugin root: /Users/user/.claude/plugins/speck'"
         }
       }
     },
     {
-      "permissionDecision": "allow",
       "hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": "allow",
         "updatedInput": {
           "command": "echo '{\"branches\": [{\"name\": \"main\", \"current\": true}]}'"
         }
