@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://speck.dev/schemas/hook-output.json",
+  "title": "Claude Code PreToolUse Hook Output",
+  "description": "JSON structure written to stdout by PreToolUse hook to control command execution",
+  "oneOf": [
+    {
+      "title": "Intercepted Command",
+      "description": "Hook intercepts and modifies the command",
+      "type": "object",
+      "required": ["permissionDecision", "hookSpecificOutput"],
+      "properties": {
+        "permissionDecision": {
+          "type": "string",
+          "const": "allow",
+          "description": "Must be 'allow' to proceed with modified command"
+        },
+        "hookSpecificOutput": {
+          "type": "object",
+          "required": ["updatedInput"],
+          "properties": {
+            "updatedInput": {
+              "type": "object",
+              "required": ["command"],
+              "properties": {
+                "command": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Substituted command that Claude will execute (usually echo wrapping actual output)",
+                  "examples": [
+                    "echo 'Speck environment: production'",
+                    "echo '{\"branch\": \"main\", \"status\": \"clean\"}'"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Pass-Through",
+      "description": "Hook does not intercept, lets Claude execute original command",
+      "type": "object",
+      "maxProperties": 0,
+      "description": "Empty object {} indicates pass-through"
+    }
+  ],
+  "examples": [
+    {
+      "permissionDecision": "allow",
+      "hookSpecificOutput": {
+        "updatedInput": {
+          "command": "echo 'Plugin root: /Users/user/.claude/plugins/speck'"
+        }
+      }
+    },
+    {
+      "permissionDecision": "allow",
+      "hookSpecificOutput": {
+        "updatedInput": {
+          "command": "echo '{\"branches\": [{\"name\": \"main\", \"current\": true}]}'"
+        }
+      }
+    },
+    {}
+  ]
+}
