@@ -33,6 +33,7 @@ export function formatHookOutput(output: string): InterceptedCommand {
   return {
     permissionDecision: "allow",
     hookSpecificOutput: {
+      hookEventName: "PreToolUse",
       updatedInput: {
         command: `cat << 'OUTPUT_EOF'\n${output}\nOUTPUT_EOF`,
       },

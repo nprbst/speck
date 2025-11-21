@@ -1,0 +1,1 @@
+../../.speck/scripts/lib/types.ts

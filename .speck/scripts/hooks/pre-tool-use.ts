@@ -68,23 +68,41 @@ async function main() {
       cliPath = `${pluginRoot}/.speck/scripts/speck.ts`;
     }
 
-    // Build the updated command that routes to CLI
-    // Use heredoc to pass JSON input safely
-    const updatedCommand = `bun run ${cliPath} --hook <<'HOOK_INPUT_EOF'
-${input}
-HOOK_INPUT_EOF`;
+    // Execute the CLI directly as a subprocess
+    // Pass JSON input via stdin, capture stdout
+    const proc = Bun.spawn(["bun", "run", cliPath, "--hook"], {
+      stdin: "pipe",
+      stdout: "pipe",
+      stderr: "inherit", // Let errors flow to Claude's stderr
+    });
 
-    const output: HookOutput = {
-      permissionDecision: "allow",
-      hookSpecificOutput: {
-        hookEventName: "PreToolUse",
-        updatedInput: {
-          command: updatedCommand,
-        },
-      },
-    };
+    // Write JSON input to CLI's stdin
+    proc.stdin.write(input);
+    proc.stdin.end();
 
-    console.log(JSON.stringify(output));
+    // Wait for CLI to complete and capture output
+    const cliOutput = await new Response(proc.stdout).text();
+    const exitCode = await proc.exited;
+
+    if (exitCode !== 0) {
+      // CLI failed: pass through to let bash handle the error
+      console.error(`CLI exited with code ${exitCode}`);
+      console.log(JSON.stringify(passThrough()));
+      return;
+    }
+
+    // Parse CLI's JSON output
+    let cliResult: HookOutput;
+    try {
+      cliResult = JSON.parse(cliOutput);
+    } catch (error) {
+      console.error(`Failed to parse CLI output: ${error instanceof Error ? error.message : String(error)}`);
+      console.log(JSON.stringify(passThrough()));
+      return;
+    }
+
+    // Forward the CLI's hook output directly to Claude
+    console.log(JSON.stringify(cliResult));
   } catch (error) {
     // Hook-level error: pass through to avoid breaking Claude
     console.error(`Hook error: ${error instanceof Error ? error.message : String(error)}`);
