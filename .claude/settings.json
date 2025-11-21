@@ -14,7 +14,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"/Users/nathan/git/github.com/nprbst/speck/.speck/scripts/speck.ts\" --hook"
+            "command": "bun \"/Users/nathan/git/github.com/nprbst/speck/.speck/dist/speck-hook.js\" --hook"
           }
         ]
       }

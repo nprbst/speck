@@ -68,7 +68,16 @@ Per plan.md Project Structure:
 - [X] T014 [US0] Add hook registration to .claude-plugin/plugin.json (PreToolUse.Bash mapping to pre-tool-use.ts)
 - [X] T015 [US0] Update CLI entry point in .speck/scripts/speck.ts to support test-hello and env subcommands via Commander
 - [X] T016 [US0] Implement dual-mode logic in .speck/scripts/speck.ts (CLI mode: normal output, hook mode: JSON response per data-model.md)
-- [X] T017 [US0] Test POC per quickstart.md Section "Test POC" (validate all 6 test scenarios: CLI modes, hook modes, Claude integration)
+- [X] T017a [US0] Create build script at .speck/scripts/build-hook.ts to bundle speck.ts into single-file output using bun build
+- [X] T017b [US0] Add build:hook npm script to package.json for generating bundled hook
+- [X] T017c [US0] Fix mode detection in .speck/scripts/lib/mode-detector.ts to handle undefined stdin.isTTY correctly
+- [X] T017d [US0] Update .claude-plugin/plugin.json to use bundled hook (bun .speck/dist/speck-hook.js --hook)
+- [X] T017e [US0] Update .claude/settings.json to use bundled hook for local testing
+- [X] T017f [US0] Integrate hook build into scripts/build-plugin.ts (build hook before copying plugin files)
+- [X] T017g [US0] Update scripts/build-plugin.ts to copy .speck/dist/ directory to published plugin
+- [X] T017h [US0] Update scripts/build-plugin.ts generatePluginManifest to include hooks configuration
+- [X] T017i [US0] Update quickstart.md to document build:hook step and bundled approach benefits
+- [X] T017j [US0] Test POC per quickstart.md Section "Test POC" (validate all 6 test scenarios: CLI modes, hook modes, Claude integration with bundled hook)
 
 **Checkpoint**: POC validated - hook mechanism proven, ready to expand to production commands
 

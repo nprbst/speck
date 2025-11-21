@@ -18,8 +18,9 @@ export function detectMode(): ExecutionMode {
   }
 
   // Fallback to TTY detection
-  // If stdin is not a TTY, likely being piped from hook
-  return process.stdin.isTTY ? "cli" : "hook";
+  // If stdin is explicitly false (being piped), it's hook mode
+  // If stdin is true or undefined (normal terminal), it's CLI mode
+  return process.stdin.isTTY === false ? "hook" : "cli";
 }
 
 /**

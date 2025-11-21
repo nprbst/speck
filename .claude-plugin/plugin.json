@@ -19,7 +19,7 @@
   "hooks": {
     "PreToolUse": {
       "Bash": {
-        "command": "bun run .speck/scripts/speck.ts --hook"
+        "command": "bun .speck/dist/speck-hook.js --hook"
       }
     }
   }

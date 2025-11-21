@@ -46,6 +46,24 @@ cat "$HOME/.claude/speck-plugin-path"
 
 Expected output: Path to Speck plugin root (e.g., `/Users/you/git/speck/.speck`)
 
+### 3. Build the Hook Bundle
+
+The hook system uses a bundled single-file script for optimal performance. Build it with:
+
+```bash
+bun run build:hook
+```
+
+This generates `.speck/dist/speck-hook.js` - a minified bundle that includes all dependencies. The bundle:
+- Improves hook execution performance (no runtime transpilation)
+- Reduces file I/O during hook invocation
+- Contains the entire CLI in a single ~48KB file
+
+**Note**: Rebuild after any changes to `.speck/scripts/speck.ts` or its dependencies:
+```bash
+bun run build:hook
+```
+
 ## POC Implementation (User Story 0)
 
 The POC validates the hook-based virtual command pattern with two commands:

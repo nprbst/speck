@@ -81,6 +81,7 @@ specs/[###-feature]/
 .speck/
 ├── scripts/
 │   ├── speck.ts              # NEW: Unified dual-mode CLI entry point
+│   ├── build-hook.ts         # NEW: Build script for bundled hook
 │   ├── commands/             # NEW: Command handler implementations
 │   │   ├── env.ts           # Handler for speck-env command
 │   │   ├── branch.ts        # Handler for speck-branch command
@@ -92,6 +93,8 @@ specs/[###-feature]/
 │   │   ├── hook-utils.ts    # Hook JSON parsing/formatting
 │   │   ├── mode-detector.ts # CLI vs hook mode detection
 │   │   └── shell-escape.ts  # Single quote escaping for shell safety
+│   ├── dist/                # NEW: Build output (gitignored)
+│   │   └── speck-hook.js    # Bundled single-file hook script
 │   └── [existing scripts]   # Legacy individual scripts (to be deprecated)
 
 .claude-plugin/

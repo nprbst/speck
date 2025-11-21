@@ -31,7 +31,8 @@ A developer creates a minimal proof-of-concept demonstrating that Claude Code's 
 2. **Given** hook receives JSON stdin with `{"tool_input": {"command": "test-hello world"}}`, **When** hook parses and routes command, **Then** hook returns valid hookSpecificOutput with updatedInput
 3. **Given** hook intercepts `speck-env` command, **When** routed to existing env script, **Then** output matches direct script execution (validates integration)
 4. **Given** hook script fails or returns malformed JSON, **When** Claude attempts execution, **Then** error is clearly reported and doesn't crash Claude
-5. **Given** POC succeeds with both commands, **When** developer reviews implementation, **Then** pattern is documented and ready for production commands
+5. **Given** unified CLI is bundled into single-file script, **When** hook uses bundled script instead of source files, **Then** hook execution performance improves with no runtime transpilation overhead
+6. **Given** POC succeeds with both commands, **When** developer reviews implementation, **Then** pattern is documented and ready for production commands
 
 ---
 
@@ -163,6 +164,8 @@ The project includes a comprehensive addendum document that extracts critical te
 - **FR-018**: System MUST support incremental migration where individual command scripts and unified CLI coexist until all commands validated
 - **FR-019**: Individual command scripts MUST remain functional during migration period to ensure zero breaking changes
 - **FR-020**: Individual command scripts MUST be deprecated and removed one feature release cycle after all commands migrated to unified CLI and tested in production
+- **FR-021**: Unified CLI MUST be bundled into single-file script for hook execution to eliminate runtime transpilation overhead
+- **FR-022**: Plugin build process MUST automatically generate bundled hook script before packaging for distribution
 
 ### Key Entities
 
@@ -170,6 +173,7 @@ The project includes a comprehensive addendum document that extracts critical te
 - **Command Registry**: Data structure mapping virtual command names to handler functions and parsers
 - **Hook Router**: Script that receives Bash tool calls via stdin, identifies virtual commands, and routes to CLI
 - **Dual-Mode CLI**: Single executable that operates in both standalone (Commander) and hook-invoked (JSON stdin) modes
+- **Bundled Hook Script**: Single-file minified JavaScript bundle containing CLI and all dependencies for optimal hook execution performance
 - **Hook Input**: JSON structure containing `tool_input.command` field with the command string to intercept
 - **Hook Output**: JSON structure containing `hookSpecificOutput` with `updatedInput.command` for the substituted command
 - **Command Handler**: Function that implements business logic for a specific subcommand
