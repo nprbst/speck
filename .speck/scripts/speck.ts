@@ -283,12 +283,18 @@ async function runHookMode() {
       errorOutput += args.join(" ") + "\n";
     };
 
-    // Execute command using main function if available, otherwise fall back to handler
+    // Execute command using main/lazyMain function if available, otherwise fall back to handler
     let exitCode = 0;
     try {
       if (commandEntry.main) {
+        // Static main function - already loaded
         exitCode = await commandEntry.main(args);
+      } else if (commandEntry.lazyMain) {
+        // Lazy-loaded main function - load on demand
+        const mainFn = await commandEntry.lazyMain();
+        exitCode = await mainFn(args);
       } else if (commandEntry.handler) {
+        // Handler-based command (legacy/simple commands)
         const context: CommandContext = {
           mode: "hook",
           rawCommand: command,
@@ -305,7 +311,7 @@ async function runHookMode() {
           errorOutput += result.errorOutput;
         }
       } else {
-        throw new Error(`Command ${commandName} has neither main nor handler`);
+        throw new Error(`Command ${commandName} has no main, lazyMain, or handler`);
       }
     } catch (error) {
       // Command execution error - capture in errorOutput

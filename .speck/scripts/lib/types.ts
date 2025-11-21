@@ -83,11 +83,17 @@ export type CommandHandler<TArgs = unknown> = (
 export type MainFunction = (args: string[]) => Promise<number>;
 
 /**
+ * Lazy loader for main function (for code splitting)
+ */
+export type LazyMainLoader = () => Promise<MainFunction>;
+
+/**
  * Registration metadata for a command handler
  */
 export interface CommandRegistryEntry<TArgs = unknown> {
   handler?: CommandHandler<TArgs>;
   main?: MainFunction;
+  lazyMain?: LazyMainLoader;
   parseArgs?: ArgumentParser<TArgs>;
   description: string;
   version: string;

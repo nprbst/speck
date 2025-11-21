@@ -27,13 +27,15 @@ async function main() {
     mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
-  // Build single-file bundle
+  // Build with code splitting
   // Using --target=bun for optimal performance
   // --minify to reduce file size
+  // --splitting enables code splitting for dynamic imports
   try {
-    await $`bun build ${ENTRY_POINT} --outfile ${OUTPUT_FILE} --target bun --minify`;
+    await $`bun build ${ENTRY_POINT} --outdir ${OUTPUT_DIR} --target bun --minify --splitting --entry-naming speck-hook.js`;
     console.log("✅ Build successful!");
     console.log(`📦 Output: ${OUTPUT_FILE}`);
+    console.log(`📂 Output directory: ${OUTPUT_DIR}`);
   } catch (error) {
     console.error("❌ Build failed:", error);
     process.exit(1);

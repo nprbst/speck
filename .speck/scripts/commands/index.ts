@@ -6,23 +6,49 @@
  * without hardcoding command names in the hook script.
  */
 
-import type { CommandRegistry } from "../lib/types";
+import type { CommandRegistry, MainFunction } from "../lib/types";
 import { echoHandler } from "./echo";
 import { envHandler } from "./env";
 
-// Import the actual script main functions directly
+// Lightweight commands: static imports (always loaded)
 import { main as checkPrerequisitesMain } from "../check-prerequisites";
-import { main as createNewFeatureMain } from "../create-new-feature";
-import { main as setupPlanMain } from "../setup-plan";
-import { main as linkRepoMain } from "../link-repo";
-import { main as branchMain } from "../branch-command";
-import { main as envMain } from "../env-command";
+
+// Heavy commands: dynamic imports (lazy-loaded on demand)
+// Using arrow functions that return dynamic imports ensures the code is only loaded when called
+const lazyBranchMain = async (): Promise<MainFunction> => {
+  const module = await import("../branch-command");
+  return module.main;
+};
+
+const lazyEnvMain = async (): Promise<MainFunction> => {
+  const module = await import("../env-command");
+  return module.main;
+};
+
+const lazyCreateNewFeatureMain = async (): Promise<MainFunction> => {
+  const module = await import("../create-new-feature");
+  return module.main;
+};
+
+const lazySetupPlanMain = async (): Promise<MainFunction> => {
+  const module = await import("../setup-plan");
+  return module.main;
+};
+
+const lazyLinkRepoMain = async (): Promise<MainFunction> => {
+  const module = await import("../link-repo");
+  return module.main;
+};
 
 /**
  * Command registry mapping command names to handlers
  *
  * Key format: Command name without "speck-" prefix (e.g., "env" for "speck-env")
- * Value: CommandRegistryEntry with handler, description, version, main function
+ * Value: CommandRegistryEntry with handler/main/lazyMain, description, version
+ *
+ * Strategy:
+ * - Lightweight commands use `main` (static import, always loaded)
+ * - Heavy commands use `lazyMain` (dynamic import, loaded on demand)
  */
 export const registry: CommandRegistry = {
   echo: {
@@ -32,12 +58,12 @@ export const registry: CommandRegistry = {
   },
   env: {
     handler: envHandler,
-    main: envMain,
+    lazyMain: lazyEnvMain,
     description: "Show Speck environment and configuration info",
     version: "1.0.0",
   },
   branch: {
-    main: branchMain,
+    lazyMain: lazyBranchMain,
     description: "Manage stacked feature branches",
     version: "1.0.0",
   },
@@ -47,17 +73,17 @@ export const registry: CommandRegistry = {
     version: "1.0.0",
   },
   "create-new-feature": {
-    main: createNewFeatureMain,
+    lazyMain: lazyCreateNewFeatureMain,
     description: "Create new feature specification directory",
     version: "1.0.0",
   },
   "setup-plan": {
-    main: setupPlanMain,
+    lazyMain: lazySetupPlanMain,
     description: "Initialize planning workflow",
     version: "1.0.0",
   },
   "link-repo": {
-    main: linkRepoMain,
+    lazyMain: lazyLinkRepoMain,
     description: "Link repository to multi-repo speck root",
     version: "1.0.0",
   },
