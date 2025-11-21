@@ -9,6 +9,11 @@
 import type { CommandRegistry } from "../lib/types";
 import { echoHandler } from "./echo";
 import { envHandler } from "./env";
+import { branchHandler, parseBranchArgs } from "./branch";
+import { checkPrerequisitesHandler, parseCheckPrerequisitesArgs } from "./check-prerequisites";
+import { createNewFeatureHandler, parseCreateNewFeatureArgs } from "./create-new-feature";
+import { setupPlanHandler, parseSetupPlanArgs } from "./setup-plan";
+import { linkRepoHandler, parseLinkRepoArgs } from "./link-repo";
 
 /**
  * Command registry mapping command names to handlers
@@ -40,6 +45,36 @@ export const registry: CommandRegistry = {
   env: {
     handler: envHandler,
     description: "Show Speck environment and configuration info",
+    version: "1.0.0",
+  },
+  branch: {
+    handler: branchHandler,
+    parseArgs: parseBranchArgs,
+    description: "Manage stacked feature branches",
+    version: "1.0.0",
+  },
+  "check-prerequisites": {
+    handler: checkPrerequisitesHandler,
+    parseArgs: parseCheckPrerequisitesArgs,
+    description: "Validate feature directory structure and prerequisites",
+    version: "1.0.0",
+  },
+  "create-new-feature": {
+    handler: createNewFeatureHandler,
+    parseArgs: parseCreateNewFeatureArgs,
+    description: "Create new feature specification directory",
+    version: "1.0.0",
+  },
+  "setup-plan": {
+    handler: setupPlanHandler,
+    parseArgs: parseSetupPlanArgs,
+    description: "Initialize planning workflow",
+    version: "1.0.0",
+  },
+  "link-repo": {
+    handler: linkRepoHandler,
+    parseArgs: parseLinkRepoArgs,
+    description: "Link repository to multi-repo speck root",
     version: "1.0.0",
   },
 };

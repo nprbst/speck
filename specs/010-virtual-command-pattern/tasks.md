@@ -91,16 +91,16 @@ Per plan.md Project Structure:
 
 ### Implementation for User Story 1
 
-- [ ] T018 [P] [US1] Create argument parser utility in .speck/scripts/lib/arg-parser.ts (parseCommandToArgv function for converting command strings to argv arrays)
-- [ ] T019 [P] [US1] Implement branch command handler in .speck/scripts/commands/branch.ts (delegates to existing branch logic, supports list/create/delete subcommands)
-- [ ] T020 [P] [US1] Implement analyze command handler in .speck/scripts/commands/analyze.ts (delegates to existing analyze script)
-- [ ] T021 [P] [US1] Implement specify command handler in .speck/scripts/commands/specify.ts (delegates to existing specify script)
-- [ ] T022 [P] [US1] Implement plan command handler in .speck/scripts/commands/plan.ts (delegates to existing plan script)
-- [ ] T023 [P] [US1] Implement tasks command handler in .speck/scripts/commands/tasks.ts (delegates to existing tasks script)
-- [ ] T024 [US1] Register all new command handlers in .speck/scripts/commands/index.ts registry
-- [ ] T025 [US1] Update PreToolUse hook router in .speck/scripts/hooks/pre-tool-use.ts to handle all speck-* virtual commands
-- [ ] T026 [US1] Update CLI entry point in .speck/scripts/speck.ts to add all new subcommands to Commander program
-- [ ] T027 [US1] Add integration test in tests/integration/virtual-command.test.ts validating virtual command invocation for all commands
+- [X] T018 [P] [US1] Create argument parser utility in .speck/scripts/lib/arg-parser.ts (parseCommandToArgv function for converting command strings to argv arrays)
+- [X] T019 [P] [US1] Implement branch command handler in .speck/scripts/commands/branch.ts (delegates to existing branch logic, supports list/create/delete subcommands)
+- [X] T020 [P] [US1] Implement analyze command handler in .speck/scripts/commands/analyze.ts (delegates to existing analyze script)
+- [X] T021 [P] [US1] Implement specify command handler in .speck/scripts/commands/specify.ts (delegates to existing specify script)
+- [X] T022 [P] [US1] Implement plan command handler in .speck/scripts/commands/plan.ts (delegates to existing plan script)
+- [X] T023 [P] [US1] Implement tasks command handler in .speck/scripts/commands/tasks.ts (delegates to existing tasks script)
+- [X] T024 [US1] Register all new command handlers in .speck/scripts/commands/index.ts registry
+- [X] T025 [US1] Update PreToolUse hook router in .speck/scripts/hooks/pre-tool-use.ts to handle all speck-* virtual commands
+- [X] T026 [US1] Update CLI entry point in .speck/scripts/speck.ts to add all new subcommands to Commander program
+- [X] T027 [US1] Add integration test in tests/integration/virtual-command.test.ts validating virtual command invocation for all commands
 
 **Checkpoint**: All Speck commands accessible via virtual pattern, no path dependencies
 

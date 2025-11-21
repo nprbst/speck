@@ -76,6 +76,141 @@ program
     }
   });
 
+// branch command
+const branchEntry = registry.branch;
+program
+  .command("branch [args...]")
+  .description(branchEntry.description)
+  .action(async (args) => {
+    const argsArray = Array.isArray(args) ? args : [args];
+    const commandString = `branch ${argsArray.join(" ")}`;
+
+    const context: CommandContext = {
+      mode: detectMode(),
+      rawCommand: commandString,
+      workingDirectory: process.cwd(),
+      isInteractive: process.stdin.isTTY ?? false,
+    };
+
+    const parsedArgs = branchEntry.parseArgs!(commandString);
+    const result = await branchEntry.handler(parsedArgs, context);
+
+    if (result.success) {
+      console.log(result.output);
+    } else {
+      console.error(result.errorOutput);
+      process.exit(result.exitCode);
+    }
+  });
+
+// check-prerequisites command
+const checkPrerequisitesEntry = registry["check-prerequisites"]!;
+program
+  .command("check-prerequisites [args...]")
+  .description(checkPrerequisitesEntry.description)
+  .action(async (args) => {
+    const argsArray = Array.isArray(args) ? args : [args];
+    const commandString = `check-prerequisites ${argsArray.join(" ")}`;
+
+    const context: CommandContext = {
+      mode: detectMode(),
+      rawCommand: commandString,
+      workingDirectory: process.cwd(),
+      isInteractive: process.stdin.isTTY ?? false,
+    };
+
+    const parsedArgs = checkPrerequisitesEntry.parseArgs!(commandString);
+    const result = await checkPrerequisitesEntry.handler(parsedArgs, context);
+
+    if (result.success) {
+      console.log(result.output);
+    } else {
+      console.error(result.errorOutput);
+      process.exit(result.exitCode);
+    }
+  });
+
+// create-new-feature command
+const createNewFeatureEntry = registry["create-new-feature"]!;
+program
+  .command("create-new-feature [args...]")
+  .description(createNewFeatureEntry.description)
+  .action(async (args) => {
+    const argsArray = Array.isArray(args) ? args : [args];
+    const commandString = `create-new-feature ${argsArray.join(" ")}`;
+
+    const context: CommandContext = {
+      mode: detectMode(),
+      rawCommand: commandString,
+      workingDirectory: process.cwd(),
+      isInteractive: process.stdin.isTTY ?? false,
+    };
+
+    const parsedArgs = createNewFeatureEntry.parseArgs!(commandString);
+    const result = await createNewFeatureEntry.handler(parsedArgs, context);
+
+    if (result.success) {
+      console.log(result.output);
+    } else {
+      console.error(result.errorOutput);
+      process.exit(result.exitCode);
+    }
+  });
+
+// setup-plan command
+const setupPlanEntry = registry["setup-plan"]!;
+program
+  .command("setup-plan [args...]")
+  .description(setupPlanEntry.description)
+  .action(async (args) => {
+    const argsArray = Array.isArray(args) ? args : [args];
+    const commandString = `setup-plan ${argsArray.join(" ")}`;
+
+    const context: CommandContext = {
+      mode: detectMode(),
+      rawCommand: commandString,
+      workingDirectory: process.cwd(),
+      isInteractive: process.stdin.isTTY ?? false,
+    };
+
+    const parsedArgs = setupPlanEntry.parseArgs!(commandString);
+    const result = await setupPlanEntry.handler(parsedArgs, context);
+
+    if (result.success) {
+      console.log(result.output);
+    } else {
+      console.error(result.errorOutput);
+      process.exit(result.exitCode);
+    }
+  });
+
+// link-repo command
+const linkRepoEntry = registry["link-repo"]!;
+program
+  .command("link-repo [args...]")
+  .description(linkRepoEntry.description)
+  .action(async (args) => {
+    const argsArray = Array.isArray(args) ? args : [args];
+    const commandString = `link-repo ${argsArray.join(" ")}`;
+
+    const context: CommandContext = {
+      mode: detectMode(),
+      rawCommand: commandString,
+      workingDirectory: process.cwd(),
+      isInteractive: process.stdin.isTTY ?? false,
+    };
+
+    const parsedArgs = linkRepoEntry.parseArgs!(commandString);
+    const result = await linkRepoEntry.handler(parsedArgs, context);
+
+    if (result.success) {
+      console.log(result.output);
+    } else {
+      console.error(result.errorOutput);
+      process.exit(result.exitCode);
+    }
+  });
+
 /**
  * Main entry point - handles dual-mode operation
  */
