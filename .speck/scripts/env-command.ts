@@ -302,6 +302,26 @@ async function displayLocalStatus(repoRoot: string): Promise<void> {
     console.log("Run /speck.branch status for details");
     console.log("");
   }
+
+  // T110 - Check for orphaned branch tracking (child repo unlinked from parent)
+  if (context.mode === "child" && mapping.branches.length > 0) {
+    // Child repo has branches tracked, verify symlink still exists in parent
+    try {
+      const { findChildRepos } = await import("./common/paths.js");
+      const speckRoot = context.speckRoot || "";
+      const childRepos = await findChildRepos(speckRoot);
+
+      if (!childRepos.includes(repoRoot)) {
+        console.log("⚠ Orphaned tracking detected:");
+        console.log(`  ${mapping.branches.length} branch(es) tracked but repo unlinked from parent spec`);
+        console.log(`  Parent: ${speckRoot}`);
+        console.log("  Fix: Re-link with /speck.link or archive .speck/branches.json");
+        console.log("");
+      }
+    } catch {
+      // Skip if unable to check parent
+    }
+  }
 }
 
 /**

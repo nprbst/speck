@@ -16,14 +16,12 @@ import {
   updateBranchStatus,
   findBranchEntry,
   getSpecForBranch,
-  getBranchesForSpec,
   detectCycle,
   getAggregatedBranchStatus,
   type BranchEntry,
   type BranchMapping,
   type BranchStatus,
   type RepoBranchSummary,
-  type AggregatedBranchStatus,
 } from "./common/branch-mapper.js";
 import {
   createGitBranch,
@@ -850,6 +848,25 @@ async function statusCommand(args: string[] = []) {
   } else {
     console.log(`\n⚠ ${warnings} warning(s) found`);
   }
+
+  // T110 - Check for orphaned branch tracking (child repo unlinked from parent)
+  const context = await getMultiRepoContext();
+  if (context.mode === "child" && mapping.branches.length > 0) {
+    try {
+      const { findChildRepos } = await import("./common/paths.js");
+      const speckRoot = context.speckRoot || "";
+      const childRepos = await findChildRepos(speckRoot);
+
+      if (!childRepos.includes(repoRoot)) {
+        console.log("\n⚠ Orphaned tracking detected:");
+        console.log(`  ${mapping.branches.length} branch(es) tracked but repo unlinked from parent spec`);
+        console.log(`  Parent: ${speckRoot}`);
+        console.log("  Fix: Re-link with /speck.link or archive .speck/branches.json");
+      }
+    } catch {
+      // Skip if unable to check parent
+    }
+  }
 }
 
 /**
@@ -1241,7 +1258,15 @@ async function main() {
       console.error(`Error: ${error.message}`);
       process.exit(1);
     }
-    throw error;
+    if (error instanceof Error) {
+      console.error(`Error: ${error.message}`);
+      if (error.stack) {
+        console.error(`Stack trace: ${error.stack}`);
+      }
+      process.exit(1);
+    }
+    console.error(`Unknown error: ${String(error)}`);
+    process.exit(1);
   }
 }
 

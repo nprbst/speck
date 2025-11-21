@@ -228,6 +228,24 @@ export async function detectSpeckRoot(): Promise<SpeckConfig> {
     // Resolve symlink to absolute path
     const speckRoot = await fs.realpath(symlinkPath);
 
+    // T094 - Security: Validate symlink target doesn't escape to sensitive paths
+    // Reject paths that point to system directories or parent of home
+    const dangerousPaths = ['/', '/etc', '/usr', '/bin', '/sbin', '/System', '/Library'];
+    const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+    if (dangerousPaths.some(dangerous => speckRoot === dangerous || speckRoot.startsWith(dangerous + '/'))) {
+      throw new Error(
+        `Security: .speck/root symlink points to system directory: ${speckRoot}\n` +
+        'Speck root must be a user-owned project directory.\n' +
+        'Fix: rm .speck/root && /speck.link <safe-project-path>'
+      );
+    }
+    if (homeDir && speckRoot === path.dirname(homeDir)) {
+      throw new Error(
+        `Security: .speck/root symlink points above home directory: ${speckRoot}\n` +
+        'Fix: rm .speck/root && /speck.link <project-path-within-home>'
+      );
+    }
+
     // Verify target exists
     await fs.access(speckRoot);
 
@@ -396,6 +414,13 @@ export async function findChildRepos(speckRoot: string): Promise<string[]> {
           // Resolve symlink to absolute path
           const targetPath = await fs.realpath(symlinkPath);
 
+          // T094 - Security: Validate child repo symlink doesn't point to dangerous paths
+          const dangerousPaths = ['/', '/etc', '/usr', '/bin', '/sbin', '/System', '/Library'];
+          if (dangerousPaths.some(dangerous => targetPath === dangerous || targetPath.startsWith(dangerous + '/'))) {
+            console.warn(`Security: Skipping ${entry.name} - points to system directory: ${targetPath}`);
+            continue;
+          }
+
           // Verify target is a directory and has .git
           const gitDir = path.join(targetPath, '.git');
           try {
@@ -453,6 +478,13 @@ export async function findChildReposWithNames(speckRoot: string): Promise<Map<st
         try {
           // Resolve symlink to absolute path
           const targetPath = await fs.realpath(symlinkPath);
+
+          // T094 - Security: Validate child repo symlink doesn't point to dangerous paths
+          const dangerousPaths = ['/', '/etc', '/usr', '/bin', '/sbin', '/System', '/Library'];
+          if (dangerousPaths.some(dangerous => targetPath === dangerous || targetPath.startsWith(dangerous + '/'))) {
+            console.warn(`Security: Skipping ${entry.name} - points to system directory: ${targetPath}`);
+            continue;
+          }
 
           // Verify target is a directory and has .git
           const gitDir = path.join(targetPath, '.git');

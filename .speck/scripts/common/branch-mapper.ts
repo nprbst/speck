@@ -619,16 +619,24 @@ export async function getAggregatedBranchStatus(
   const childRepos = new Map<string, RepoBranchSummary>();
   const childRepoMap = await findChildReposWithNames(speckRoot);
 
-  for (const [childName, childPath] of childRepoMap.entries()) {
+  // T091 - Parallel repo scanning for performance optimization
+  const childRepoPromises = Array.from(childRepoMap.entries()).map(async ([childName, childPath]) => {
     try {
       const childMapping = await readBranches(childPath);
       if (childMapping.branches.length > 0) {
         const summary = buildRepoBranchSummary(childPath, childName, childMapping);
-        childRepos.set(childName, summary);
+        return { childName, summary };
       }
     } catch (error) {
       // Child may not have branches.json - skip
-      continue;
+    }
+    return null;
+  });
+
+  const childResults = await Promise.all(childRepoPromises);
+  for (const result of childResults) {
+    if (result) {
+      childRepos.set(result.childName, result.summary);
     }
   }
 

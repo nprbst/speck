@@ -10,6 +10,9 @@
 import { $ } from "bun";
 import { GitError } from "./errors.js";
 
+// T092 - Cache for default branch detection per repo (module-level for command session)
+const defaultBranchCache = new Map<string, string | null>();
+
 /**
  * Create a git branch (T020)
  *
@@ -215,6 +218,11 @@ export async function validateBaseBranch(
  * @returns Default branch name (main, master, develop, or null)
  */
 export async function detectDefaultBranch(repoRoot: string): Promise<string | null> {
+  // T092 - Check cache first
+  if (defaultBranchCache.has(repoRoot)) {
+    return defaultBranchCache.get(repoRoot)!;
+  }
+
   try {
     // Try git symbolic-ref to get default branch from origin/HEAD
     const result = await $`git -C ${repoRoot} symbolic-ref refs/remotes/origin/HEAD`.quiet();
@@ -224,7 +232,9 @@ export async function detectDefaultBranch(repoRoot: string): Promise<string | nu
       // Output format: refs/remotes/origin/main
       const match = output.match(/refs\/remotes\/origin\/(.+)/);
       if (match) {
-        return match[1];
+        const branch = match[1];
+        defaultBranchCache.set(repoRoot, branch);
+        return branch;
       }
     }
   } catch {
@@ -237,10 +247,13 @@ export async function detectDefaultBranch(repoRoot: string): Promise<string | nu
   for (const branchName of commonDefaults) {
     const exists = await branchExists(branchName, repoRoot);
     if (exists) {
+      defaultBranchCache.set(repoRoot, branchName);
       return branchName;
     }
   }
 
+  // T092 - Cache null result to avoid repeated checks
+  defaultBranchCache.set(repoRoot, null);
   return null;
 }
 
