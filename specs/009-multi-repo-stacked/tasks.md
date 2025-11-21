@@ -203,23 +203,25 @@
 
 **Independent Test**: Create git branches manually in child repos, run /speck.branch import, verify branches.json populated with correct parentSpecId
 
+**Status**: 🔧 IN PROGRESS (50% complete - 5/10 contract tests passing)
+
 ### Layer 1 Tests for User Story 5 (Contract Tests)
 
-- [ ] T056 [P] [US5] Contract test for import exit code 3 (interactive prompt) in tests/contract/import-prompt.test.ts
-- [ ] T057 [P] [US5] Contract test validates import JSON schema for multi-repo in tests/contract/import-json-schema.test.ts
+- [X] T056 [P] [US5] Contract test for import exit code 3 (interactive prompt) in tests/contract/import-prompt.test.ts (5 tests created, 5 passing)
+- [X] T057 [P] [US5] Contract test validates import JSON schema for multi-repo in tests/contract/import-json-schema.test.ts (5 tests created, 0 passing - needs fixture fix)
 
 ### Implementation for User Story 5
 
-- [ ] T058 [US5] Add /speck.branch import support for child repo context in .speck/scripts/branch-command.ts
-- [ ] T059 [US5] Add /speck.branch import --all with interactive repo selection in .speck/scripts/branch-command.ts
-- [ ] T060 [US5] Add parentSpecId field to imported branches in child repos in .speck/scripts/branch-command.ts
-- [ ] T061 [US5] Add merge-base analysis for detecting branch relationships in .speck/scripts/branch-command.ts
-- [ ] T062 [US5] Add circular dependency detection during import in .speck/scripts/branch-command.ts
+- [X] T058 [US5] Add /speck.branch import support for child repo context in .speck/scripts/branch-command.ts (multi-repo detection added)
+- [ ] T059 [US5] Add /speck.branch import --all with interactive repo selection in .speck/scripts/branch-command.ts (not started)
+- [X] T060 [US5] Add parentSpecId field to imported branches in child repos in .speck/scripts/branch-command.ts (implemented, needs test fixture fix)
+- [X] T061 [US5] Add merge-base analysis for detecting branch relationships in .speck/scripts/branch-command.ts (already implemented in existing import)
+- [X] T062 [US5] Add circular dependency detection during import in .speck/scripts/branch-command.ts (already implemented, specs dir fixed for multi-repo)
 
 ### Layer 3 Tests for User Story 5 (E2E Tests)
 
-- [ ] T063 [US5] E2E test for /speck.branch import in child repo validates complete import in tests/e2e/import-child-e2e.test.ts
-- [ ] T064 [US5] E2E test for /speck.branch import --all validates interactive selection in tests/e2e/import-all-e2e.test.ts
+- [ ] T063 [US5] E2E test for /speck.branch import in child repo validates complete import in tests/e2e/import-child-e2e.test.ts (not started)
+- [ ] T064 [US5] E2E test for /speck.branch import --all validates interactive selection in tests/e2e/import-all-e2e.test.ts (not started)
 
 **Checkpoint**: All 5 user stories are now complete and independently testable
 
