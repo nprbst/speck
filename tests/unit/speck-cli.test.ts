@@ -3,7 +3,7 @@
  * Tests CLI mode and hook mode with identical business logic
  */
 
-import { describe, test, expect, beforeEach } from "bun:test";
+import { describe, test, expect } from "bun:test";
 import { echoHandler } from "../../.speck/scripts/commands/echo";
 import { envHandler } from "../../.speck/scripts/commands/env";
 import type { CommandContext } from "../../.speck/scripts/lib/types";

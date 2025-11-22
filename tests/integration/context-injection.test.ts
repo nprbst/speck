@@ -89,7 +89,7 @@ This is user input.
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
     expect(contextMatch).not.toBeNull();
 
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
     expect(context.FEATURE_DIR).toBe("/Users/test/specs/010-test");
   });
 
@@ -240,7 +240,7 @@ describe("Context Injection - File Contents Pre-Loading", () => {
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
     expect(contextMatch).not.toBeNull();
 
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     // Verify FILE_CONTENTS field exists
     expect(context).toHaveProperty("FILE_CONTENTS");
@@ -421,7 +421,7 @@ Start implementing the feature with stacked PR workflow.
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
     expect(contextMatch).not.toBeNull();
 
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     // Verify all fields
     expect(context.MODE).toBe("single-repo");

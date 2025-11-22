@@ -11,7 +11,6 @@
 
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import { $ } from "bun";
-import path from "node:path";
 import type { MultiRepoTestFixture } from "../helpers/multi-repo-fixtures";
 import { createMultiRepoTestFixture } from "../helpers/multi-repo-fixtures";
 

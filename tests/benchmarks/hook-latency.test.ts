@@ -46,7 +46,7 @@ describe("Hook Routing Latency Benchmark", () => {
     const avgLatency = latencies.reduce((a, b) => a + b, 0) / latencies.length;
     const maxLatency = Math.max(...latencies);
     const minLatency = Math.min(...latencies);
-    const p95Latency = latencies.sort((a, b) => a - b)[Math.floor(latencies.length * 0.95)];
+    const p95Latency = latencies.sort((a, b) => a - b)[Math.floor(latencies.length * 0.95)]!;
 
     console.log(`\n📊 Hook Routing Latency Benchmark Results (${iterations} iterations):`);
     console.log(`   Average: ${avgLatency.toFixed(2)}ms`);
@@ -65,13 +65,6 @@ describe("Hook Routing Latency Benchmark", () => {
     const latencies: number[] = [];
 
     for (let i = 0; i < iterations; i++) {
-      const hookInput: HookInput = {
-        tool_name: "Bash",
-        tool_input: {
-          command: "test-hello world",
-        },
-      };
-
       const startTime = performance.now();
 
       // Direct CLI invocation (no hook overhead)

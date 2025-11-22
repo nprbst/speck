@@ -57,14 +57,6 @@ async function getCurrentBranch(dir: string): Promise<string> {
   return result.text().trim();
 }
 
-async function branchExists(dir: string, branchName: string): Promise<boolean> {
-  try {
-    const result = await $`cd ${dir} && git rev-parse --verify ${branchName}`.quiet();
-    return result.exitCode === 0;
-  } catch {
-    return false;
-  }
-}
 
 describe('Phase 9: T080 - Branch Creation in Parent Repo', () => {
   let speckRoot: string;

@@ -206,7 +206,7 @@ describe("Command Registry", () => {
       const mockRegistry: CommandRegistry = {
         ...registry,
         "new-command": {
-          handler: async (args: any) => ({
+          handler: async (_args: any) => ({
             success: true,
             output: "Mock command executed",
             errorOutput: null,

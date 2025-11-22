@@ -37,7 +37,7 @@ describe("Multi-Step: Specify → Plan → Tasks workflow", () => {
   });
 
   test("T065: Complete workflow from specification to tasks in child repo", async () => {
-    const childRepo = fixture.childRepos.get("backend-service")!;
+    // Note: Could use childRepo for additional verification if needed
     const specDir = path.join(fixture.specsDir, "010-test-feature");
     const specPath = path.join(specDir, "spec.md");
     const planPath = path.join(specDir, "plan.md");
@@ -236,7 +236,7 @@ Root-level feature with no parent spec.
 
   test("T065: Workflow detects missing prerequisites", async () => {
     const specDir = path.join(fixture.specsDir, "012-incomplete-feature");
-    const tasksPath = path.join(specDir, "tasks.md");
+    // Note: tasksPath could be used for additional verification if needed
 
     // Attempt to create tasks without spec.md or plan.md
     // This simulates workflow interruption or incorrect order

@@ -63,7 +63,7 @@ describe("Virtual Command Invocation", () => {
 
     // Extract the last line which should be JSON
     const lines = result.stdout.toString().trim().split('\n');
-    const jsonLine = lines[lines.length - 1];
+    const jsonLine = lines[lines.length - 1]!;
     const output = JSON.parse(jsonLine);
     expect(output).toHaveProperty("hookSpecificOutput");
   });

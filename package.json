@@ -27,7 +27,7 @@
     "test:all": "bun test && bun run test:visual && bun run test:a11y",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint '.speck/**/*.ts'",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "website:sync": "bun website/scripts/sync-docs.ts",
     "website:dev": "cd website && bun run dev",

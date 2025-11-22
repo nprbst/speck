@@ -189,7 +189,7 @@ describe("PrePromptSubmit Hook", () => {
 
     for (const prompt of prompts) {
       const match = prompt.match(/^\/speck[.:](\w+)/);
-      const command = match ? match[1] : "";
+      const command = match ? match[1]! : "";
 
       expect(command).toBe("implement");
 
@@ -204,7 +204,7 @@ describe("PrePromptSubmit Hook", () => {
 
     for (const prompt of prompts) {
       const match = prompt.match(/^\/speck[.:](\w+)/);
-      const command = match ? match[1] : "";
+      const command = match ? match[1]! : "";
 
       expect(command).toBe("specify");
 

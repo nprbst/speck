@@ -105,7 +105,7 @@ describe("branch-command.ts list --all - Repo Grouping", () => {
       } else if (line.includes("Child: frontend-app")) {
         currentGroup = "frontend-app";
       } else if (line.includes("nprbst/") && currentGroup) {
-        groupedBranches[currentGroup].push(line);
+        groupedBranches[currentGroup]?.push(line);
       }
     }
 

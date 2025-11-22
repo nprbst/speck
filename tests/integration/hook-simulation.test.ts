@@ -185,7 +185,6 @@ describe("Hook Simulation Integration Tests", () => {
       // Unknown commands should pass through
       expect(exitCode).toBe(0);
 
-      const output = JSON.parse(stdout);
       // Either pass-through or error message, but valid JSON
       expect(() => JSON.parse(stdout)).not.toThrow();
     });

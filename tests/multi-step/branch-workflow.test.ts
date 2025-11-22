@@ -169,7 +169,6 @@ describe("Multi-Step: Branch create → confirm → stack → status workflow", 
       bun run ${fixture.scriptsDir}/branch-command.ts status
     `;
 
-    const statusOutput = statusResult.stdout.toString();
     // Status command should run successfully
     expect(statusResult.exitCode).toBe(0);
     // The output will show branch status (implementation may vary)

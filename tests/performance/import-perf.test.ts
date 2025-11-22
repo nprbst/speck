@@ -142,15 +142,15 @@ describe("Performance: Branch import operations", () => {
       }
     }
 
-    console.log(`Import scaling: 5 branches=${timingsPerCount[5].toFixed(1)}ms, 10 branches=${timingsPerCount[10].toFixed(1)}ms, 15 branches=${timingsPerCount[15].toFixed(1)}ms`);
+    console.log(`Import scaling: 5 branches=${timingsPerCount[5]!.toFixed(1)}ms, 10 branches=${timingsPerCount[10]!.toFixed(1)}ms, 15 branches=${timingsPerCount[15]!.toFixed(1)}ms`);
 
     // All should be under 5s
-    expect(timingsPerCount[5]).toBeLessThan(5000);
-    expect(timingsPerCount[10]).toBeLessThan(5000);
-    expect(timingsPerCount[15]).toBeLessThan(5000);
+    expect(timingsPerCount[5]!).toBeLessThan(5000);
+    expect(timingsPerCount[10]!).toBeLessThan(5000);
+    expect(timingsPerCount[15]!).toBeLessThan(5000);
 
     // Check roughly linear scaling (15 branches should be <3x slower than 5 branches)
-    const scalingFactor = timingsPerCount[15] / timingsPerCount[5];
+    const scalingFactor = timingsPerCount[15]! / timingsPerCount[5]!;
     console.log(`Scaling factor (15 branches / 5 branches): ${scalingFactor.toFixed(2)}x`);
     expect(scalingFactor).toBeLessThan(3.5); // Allow some overhead, but should be roughly linear
   });

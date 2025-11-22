@@ -13,7 +13,6 @@ import type { CommandContext } from "./lib/types";
 import { registry } from "./commands/index";
 import { appendFile } from "node:fs/promises";
 import { CommandError, formatError, errorToResult } from "./lib/error-handler";
-import { formatOutput } from "./lib/output-formatter";
 
 const SPECK_LOG_FILE = "/private/tmp/.claude-hook-test/speck-hook-log.txt";
 
@@ -29,44 +28,6 @@ program
   .version("0.1.0");
 
 // Register commands from registry
-// Helper function to execute command with consistent error handling
-async function _executeCommand(
-  commandName: string,
-  argsArray: string[],
-  context: CommandContext
-) {
-  const commandEntry = registry[commandName];
-  if (!commandEntry) {
-    throw new CommandError(`Command not found: ${commandName}`, 127);
-  }
-
-  try {
-    const commandString = `${commandName} ${argsArray.join(" ")}`;
-    const parsedArgs = commandEntry.parseArgs
-      ? commandEntry.parseArgs(commandString)
-      : {};
-    const result = await commandEntry.handler!(parsedArgs, context);
-
-    // Format output based on mode
-    if (context.mode === "cli") {
-      formatOutput(result, "cli");
-      if (!result.success) {
-        process.exit(result.exitCode);
-      }
-    }
-
-    return result;
-  } catch (error) {
-    const errorResult = errorToResult(error instanceof Error ? error : new Error(String(error)));
-
-    if (context.mode === "cli") {
-      formatOutput(errorResult, "cli");
-      process.exit(errorResult.exitCode);
-    }
-
-    return errorResult;
-  }
-}
 
 // echo command
 const echoEntry = registry.echo!;
@@ -400,15 +361,14 @@ async function runHookMode() {
     };
 
     // Execute command using main/lazyMain function if available, otherwise fall back to handler
-    let _exitCode = 0;
     try {
       if (commandEntry.main) {
         // Static main function - already loaded
-        _exitCode = await commandEntry.main(args);
+        await commandEntry.main(args);
       } else if (commandEntry.lazyMain) {
         // Lazy-loaded main function - load on demand
         const mainFn = await commandEntry.lazyMain();
-        _exitCode = await mainFn(args);
+        await mainFn(args);
       } else if (commandEntry.handler) {
         // Handler-based command (legacy/simple commands)
         const context: CommandContext = {
@@ -419,7 +379,6 @@ async function runHookMode() {
         };
         const parsedArgs = commandEntry.parseArgs ? commandEntry.parseArgs(command) : {};
         const result = await commandEntry.handler(parsedArgs, context);
-        _exitCode = result.exitCode;
         if (result.success && result.output) {
           output += result.output;
         }
@@ -435,7 +394,6 @@ async function runHookMode() {
         error instanceof Error ? error : new Error(String(error))
       );
       errorOutput += errorResult.errorOutput || "";
-      _exitCode = errorResult.exitCode;
     }
 
     // Restore console

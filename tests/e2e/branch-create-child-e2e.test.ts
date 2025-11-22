@@ -159,7 +159,7 @@ describe("E2E: Complete branch creation workflow in child repo", () => {
 
     // E2E: Verify PR suggestion is displayed (may be in stdout or shown separately)
     // Note: PR suggestion might not always be shown in the same output
-    const combinedOutput = stdout + result.stderr.toString();
+    // (combinedOutput could be used for additional verification if needed)
 
     // At minimum, verify we can create the second branch successfully
     expect(stdout).toContain("✓ Created stacked branch");

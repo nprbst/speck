@@ -101,7 +101,7 @@ describe("Contract: Base branch validation", () => {
     const childRepo = fixture.childRepos.get("backend-service")!;
 
     // Attempt to create branch with invalid base
-    const result = await $`
+    await $`
       cd ${childRepo} && \
       bun run ${process.cwd()}/.speck/scripts/branch-command.ts create nprbst/auth-api --base nprbst/invalid
     `.nothrow();

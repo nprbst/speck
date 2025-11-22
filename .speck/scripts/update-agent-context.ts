@@ -95,10 +95,10 @@ function extractPlanField(fieldPattern: string, planContent: string): string {
  * Parse plan data
  */
 function parsePlanData(planFile: string): {
-  lang: string;
-  framework: string;
-  db: string;
-  projectType: string;
+  lang: string | undefined;
+  framework: string | undefined;
+  db: string | undefined;
+  projectType: string | undefined;
 } {
   if (!existsSync(planFile)) {
     console.error(`ERROR: Plan file not found: ${planFile}`);
@@ -137,7 +137,7 @@ function parsePlanData(planFile: string): {
 /**
  * Format technology stack
  */
-function formatTechnologyStack(lang: string, framework: string): string {
+function formatTechnologyStack(lang: string | undefined, framework: string | undefined): string {
   const parts: string[] = [];
 
   if (lang && lang !== "NEEDS CLARIFICATION") {
@@ -154,8 +154,8 @@ function formatTechnologyStack(lang: string, framework: string): string {
 /**
  * Get project structure based on project type
  */
-function getProjectStructure(projectType: string): string {
-  if (projectType.toLowerCase().includes("web")) {
+function getProjectStructure(projectType: string | undefined): string {
+  if (projectType?.toLowerCase().includes("web")) {
     return "backend/\nfrontend/\ntests/";
   }
   return "src/\ntests/";
@@ -164,22 +164,22 @@ function getProjectStructure(projectType: string): string {
 /**
  * Get commands for language
  */
-function getCommandsForLanguage(lang: string): string {
-  if (lang.includes("Python")) {
+function getCommandsForLanguage(lang: string | undefined): string {
+  if (lang?.includes("Python")) {
     return "cd src && pytest && ruff check .";
-  } else if (lang.includes("Rust")) {
+  } else if (lang?.includes("Rust")) {
     return "cargo test && cargo clippy";
-  } else if (lang.includes("JavaScript") || lang.includes("TypeScript")) {
+  } else if (lang?.includes("JavaScript") || lang?.includes("TypeScript")) {
     return "npm test && npm run lint";
   }
-  return `# Add commands for ${lang}`;
+  return `# Add commands for ${lang ?? 'Unknown'}`;
 }
 
 /**
  * Get language conventions
  */
-function getLanguageConventions(lang: string): string {
-  return `${lang}: Follow standard conventions`;
+function getLanguageConventions(lang: string | undefined): string {
+  return `${lang ?? 'Unknown'}: Follow standard conventions`;
 }
 
 /**
@@ -191,9 +191,9 @@ function createNewAgentFile(
   projectName: string,
   currentDate: string,
   currentBranch: string,
-  lang: string,
-  framework: string,
-  projectType: string
+  lang: string | undefined,
+  framework: string | undefined,
+  projectType: string | undefined
 ): void {
   if (!existsSync(templateFile)) {
     console.error(`ERROR: Template not found at ${templateFile}`);
@@ -246,9 +246,9 @@ function updateExistingAgentFile(
   targetFile: string,
   currentDate: string,
   currentBranch: string,
-  lang: string,
-  framework: string,
-  db: string
+  lang: string | undefined,
+  framework: string | undefined,
+  db: string | undefined
 ): void {
   console.log("INFO: Updating existing agent context file...");
 
@@ -318,7 +318,6 @@ function updateExistingAgentFile(
         output.push(newChangeEntry);
       }
       inChangesSection = true;
-      _changesEntriesAdded = true;
       continue;
     } else if (inChangesSection && line.match(/^##\s/)) {
       output.push(line);
@@ -353,15 +352,15 @@ function updateAgentFile(
   agentName: string,
   repoRoot: string,
   currentBranch: string,
-  lang: string,
-  framework: string,
-  db: string,
-  projectType: string
+  lang: string | undefined,
+  framework: string | undefined,
+  db: string | undefined,
+  projectType: string | undefined
 ): void {
   console.log(`INFO: Updating ${agentName} context file: ${targetFile}`);
 
   const projectName = path.basename(repoRoot);
-  const currentDate = new Date().toISOString().split("T")[0];
+  const currentDate = new Date().toISOString().split("T")[0]!;
 
   // Create directory if it doesn't exist
   const targetDir = path.dirname(targetFile);
@@ -373,10 +372,10 @@ function updateAgentFile(
 
   if (!existsSync(targetFile)) {
     // Create new file from template
-    createNewAgentFile(targetFile, templateFile, projectName, currentDate, currentBranch, lang!, framework, projectType);
+    createNewAgentFile(targetFile, templateFile, projectName, currentDate, currentBranch, lang, framework, projectType);
   } else {
     // Update existing file
-    updateExistingAgentFile(targetFile, currentDate, currentBranch, lang!, framework, db);
+    updateExistingAgentFile(targetFile, currentDate, currentBranch, lang, framework, db);
   }
 }
 
@@ -388,10 +387,10 @@ function updateSpecificAgent(
   agentPaths: AgentFilePaths,
   repoRoot: string,
   currentBranch: string,
-  lang: string,
-  framework: string,
-  db: string,
-  projectType: string
+  lang: string | undefined,
+  framework: string | undefined,
+  db: string | undefined,
+  projectType: string | undefined
 ): void {
   const agentNames: Record<string, string> = {
     claude: "Claude Code",
@@ -429,10 +428,10 @@ function updateAllExistingAgents(
   agentPaths: AgentFilePaths,
   repoRoot: string,
   currentBranch: string,
-  lang: string,
-  framework: string,
-  db: string,
-  projectType: string
+  lang: string | undefined,
+  framework: string | undefined,
+  db: string | undefined,
+  projectType: string | undefined
 ): void {
   let foundAgent = false;
 
@@ -470,7 +469,7 @@ function updateAllExistingAgents(
 /**
  * Print summary
  */
-function printSummary(lang: string, framework: string, db: string): void {
+function printSummary(lang: string | undefined, framework: string | undefined, db: string | undefined): void {
   console.log("");
   console.log("INFO: Summary of changes:");
 

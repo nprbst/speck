@@ -16,8 +16,9 @@ declare module 'bun:test' {
 
 export function setupHookMatchers() {
   expect.extend({
-    toContainWorkflow(received: HookEvent[], workflowName: string) {
-      const workflowEvent = received.find(
+    toContainWorkflow(received: unknown, workflowName: string) {
+      const events = received as HookEvent[];
+      const workflowEvent = events.find(
         (e) => e.type === 'workflow-complete' && e.workflow === workflowName
       );
 
@@ -30,8 +31,9 @@ export function setupHookMatchers() {
       };
     },
 
-    toContainContextSwitch(received: HookEvent[]) {
-      const contextSwitch = received.find((e) => e.type === 'context-switch');
+    toContainContextSwitch(received: unknown) {
+      const events = received as HookEvent[];
+      const contextSwitch = events.find((e) => e.type === 'context-switch');
 
       return {
         pass: !!contextSwitch,
@@ -42,8 +44,9 @@ export function setupHookMatchers() {
       };
     },
 
-    toHaveContractViolations(received: HookEvent[], expectedCount: number) {
-      const violations = received.filter((e) => e.type === 'contract-violation');
+    toHaveContractViolations(received: unknown, expectedCount: number) {
+      const events = received as HookEvent[];
+      const violations = events.filter((e) => e.type === 'contract-violation');
       const actualCount = violations.length;
 
       return {

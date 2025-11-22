@@ -202,9 +202,9 @@ describe("branch-command.ts status --all - Per-Repo Summaries", () => {
     const mergedMatch = backendSection.match(/merged:?\s*(\d+)/i);
 
     if (totalMatch && activeMatch && mergedMatch) {
-      const total = parseInt(totalMatch[1]);
-      const active = parseInt(activeMatch[1]);
-      const merged = parseInt(mergedMatch[1]);
+      const total = parseInt(totalMatch[1]!);
+      const active = parseInt(activeMatch[1]!);
+      const merged = parseInt(mergedMatch[1]!);
 
       expect(total).toBe(active + merged);
     }

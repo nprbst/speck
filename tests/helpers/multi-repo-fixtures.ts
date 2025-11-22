@@ -182,7 +182,7 @@ export async function createMultiRepoTestFixture(
         if (!branchMapping.specIndex[branch.specId]) {
           branchMapping.specIndex[branch.specId] = [];
         }
-        branchMapping.specIndex[branch.specId].push(branch.name);
+        branchMapping.specIndex[branch.specId]!.push(branch.name);
       }
 
       // Write branches.json
@@ -511,7 +511,7 @@ export async function createMultiRepoTestSetup(
       if (!branchMapping.specIndex[branch.specId]) {
         branchMapping.specIndex[branch.specId] = [];
       }
-      branchMapping.specIndex[branch.specId].push(branch.name);
+      branchMapping.specIndex[branch.specId]!.push(branch.name);
     }
 
     // Write branches.json to root

@@ -14,7 +14,6 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import {
   createMultiRepoTestFixture,
-  createBranchEntry,
   type MultiRepoTestFixture
 } from "../helpers/multi-repo-fixtures.ts";
 import { readFile, writeFile } from "node:fs/promises";
@@ -138,7 +137,7 @@ describe("Contract: Branch schema validation", () => {
 
     expect(mapping.version).toBe("1.0.0");
     expect(mapping.branches).toHaveLength(1);
-    expect(mapping.branches[0].parentSpecId).toBeUndefined(); // v1.0.0 has no parentSpecId
+    expect(mapping.branches[0]?.parentSpecId).toBeUndefined(); // v1.0.0 has no parentSpecId
   });
 
   test("T015: specIndex is consistent with branches array", async () => {

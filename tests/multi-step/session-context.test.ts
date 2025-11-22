@@ -19,7 +19,6 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import { $ } from "bun";
 import path from "node:path";
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import type { MultiRepoTestFixture } from "../helpers/multi-repo-fixtures";
 import { createMultiRepoTestFixture } from "../helpers/multi-repo-fixtures";

@@ -14,7 +14,6 @@ import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import { $ } from "bun";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { existsSync } from "node:fs";
 import {
   createMultiRepoTestFixture,
   type MultiRepoTestFixture
