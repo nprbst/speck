@@ -44,10 +44,17 @@ This command supports the following flags for branch-aware task generation (US4)
 2. **Setup**: Extract prerequisite context from the auto-injected comment in the prompt:
    ```
    <!-- SPECK_PREREQ_CONTEXT
-   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["plan.md","spec.md","research.md"]}
+   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["plan.md","spec.md","research.md"],"FILE_CONTENTS":{"plan.md":"...","spec.md":"...","data-model.md":"...","research.md":"..."}}
    -->
    ```
-   Use the FEATURE_DIR and AVAILABLE_DOCS values from this JSON. All paths are absolute.
+   Use the FEATURE_DIR, AVAILABLE_DOCS, and FILE_CONTENTS values from this JSON. All paths are absolute.
+
+   **FILE_CONTENTS field**: Contains pre-loaded file contents. Possible values:
+   - Full file content (string): File was successfully pre-loaded
+   - `"NOT_FOUND"`: File does not exist
+   - `"TOO_LARGE"`: File exceeds size limits (use Read tool instead)
+
+   Pre-loaded files: `plan.md`, `spec.md`, `data-model.md`, `research.md`
 
    **Fallback**: If the comment is not present (backwards compatibility), run:
    ```bash
@@ -55,9 +62,20 @@ This command supports the following flags for branch-aware task generation (US4)
    ```
 
 3. **Load design documents**: Read from FEATURE_DIR:
-   - **Required**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)
-   - **Optional**: data-model.md (entities), contracts/ (API endpoints), research.md (decisions), quickstart.md (test scenarios)
-   - Note: Not all projects have all documents. Generate tasks based on what's available.
+   **Check FILE_CONTENTS from prerequisite context first** (step 2):
+   - For plan.md, spec.md, data-model.md, research.md:
+     - If FILE_CONTENTS[filename] exists and is NOT `"NOT_FOUND"` or `"TOO_LARGE"`: Use the pre-loaded content
+     - If FILE_CONTENTS[filename] is `"TOO_LARGE"`: Use Read tool to load the file
+     - If FILE_CONTENTS[filename] is `"NOT_FOUND"`: Skip this file
+     - If FILE_CONTENTS field is not present: Use Read tool (backwards compatibility)
+
+   **Always use Read/Glob for these** (not pre-loaded):
+   - contracts/ (always use Glob tool)
+   - quickstart.md (always use Read tool)
+
+   **Required files**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)
+   **Optional files**: data-model.md (entities), contracts/ (API endpoints), research.md (decisions), quickstart.md (test scenarios)
+   Note: Not all projects have all documents. Generate tasks based on what's available.
 
 4. **Execute task generation workflow**:
    - Load plan.md and extract tech stack, libraries, project structure

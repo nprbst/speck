@@ -291,6 +291,41 @@ program
     }
   });
 
+// update-agent-context command
+const updateAgentContextEntry = registry["update-agent-context"]!;
+program
+  .command("update-agent-context [args...]")
+  .description(updateAgentContextEntry.description)
+  .allowUnknownOption() // Allow flags to pass through
+  .action(async (args) => {
+    const argsArray = Array.isArray(args) ? args : [args];
+
+    // Handle lazyMain-based commands
+    if (updateAgentContextEntry.lazyMain) {
+      const mainFn = await updateAgentContextEntry.lazyMain();
+      const exitCode = await mainFn(argsArray);
+      process.exit(exitCode);
+    } else if (updateAgentContextEntry.handler) {
+      const commandString = `update-agent-context ${argsArray.join(" ")}`;
+      const context: CommandContext = {
+        mode: detectMode(),
+        rawCommand: commandString,
+        workingDirectory: process.cwd(),
+        isInteractive: process.stdin.isTTY ?? false,
+      };
+
+      const parsedArgs = updateAgentContextEntry.parseArgs!(commandString);
+      const result = await updateAgentContextEntry.handler(parsedArgs, context);
+
+      if (result.success) {
+        console.log(result.output);
+      } else {
+        console.error(result.errorOutput);
+        process.exit(result.exitCode);
+      }
+    }
+  });
+
 /**
  * Main entry point - handles dual-mode operation
  */

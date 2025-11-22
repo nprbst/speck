@@ -493,7 +493,7 @@ function printSummary(lang: string, framework: string, db: string): void {
 /**
  * Main function
  */
-async function main(args: string[]): Promise<number> {
+export async function main(args: string[]): Promise<number> {
   const agentType = args[0] || "";
 
   // Get feature paths

@@ -344,11 +344,13 @@ export async function main(args: string[]): Promise<number> {
     // High priority files (always attempt)
     fileContents["tasks.md"] = loadFileContent(paths.TASKS, totalSize);
     fileContents["plan.md"] = loadFileContent(paths.IMPL_PLAN, totalSize);
+    fileContents["spec.md"] = loadFileContent(paths.FEATURE_SPEC, totalSize);
 
     // Medium priority files (always attempt)
     const constitutionPath = join(paths.REPO_ROOT, ".speck", "memory", "constitution.md");
     fileContents["constitution.md"] = loadFileContent(constitutionPath, totalSize);
     fileContents["data-model.md"] = loadFileContent(paths.DATA_MODEL, totalSize);
+    fileContents["research.md"] = loadFileContent(paths.RESEARCH, totalSize);
 
     // Load checklist files (if checklists/ directory exists)
     const checklistsDir = join(paths.FEATURE_DIR, "checklists");

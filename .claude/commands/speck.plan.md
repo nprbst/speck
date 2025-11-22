@@ -29,10 +29,24 @@ Parse command-line flags from user input:
 1. **Setup**: Extract prerequisite context from the auto-injected comment in the prompt:
    ```
    <!-- SPECK_PREREQ_CONTEXT
-   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["spec.md"]}
+   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["spec.md"],"FILE_CONTENTS":{"spec.md":"...","constitution.md":"..."}}
    -->
    ```
-   Use FEATURE_DIR to locate spec.md, plan.md template, and other artifacts.
+   Use FEATURE_DIR and FILE_CONTENTS from this JSON.
+
+   **FILE_CONTENTS field**: Contains pre-loaded file contents. Possible values:
+   - Full file content (string): File was successfully pre-loaded
+   - `"NOT_FOUND"`: File does not exist
+   - `"TOO_LARGE"`: File exceeds size limits (use Read tool instead)
+
+   Pre-loaded files: `spec.md`, `constitution.md`
+
+   **Check FILE_CONTENTS from prerequisite context first**:
+   - For spec.md, constitution.md:
+     - If FILE_CONTENTS[filename] exists and is NOT `"NOT_FOUND"` or `"TOO_LARGE"`: Use the pre-loaded content
+     - If FILE_CONTENTS[filename] is `"TOO_LARGE"`: Use Read tool to load the file
+     - If FILE_CONTENTS[filename] is `"NOT_FOUND"`: Skip this file (error if required)
+     - If FILE_CONTENTS field is not present: Use Read tool (backwards compatibility)
 
    **Fallback**: If the comment is not present (backwards compatibility), run:
    ```bash
@@ -40,7 +54,10 @@ Parse command-line flags from user input:
    ```
    Parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH.
 
-2. **Load context**: Read spec.md from FEATURE_DIR and .speck/memory/constitution.md. Load plan.md template (already copied to FEATURE_DIR).
+2. **Load context**:
+   - Read spec.md from FILE_CONTENTS (step 1) or using Read tool if needed
+   - Read constitution.md from FILE_CONTENTS (step 1) or using Read tool if needed
+   - Load plan.md template (always use Read - not pre-loaded)
 
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
@@ -110,7 +127,7 @@ Parse command-line flags from user input:
    - Output OpenAPI/GraphQL schema to `/contracts/`
 
 3. **Agent context update**:
-   - Run `bun run $PLUGIN_ROOT/scripts/update-agent-context.ts claude`
+   - Run `speck-update-agent-context claude`
    - These scripts detect which AI agent is in use
    - Update the appropriate agent-specific context file
    - Add only new technology from current plan

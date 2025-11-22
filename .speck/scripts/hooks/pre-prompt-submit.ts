@@ -93,7 +93,14 @@ function getCheckOptions(prompt: string): {
   const skipFeatureCheckCommands = ["specify"];
 
   // Commands that should pre-load file contents (high/medium priority files)
-  const includeFileContentsCommands = ["implement"];
+  const includeFileContentsCommands = [
+    "implement",  // existing: reads tasks, plan, constitution, data-model, checklists
+    "analyze",    // new: reads spec, plan, tasks, constitution
+    "plan",       // new: reads spec, constitution
+    "tasks",      // new: reads plan, spec, data-model, research
+    "checklist",  // new: reads spec, plan, tasks
+    "clarify",    // new: reads spec
+  ];
 
   // Commands that should pre-determine workflow mode
   const includeWorkflowModeCommands = ["implement"];

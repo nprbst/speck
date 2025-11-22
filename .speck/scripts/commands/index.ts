@@ -40,6 +40,11 @@ const lazyLinkRepoMain = async (): Promise<MainFunction> => {
   return module.main;
 };
 
+const lazyUpdateAgentContextMain = async (): Promise<MainFunction> => {
+  const module = await import("../update-agent-context");
+  return module.main;
+};
+
 /**
  * Command registry mapping command names to handlers
  *
@@ -94,6 +99,11 @@ export const registry: CommandRegistry = {
   "link-repo": {
     lazyMain: lazyLinkRepoMain,
     description: "Link repository to multi-repo speck root",
+    version: "1.0.0",
+  },
+  "update-agent-context": {
+    lazyMain: lazyUpdateAgentContextMain,
+    description: "Update agent-specific context files with technology stack",
     version: "1.0.0",
   },
 };

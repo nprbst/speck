@@ -25,10 +25,21 @@ Execution steps:
 1. Extract prerequisite context from the auto-injected comment in the prompt:
    ```
    <!-- SPECK_PREREQ_CONTEXT
-   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["spec.md"]}
+   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["spec.md"],"FILE_CONTENTS":{"spec.md":"..."}}
    -->
    ```
-   Use FEATURE_DIR to locate spec.md and other artifacts.
+   Use FEATURE_DIR and FILE_CONTENTS from this JSON.
+
+   **FILE_CONTENTS field**: Contains pre-loaded spec.md. Possible values:
+   - Full file content (string): File was successfully pre-loaded
+   - `"NOT_FOUND"`: File does not exist (abort - run /speck.specify first)
+   - `"TOO_LARGE"`: File exceeds size limits (use Read tool instead)
+
+   **Check FILE_CONTENTS from prerequisite context first**:
+   - If FILE_CONTENTS["spec.md"] exists and is NOT `"NOT_FOUND"` or `"TOO_LARGE"`: Use the pre-loaded content
+   - If FILE_CONTENTS["spec.md"] is `"TOO_LARGE"`: Use Read tool to load the file
+   - If FILE_CONTENTS["spec.md"] is `"NOT_FOUND"`: Abort with error (run /speck.specify first)
+   - If FILE_CONTENTS field is not present: Use Read tool (backwards compatibility)
 
    **Fallback**: If the comment is not present (backwards compatibility), run:
    ```bash
@@ -37,7 +48,11 @@ Execution steps:
    Parse minimal JSON payload fields: FEATURE_DIR, FEATURE_SPEC.
    If JSON parsing fails, abort and instruct user to re-run `/speck.specify` or verify feature branch environment.
 
-2. Load the current spec file. Perform a structured ambiguity & coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
+2. Load the current spec file:
+   - Use pre-loaded content from FILE_CONTENTS["spec.md"] (step 1) if available
+   - Otherwise use Read tool to load FEATURE_SPEC path
+
+   Perform a structured ambiguity & coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
 
    Functional Scope & Behavior:
    - Core user goals & success criteria
