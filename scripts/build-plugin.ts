@@ -322,12 +322,25 @@ async function copyPluginFiles(): Promise<FileCounts> {
     }
   }
 
-  // T014: Copy agents
+  // T014: Copy agents (excluding transform agents)
   if (existsSync(config.agentsSourceDir)) {
     const agentsDestDir = join(config.outputDir, 'agents');
-    await copyDir(config.agentsSourceDir, agentsDestDir);
-    const files = await readdir(agentsDestDir);
-    counts.agents = files.filter(f => f.endsWith('.md')).length;
+    await ensureDir(agentsDestDir);
+
+    const sourceFiles = await readdir(config.agentsSourceDir);
+    const mdFiles = sourceFiles.filter(f => f.endsWith('.md'));
+
+    for (const file of mdFiles) {
+      // Exclude transform agents (development-only tools)
+      if (file.includes('transform-')) {
+        continue;
+      }
+
+      const sourcePath = join(config.agentsSourceDir, file);
+      const destPath = join(agentsDestDir, file);
+      await copyFile(sourcePath, destPath);
+      counts.agents++;
+    }
   }
 
   // T014a: Copy skills (directory-based structure)
