@@ -35,13 +35,16 @@ Object.keys(categories).forEach(category => {
 // Category display names
 const categoryNames: Record<string, string> = {
   'getting-started': 'Getting Started',
-  'commands': 'Commands',
-  'concepts': 'Concepts',
+  'core-concepts': 'Core Concepts',
+  'advanced-features': 'Advanced Features',
+  'architecture': 'Architecture',
   'examples': 'Examples',
+  'commands': 'Commands',
+  'reference': 'Reference',
 };
 
 // Category order
-const categoryOrder = ['getting-started', 'commands', 'concepts', 'examples'];
+const categoryOrder = ['getting-started', 'core-concepts', 'advanced-features', 'architecture', 'examples', 'commands', 'reference'];
 ---
 
 <aside class="sidebar" transition:persist>

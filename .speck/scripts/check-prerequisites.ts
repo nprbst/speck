@@ -47,6 +47,7 @@ interface CheckPrerequisitesOptions {
   includeTasks: boolean;
   pathsOnly: boolean;
   skipFeatureCheck: boolean;
+  skipPlanCheck: boolean;
   help: boolean;
   includeFileContents: boolean;
   includeWorkflowMode: boolean;
@@ -87,6 +88,7 @@ function parseArgs(args: string[]): CheckPrerequisitesOptions {
     includeTasks: args.includes("--include-tasks"),
     pathsOnly: args.includes("--paths-only"),
     skipFeatureCheck: args.includes("--skip-feature-check"),
+    skipPlanCheck: args.includes("--skip-plan-check"),
     help: args.includes("--help") || args.includes("-h"),
     includeFileContents: args.includes("--include-file-contents"),
     includeWorkflowMode: args.includes("--include-workflow-mode"),
@@ -108,6 +110,7 @@ OPTIONS:
   --include-tasks          Include tasks.md in AVAILABLE_DOCS list
   --paths-only             Only output path variables (no prerequisite validation)
   --skip-feature-check     Skip feature directory and plan.md validation (for /speck.specify)
+  --skip-plan-check        Skip plan.md validation but check feature directory (for /speck.plan)
   --validate-code-quality  Validate TypeScript typecheck and ESLint (Constitution Principle IX)
   --include-file-contents  Include file contents in JSON output
   --include-workflow-mode  Include workflow mode in JSON output
@@ -164,6 +167,7 @@ function checkForUnknownOptions(args: string[]): void {
     "--include-tasks",
     "--paths-only",
     "--skip-feature-check",
+    "--skip-plan-check",
     "--help",
     "-h",
     "--include-file-contents",
@@ -338,20 +342,21 @@ export async function main(args: string[]): Promise<number> {
   // Validate required directories and files
   if (!existsSync(paths.FEATURE_DIR)) {
     console.error(`ERROR: Feature directory not found: ${paths.FEATURE_DIR}`);
-    console.error("Run /speckit.specify first to create the feature structure.");
+    console.error("Run /speck.specify first to create the feature structure.");
     return ExitCode.USER_ERROR;
   }
 
-  if (!existsSync(paths.IMPL_PLAN)) {
+  // Check plan.md unless --skip-plan-check is set
+  if (!options.skipPlanCheck && !existsSync(paths.IMPL_PLAN)) {
     console.error(`ERROR: plan.md not found in ${paths.FEATURE_DIR}`);
-    console.error("Run /speckit.plan first to create the implementation plan.");
+    console.error("Run /speck.plan first to create the implementation plan.");
     return ExitCode.USER_ERROR;
   }
 
   // Check for tasks.md if required
   if (options.requireTasks && !existsSync(paths.TASKS)) {
     console.error(`ERROR: tasks.md not found in ${paths.FEATURE_DIR}`);
-    console.error("Run /speckit.tasks first to create the task list.");
+    console.error("Run /speck.tasks first to create the task list.");
     return ExitCode.USER_ERROR;
   }
 

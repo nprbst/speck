@@ -90,6 +90,12 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
       )}
     </main>
   </div>
+
+  <footer class="docs-footer">
+    <div class="container footer-content">
+      <p>&copy; {new Date().getFullYear()} Speck. MIT License. Built on <a href="https://github.com/github/spec-kit" target="_blank" rel="noopener noreferrer">GitHub's spec-kit</a>.</p>
+    </div>
+  </footer>
 </BaseLayout>
 
 <style>
@@ -301,6 +307,35 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
 
   .toc-depth-3 {
     padding-left: 1rem;
+  }
+
+  /* Footer */
+  .docs-footer {
+    background: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-lg) 0;
+    margin-top: var(--space-2xl);
+  }
+
+  .footer-content {
+    text-align: center;
+  }
+
+  .footer-content p {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+
+  .footer-content a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+  }
+
+  .footer-content a:hover {
+    border-bottom-color: var(--color-accent);
   }
 
   /* Mobile responsive */

@@ -15,8 +15,11 @@ const docsCollection = defineCollection({
       'commands',
       'concepts',
       'examples',
+      'advanced-features',
+      'architecture',
+      'reference',
     ], {
-      errorMap: () => ({ message: 'Category must be one of: getting-started, commands, concepts, examples' }),
+      errorMap: () => ({ message: 'Category must be one of: getting-started, commands, concepts, examples, advanced-features, architecture, reference' }),
     }),
     order: z.number().int().positive({ message: 'Order must be a positive integer' }),
     lastUpdated: z.coerce.date().optional(),

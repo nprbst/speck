@@ -76,6 +76,7 @@ function getCheckOptions(prompt: string): {
   requireTasks: boolean;
   includeTasks: boolean;
   skipFeatureCheck: boolean;
+  skipPlanCheck: boolean;
   includeFileContents: boolean;
   includeWorkflowMode: boolean;
 } {
@@ -90,7 +91,10 @@ function getCheckOptions(prompt: string): {
   const includeTasksCommands = ["implement", "analyze"];
 
   // Commands that should skip feature check (e.g., /speck.specify runs before feature exists)
-  const skipFeatureCheckCommands = ["specify"];
+  const skipFeatureCheckCommands = ["specify", "constitution", "env", "link"];
+
+  // Commands that should skip plan.md check (e.g., /speck.plan creates plan.md)
+  const skipPlanCheckCommands = ["plan", "constitution", "env", "link"];
 
   // Commands that should pre-load file contents (high/medium priority files)
   const includeFileContentsCommands = [
@@ -109,6 +113,7 @@ function getCheckOptions(prompt: string): {
     requireTasks: requireTasksCommands.includes(command),
     includeTasks: includeTasksCommands.includes(command),
     skipFeatureCheck: skipFeatureCheckCommands.includes(command),
+    skipPlanCheck: skipPlanCheckCommands.includes(command),
     includeFileContents: includeFileContentsCommands.includes(command),
     includeWorkflowMode: includeWorkflowModeCommands.includes(command),
   };

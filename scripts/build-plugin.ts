@@ -175,11 +175,28 @@ async function generatePluginManifest(): Promise<void> {
       'development-tools',
     ],
     hooks: {
-      PreToolUse: {
-        Bash: {
-          command: 'bun dist/speck-hook.js --hook',
+      PreToolUse: [
+        {
+          matcher: 'Bash',
+          hooks: [
+            {
+              type: 'command',
+              command: 'bun ${CLAUDE_PLUGIN_ROOT}/dist/speck-hook.js --hook',
+            },
+          ],
         },
-      },
+      ],
+      UserPromptSubmit: [
+        {
+          matcher: '.*',
+          hooks: [
+            {
+              type: 'command',
+              command: 'bun ${CLAUDE_PLUGIN_ROOT}/dist/pre-prompt-submit-hook.js',
+            },
+          ],
+        },
+      ],
     },
   };
 
@@ -305,12 +322,25 @@ async function copyPluginFiles(): Promise<FileCounts> {
     }
   }
 
-  // T014: Copy agents
+  // T014: Copy agents (excluding transform agents)
   if (existsSync(config.agentsSourceDir)) {
     const agentsDestDir = join(config.outputDir, 'agents');
-    await copyDir(config.agentsSourceDir, agentsDestDir);
-    const files = await readdir(agentsDestDir);
-    counts.agents = files.filter(f => f.endsWith('.md')).length;
+    await ensureDir(agentsDestDir);
+
+    const sourceFiles = await readdir(config.agentsSourceDir);
+    const mdFiles = sourceFiles.filter(f => f.endsWith('.md'));
+
+    for (const file of mdFiles) {
+      // Exclude transform agents (development-only tools)
+      if (file.includes('transform-')) {
+        continue;
+      }
+
+      const sourcePath = join(config.agentsSourceDir, file);
+      const destPath = join(agentsDestDir, file);
+      await copyFile(sourcePath, destPath);
+      counts.agents++;
+    }
   }
 
   // T014a: Copy skills (directory-based structure)
@@ -380,7 +410,8 @@ async function copyPluginFiles(): Promise<FileCounts> {
       await copyDir(contractsPath, join(scriptsDestDir, 'contracts'));
     }
 
-    // Copy dist/ directory containing the bundled hook
+    // Copy dist/ directory containing the bundled hooks
+    // (speck-hook.js and pre-prompt-submit-hook.js)
     const distPath = join(config.scriptsSourceDir, '../dist');
     if (existsSync(distPath)) {
       await copyDir(distPath, join(config.outputDir, 'dist'));

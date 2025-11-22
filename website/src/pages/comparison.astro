@@ -9,55 +9,69 @@ import CodeBlock from '@/components/CodeBlock.astro';
 
 const comparisonData = {
   title: "Speck vs Spec-Kit",
-  intro: "Both tools help you write better feature specifications for Claude Code, but they take different philosophical approaches. Choose the one that fits your workflow.",
+  intro: "Speck builds on GitHub's excellent spec-kit project, extending it specifically for Claude Code users. Both tools share the same specification-driven methodology, but serve different use cases.",
   comparisonTable: [
     {
+      feature: "AI Assistant Compatibility",
+      speck: "Claude Code only",
+      specKit: "Multi-agent: Claude, Copilot, Cursor, Cody, any LLM",
+    },
+    {
       feature: "Runtime Environment",
-      speck: "Bun 1.0+ (TypeScript native, fast startup)",
-      specKit: "Bash (universal compatibility, minimal dependencies)",
+      speck: "Bun 1.0+ (requires installation)",
+      specKit: "Bash (zero dependencies, universal)",
+    },
+    {
+      feature: "Installation",
+      speck: "One command via Claude Code marketplace",
+      specKit: "Clone repo (simpler, no runtime needed)",
     },
     {
       feature: "Command Style",
       speck: "Claude-native slash commands (/speck.specify)",
-      specKit: "Generic templating scripts",
-    },
-    {
-      feature: "Workflow Philosophy",
-      speck: "Opinionated (specify → clarify → plan → tasks → implement)",
-      specKit: "Flexible (adapt to your process)",
-    },
-    {
-      feature: "TypeScript Support",
-      speck: "First-class (Bun runtime)",
-      specKit: "Via separate tooling",
-    },
-    {
-      feature: "Build Performance",
-      speck: "Fast (Bun's native TypeScript execution)",
-      specKit: "Lightweight (bash scripts)",
-    },
-    {
-      feature: "Customization",
-      speck: "Opinionated templates with extension points",
-      specKit: "Full flexibility, customize everything",
+      specKit: "Bash scripts (works in any terminal)",
     },
     {
       feature: "Learning Curve",
-      speck: "Moderate (opinionated path reduces decisions)",
-      specKit: "Steep (maximum flexibility requires understanding)",
+      speck: "Moderate (more concepts: multi-repo, stacked PRs, hooks)",
+      specKit: "Gentler (simpler, focused on core workflow)",
+    },
+    {
+      feature: "Multi-Repo Support",
+      speck: "Built-in (symlink detection, shared specs)",
+      specKit: "Manual coordination",
+    },
+    {
+      feature: "Stacked PR Workflows",
+      speck: "Built-in (/speck.branch commands)",
+      specKit: "Manual git workflows",
+    },
+    {
+      feature: "Performance",
+      speck: "Sub-100ms hook-based execution",
+      specKit: "Lightweight bash scripts",
+    },
+    {
+      feature: "Platform Support",
+      speck: "Windows, macOS, Linux (requires Bun)",
+      specKit: "Any platform with bash (more universal)",
     },
   ],
   whenToUseSpeck: [
-    "You use Claude Code daily and want optimized integration",
-    "You prefer fast, TypeScript-powered builds without configuration",
-    "You want an opinionated workflow that guides best practices",
-    "You're building a new project and can choose modern tooling",
+    "You use Claude Code daily and want tight integration",
+    "You need multi-repo support for microservices or monorepos",
+    "You want stacked PR workflows for faster code review",
+    "You value sub-100ms command execution performance",
+    "You prefer one-command installation via marketplace over cloning repos",
+    "You want automatic prerequisite checking via hook-based architecture",
   ],
   whenToUseSpecKit: [
-    "You need language-agnostic specifications",
-    "You work in constrained environments without Bun",
-    "You want maximum customization freedom",
-    "You have an existing workflow you don't want to change",
+    "You use any AI assistant (Copilot, Cursor, Cody, etc.) - spec-kit is multi-agent compatible",
+    "You want the easier, gentler learning curve with simpler bash scripts",
+    "You prefer zero dependencies (just bash and git, no runtime installation)",
+    "You work in constrained environments or prefer lightweight tooling",
+    "You're not using Claude Code - spec-kit is the better choice",
+    "You want community-driven development backed by GitHub",
   ],
   migrationGuide: {
     title: "Migrating from Spec-Kit to Speck",

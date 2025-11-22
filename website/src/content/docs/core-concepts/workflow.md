@@ -1,10 +1,13 @@
 ---
 title: "Three-Phase Workflow"
 description: "Understanding Speck's structured specify → plan → implement cycle"
-category: "concepts"
-order: 1
-lastUpdated: 2025-11-17
+category: concepts
+audience: [new-users, existing-users, all]
+prerequisites: []
 tags: ["workflow", "concepts", "methodology", "skill"]
+lastUpdated: 2025-11-22
+relatedPages: ["/docs/getting-started/quick-start", "/docs/examples/first-feature", "/docs/advanced-features/multi-repo-support"]
+order: 1
 ---
 
 # Three-Phase Workflow
@@ -67,6 +70,8 @@ Execute generation and implementation tasks:
 ```
 
 ### The Three Phases
+
+The three-phase workflow (specify, plan, implement), inherited from [spec-kit](https://github.com/github/spec-kit), forms the foundation of Speck's structured development approach:
 
 1. **Specify**: Define *what* you're building (technology-agnostic, stakeholder-friendly)
 2. **Plan**: Design *how* you'll build it (technical stack, architecture, contracts)
@@ -431,6 +436,16 @@ For each feature, define tests first:
 ```
 
 ---
+
+## What's Next
+
+### Advanced Workflows
+
+Ready to scale beyond single-repo projects or handle large features?
+
+- **Multi-Repo Projects**: Share specifications across multiple repositories with `/speck.link` - [Learn more](/docs/advanced-features/multi-repo-support)
+- **Stacked PR Workflows**: Break large features into reviewable chunks with `/speck.branch` - [Learn more](/docs/advanced-features/stacked-prs)
+- **Monorepo Support**: Manage workspace projects with shared specs - [Learn more](/docs/advanced-features/monorepos)
 
 ## See Also
 

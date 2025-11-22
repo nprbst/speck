@@ -313,7 +313,7 @@ The skill should respond with information about Speck's three-phase workflow.
 Once installation is complete:
 
 1. **Read the Quick Start**: Follow the [Quick Start Guide](/docs/getting-started/quick-start) for a hands-on tutorial
-2. **Learn the workflow**: Understand the [Three-Phase Workflow](/docs/concepts/workflow)
+2. **Learn the workflow**: Understand the [Three-Phase Workflow](/docs/core-concepts/workflow)
 3. **Use the skill**: Ask questions naturally or use slash commands - [Learn when to use each](/docs/commands/reference#speck-skill)
 4. **Try an example**: Build your [First Feature](/docs/examples/first-feature) with Speck
 

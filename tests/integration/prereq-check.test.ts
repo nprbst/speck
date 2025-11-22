@@ -209,8 +209,27 @@ describe("PrePromptSubmit Hook", () => {
       expect(command).toBe("specify");
 
       // specify should skip feature check
-      const skipFeatureCheckCommands = ["specify"];
+      const skipFeatureCheckCommands = ["specify", "constitution", "env", "link"];
       expect(skipFeatureCheckCommands.includes(command)).toBe(true);
+    }
+  });
+
+  it("should allow constitution command to run before specify", () => {
+    const prompts = ["/speck.constitution", "/speck:constitution"];
+
+    for (const prompt of prompts) {
+      const match = prompt.match(/^\/speck[.:](\w+)/);
+      const command = match ? match[1]! : "";
+
+      expect(command).toBe("constitution");
+
+      // constitution should skip feature check (can run before /speck.specify)
+      const skipFeatureCheckCommands = ["specify", "constitution", "env", "link"];
+      expect(skipFeatureCheckCommands.includes(command)).toBe(true);
+
+      // constitution should also skip plan check
+      const skipPlanCheckCommands = ["plan", "constitution", "env", "link"];
+      expect(skipPlanCheckCommands.includes(command)).toBe(true);
     }
   });
 

@@ -3,26 +3,44 @@
 Auto-generated from all feature plans. Last updated: 2025-11-15
 
 ## Active Technologies
-- File-based (markdown specs, JSON tracking files in `.speck/` directory) (001-speck-core-project)
-- TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary) + Bun runtime, Git 2.30+, Claude Code (slash command + agent support) (001-speck-core-project)
-- TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary - out of scope after clarification) + Bun runtime, Bun Shell API, GitHub REST API (for fetching releases), Claude Code slash command and agent system (001-speck-core-project)
-- File-based (markdown specs, JSON tracking files in `.speck/` and `upstream/` directories) (001-speck-core-project)
-- TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary) (001-speck-core-project)
-- Claude Code plugin system 2.0+: .claude-plugin/plugin.json manifest, .claude-plugin/marketplace.json listing, Markdown commands/agents with YAML frontmatter, JSON schema validation (002-claude-plugin-packaging)
-- Build tooling: Bun shell API for file operations, JSON/YAML parsing, package size validation (<5MB), semantic versioning from package.json (002-claude-plugin-packaging)
-- Markdown with YAML frontmatter (Claude Code skill format) + Claude Code plugin system 2.0+, existing Speck templates in `.specify/templates/` (005-speck-skill)
-- File-based, reads from `specs/NUM-short-name/` directories and `.specify/templates/` (005-speck-skill)
-- Astro 4.x (static site generator), Cloudflare Pages (hosting), Cloudflare Images (image optimization), Shiki or Prism (syntax highlighting), Playwright (visual regression testing), Axe-core (accessibility testing) (004-public-website)
-- TypeScript 5.7+ (Astro components), Markdown (content) + Astro 5.15+, Shiki 3.15+ (syntax highlighting), Playwright (testing), Axe-core (accessibility) (006-website-content-update)
-- Static site (no database), content files in `website/src/content/docs/` (006-website-content-update)
-- TypeScript 5.3+ with Bun 1.0+ runtime (primary) + Bun Shell API (filesystem operations, symlinks), Git 2.30+, existing Speck path resolution utilities (007-multi-repo-monorepo-support)
-- File-based (symlinks for multi-repo detection, markdown specs at speck root or repo root) (007-multi-repo-monorepo-support)
-- TypeScript 5.3+ + Bun 1.0+ runtime, Bun Shell API, Git 2.30+, Claude Code plugin system 2.0+ (008-stacked-pr-support)
-- File-based (JSON for `.speck/branches.json`, markdown for specs) (008-stacked-pr-support)
-- TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (filesystem, git operations), Git 2.30+, GitHub CLI (optional for PR creation) (009-multi-repo-stacked)
-- File-based JSON (`.speck/branches.json` per git repository), symlink-based multi-repo detection (009-multi-repo-stacked)
-- TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI framework), Bun Shell API (subprocess/stdio), Claude Code Plugin System 2.0+ (hooks) (010-virtual-command-pattern)
-- File-based (plugin.json for hook configuration, command registry as TypeScript module) (010-virtual-command-pattern)
+
+### Core Runtime & Languages
+- TypeScript 5.3+ with strict type checking
+- Bun 1.0+ runtime (primary)
+- Git 2.30+
+
+### Core Architecture
+- File-based storage: Markdown specs, JSON tracking files in `.speck/` and `upstream/` directories
+- Symlink-based multi-repo detection (007)
+- Virtual command pattern with hook-based architecture (010)
+
+### Claude Code Integration
+- Plugin system 2.0+: `.claude-plugin/plugin.json` manifest, marketplace.json listing
+- Markdown commands/agents/skills with YAML frontmatter
+- Hook integration for prerequisite checks and context pre-loading (010)
+- Commander.js CLI framework for dual-mode command execution (010)
+
+### Build & Development Tools
+- Bun Shell API (filesystem operations, subprocess/stdio, symlinks)
+- JSON/YAML parsing
+- GitHub REST API (upstream release fetching)
+- Handlebars templates (`.specify/templates/`)
+
+### Website Stack (004, 006, 011)
+- Astro 5.15+ (static site generator)
+- Cloudflare Pages (hosting)
+- Shiki 3.15+ (syntax highlighting)
+- Markdown content files in `website/src/content/docs/`
+
+### Testing & Quality
+- Playwright (visual regression testing)
+- Axe-core (accessibility testing)
+- TypeScript type checking + ESLint validation
+
+### Multi-Repo & Branching (007, 008, 009)
+- `.speck/branches.json` per repository (stacked PR tracking)
+- Per-repo constitutions with shared specs
+- GitHub CLI (optional, for PR automation)
 
 ## Project Structure
 
@@ -101,9 +119,11 @@ bun test                  # Run all tests (unit, visual, a11y)
 - **Parent spec**: The root specification directory referenced by `parentSpecId` field
 
 ## Recent Changes
-- 010-virtual-command-pattern: Added TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI framework), Bun Shell API (subprocess/stdio), Claude Code Plugin System 2.0+ (hooks)
-- 009-multi-repo-stacked: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (filesystem, git operations), Git 2.30+, GitHub CLI (optional for PR creation)
-- 008-stacked-pr-support: Added TypeScript 5.3+ + Bun 1.0+ runtime, Bun Shell API, Git 2.30+, Claude Code plugin system 2.0+
+- 011-website-feature-update: Website content planning for multi-repo, stacked PRs, and performance features
+- 010-virtual-command-pattern: Virtual commands with hook-based architecture for sub-100ms execution
+- 009-multi-repo-stacked: Multi-repo stacked PR support with independent branch stacks per child repo
+- 008-stacked-pr-support: Stacked PR workflows with branch dependency tracking
+- 007-multi-repo-monorepo-support: Symlink-based multi-repo detection with shared specs
 
 
 <!-- MANUAL ADDITIONS START -->
