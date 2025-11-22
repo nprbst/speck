@@ -104,10 +104,11 @@ describe("Prerequisite Check Runner", () => {
 
     const context = formatPrereqContext(mockResult);
 
-    expect(context).toContain("**Feature Directory**");
-    expect(context).toContain("/path/to/specs/010-feature");
-    expect(context).toContain("**Repository Mode**: single-repo");
-    expect(context).toContain("**Available Docs**: research.md, data-model.md, contracts/");
+    // New format uses JSON comment
+    expect(context).toContain("<!-- SPECK_PREREQ_CONTEXT");
+    expect(context).toContain("\"MODE\":\"single-repo\"");
+    expect(context).toContain("\"FEATURE_DIR\":\"/path/to/specs/010-feature\"");
+    expect(context).toContain("\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\"]");
   });
 
   it("should format cached result indicator", () => {
@@ -123,7 +124,9 @@ describe("Prerequisite Check Runner", () => {
     };
 
     const context = formatPrereqContext(mockResult);
-    expect(context).toContain("*(cached result)*");
+    // JSON format doesn't show cached indicator (it's transparent to consumers)
+    expect(context).toContain("<!-- SPECK_PREREQ_CONTEXT");
+    expect(context).toContain("\"MODE\":\"single-repo\"");
   });
 
   it("should return empty string for failed check", () => {
@@ -236,7 +239,7 @@ describe("PrePromptSubmit Hook", () => {
 
       expect(hookOutput.hookSpecificOutput.hookEventName).toBe("PrePromptSubmit");
       expect(hookOutput.hookSpecificOutput.updatedPrompt).toContain("/speck.tasks");
-      expect(hookOutput.hookSpecificOutput.updatedPrompt).toContain("Prerequisites Context");
+      expect(hookOutput.hookSpecificOutput.updatedPrompt).toContain("<!-- SPECK_PREREQ_CONTEXT");
     } else {
       const errorMessage = formatPrereqError(result.error || "Unknown error");
 
