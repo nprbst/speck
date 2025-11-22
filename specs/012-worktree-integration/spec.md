@@ -17,6 +17,11 @@
 - Q: Should the system support configurable branch name prefixes (e.g., `specs/` before `NNN-short-name`) for teams that want namespace organization? → A: Yes, support configurable standard branch prefix for spec branches (e.g., `specs/NNN-short-name`), opt-in configuration that breaks backwards compatibility with spec-kit
 - Q: When a worktree is manually deleted but the branch still exists (edge case from line 80), how should the system handle this inconsistency? → A: Auto-reconcile - Detect and clean up stale worktree references automatically, notify user
 - Q: When untracked files exist in the parent repository that match copy rules (e.g., `.env` files), should these files be copied to the new worktree? → A: Yes, copy untracked files
+- Q: How should worktree directory names be calculated based on repository layout? → A: Two modes: (1) If repo directory name matches repo name, prefix worktree with `<repo-name>-<slugified-branch-name>`. (2) If repo directory name matches branch name (e.g., `main`, `master`), use only `<slugified-branch-name>`. In both cases, worktree directories are peers of the main repository directory.
+- Q: Should worktree directories be added to `.gitignore` since they're created outside the repository? → A: Don't add to `.gitignore` - Git automatically handles worktree exclusion
+- Q: Should symlinks created in worktrees use absolute or relative paths? → A: Relative paths - Symlinks use relative paths like `../main/node_modules` for portability
+- Q: When Git version is less than 2.5 (no worktree support), how should the system respond? → A: Fail fast - Abort with error message directing user to install Git 2.5+
+- Q: How should worktree cleanup/removal be handled when users are done with a feature branch? → A: Clean removal with confirmation - Provide command to remove worktree with user confirmation prompt (see existing remove-worktree script)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -30,9 +35,10 @@ As a developer, I want to work on multiple features simultaneously without switc
 
 **Acceptance Scenarios**:
 
-1. **Given** I have worktree integration enabled, **When** I create a new spec branch `002-user-auth`, **Then** a worktree is created at `.speck/worktrees/002-user-auth` with the `002-user-auth` branch checked out
-2. **Given** I have worktree integration disabled, **When** I create a new spec branch `002-user-auth`, **Then** no worktree is created and the branch is created in the main repository
-3. **Given** a worktree already exists for branch `002-user-auth`, **When** I attempt to create the same spec branch again, **Then** the system detects the existing worktree and either reuses it or reports an error
+1. **Given** I have worktree integration enabled and my repo directory matches the repo name, **When** I create a new spec branch `002-user-auth`, **Then** a worktree is created as a peer directory named `<repo-name>-002-user-auth` with the `002-user-auth` branch checked out
+2. **Given** I have worktree integration enabled and my repo directory matches the branch name (e.g., `main`), **When** I create a new spec branch `002-user-auth`, **Then** a worktree is created as a peer directory named `002-user-auth` with the `002-user-auth` branch checked out
+3. **Given** I have worktree integration disabled, **When** I create a new spec branch `002-user-auth`, **Then** no worktree is created and the branch is created in the main repository
+4. **Given** a worktree already exists for the intended location, **When** I attempt to create a spec branch, **Then** the system detects the existing worktree and aborts with an error (unless `--reuse-worktree` flag is provided)
 
 ---
 
@@ -86,13 +92,14 @@ As a developer, I want to configure which files and directories should be copied
 
 ### Edge Cases
 
-- What happens when the worktree creation fails due to insufficient disk space?
+- **Insufficient disk space**: When worktree creation fails due to insufficient disk space, abort with error message indicating required space and available space, suggest cleanup options
 - **Existing worktree collision**: When a directory already exists at the intended worktree location, abort with error by default. Support `--reuse-worktree` flag to skip recreation and reuse the existing worktree without modification.
-- What happens when the IDE launch fails (e.g., IDE not installed, permission denied)?
+- **IDE launch failure**: When IDE launch fails (e.g., IDE not installed, permission denied), display error with troubleshooting steps (verify IDE installation path, check permissions), worktree remains usable for manual access
 - **Dependency installation failure**: When dependency installation fails (network error, incompatible versions, etc.), abort IDE launch and display error message with troubleshooting steps. Do not open a partially-configured worktree.
 - **Stale worktree references**: When a worktree is manually deleted but the branch still exists, automatically detect and clean up stale references (via `git worktree prune`), notify user of the cleanup action
-- How does the system handle worktrees when switching between multi-repo and single-repo modes?
+- **Multi-repo mode switching**: Worktree configuration applies independently per repository; switching between multi-repo and single-repo modes does not affect existing worktrees, but new worktree creation follows current mode's repository context
 - **Untracked file copying**: When untracked files in the parent repository match copy rules (e.g., `.env`, `.env.local`), copy them to the new worktree to ensure necessary local configuration is available
+- **Unsupported Git version**: When Git version is below 2.5 (no worktree support), abort with error directing user to upgrade Git before enabling worktree integration
 
 ## Requirements *(mandatory)*
 
@@ -100,22 +107,24 @@ As a developer, I want to configure which files and directories should be copied
 
 - **FR-001**: System MUST support opt-in worktree integration through a configuration setting
 - **FR-002**: System MUST create a worktree when a new spec branch is created via `/speck:specify` or `/speck:branch` (if worktree integration is enabled)
-- **FR-003**: System MUST place worktrees in a predictable location (default: `.speck/worktrees/[branch-name]`)
+- **FR-003**: System MUST calculate worktree directory names based on repository layout: (1) If repo directory name matches repo name, use `<repo-name>-<slugified-branch-name>`. (2) If repo directory name matches branch name (e.g., `main`, `master`), use `<slugified-branch-name>`. Worktree directories MUST be created as peers of the main repository directory (one level up from the main repo)
 - **FR-004**: System MUST record the user's IDE auto-launch preference in persistent configuration
 - **FR-005**: System MUST support configuring which IDE to launch (default: VSCode)
 - **FR-006**: System MUST launch the configured IDE pointing to the worktree directory (if IDE auto-launch is enabled)
 - **FR-007**: System MUST detect the project's package manager (npm, yarn, pnpm, bun) for dependency installation
 - **FR-008**: System MUST install dependencies in the worktree before opening the IDE (if dependency pre-installation is enabled), blocking IDE launch until installation completes and displaying progress to the user
 - **FR-009**: System MUST support configurable rules for which files/directories to copy to worktrees, using glob patterns or explicit relative paths; copy operations include untracked files from parent repository when they match copy rules
-- **FR-010**: System MUST support configurable rules for which files/directories to symlink in worktrees, using glob patterns or explicit relative paths
+- **FR-010**: System MUST support configurable rules for which files/directories to symlink in worktrees, using glob patterns or explicit relative paths; symlinks MUST use relative paths for portability
 - **FR-011**: System MUST provide reasonable defaults for copy/symlink rules if no configuration exists
 - **FR-012**: System MUST handle errors gracefully (worktree creation failure, IDE launch failure, dependency installation failure) with clear error messages
+- **FR-019**: System MUST detect Git version before attempting worktree creation and abort with error if Git version is below 2.5, directing user to upgrade
 - **FR-013**: System MUST detect and report conflicts when a worktree already exists at the intended location, aborting by default unless `--reuse-worktree` flag is provided
 - **FR-014**: System MUST persist worktree configuration in `.speck/config.json`
 - **FR-015**: System MUST validate worktree configuration schema and report errors for invalid configurations
 - **FR-016**: System MUST present automatically calculated branch names to the user for approval before creating the branch
 - **FR-017**: System MUST support optional configurable branch name prefix (e.g., `specs/`) for spec branches, stored in repository configuration
 - **FR-018**: System MUST automatically detect and clean up stale worktree references when worktrees are manually deleted, notifying the user of cleanup actions
+- **FR-020**: System MUST provide a worktree removal command that prompts for user confirmation before removing the worktree directory and cleaning up Git worktree references
 
 ### Key Entities
 
@@ -136,7 +145,7 @@ As a developer, I want to configure which files and directories should be copied
 
 ## Assumptions
 
-1. **Default worktree location**: Worktrees will be created in `.speck/worktrees/` by default to keep them organized and out of the way
+1. **Worktree location**: Worktrees are created as peer directories of the main repository (one level up) with naming based on repository layout: either `<repo-name>-<slugified-branch-name>` or `<slugified-branch-name>` depending on whether the repo directory matches the repo name or branch name
 2. **Git worktree support**: Users have Git 2.5+ which introduced the `git worktree` command
 3. **Disk space**: Users have sufficient disk space for multiple worktrees (system will check and warn if space is low)
 4. **IDE detection**: VSCode is installed in standard locations (macOS: `/Applications/Visual Studio Code.app`, Windows: `%LOCALAPPDATA%\Programs\Microsoft VS Code`, Linux: `/usr/share/code` or `/usr/bin/code`)

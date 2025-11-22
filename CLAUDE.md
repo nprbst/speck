@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-11-15
 
 ## Active Technologies
+- TypeScript 5.3+ with Bun 1.0+ runtime + Zod (schema validation), Git 2.30+ CLI, Bun Shell API (012-worktree-integration)
+- File-based configuration (`.speck/config.json`), worktree metadata (`.speck/worktrees/`), Git worktrees (`.speck/worktrees/[branch-name]/`) (012-worktree-integration)
 
 ### Core Runtime & Languages
 - TypeScript 5.3+ with strict type checking
@@ -119,11 +121,9 @@ bun test                  # Run all tests (unit, visual, a11y)
 - **Parent spec**: The root specification directory referenced by `parentSpecId` field
 
 ## Recent Changes
+- 012-worktree-integration: Added TypeScript 5.3+ with Bun 1.0+ runtime + Zod (schema validation), Git 2.30+ CLI, Bun Shell API
 - 011-website-feature-update: Website content planning for multi-repo, stacked PRs, and performance features
 - 010-virtual-command-pattern: Virtual commands with hook-based architecture for sub-100ms execution
-- 009-multi-repo-stacked: Multi-repo stacked PR support with independent branch stacks per child repo
-- 008-stacked-pr-support: Stacked PR workflows with branch dependency tracking
-- 007-multi-repo-monorepo-support: Symlink-based multi-repo detection with shared specs
 
 
 <!-- MANUAL ADDITIONS START -->
