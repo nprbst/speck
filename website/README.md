@@ -149,7 +149,7 @@ bun run website:sync
 **Documentation Structure**:
 - `docs/getting-started/` - Installation, quick start
 - `docs/commands/` - Command reference
-- `docs/concepts/` - Core concepts, workflow
+- `docs/core-concepts/` - Core concepts, workflow
 - `docs/examples/` - Examples and tutorials
 
 ### Developer Documentation

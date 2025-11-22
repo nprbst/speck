@@ -557,7 +557,7 @@ Now that you've built your first feature with Speck:
 
 - **Try a more complex feature**: Add authentication, file upload, or data visualization
 - **Explore contracts**: Use TypeScript interfaces to define API boundaries
-- **Read the concepts guide**: Understand the [three-phase workflow](/docs/concepts/workflow) in depth
+- **Read the concepts guide**: Understand the [three-phase workflow](/docs/core-concepts/workflow) in depth
 - **Check the commands reference**: See all available [Speck commands](/docs/commands/reference)
 
 ### Advanced Workflows

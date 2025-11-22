@@ -515,10 +515,10 @@ For detailed help on any command:
 /speck.help [command]
 ```
 
-Or visit the [Concepts documentation](/docs/concepts/workflow) to understand the three-phase workflow.
+Or visit the [Concepts documentation](/docs/core-concepts/workflow) to understand the three-phase workflow.
 
 ## See Also
 
 - [Quick Start Guide](/docs/getting-started/quick-start) - Installation and first command
-- [Workflow Concepts](/docs/concepts/workflow) - Understanding the specify → plan → implement cycle
+- [Workflow Concepts](/docs/core-concepts/workflow) - Understanding the specify → plan → implement cycle
 - [First Feature Example](/docs/examples/first-feature) - Complete walkthrough

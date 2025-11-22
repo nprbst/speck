@@ -513,7 +513,7 @@ You've successfully completed the tutorial if:
 ## Next Steps
 
 - Add [Stacked PR support](/docs/advanced-features/stacked-prs) to break features into smaller PRs
-- Try [Monorepo workflow](/docs/examples/monorepo-workflow) as an alternative approach
+- Try [Monorepo support](/docs/advanced-features/monorepos) as an alternative approach
 - Review [Capability Matrix](/docs/reference/capability-matrix) for advanced features
 - Explore [Multi-Repo Concepts](/docs/core-concepts/multi-repo) for deeper understanding
 

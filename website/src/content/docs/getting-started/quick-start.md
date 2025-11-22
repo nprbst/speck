@@ -151,7 +151,7 @@ Ready to scale beyond single-repo projects? Speck supports:
 ## Getting Help
 
 - **Documentation**: Browse the [Commands Reference](/docs/commands/reference) for detailed command syntax
-- **Concepts**: Learn about the [Three-Phase Workflow](/docs/concepts/workflow)
+- **Concepts**: Learn about the [Three-Phase Workflow](/docs/core-concepts/workflow)
 - **Examples**: See [real-world examples](/docs/examples/first-feature)
 - **Ask the skill**: Type questions naturally in Claude Code
 - **GitHub**: Report issues at [github.com/nprbst/speck](https://github.com/nprbst/speck)
