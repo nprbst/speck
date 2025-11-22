@@ -102,4 +102,4 @@ export interface CommandRegistryEntry<TArgs = unknown> {
 /**
  * Centralized registry mapping command names to handlers
  */
-export type CommandRegistry = Record<string, CommandRegistryEntry>;
+export type CommandRegistry = Record<string, CommandRegistryEntry<any>>;

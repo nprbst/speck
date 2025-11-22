@@ -23,7 +23,7 @@ Start implementing the feature.
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
     expect(contextMatch).not.toBeNull();
 
-    const contextJson = contextMatch![1];
+    const contextJson = contextMatch![1]!;
     const context = JSON.parse(contextJson);
 
     expect(context.MODE).toBe("single-repo");
@@ -41,7 +41,7 @@ Start implementing the feature.
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     expect(context.MODE).toBe("multi-repo");
     expect(context.FEATURE_DIR).toBe("/path/to/specs/020-feature");
@@ -67,7 +67,7 @@ Start implementing the feature.
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     expect(context.AVAILABLE_DOCS).toEqual([]);
   });
@@ -101,7 +101,7 @@ This is user input.
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     expect(context.FEATURE_DIR).toMatch(/^\/.*\/specs\/010-virtual-command-pattern$/);
     expect(context.AVAILABLE_DOCS).toContain("tasks.md");
@@ -116,7 +116,7 @@ This is user input.
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     // Validate required fields exist
     expect(context).toHaveProperty("MODE");
@@ -140,7 +140,7 @@ This is user input.
 
     // Should throw when trying to parse malformed JSON
     expect(() => {
-      JSON.parse(contextMatch![1]);
+      JSON.parse(contextMatch![1]!);
     }).toThrow();
 
     // Slash command should fall back to running speck-check-prerequisites
@@ -161,7 +161,7 @@ describe("Context Injection - Slash Command Integration", () => {
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
 
     if (contextMatch) {
-      const context = JSON.parse(contextMatch[1]);
+      const context = JSON.parse(contextMatch[1]!);
 
       // Slash command can now use FEATURE_DIR and AVAILABLE_DOCS directly
       const featureDir = context.FEATURE_DIR;
@@ -188,7 +188,7 @@ describe("Context Injection - Slash Command Integration", () => {
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     // Slash command uses context to find spec.md
     const specPath = `${context.FEATURE_DIR}/spec.md`;
@@ -205,7 +205,7 @@ describe("Context Injection - Slash Command Integration", () => {
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     // Verify tasks.md is available
     expect(context.AVAILABLE_DOCS).toContain("tasks.md");
@@ -264,7 +264,7 @@ describe("Context Injection - File Contents Pre-Loading", () => {
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     // Verify TOO_LARGE status
     expect(context.FILE_CONTENTS["tasks.md"]).toBe("TOO_LARGE");
@@ -282,7 +282,7 @@ describe("Context Injection - File Contents Pre-Loading", () => {
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     // Simulate slash command checking for pre-loaded content
     const tasksContent = context.FILE_CONTENTS?.["tasks.md"];
@@ -308,7 +308,7 @@ describe("Context Injection - File Contents Pre-Loading", () => {
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     // FILE_CONTENTS field not present (backwards compatibility)
     expect(context).not.toHaveProperty("FILE_CONTENTS");
@@ -326,7 +326,7 @@ describe("Context Injection - File Contents Pre-Loading", () => {
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     const fileStatuses = context.FILE_CONTENTS;
 
@@ -351,7 +351,7 @@ describe("Context Injection - Workflow Mode Pre-Determination", () => {
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     expect(context).toHaveProperty("WORKFLOW_MODE");
     expect(context.WORKFLOW_MODE).toBe("stacked-pr");
@@ -365,7 +365,7 @@ describe("Context Injection - Workflow Mode Pre-Determination", () => {
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     expect(context.WORKFLOW_MODE).toBe("single-branch");
   });
@@ -378,7 +378,7 @@ describe("Context Injection - Workflow Mode Pre-Determination", () => {
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     // Simulate slash command using pre-determined mode
     const workflowMode = context.WORKFLOW_MODE || "single-branch";
@@ -395,7 +395,7 @@ describe("Context Injection - Workflow Mode Pre-Determination", () => {
 `;
 
     const contextMatch = mockPrompt.match(/<!-- SPECK_PREREQ_CONTEXT\n(.*?)\n-->/s);
-    const context = JSON.parse(contextMatch![1]);
+    const context = JSON.parse(contextMatch![1]!);
 
     // WORKFLOW_MODE field not present (backwards compatibility)
     expect(context).not.toHaveProperty("WORKFLOW_MODE");

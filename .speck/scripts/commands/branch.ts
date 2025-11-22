@@ -8,7 +8,7 @@
  */
 
 import { $ } from "bun";
-import type { CommandHandler, CommandContext, CommandResult } from "../lib/types";
+import type { CommandHandler } from "../lib/types";
 import path from "node:path";
 import { errorToResult } from "../lib/error-handler";
 
@@ -44,7 +44,7 @@ export function parseBranchArgs(commandString: string): BranchArgs {
 /**
  * Branch command handler - delegates to existing branch-command.ts
  */
-export const branchHandler: CommandHandler<BranchArgs> = async (args, context) => {
+export const branchHandler: CommandHandler<BranchArgs> = async (args) => {
   try {
     // Use relative path from current script location
     // This works in both development and installed plugin locations

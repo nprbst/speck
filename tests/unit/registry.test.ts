@@ -39,6 +39,7 @@ describe("Command Registry", () => {
       for (const commandName of commands) {
         const entry = registry[commandName];
         expect(entry).toBeDefined();
+        if (!entry) continue;
 
         // Must have description and version
         expect(entry.description).toBeDefined();
@@ -58,7 +59,7 @@ describe("Command Registry", () => {
     test("parseArgs is optional and has correct type when present", () => {
       for (const commandName of Object.keys(registry)) {
         const entry = registry[commandName];
-        if (entry.parseArgs) {
+        if (entry && entry.parseArgs) {
           expect(typeof entry.parseArgs).toBe("function");
         }
       }
@@ -159,7 +160,7 @@ describe("Command Registry", () => {
       const semverPattern = /^\d+\.\d+\.\d+$/;
       for (const commandName of Object.keys(registry)) {
         const entry = registry[commandName];
-        expect(entry.version).toMatch(semverPattern);
+        expect(entry?.version).toMatch(semverPattern);
       }
     });
   });
@@ -208,6 +209,7 @@ describe("Command Registry", () => {
           handler: async (args: any) => ({
             success: true,
             output: "Mock command executed",
+            errorOutput: null,
             exitCode: 0,
           }),
           description: "Example new command",
@@ -216,23 +218,23 @@ describe("Command Registry", () => {
       };
 
       expect(mockRegistry["new-command"]).toBeDefined();
-      expect(mockRegistry["new-command"].description).toBe("Example new command");
+      expect(mockRegistry["new-command"]?.description).toBe("Example new command");
     });
 
     test("new commands require only description and version", () => {
       // Minimal command entry
       const minimalRegistry: CommandRegistry = {
         minimal: {
-          handler: async () => ({ success: true, output: "", exitCode: 0 }),
+          handler: async () => ({ success: true, output: "", errorOutput: null, exitCode: 0 }),
           description: "Minimal command",
           version: "1.0.0",
         },
       };
 
       expect(minimalRegistry.minimal).toBeDefined();
-      expect(minimalRegistry.minimal.handler).toBeDefined();
-      expect(minimalRegistry.minimal.description).toBeDefined();
-      expect(minimalRegistry.minimal.version).toBeDefined();
+      expect(minimalRegistry.minimal?.handler).toBeDefined();
+      expect(minimalRegistry.minimal?.description).toBeDefined();
+      expect(minimalRegistry.minimal?.version).toBeDefined();
     });
   });
 
@@ -245,6 +247,7 @@ describe("Command Registry", () => {
       // All commands follow consistent pattern
       for (const commandName of Object.keys(registry)) {
         const entry = registry[commandName];
+        if (!entry) continue;
 
         // Every command has metadata needed for dynamic registration
         expect(entry.description).toBeDefined();

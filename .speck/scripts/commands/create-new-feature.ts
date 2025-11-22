@@ -8,7 +8,7 @@
  */
 
 import { $ } from "bun";
-import type { CommandHandler, CommandContext, CommandResult } from "../lib/types";
+import type { CommandHandler } from "../lib/types";
 import path from "node:path";
 import { errorToResult } from "../lib/error-handler";
 
@@ -36,7 +36,7 @@ export function parseCreateNewFeatureArgs(commandString: string): CreateNewFeatu
 /**
  * Create new feature command handler - delegates to existing create-new-feature script
  */
-export const createNewFeatureHandler: CommandHandler<CreateNewFeatureArgs> = async (args, context) => {
+export const createNewFeatureHandler: CommandHandler<CreateNewFeatureArgs> = async (args) => {
   try {
     // Use relative path from current script location
     const scriptPath = path.resolve(import.meta.dir, "..", "create-new-feature.ts");

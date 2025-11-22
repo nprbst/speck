@@ -38,8 +38,7 @@ export function parseCommandToArgv(commandString: string): string[] {
   let escaped = false;
 
   for (let i = 0; i < trimmed.length; i++) {
-    const char = trimmed[i];
-    const nextChar = trimmed[i + 1];
+    const char = trimmed[i]!;
 
     // Handle escape sequences
     if (escaped) {
@@ -85,7 +84,7 @@ export function parseCommandToArgv(commandString: string): string[] {
   // Strip virtual command prefix if present
   // "speck-branch" -> "branch"
   // "test-hello" -> "test-hello" (no change for test commands)
-  if (args.length > 0) {
+  if (args.length > 0 && args[0]) {
     const firstArg = args[0];
     if (firstArg.startsWith('speck-')) {
       args[0] = firstArg.substring(6); // Remove "speck-" prefix

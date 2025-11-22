@@ -41,7 +41,7 @@ export async function createGitBranch(
   // Create branch
   const result = await $`git -C ${repoRoot} branch ${name} ${base}`.quiet();
   if (result.exitCode !== 0) {
-    const stderr = await result.stderr.text();
+    const stderr = result.stderr.toString();
     throw new GitError(`Failed to create branch: ${stderr}`);
   }
 }
@@ -108,6 +108,7 @@ export async function listGitBranches(
       .filter(Boolean)
       .map(line => {
         const [name, upstream] = line.split("|");
+        if (!name) throw new GitError("Invalid branch line format");
         return {
           name: name.trim(),
           upstream: upstream?.trim() || null,
@@ -132,7 +133,7 @@ export async function checkoutBranch(
 ): Promise<void> {
   const result = await $`git -C ${repoRoot} checkout ${name}`.quiet();
   if (result.exitCode !== 0) {
-    const stderr = await result.stderr.text();
+    const stderr = result.stderr.toString();
     throw new GitError(`Failed to checkout branch '${name}': ${stderr}`);
   }
 }
@@ -231,8 +232,8 @@ export async function detectDefaultBranch(repoRoot: string): Promise<string | nu
       const output = result.stdout.toString().trim();
       // Output format: refs/remotes/origin/main
       const match = output.match(/refs\/remotes\/origin\/(.+)/);
-      if (match) {
-        const branch = match[1];
+      if (match && match[1]) {
+        const branch: string = match[1];
         defaultBranchCache.set(repoRoot, branch);
         return branch;
       }

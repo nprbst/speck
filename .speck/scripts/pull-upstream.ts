@@ -16,7 +16,7 @@
  */
 
 import { mkdirSync, existsSync } from "fs";
-import { join, dirname } from "path";
+import { join } from "path";
 import { downloadTarball, GitHubApiClientError } from "./common/github-api";
 import { addRelease, releaseExists } from "./common/json-tracker";
 import { updateSymlink } from "./common/symlink-manager";
@@ -26,7 +26,6 @@ import type { UpstreamRelease } from "./contracts/release-registry";
 import {
   ExitCode,
   formatCliError,
-  formatCliSuccess,
 } from "./contracts/cli-interface";
 import type {
   CliResult,
@@ -157,7 +156,7 @@ async function fetchReleaseMetadata(
       throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     // Resolve tag to commit SHA if target_commitish is not a valid SHA
     let commit = data.target_commitish;
@@ -179,7 +178,7 @@ async function fetchReleaseMetadata(
         throw new Error(`Failed to resolve tag ${version} to commit SHA`);
       }
 
-      const tagData = await tagResponse.json();
+      const tagData = await tagResponse.json() as any;
       commit = tagData.object.sha;
     }
 
@@ -388,7 +387,7 @@ export async function pullUpstream(
         throw new Error(`Failed to fetch release ${version}: ${releaseResponse.statusText}`);
       }
 
-      const releaseData = await releaseResponse.json();
+      const releaseData = await releaseResponse.json() as any;
 
       // Find the spec-kit-template-claude-sh artifact
       const artifactName = `spec-kit-template-claude-sh-${version}.zip`;

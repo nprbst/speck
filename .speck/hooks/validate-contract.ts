@@ -3,7 +3,6 @@
 import Ajv from 'ajv';
 import { readFileSync, existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
-import { dirname } from 'path';
 
 // Load JSON schemas
 const PR_SUGGESTION_SCHEMA = JSON.parse(
@@ -36,7 +35,6 @@ if (hookInput.tool_name !== 'Bash') {
 const command = hookInput.tool_input?.command || '';
 const exitCode = hookInput.tool_response?.exitCode ?? 0;
 const stderr = hookInput.tool_response?.stderr || '';
-const stdout = hookInput.tool_response?.stdout || '';
 
 // Ensure test-logs directory exists
 const logDir = `${hookInput.cwd}/.speck/test-logs`;

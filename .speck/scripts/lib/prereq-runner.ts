@@ -12,7 +12,7 @@
 
 import { main as checkPrerequisites } from "../check-prerequisites";
 import type { ValidationOutput } from "../check-prerequisites";
-import { getCachedResult, cacheResult, type CachedPrereqResult } from "./prereq-cache";
+import { getCachedResult, cacheResult } from "./prereq-cache";
 
 /**
  * Result of running prerequisite checks
@@ -50,7 +50,8 @@ function captureOutput(fn: () => Promise<number>): Promise<{
       const exitCode = await fn();
       resolve({ exitCode, stdout: stdout.trim(), stderr: stderr.trim() });
     } catch (error) {
-      stderr += `Error: ${error.message}\n`;
+      const err = error instanceof Error ? error : new Error(String(error));
+      stderr += `Error: ${err.message}\n`;
       resolve({ exitCode: 2, stdout: stdout.trim(), stderr: stderr.trim() });
     } finally {
       console.log = originalLog;
@@ -124,7 +125,8 @@ export async function runPrerequisiteCheck(
 
         return result;
       } catch (parseError) {
-        const error = `Failed to parse check-prerequisites output: ${parseError.message}`;
+        const err = parseError instanceof Error ? parseError : new Error(String(parseError));
+        const error = `Failed to parse check-prerequisites output: ${err.message}`;
 
         const result: PrereqCheckResult = {
           success: false,
@@ -165,7 +167,8 @@ export async function runPrerequisiteCheck(
       return result;
     }
   } catch (error) {
-    const errorMsg = `Failed to run check-prerequisites: ${error.message}`;
+    const err = error instanceof Error ? error : new Error(String(error));
+    const errorMsg = `Failed to run check-prerequisites: ${err.message}`;
 
     const result: PrereqCheckResult = {
       success: false,

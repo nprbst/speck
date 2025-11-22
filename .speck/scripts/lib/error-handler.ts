@@ -26,7 +26,6 @@ export class CommandError extends Error {
  * Writes to stderr with colored output if TTY is available
  */
 export function formatCliError(error: Error | CommandError): string {
-  const isCommandError = error instanceof CommandError;
   const message = error.message;
 
   // Check if stderr is a TTY for color support

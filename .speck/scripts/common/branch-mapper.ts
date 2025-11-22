@@ -12,7 +12,6 @@ import fs from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
-import { $ } from "bun";
 
 // ===========================
 // Type Definitions (T002)
@@ -201,7 +200,7 @@ export function rebuildSpecIndex(mapping: BranchMapping): BranchMapping {
     if (!specIndex[branch.specId]) {
       specIndex[branch.specId] = [];
     }
-    specIndex[branch.specId].push(branch.name);
+    specIndex[branch.specId]!.push(branch.name);
   }
 
   return {
@@ -379,7 +378,7 @@ export function removeBranch(
  */
 export async function validateBranchMapping(
   mapping: BranchMapping,
-  repoRoot: string
+  _repoRoot: string
 ): Promise<void> {
   // Schema validation
   const result = BranchMappingSchema.safeParse(mapping);
@@ -476,7 +475,7 @@ export function detectCycle(
  */
 export function validateStatusTransition(
   currentStatus: BranchStatus,
-  newStatus: BranchStatus
+  _newStatus: BranchStatus
 ): void {
   // Terminal states: cannot transition
   if (currentStatus === "merged") {
@@ -502,7 +501,7 @@ export function validateStatusTransition(
  */
 async function attemptRepair(
   data: any,
-  repoRoot: string
+  _repoRoot: string
 ): Promise<BranchMapping | null> {
   try {
     // Ensure version exists
@@ -599,7 +598,7 @@ export interface AggregatedBranchStatus {
  */
 export async function getAggregatedBranchStatus(
   speckRoot: string,
-  repoRoot: string
+  _repoRoot: string
 ): Promise<AggregatedBranchStatus> {
   // Import paths module (lazily to avoid circular dependency)
   const { findChildReposWithNames } = await import("./paths");
@@ -673,7 +672,7 @@ function buildRepoBranchSummary(
 
   // Get unique spec IDs
   const specIds = [...new Set(mapping.branches.map(b => b.specId))];
-  const specId = specIds.length === 1 ? specIds[0] : null;
+  const specId = specIds.length === 1 ? (specIds[0] ?? null) : null;
 
   // Build dependency chains
   const chains = buildDependencyChains(mapping);
@@ -743,7 +742,7 @@ function buildChainFromBranch(
   // For simplicity, follow first child (stacked chains are typically linear)
   // In case of multiple children, we'd need a more complex visualization
   const firstChild = children[0];
-  if (!processed.has(firstChild.name)) {
+  if (firstChild && !processed.has(firstChild.name)) {
     return [branchName, ...buildChainFromBranch(firstChild.name, mapping, processed)];
   }
 

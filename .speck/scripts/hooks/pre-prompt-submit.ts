@@ -81,7 +81,7 @@ function getCheckOptions(prompt: string): {
 } {
   // Extract the slash command name (supports both . and : separators)
   const match = prompt.match(/^\/speck[.:](\w+)/);
-  const command = match ? match[1] : "";
+  const command = match?.[1] ?? "";
 
   // Commands that require tasks.md to exist
   const requireTasksCommands = ["implement"];

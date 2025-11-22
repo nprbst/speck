@@ -61,9 +61,13 @@ export function createMockReleaseRegistry(
   releases?: UpstreamRelease[]
 ): ReleaseRegistry {
   const defaultReleases = releases || [createMockUpstreamRelease()];
+  const firstRelease = defaultReleases[0];
+  if (!firstRelease) {
+    throw new Error("At least one release required");
+  }
 
   return {
-    latest: defaultReleases[0].version,
+    latest: firstRelease.version,
     releases: defaultReleases,
   };
 }
@@ -128,7 +132,7 @@ export class MockFilesystem {
     return this.files.has(path) || this.symlinks.has(path);
   }
 
-  async mkdir(path: string): Promise<void> {
+  async mkdir(_path: string): Promise<void> {
     // No-op for mock (assume directory creation always succeeds)
   }
 

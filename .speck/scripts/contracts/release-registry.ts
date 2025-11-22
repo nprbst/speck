@@ -115,7 +115,7 @@ export function validateUpstreamRelease(release: unknown): UpstreamRelease {
     );
   }
 
-  return r as UpstreamRelease;
+  return r as unknown as UpstreamRelease;
 }
 
 /**
@@ -149,8 +149,11 @@ export function validateReleaseRegistry(registry: unknown): ReleaseRegistry {
 
   // Check sorted by pullDate descending
   for (let i = 1; i < releases.length; i++) {
-    const prev = new Date(releases[i - 1].pullDate);
-    const curr = new Date(releases[i].pullDate);
+    const prevRelease = releases[i - 1];
+    const currRelease = releases[i];
+    if (!prevRelease || !currRelease) continue;
+    const prev = new Date(prevRelease.pullDate);
+    const curr = new Date(currRelease.pullDate);
     if (curr > prev) {
       throw new ReleaseRegistryError(
         "Releases must be sorted by pullDate descending"
@@ -159,7 +162,7 @@ export function validateReleaseRegistry(registry: unknown): ReleaseRegistry {
   }
 
   // Check latest matches first release
-  if (releases.length > 0 && reg.latest !== releases[0].version) {
+  if (releases.length > 0 && releases[0] && reg.latest !== releases[0].version) {
     throw new ReleaseRegistryError(
       `latest (${reg.latest}) must match first release version (${releases[0].version})`
     );
@@ -230,8 +233,12 @@ export function updateReleaseStatus(
   }
 
   const updatedReleases = [...registry.releases];
+  const existingRelease = updatedReleases[releaseIndex];
+  if (!existingRelease) {
+    throw new ReleaseRegistryError(`Release at index ${releaseIndex} not found`);
+  }
   updatedReleases[releaseIndex] = {
-    ...updatedReleases[releaseIndex],
+    ...existingRelease,
     status,
     errorDetails,
   };

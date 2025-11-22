@@ -81,7 +81,7 @@ function getAgentFilePaths(repoRoot: string): AgentFilePaths {
 function extractPlanField(fieldPattern: string, planContent: string): string {
   const regex = new RegExp(`^\\*\\*${fieldPattern}\\*\\*: (.+)$`, "m");
   const match = planContent.match(regex);
-  if (!match) return "";
+  if (!match || !match[1]) return "";
 
   const value = match[1].trim();
   // Filter out NEEDS CLARIFICATION and N/A
@@ -280,11 +280,11 @@ function updateExistingAgentFile(
   let inTechSection = false;
   let inChangesSection = false;
   let techEntriesAdded = false;
-  let changesEntriesAdded = false;
   let existingChangesCount = 0;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    if (line === undefined) continue;
 
     // Handle Active Technologies section
     if (line === "## Active Technologies") {
@@ -318,7 +318,7 @@ function updateExistingAgentFile(
         output.push(newChangeEntry);
       }
       inChangesSection = true;
-      changesEntriesAdded = true;
+      _changesEntriesAdded = true;
       continue;
     } else if (inChangesSection && line.match(/^##\s/)) {
       output.push(line);
@@ -373,10 +373,10 @@ function updateAgentFile(
 
   if (!existsSync(targetFile)) {
     // Create new file from template
-    createNewAgentFile(targetFile, templateFile, projectName, currentDate, currentBranch, lang, framework, projectType);
+    createNewAgentFile(targetFile, templateFile, projectName, currentDate, currentBranch, lang!, framework, projectType);
   } else {
     // Update existing file
-    updateExistingAgentFile(targetFile, currentDate, currentBranch, lang, framework, db);
+    updateExistingAgentFile(targetFile, currentDate, currentBranch, lang!, framework, db);
   }
 }
 
@@ -418,7 +418,7 @@ function updateSpecificAgent(
   }
 
   const targetFile = agentPaths[agentType as keyof AgentFilePaths];
-  const agentName = agentNames[agentType];
+  const agentName = agentNames[agentType]!;
   updateAgentFile(targetFile, agentName, repoRoot, currentBranch, lang, framework, db, projectType);
 }
 

@@ -64,7 +64,7 @@ function parseArgs(): RemoveWorktreeOptions {
 
   // Parse positional and flag arguments
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
+    const arg = args[i]!;
 
     switch (arg) {
       case "--force":
@@ -233,7 +233,7 @@ async function getWorktreeInfo(
  */
 async function checkGitStatus(
   worktreePath: string,
-  branchName: string,
+  _branchName: string,
   isDetached: boolean
 ): Promise<GitStatus> {
   // Check for staged changes

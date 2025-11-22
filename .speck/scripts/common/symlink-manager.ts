@@ -4,8 +4,7 @@
  * Manages the upstream/latest symlink that points to the most recent release.
  */
 
-import { existsSync, lstatSync, unlinkSync, symlinkSync, readlinkSync } from "fs";
-import { dirname } from "path";
+import { lstatSync, unlinkSync, symlinkSync, readlinkSync } from "fs";
 
 /**
  * Symlink manager error

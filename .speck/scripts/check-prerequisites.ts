@@ -68,7 +68,7 @@ interface PathsOnlyOutput {
 /**
  * JSON output for validation mode
  */
-interface ValidationOutput {
+export interface ValidationOutput {
   MODE: string;
   FEATURE_DIR: string;
   AVAILABLE_DOCS: string[];
@@ -218,7 +218,7 @@ function determineWorkflowMode(featureDir: string, repoRoot: string): string {
     try {
       const planContent = readFileSync(planPath, "utf-8");
       const workflowMatch = planContent.match(/\*\*Workflow Mode\*\*:\s*(stacked-pr|single-branch)/);
-      if (workflowMatch) {
+      if (workflowMatch && workflowMatch[1]) {
         return workflowMatch[1];
       }
     } catch {
@@ -232,7 +232,7 @@ function determineWorkflowMode(featureDir: string, repoRoot: string): string {
     try {
       const constitutionContent = readFileSync(constitutionPath, "utf-8");
       const workflowMatch = constitutionContent.match(/\*\*Default Workflow Mode\*\*:\s*(stacked-pr|single-branch)/);
-      if (workflowMatch) {
+      if (workflowMatch && workflowMatch[1]) {
         return workflowMatch[1];
       }
     } catch {

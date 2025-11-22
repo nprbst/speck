@@ -8,7 +8,7 @@
  */
 
 import { $ } from "bun";
-import type { CommandHandler, CommandContext, CommandResult } from "../lib/types";
+import type { CommandHandler } from "../lib/types";
 import path from "node:path";
 import { errorToResult } from "../lib/error-handler";
 
@@ -35,7 +35,7 @@ export function parseSetupPlanArgs(commandString: string): SetupPlanArgs {
 /**
  * Setup plan command handler - delegates to existing setup-plan script
  */
-export const setupPlanHandler: CommandHandler<SetupPlanArgs> = async (args, context) => {
+export const setupPlanHandler: CommandHandler<SetupPlanArgs> = async (args) => {
   try {
     const scriptPath = path.resolve(import.meta.dir, "..", "setup-plan.ts");
     const result = await $`bun run ${scriptPath} ${args.args}`.nothrow();

@@ -96,7 +96,7 @@ async function detectParentSpecId(speckRoot: string): Promise<string | null> {
 
     // Return the most recent spec (highest number)
     validSpecs.sort();
-    return validSpecs[validSpecs.length - 1];
+    return validSpecs[validSpecs.length - 1] ?? null;
   } catch {
     return null;
   }
@@ -165,7 +165,7 @@ function generatePRFromCommits(commits: string[]): { title: string; body: string
   }
 
   // Title from first commit subject
-  const title = substantiveCommits[0].split('\n')[0];
+  const title = substantiveCommits[0]?.split('\n')[0] ?? 'Update';
 
   // Body as bulleted list of all commits
   const body = substantiveCommits.map(c => `- ${c.split('\n')[0]}`).join('\n');
@@ -199,7 +199,7 @@ async function generatePRFromDiff(baseBranch: string, currentBranch: string, rep
 /**
  * T031j - Determine PR base branch
  */
-function determinePRBase(currentBranch: string, baseBranchFromMetadata: string | null, repoRoot: string): string {
+function determinePRBase(_currentBranch: string, baseBranchFromMetadata: string | null, _repoRoot: string): string {
   // If current branch is tracked in branches.json, use its baseBranch
   if (baseBranchFromMetadata) {
     return baseBranchFromMetadata;
@@ -215,7 +215,7 @@ function determinePRBase(currentBranch: string, baseBranchFromMetadata: string |
  */
 async function generatePRSuggestion(
   currentBranch: string,
-  baseBranch: string,
+  _baseBranch: string,
   mapping: BranchMapping,
   repoRoot: string,
   multiRepoContext?: MultiRepoContextMetadata | null
@@ -332,7 +332,7 @@ function getMainBranch(mapping: BranchMapping, branch: BranchEntry): string {
 // Command Implementations
 // ===========================
 
-async function createCommand(args: string[]) {
+async function createCommand(args: string[]): Promise<number | void> {
   // T028 - Parse arguments
   const nameIndex = args.findIndex((arg) => !arg.startsWith("--"));
   if (nameIndex === -1) {
@@ -383,8 +383,9 @@ async function createCommand(args: string[]) {
 
   // Default to current branch if --base not specified
   let baseBranch: string;
-  if (baseFlag !== -1 && args[baseFlag + 1]) {
-    baseBranch = args[baseFlag + 1];
+  const baseFlagArg = baseFlag !== -1 ? args[baseFlag + 1] : undefined;
+  if (baseFlagArg) {
+    baseBranch = baseFlagArg;
   } else {
     if (!currentBranch) {
       console.error("Error: No commits in repository. Cannot determine current branch.");
@@ -395,10 +396,10 @@ async function createCommand(args: string[]) {
     console.log(`Defaulting base to current branch: ${baseBranch}`);
   }
 
-  let specId = specFlag !== -1 ? args[specFlag + 1] : null;
+  let specId: string | null = specFlag !== -1 && args[specFlag + 1] ? args[specFlag + 1]! : null;
 
   // T029 - Validate branch name
-  const isValid = await validateBranchName(name);
+  const isValid = await validateBranchName(name!);
   if (!isValid) {
     throw new Error(`Invalid branch name: '${name}'. Must be a valid git ref name.`);
   }
@@ -418,7 +419,7 @@ async function createCommand(args: string[]) {
     // Try to auto-detect from current branch
     if (paths.FEATURE_DIR && paths.FEATURE_DIR.includes("/specs/")) {
       const match = paths.FEATURE_DIR.match(/\/specs\/([^\/]+)/);
-      if (match) {
+      if (match && match[1]) {
         specId = match[1];
         if (!jsonOutputFlag) {
           console.log(`Auto-detected spec: ${specId}`);
@@ -434,14 +435,17 @@ async function createCommand(args: string[]) {
     }
   }
 
+  // TypeScript narrow: specId is now guaranteed to be string after the above checks
+  const validatedSpecId: string = specId;
+
   // Validate spec exists
   // T022 - Use correct specs directory based on multi-repo context
   const specsBaseDir = multiRepoContext ? speckConfig.specsDir : path.join(repoRoot, "specs");
-  const specDir = path.join(specsBaseDir, specId);
+  const specDir = path.join(specsBaseDir, validatedSpecId);
   try {
     await fs.access(specDir);
   } catch {
-    throw new Error(`Spec directory not found: specs/${specId}/`);
+    throw new Error(`Spec directory not found: specs/${validatedSpecId}/`);
   }
 
   // Check for uncommitted changes before switching branches
@@ -530,9 +534,9 @@ async function createCommand(args: string[]) {
 
   // T031n - Handle --create-pr flag: execute gh pr create
   if (createPrFlag) {
-    const prTitle = prTitleFlag !== -1 ? args[prTitleFlag + 1] : null;
-    const prDescription = prDescFlag !== -1 ? args[prDescFlag + 1] : null;
-    const prBase = prBaseFlag !== -1 ? args[prBaseFlag + 1] : null;
+    const prTitle = prTitleFlag !== -1 && args[prTitleFlag + 1] ? args[prTitleFlag + 1] : null;
+    const prDescription = prDescFlag !== -1 && args[prDescFlag + 1] ? args[prDescFlag + 1] : null;
+    const prBase = prBaseFlag !== -1 && args[prBaseFlag + 1] ? args[prBaseFlag + 1] : null;
 
     if (!prTitle || !prDescription || !prBase) {
       throw new Error("--create-pr requires --title, --description, and --pr-base flags");
@@ -552,7 +556,7 @@ async function createCommand(args: string[]) {
       // T031o - Parse PR number from gh CLI output
       const output = ghResult.stdout.toString();
       const prNumberMatch = output.match(/\/pull\/(\d+)/);
-      const prNumber = prNumberMatch ? parseInt(prNumberMatch[1], 10) : null;
+      const prNumber = prNumberMatch && prNumberMatch[1] ? parseInt(prNumberMatch[1], 10) : null;
 
       if (prNumber) {
         console.log(`✓ Created PR #${prNumber} for '${currentBranch}'`);
@@ -604,18 +608,18 @@ async function createCommand(args: string[]) {
   // T019 - Add parentSpecId when in multi-repo child context
   const now = new Date().toISOString();
   const entry: BranchEntry = {
-    name,
-    specId,
+    name: name!,
+    specId: validatedSpecId,
     baseBranch,
     status: "active",
     pr: null,
     createdAt: now,
     updatedAt: now,
-    ...(multiRepoContext?.parentSpecId && { parentSpecId: multiRepoContext.parentSpecId }),
+    ...(multiRepoContext?.parentSpecId ? { parentSpecId: multiRepoContext.parentSpecId } : {}),
   };
 
   // T040 - Cycle detection (from US3, but needed here)
-  const cycle = detectCycle(name, {
+  const cycle = detectCycle(name!, {
     ...mapping,
     branches: [...mapping.branches, entry],
   });
@@ -628,8 +632,8 @@ async function createCommand(args: string[]) {
   mapping = addBranch(mapping, entry);
 
   // T035 & T036 - Create and checkout git branch
-  await createGitBranch(name, baseBranch, repoRoot);
-  await checkoutBranch(name, repoRoot);
+  await createGitBranch(name!, baseBranch, repoRoot);
+  await checkoutBranch(name!, repoRoot);
 
   // Write branches.json
   await writeBranches(repoRoot, mapping);
@@ -638,11 +642,11 @@ async function createCommand(args: string[]) {
   if (!jsonOutputFlag) {
     console.log(`✓ Created stacked branch '${name}'`);
     console.log(`✓ Based on: ${baseBranch}`);
-    console.log(`✓ Linked to spec: ${specId}`);
+    console.log(`✓ Linked to spec: ${validatedSpecId}`);
     console.log();
     console.log("Branch stack:");
 
-    displayBranchTree(mapping, specId, name);
+    displayBranchTree(mapping, validatedSpecId, name!);
 
     console.log();
     console.log("Next steps:");
@@ -851,7 +855,7 @@ async function statusCommand(args: string[] = []) {
 
   // T110 - Check for orphaned branch tracking (child repo unlinked from parent)
   const context = await getMultiRepoContext();
-  if (context.mode === "child" && mapping.branches.length > 0) {
+  if (context.context === "child" && mapping.branches.length > 0) {
     try {
       const { findChildRepos } = await import("./common/paths.js");
       const speckRoot = context.speckRoot || "";
@@ -967,14 +971,18 @@ async function updateCommand(args: string[]) {
 
   // T068 - Support --status, --pr, --base flags
   if (statusFlag !== -1) {
-    const status = args[statusFlag + 1] as BranchStatus;
+    const statusArg = args[statusFlag + 1];
+    if (!statusArg) {
+      throw new Error("--status flag requires a value");
+    }
+    const status = statusArg as BranchStatus;
     if (!["active", "submitted", "merged", "abandoned"].includes(status)) {
       throw new Error(
         `Invalid status: '${status}'. Must be: active, submitted, merged, or abandoned`
       );
     }
 
-    const pr = prFlag !== -1 ? parseInt(args[prFlag + 1], 10) : undefined;
+    const pr = prFlag !== -1 && args[prFlag + 1] ? parseInt(args[prFlag + 1]!, 10) : undefined;
 
     // T069 - Validate status transitions (done in updateBranchStatus)
     mapping = updateBranchStatus(mapping, name, status, pr);
@@ -982,6 +990,9 @@ async function updateCommand(args: string[]) {
 
   if (baseFlag !== -1) {
     const newBase = args[baseFlag + 1];
+    if (!newBase) {
+      throw new Error("--base flag requires a branch name");
+    }
 
     // Validate new base exists
     const baseExists = await branchExists(newBase, repoRoot);
@@ -1039,7 +1050,7 @@ async function deleteCommand(args: string[]) {
   console.log(`  git branch -D ${name}`);
 }
 
-async function importCommand(args: string[]) {
+async function importCommand(args: string[]): Promise<number | void> {
   const patternFlag = args.indexOf("--pattern");
   const pattern = patternFlag !== -1 ? args[patternFlag + 1] : undefined;
 
@@ -1135,7 +1146,9 @@ async function importCommand(args: string[]) {
   let skipped = 0;
 
   for (const mappingStr of mappings) {
-    const [branchName, specId] = mappingStr.split(":");
+    const parts = mappingStr.split(":");
+    const branchName = parts[0];
+    const specId = parts[1];
 
     if (!branchName || !specId) {
       console.log(`⚠ Invalid mapping format: ${mappingStr}`);

@@ -115,15 +115,15 @@ export function formatTable(
 
   // Format header row
   const headerRow = headers
-    .map((header, i) => header.padEnd(widths[i]))
+    .map((header, i) => header.padEnd(widths[i] ?? 0))
     .join(" | ");
 
   // Format separator row
-  const separator = widths.map((width) => "-".repeat(width)).join("-|-");
+  const separator = widths.map((width) => "-".repeat(width ?? 0)).join("-|-");
 
   // Format data rows
   const dataRows = rows.map((row) =>
-    row.map((cell, i) => (cell || "").padEnd(widths[i])).join(" | ")
+    row.map((cell, i) => (cell || "").padEnd(widths[i] ?? 0)).join(" | ")
   );
 
   return [headerRow, separator, ...dataRows].join("\n");

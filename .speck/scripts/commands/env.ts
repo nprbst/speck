@@ -3,7 +3,7 @@
  * Shows basic Speck environment information
  */
 
-import type { CommandHandler, CommandContext, CommandResult } from "../lib/types";
+import type { CommandHandler } from "../lib/types";
 import { detectSpeckRoot } from "../common/paths";
 import { errorToResult } from "../lib/error-handler";
 import { successResult } from "../lib/output-formatter";
@@ -16,7 +16,7 @@ import { successResult } from "../lib/output-formatter";
  * @param context - Execution context
  * @returns CommandResult with environment info
  */
-export const envHandler: CommandHandler = async (args, context) => {
+export const envHandler: CommandHandler = async (_args, context) => {
   try {
     // Detect speck configuration
     const config = await detectSpeckRoot();

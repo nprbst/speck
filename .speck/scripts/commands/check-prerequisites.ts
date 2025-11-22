@@ -8,7 +8,7 @@
  */
 
 import { $ } from "bun";
-import type { CommandHandler, CommandContext, CommandResult } from "../lib/types";
+import type { CommandHandler } from "../lib/types";
 import path from "node:path";
 import { errorToResult } from "../lib/error-handler";
 
@@ -36,7 +36,7 @@ export function parseCheckPrerequisitesArgs(commandString: string): CheckPrerequ
 /**
  * Check prerequisites command handler - delegates to existing check-prerequisites script
  */
-export const checkPrerequisitesHandler: CommandHandler<CheckPrerequisitesArgs> = async (args, context) => {
+export const checkPrerequisitesHandler: CommandHandler<CheckPrerequisitesArgs> = async (args, _context) => {
   try {
     // Use relative path from current script location
     const scriptPath = path.resolve(import.meta.dir, "..", "check-prerequisites.ts");

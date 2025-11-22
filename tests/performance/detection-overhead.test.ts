@@ -38,55 +38,64 @@ describe("Performance: Multi-repo detection overhead", () => {
 
   test("T080: detectSpeckRoot() in child repo completes <50ms (p95)", async () => {
     const childRepo = fixture.childRepos.get("service-a")!;
+    const originalCwd = process.cwd();
 
     // Measure detection overhead
     const timings: number[] = [];
     for (let i = 0; i < 100; i++) {
+      process.chdir(childRepo);
       const start = performance.now();
 
       // Detect from child repo
-      const result = await detectSpeckRoot(childRepo);
+      const result = await detectSpeckRoot();
 
       const end = performance.now();
       timings.push(end - start);
 
       // Verify detection worked
-      expect(result.context).toBe("child");
+      expect(result.mode).toBe("multi-repo");
     }
+
+    process.chdir(originalCwd);
 
     // Calculate p95
     timings.sort((a, b) => a - b);
     const p95Index = Math.floor(timings.length * 0.95);
-    const p95 = timings[p95Index];
+    const p95 = timings[p95Index]!;
 
-    console.log(`detectSpeckRoot() from child (ms): min=${Math.min(...timings).toFixed(2)}, median=${timings[Math.floor(timings.length/2)].toFixed(2)}, p95=${p95.toFixed(2)}, max=${Math.max(...timings).toFixed(2)}`);
+    console.log(`detectSpeckRoot() from child (ms): min=${Math.min(...timings).toFixed(2)}, median=${timings[Math.floor(timings.length/2)]!.toFixed(2)}, p95=${p95.toFixed(2)}, max=${Math.max(...timings).toFixed(2)}`);
 
     // Performance contract: p95 < 50ms
     expect(p95).toBeLessThan(50);
   });
 
   test("T080: detectSpeckRoot() in root repo completes <50ms (p95)", async () => {
+    const originalCwd = process.cwd();
+
     // Measure detection overhead from root
     const timings: number[] = [];
     for (let i = 0; i < 100; i++) {
+      process.chdir(fixture.rootDir);
       const start = performance.now();
 
       // Detect from root
-      const result = await detectSpeckRoot(fixture.rootDir);
+      const result = await detectSpeckRoot();
 
       const end = performance.now();
       timings.push(end - start);
 
       // Verify detection worked
-      expect(result.context).toBe("root");
+      expect(result.mode).toBe("single-repo");
     }
+
+    process.chdir(originalCwd);
 
     // Calculate p95
     timings.sort((a, b) => a - b);
     const p95Index = Math.floor(timings.length * 0.95);
-    const p95 = timings[p95Index];
+    const p95 = timings[p95Index]!;
 
-    console.log(`detectSpeckRoot() from root (ms): min=${Math.min(...timings).toFixed(2)}, median=${timings[Math.floor(timings.length/2)].toFixed(2)}, p95=${p95.toFixed(2)}, max=${Math.max(...timings).toFixed(2)}`);
+    console.log(`detectSpeckRoot() from root (ms): min=${Math.min(...timings).toFixed(2)}, median=${timings[Math.floor(timings.length/2)]!.toFixed(2)}, p95=${p95.toFixed(2)}, max=${Math.max(...timings).toFixed(2)}`);
 
     // Performance contract: p95 < 50ms
     expect(p95).toBeLessThan(50);
@@ -94,29 +103,33 @@ describe("Performance: Multi-repo detection overhead", () => {
 
   test("T080: detectSpeckRoot() in single-repo mode completes <50ms (p95)", async () => {
     // Test detection overhead in non-multi-repo context
-    const tmpDir = path.join(fixture.tmpDir, "single-repo-test");
+    const tmpDir = path.join(path.dirname(fixture.rootDir), "single-repo-test");
     await $`mkdir -p ${tmpDir}/.speck`.quiet();
+    const originalCwd = process.cwd();
 
     const timings: number[] = [];
     for (let i = 0; i < 100; i++) {
+      process.chdir(tmpDir);
       const start = performance.now();
 
       // Detect from single repo (no symlinks)
-      const result = await detectSpeckRoot(tmpDir);
+      const result = await detectSpeckRoot();
 
       const end = performance.now();
       timings.push(end - start);
 
       // Verify detection worked
-      expect(result.context).toBe("single");
+      expect(result.mode).toBe("single-repo");
     }
+
+    process.chdir(originalCwd);
 
     // Calculate p95
     timings.sort((a, b) => a - b);
     const p95Index = Math.floor(timings.length * 0.95);
-    const p95 = timings[p95Index];
+    const p95 = timings[p95Index]!;
 
-    console.log(`detectSpeckRoot() single-repo (ms): min=${Math.min(...timings).toFixed(2)}, median=${timings[Math.floor(timings.length/2)].toFixed(2)}, p95=${p95.toFixed(2)}, max=${Math.max(...timings).toFixed(2)}`);
+    console.log(`detectSpeckRoot() single-repo (ms): min=${Math.min(...timings).toFixed(2)}, median=${timings[Math.floor(timings.length/2)]!.toFixed(2)}, p95=${p95.toFixed(2)}, max=${Math.max(...timings).toFixed(2)}`);
 
     // Performance contract: p95 < 50ms (should be fastest)
     expect(p95).toBeLessThan(50);
@@ -144,9 +157,9 @@ describe("Performance: Multi-repo detection overhead", () => {
     // Calculate p95
     timings.sort((a, b) => a - b);
     const p95Index = Math.floor(timings.length * 0.95);
-    const p95 = timings[p95Index];
+    const p95 = timings[p95Index]!;
 
-    console.log(`Symlink resolution (ms): min=${Math.min(...timings).toFixed(2)}, median=${timings[Math.floor(timings.length/2)].toFixed(2)}, p95=${p95.toFixed(2)}, max=${Math.max(...timings).toFixed(2)}`);
+    console.log(`Symlink resolution (ms): min=${Math.min(...timings).toFixed(2)}, median=${timings[Math.floor(timings.length/2)]!.toFixed(2)}, p95=${p95.toFixed(2)}, max=${Math.max(...timings).toFixed(2)}`);
 
     // Symlink resolution should be very fast
     expect(p95).toBeLessThan(10);
@@ -154,6 +167,7 @@ describe("Performance: Multi-repo detection overhead", () => {
 
   test("T080: Detection overhead negligible vs total command time", async () => {
     const childRepo = fixture.childRepos.get("service-c")!;
+    const originalCwd = process.cwd();
 
     // Create a branch first
     await $`cd ${childRepo} && bun run ${fixture.scriptsDir}/branch-command.ts create nprbst/test-overhead --base main --spec 009-multi-repo-stacked`.quiet();
@@ -170,11 +184,14 @@ describe("Performance: Multi-repo detection overhead", () => {
     // Measure just detection time
     const detectionTimings: number[] = [];
     for (let i = 0; i < 20; i++) {
+      process.chdir(childRepo);
       const start = performance.now();
-      await detectSpeckRoot(childRepo);
+      await detectSpeckRoot();
       const end = performance.now();
       detectionTimings.push(end - start);
     }
+
+    process.chdir(originalCwd);
 
     const avgTotal = totalTimings.reduce((a, b) => a + b, 0) / totalTimings.length;
     const avgDetection = detectionTimings.reduce((a, b) => a + b, 0) / detectionTimings.length;

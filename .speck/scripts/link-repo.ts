@@ -139,12 +139,6 @@ export async function linkRepo(targetPath: string): Promise<void> {
  */
 async function addGitignorePatterns(repoRoot: string): Promise<void> {
   const gitignorePath = path.join(repoRoot, '.gitignore');
-  const patterns = [
-    '',
-    '# Speck multi-repo: ignore symlinked shared files',
-    'specs/*/spec.md',
-    'specs/*/contracts/',
-  ];
 
   try {
     // Read existing .gitignore or create empty content
@@ -205,7 +199,7 @@ export async function main(args: string[]): Promise<number> {
   }
 
   try {
-    await linkRepo(args[0]);
+    await linkRepo(args[0]!);
     return 0;
   } catch (error: any) {
     console.error('ERROR:', error.message);

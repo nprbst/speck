@@ -30,7 +30,7 @@ program
 
 // Register commands from registry
 // Helper function to execute command with consistent error handling
-async function executeCommand(
+async function _executeCommand(
   commandName: string,
   argsArray: string[],
   context: CommandContext
@@ -96,6 +96,9 @@ program
 
 // env command
 const envEntry = registry.env;
+if (!envEntry) {
+  throw new Error("env command not found in registry");
+}
 program
   .command("env")
   .description(envEntry.description)
@@ -107,7 +110,7 @@ program
       isInteractive: process.stdin.isTTY ?? false,
     };
 
-    const result = await envEntry.handler({}, context);
+    const result = await envEntry.handler!({}, context);
 
     if (result.success) {
       console.log(result.output);
@@ -119,6 +122,9 @@ program
 
 // branch command
 const branchEntry = registry.branch;
+if (!branchEntry) {
+  throw new Error("branch command not found in registry");
+}
 program
   .command("branch [args...]")
   .description(branchEntry.description)
@@ -371,7 +377,7 @@ async function runHookMode() {
     const args = argsString.split(/\s+/).filter((arg) => arg.length > 0);
 
     // Lookup command in registry
-    const commandEntry = registry[commandName];
+    const commandEntry = commandName ? registry[commandName] : undefined;
     if (!commandEntry) {
       await log(`Unknown command: ${commandName}`);
       console.error(`Unknown command: ${commandName}`);
@@ -394,15 +400,15 @@ async function runHookMode() {
     };
 
     // Execute command using main/lazyMain function if available, otherwise fall back to handler
-    let exitCode = 0;
+    let _exitCode = 0;
     try {
       if (commandEntry.main) {
         // Static main function - already loaded
-        exitCode = await commandEntry.main(args);
+        _exitCode = await commandEntry.main(args);
       } else if (commandEntry.lazyMain) {
         // Lazy-loaded main function - load on demand
         const mainFn = await commandEntry.lazyMain();
-        exitCode = await mainFn(args);
+        _exitCode = await mainFn(args);
       } else if (commandEntry.handler) {
         // Handler-based command (legacy/simple commands)
         const context: CommandContext = {
@@ -413,7 +419,7 @@ async function runHookMode() {
         };
         const parsedArgs = commandEntry.parseArgs ? commandEntry.parseArgs(command) : {};
         const result = await commandEntry.handler(parsedArgs, context);
-        exitCode = result.exitCode;
+        _exitCode = result.exitCode;
         if (result.success && result.output) {
           output += result.output;
         }
@@ -429,7 +435,7 @@ async function runHookMode() {
         error instanceof Error ? error : new Error(String(error))
       );
       errorOutput += errorResult.errorOutput || "";
-      exitCode = errorResult.exitCode;
+      _exitCode = errorResult.exitCode;
     }
 
     // Restore console

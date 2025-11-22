@@ -97,9 +97,9 @@ function parseArgs(): CreateWorktreeOptions {
         options.json = true;
         break;
       default:
-        if (!options.branchName && !arg.startsWith("-")) {
+        if (!options.branchName && arg && !arg.startsWith("-")) {
           options.branchName = arg;
-        } else if (!arg.startsWith("-")) {
+        } else if (arg && !arg.startsWith("-")) {
           console.error(`Error: Unknown argument '${arg}'`);
           process.exit(ExitCode.USER_ERROR);
         }

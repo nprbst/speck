@@ -54,9 +54,9 @@ describe("Performance: Branch lookup operations", () => {
     // Calculate p95
     timings.sort((a, b) => a - b);
     const p95Index = Math.floor(timings.length * 0.95);
-    const p95 = timings[p95Index];
+    const p95 = timings[p95Index]!;
 
-    console.log(`Branch lookup timings (ms): min=${Math.min(...timings).toFixed(1)}, median=${timings[Math.floor(timings.length/2)].toFixed(1)}, p95=${p95.toFixed(1)}, max=${Math.max(...timings).toFixed(1)}`);
+    console.log(`Branch lookup timings (ms): min=${Math.min(...timings).toFixed(1)}, median=${timings[Math.floor(timings.length/2)]!.toFixed(1)}, p95=${p95.toFixed(1)}, max=${Math.max(...timings).toFixed(1)}`);
 
     // Performance contract: p95 < 150ms
     expect(p95).toBeLessThan(150);
@@ -84,9 +84,9 @@ describe("Performance: Branch lookup operations", () => {
     // Calculate p95
     timings.sort((a, b) => a - b);
     const p95Index = Math.floor(timings.length * 0.95);
-    const p95 = timings[p95Index];
+    const p95 = timings[p95Index]!;
 
-    console.log(`Stack traversal timings (ms): min=${Math.min(...timings).toFixed(1)}, median=${timings[Math.floor(timings.length/2)].toFixed(1)}, p95=${p95.toFixed(1)}, max=${Math.max(...timings).toFixed(1)}`);
+    console.log(`Stack traversal timings (ms): min=${Math.min(...timings).toFixed(1)}, median=${timings[Math.floor(timings.length/2)]!.toFixed(1)}, p95=${p95.toFixed(1)}, max=${Math.max(...timings).toFixed(1)}`);
 
     // Performance contract: p95 < 150ms
     expect(p95).toBeLessThan(150);
@@ -110,9 +110,9 @@ describe("Performance: Branch lookup operations", () => {
     // Calculate p95
     timings.sort((a, b) => a - b);
     const p95Index = Math.floor(timings.length * 0.95);
-    const p95 = timings[p95Index];
+    const p95 = timings[p95Index]!;
 
-    console.log(`Single branch status timings (ms): min=${Math.min(...timings).toFixed(1)}, median=${timings[Math.floor(timings.length/2)].toFixed(1)}, p95=${p95.toFixed(1)}, max=${Math.max(...timings).toFixed(1)}`);
+    console.log(`Single branch status timings (ms): min=${Math.min(...timings).toFixed(1)}, median=${timings[Math.floor(timings.length/2)]!.toFixed(1)}, p95=${p95.toFixed(1)}, max=${Math.max(...timings).toFixed(1)}`);
 
     // Performance contract: p95 < 150ms
     expect(p95).toBeLessThan(150);

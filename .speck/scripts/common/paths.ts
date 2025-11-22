@@ -616,7 +616,7 @@ export async function getCurrentBranch(repoRoot: string): Promise<string> {
       for (const dir of dirs) {
         if (dir.isDirectory()) {
           const match = dir.name.match(/^(\d{3})-/);
-          if (match) {
+          if (match && match[1]) {
             const number = parseInt(match[1], 10);
             if (number > highest) {
               highest = number;
@@ -771,7 +771,7 @@ export async function findFeatureDirByPrefix(specsDir: string, branchName: strin
   if (matches.length === 0) {
     // No match found - return the branch name path (will fail later with clear error)
     return path.join(specsDir, branchName);
-  } else if (matches.length === 1) {
+  } else if (matches.length === 1 && matches[0]) {
     // Exactly one match - perfect!
     return path.join(specsDir, matches[0]);
   } else {
@@ -915,7 +915,6 @@ export async function syncSharedContracts(featureName: string): Promise<boolean>
     const stats = await fs.lstat(localContractsLink);
     if (stats.isSymbolicLink()) {
       // Verify it points to the right location
-      const target = await fs.readlink(localContractsLink);
       const resolved = await fs.realpath(localContractsLink);
       if (resolved === sharedContractsDir) {
         return true; // Already correctly linked

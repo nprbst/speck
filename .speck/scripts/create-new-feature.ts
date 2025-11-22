@@ -70,24 +70,24 @@ function parseArgs(args: string[]): CreateFeatureOptions {
   let i = 0;
 
   while (i < args.length) {
-    const arg = args[i];
+    const arg = args[i]!;
 
     if (arg === "--json") {
       options.json = true;
       i++;
     } else if (arg === "--short-name") {
-      if (i + 1 >= args.length || args[i + 1].startsWith("--")) {
+      if (i + 1 >= args.length || args[i + 1]?.startsWith("--")) {
         console.error("Error: --short-name requires a value");
         process.exit(ExitCode.USER_ERROR);
       }
-      options.shortName = args[i + 1];
+      options.shortName = args[i + 1]!;
       i += 2;
     } else if (arg === "--number") {
-      if (i + 1 >= args.length || args[i + 1].startsWith("--")) {
+      if (i + 1 >= args.length || args[i + 1]?.startsWith("--")) {
         console.error("Error: --number requires a value");
         process.exit(ExitCode.USER_ERROR);
       }
-      const num = parseInt(args[i + 1], 10);
+      const num = parseInt(args[i + 1]!, 10);
       if (isNaN(num)) {
         console.error("Error: --number requires a numeric value");
         process.exit(ExitCode.USER_ERROR);
@@ -117,7 +117,7 @@ function parseArgs(args: string[]): CreateFeatureOptions {
  * Show help message
  */
 function showHelp(): void {
-  const scriptName = path.basename(process.argv[1]);
+  const scriptName = path.basename(process.argv[1]!);
   console.log(`Usage: ${scriptName} [--json] [--short-name <name>] [--number N] [--shared-spec | --local-spec] <feature_description>
 
 Options:
@@ -158,7 +158,7 @@ function getHighestFromSpecs(specsDir: string): number {
     for (const dir of dirs) {
       if (dir.isDirectory()) {
         const match = dir.name.match(/^(\d+)/);
-        if (match) {
+        if (match && match[1]) {
           const num = parseInt(match[1], 10);
           if (num > highest) {
             highest = num;
@@ -166,38 +166,6 @@ function getHighestFromSpecs(specsDir: string): number {
         }
       }
     }
-  }
-
-  return highest;
-}
-
-/**
- * Get highest number from git branches
- */
-async function getHighestFromBranches(): Promise<number> {
-  let highest = 0;
-
-  try {
-    const result = await $`git branch -a`.quiet();
-    const branches = result.text().split("\n");
-
-    for (const branch of branches) {
-      // Clean branch name: remove leading markers and remote prefixes
-      const cleanBranch = branch
-        .replace(/^[* ]+/, "")
-        .replace(/^remotes\/[^/]+\//, "");
-
-      // Extract feature number if branch matches pattern ###-*
-      const match = cleanBranch.match(/^(\d{3})-/);
-      if (match) {
-        const num = parseInt(match[1], 10);
-        if (num > highest) {
-          highest = num;
-        }
-      }
-    }
-  } catch {
-    // Git not available or no branches
   }
 
   return highest;
@@ -222,7 +190,7 @@ async function checkExistingBranches(shortName: string, specsDir: string): Promi
     const lines = result.text().split("\n");
     for (const line of lines) {
       const match = line.match(new RegExp(`refs/heads/(\\d+)-${shortName}$`));
-      if (match) {
+      if (match && match[1]) {
         const num = parseInt(match[1], 10);
         if (num > maxNum) {
           maxNum = num;
@@ -239,7 +207,7 @@ async function checkExistingBranches(shortName: string, specsDir: string): Promi
     const branches = result.text().split("\n");
     for (const branch of branches) {
       const match = branch.match(new RegExp(`^[* ]*?(\\d+)-${shortName}$`));
-      if (match) {
+      if (match && match[1]) {
         const num = parseInt(match[1], 10);
         if (num > maxNum) {
           maxNum = num;
@@ -256,7 +224,7 @@ async function checkExistingBranches(shortName: string, specsDir: string): Promi
     for (const dir of dirs) {
       if (dir.isDirectory()) {
         const match = dir.name.match(new RegExp(`^(\\d+)-${shortName}$`));
-        if (match) {
+        if (match && match[1]) {
           const num = parseInt(match[1], 10);
           if (num > maxNum) {
             maxNum = num;
@@ -530,8 +498,8 @@ export async function main(args: string[]): Promise<number> {
     }
 
     // T069: Symlink contracts/ directory if it exists at shared location
-    const sharedContractsDir = path.join(featureDir, "contracts");
-    const localContractsLink = path.join(localFeatureDir, "contracts");
+    // const _sharedContractsDir = path.join(featureDir, "contracts");
+    // const _localContractsLink = path.join(localFeatureDir, "contracts");
 
     // Note: contracts/ might not exist yet, but we'll check when it gets created
     // For now, just document that this will be handled by /speck.plan or later commands

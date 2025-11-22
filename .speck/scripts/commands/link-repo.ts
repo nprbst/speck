@@ -8,7 +8,7 @@
  */
 
 import { $ } from "bun";
-import type { CommandHandler, CommandContext, CommandResult } from "../lib/types";
+import type { CommandHandler } from "../lib/types";
 import path from "node:path";
 import { errorToResult } from "../lib/error-handler";
 
@@ -35,7 +35,7 @@ export function parseLinkRepoArgs(commandString: string): LinkRepoArgs {
 /**
  * Link repo command handler - delegates to existing link-repo script
  */
-export const linkRepoHandler: CommandHandler<LinkRepoArgs> = async (args, context) => {
+export const linkRepoHandler: CommandHandler<LinkRepoArgs> = async (args) => {
   try {
     const scriptPath = path.resolve(import.meta.dir, "..", "link-repo.ts");
     const result = await $`bun run ${scriptPath} ${args.args}`.nothrow();

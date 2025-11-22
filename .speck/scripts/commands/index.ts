@@ -6,7 +6,7 @@
  * without hardcoding command names in the hook script.
  */
 
-import type { CommandRegistry, MainFunction } from "../lib/types";
+import type { CommandRegistry, CommandRegistryEntry, MainFunction } from "../lib/types";
 import { echoHandler, parseEchoArgs } from "./echo";
 import { envHandler } from "./env";
 
@@ -75,7 +75,7 @@ export const registry: CommandRegistry = {
   },
   "check-prerequisites": {
     main: checkPrerequisitesMain,
-    parseArgs: (commandString: string) => {
+    parseArgs: (commandString: string): string[] => {
       const parts = commandString.trim().split(/\s+/);
       // Remove command name if present
       if (parts[0] === 'speck-check-prerequisites' || parts[0] === 'check-prerequisites') {
@@ -85,7 +85,7 @@ export const registry: CommandRegistry = {
     },
     description: "Validate feature directory structure and prerequisites",
     version: "1.0.0",
-  },
+  } as CommandRegistryEntry<string[]>,
   "create-new-feature": {
     lazyMain: lazyCreateNewFeatureMain,
     description: "Create new feature specification directory",
