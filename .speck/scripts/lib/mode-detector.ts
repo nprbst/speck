@@ -33,7 +33,7 @@ export function detectMode(): ExecutionMode {
 export async function readHookInput(): Promise<HookInput> {
   try {
     const input = await Bun.stdin.text();
-    const parsed = JSON.parse(input);
+    const parsed = JSON.parse(input) as { tool_input?: { command?: string } };
 
     // Validate basic structure
     if (!parsed.tool_input || typeof parsed.tool_input.command !== "string") {

@@ -102,4 +102,5 @@ export interface CommandRegistryEntry<TArgs = unknown> {
 /**
  * Centralized registry mapping command names to handlers
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type CommandRegistry = Record<string, CommandRegistryEntry<any>>;

@@ -7,11 +7,11 @@ import { writeFile } from 'fs/promises';
 // Load JSON schemas
 const PR_SUGGESTION_SCHEMA = JSON.parse(
   readFileSync('.speck/hooks/schemas/pr-suggestion.schema.json', 'utf-8')
-);
+) as Record<string, unknown>;
 
 const IMPORT_PROMPT_SCHEMA = JSON.parse(
   readFileSync('.speck/hooks/schemas/import-prompt.schema.json', 'utf-8')
-);
+) as Record<string, unknown>;
 
 interface HookInput {
   session_id: string;
@@ -25,7 +25,7 @@ interface HookInput {
   };
 }
 
-const hookInput: HookInput = await Bun.stdin.json();
+const hookInput = await Bun.stdin.json() as HookInput;
 
 // Only validate Bash commands
 if (hookInput.tool_name !== 'Bash') {
@@ -60,7 +60,7 @@ if (command.includes('branch-command.ts')) {
   // Exit code 2: PR suggestion required
   if (exitCode === 2) {
     try {
-      const json = JSON.parse(stderr);
+      const json = JSON.parse(stderr) as Record<string, unknown>;
       const ajv = new Ajv();
       const validate = ajv.compile(PR_SUGGESTION_SCHEMA);
 
@@ -89,12 +89,13 @@ if (command.includes('branch-command.ts')) {
 
         process.exit(2); // Block execution
       }
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
       console.error(
         JSON.stringify({
           decision: 'block',
           reason: '❌ Contract Violation: Exit code 2 with invalid JSON in stderr',
-          additionalContext: `Parse error: ${err.message}`,
+          additionalContext: `Parse error: ${errorMessage}`,
         })
       );
 
@@ -106,7 +107,7 @@ if (command.includes('branch-command.ts')) {
           command,
           exitCode: 2,
           error: 'Invalid JSON in stderr',
-          parseError: err.message,
+          parseError: errorMessage,
         }) + '\n',
         { flag: 'a' }
       );
@@ -118,7 +119,7 @@ if (command.includes('branch-command.ts')) {
   // Exit code 3: Import prompt required
   if (exitCode === 3) {
     try {
-      const json = JSON.parse(stderr);
+      const json = JSON.parse(stderr) as Record<string, unknown>;
       const ajv = new Ajv();
       const validate = ajv.compile(IMPORT_PROMPT_SCHEMA);
 
@@ -146,12 +147,13 @@ if (command.includes('branch-command.ts')) {
 
         process.exit(2);
       }
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
       console.error(
         JSON.stringify({
           decision: 'block',
           reason: '❌ Contract Violation: Exit code 3 with invalid JSON in stderr',
-          additionalContext: `Parse error: ${err.message}`,
+          additionalContext: `Parse error: ${errorMessage}`,
         })
       );
 
@@ -163,7 +165,7 @@ if (command.includes('branch-command.ts')) {
           command,
           exitCode: 3,
           error: 'Invalid JSON in stderr',
-          parseError: err.message,
+          parseError: errorMessage,
         }) + '\n',
         { flag: 'a' }
       );

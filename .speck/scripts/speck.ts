@@ -90,8 +90,8 @@ program
   .command("branch [args...]")
   .description(branchEntry.description)
   .allowUnknownOption() // Allow flags like --all to pass through
-  .action(async (args) => {
-    const argsArray = Array.isArray(args) ? args : [args];
+  .action(async (args: unknown) => {
+    const argsArray: string[] = Array.isArray(args) ? (args as string[]) : [String(args)];
 
     // Handle lazyMain-based commands
     if (branchEntry.lazyMain) {
@@ -107,7 +107,7 @@ program
         isInteractive: process.stdin.isTTY ?? false,
       };
 
-      const parsedArgs = branchEntry.parseArgs!(commandString);
+      const parsedArgs = branchEntry.parseArgs!(commandString) as unknown;
       const result = await branchEntry.handler(parsedArgs, context);
 
       if (result.success) {
@@ -125,8 +125,8 @@ program
   .command("check-prerequisites [args...]")
   .description(checkPrerequisitesEntry.description)
   .allowUnknownOption() // Allow --json, --require-tasks, etc. to pass through
-  .action(async (args) => {
-    const argsArray = Array.isArray(args) ? args : [args];
+  .action(async (args: unknown) => {
+    const argsArray: string[] = Array.isArray(args) ? (args as string[]) : [String(args)];
 
     // Handle main-based commands differently
     if (checkPrerequisitesEntry.main) {
@@ -141,7 +141,7 @@ program
         isInteractive: process.stdin.isTTY ?? false,
       };
 
-      const parsedArgs = checkPrerequisitesEntry.parseArgs!(commandString);
+      const parsedArgs = checkPrerequisitesEntry.parseArgs!(commandString) as unknown;
       const result = await checkPrerequisitesEntry.handler(parsedArgs, context);
 
       if (result.success) {
@@ -159,8 +159,8 @@ program
   .command("create-new-feature [args...]")
   .description(createNewFeatureEntry.description)
   .allowUnknownOption() // Allow flags to pass through
-  .action(async (args) => {
-    const argsArray = Array.isArray(args) ? args : [args];
+  .action(async (args: unknown) => {
+    const argsArray: string[] = Array.isArray(args) ? (args as string[]) : [String(args)];
 
     // Handle lazyMain-based commands
     if (createNewFeatureEntry.lazyMain) {
@@ -176,7 +176,7 @@ program
         isInteractive: process.stdin.isTTY ?? false,
       };
 
-      const parsedArgs = createNewFeatureEntry.parseArgs!(commandString);
+      const parsedArgs = createNewFeatureEntry.parseArgs!(commandString) as unknown;
       const result = await createNewFeatureEntry.handler(parsedArgs, context);
 
       if (result.success) {
@@ -194,8 +194,8 @@ program
   .command("setup-plan [args...]")
   .description(setupPlanEntry.description)
   .allowUnknownOption() // Allow flags to pass through
-  .action(async (args) => {
-    const argsArray = Array.isArray(args) ? args : [args];
+  .action(async (args: unknown) => {
+    const argsArray: string[] = Array.isArray(args) ? (args as string[]) : [String(args)];
 
     // Handle lazyMain-based commands
     if (setupPlanEntry.lazyMain) {
@@ -211,7 +211,7 @@ program
         isInteractive: process.stdin.isTTY ?? false,
       };
 
-      const parsedArgs = setupPlanEntry.parseArgs!(commandString);
+      const parsedArgs = setupPlanEntry.parseArgs!(commandString) as unknown;
       const result = await setupPlanEntry.handler(parsedArgs, context);
 
       if (result.success) {
@@ -229,8 +229,8 @@ program
   .command("link-repo [args...]")
   .description(linkRepoEntry.description)
   .allowUnknownOption() // Allow flags to pass through
-  .action(async (args) => {
-    const argsArray = Array.isArray(args) ? args : [args];
+  .action(async (args: unknown) => {
+    const argsArray: string[] = Array.isArray(args) ? (args as string[]) : [String(args)];
 
     // Handle lazyMain-based commands
     if (linkRepoEntry.lazyMain) {
@@ -246,7 +246,7 @@ program
         isInteractive: process.stdin.isTTY ?? false,
       };
 
-      const parsedArgs = linkRepoEntry.parseArgs!(commandString);
+      const parsedArgs = linkRepoEntry.parseArgs!(commandString) as unknown;
       const result = await linkRepoEntry.handler(parsedArgs, context);
 
       if (result.success) {
@@ -264,8 +264,8 @@ program
   .command("update-agent-context [args...]")
   .description(updateAgentContextEntry.description)
   .allowUnknownOption() // Allow flags to pass through
-  .action(async (args) => {
-    const argsArray = Array.isArray(args) ? args : [args];
+  .action(async (args: unknown) => {
+    const argsArray: string[] = Array.isArray(args) ? (args as string[]) : [String(args)];
 
     // Handle lazyMain-based commands
     if (updateAgentContextEntry.lazyMain) {
@@ -281,7 +281,7 @@ program
         isInteractive: process.stdin.isTTY ?? false,
       };
 
-      const parsedArgs = updateAgentContextEntry.parseArgs!(commandString);
+      const parsedArgs = updateAgentContextEntry.parseArgs!(commandString) as unknown;
       const result = await updateAgentContextEntry.handler(parsedArgs, context);
 
       if (result.success) {
@@ -377,7 +377,7 @@ async function runHookMode() {
           workingDirectory: process.cwd(),
           isInteractive: false,
         };
-        const parsedArgs = commandEntry.parseArgs ? commandEntry.parseArgs(command) : {};
+        const parsedArgs = commandEntry.parseArgs ? (commandEntry.parseArgs(command) as unknown) : {};
         const result = await commandEntry.handler(parsedArgs, context);
         if (result.success && result.output) {
           output += result.output;

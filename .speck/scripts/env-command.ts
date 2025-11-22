@@ -15,9 +15,9 @@
  *   --json     Output as JSON (for programmatic use)
  */
 
-import { readBranches, getAggregatedBranchStatus, type RepoBranchSummary } from "./common/branch-mapper.ts";
+import { readBranches, getAggregatedBranchStatus, type RepoBranchSummary, type BranchEntry } from "./common/branch-mapper.ts";
 import { getCurrentBranch } from "./common/git-operations.ts";
-import { detectSpeckRoot, getMultiRepoContext, findChildReposWithNames } from "./common/paths.ts";
+import { detectSpeckRoot, getMultiRepoContext, findChildReposWithNames, type SpeckConfig, type MultiRepoContextMetadata } from "./common/paths.ts";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -96,7 +96,7 @@ async function displayEnvironmentStatus(jsonOutput: boolean): Promise<void> {
 // Text Output (Human-Readable)
 // ===========================
 
-async function displayTextOutput(config: any, context: any): Promise<void> {
+async function displayTextOutput(config: SpeckConfig, context: MultiRepoContextMetadata): Promise<void> {
   console.log("=== Speck Environment Status ===\n");
 
   // T032: Display multi-repo context indicator when in child
@@ -109,7 +109,7 @@ async function displayTextOutput(config: any, context: any): Promise<void> {
 /**
  * T032 - Display multi-repo context indicator when in child
  */
-function displayMultiRepoContext(context: any): void {
+function displayMultiRepoContext(context: MultiRepoContextMetadata): void {
   if (context.mode === "single-repo") {
     console.log("Mode: Single-repo");
     console.log(`  Repo Root: ${context.repoRoot}`);
@@ -133,7 +133,7 @@ function displayMultiRepoContext(context: any): void {
 /**
  * T033-T034 - Display branch stack status with multi-repo awareness
  */
-async function displayBranchStackStatus(config: any, context: any): Promise<void> {
+async function displayBranchStackStatus(config: SpeckConfig, context: MultiRepoContextMetadata): Promise<void> {
   // T033: Check if there are child repos (even in single-repo mode for the root)
   // This handles the case where root doesn't have .speck/root but has children
   const childReposMap = await findChildReposWithNames(config.speckRoot);
@@ -230,7 +230,7 @@ function displayRepoSummary(header: string, summary: RepoBranchSummary): void {
 /**
  * T034 - Display branch chain with tree visualization
  */
-function displayBranchChain(branchNames: string[], branchEntries: any[]): void {
+function displayBranchChain(branchNames: string[], branchEntries: BranchEntry[]): void {
   if (branchNames.length === 0) return;
 
   // Display as a stacked chain with PR numbers and status
@@ -284,11 +284,11 @@ async function displayLocalStatus(repoRoot: string): Promise<void> {
     const branchNames = mapping.specIndex[specId] || [];
     const branches = branchNames.map(name =>
       mapping.branches.find(b => b.name === name)
-    ).filter(Boolean);
+    ).filter((b): b is BranchEntry => b !== undefined);
 
     // Find root branches
-    const rootBranches = branches.filter(b =>
-      b && !branchNames.includes(b.baseBranch)
+    const rootBranches = branches.filter((b): b is BranchEntry =>
+      b !== undefined && !branchNames.includes(b.baseBranch)
     );
 
     // Display tree
@@ -338,7 +338,7 @@ function displayTree(
   branchName: string,
   indent: string,
   isLast: boolean,
-  branches: any[],
+  branches: BranchEntry[],
   currentBranch: string
 ): void {
   const branch = branches.find(b => b.name === branchName);
@@ -373,8 +373,25 @@ function displayTree(
 // JSON Output (Programmatic)
 // ===========================
 
-async function displayJsonOutput(_config: any, context: any): Promise<void> {
-  const output: any = {
+interface JsonOutput {
+  mode: string;
+  context: string;
+  speckRoot: string;
+  repoRoot: string;
+  specsDir: string;
+  childRepoName?: string | null;
+  parentSpecId?: string | null;
+  branchStatus?: {
+    type: string;
+    rootRepo?: unknown;
+    childRepos?: Record<string, unknown>;
+    branches?: unknown[];
+    specIndex?: Record<string, unknown>;
+  };
+}
+
+async function displayJsonOutput(_config: SpeckConfig, context: MultiRepoContextMetadata): Promise<void> {
+  const output: JsonOutput = {
     mode: context.mode,
     context: context.context,
     speckRoot: context.speckRoot,

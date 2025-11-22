@@ -123,7 +123,7 @@ async function main() {
     const input = await Bun.stdin.text();
     await log(`Received hook input (length: ${input.length})`);
 
-    const hookInput: HookInput = JSON.parse(input);
+    const hookInput = JSON.parse(input) as HookInput;
     const { prompt } = hookInput;
     await log(`Parsed prompt: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
 

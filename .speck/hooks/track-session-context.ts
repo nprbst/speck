@@ -9,7 +9,7 @@ interface HookInput {
   cwd: string;
 }
 
-const hookInput: HookInput = await Bun.stdin.json();
+const hookInput = await Bun.stdin.json() as HookInput;
 
 const { session_id, prompt, cwd } = hookInput;
 

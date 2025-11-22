@@ -118,7 +118,7 @@ export async function readBranches(repoRoot: string): Promise<BranchMapping> {
 
   try {
     const content = await fs.readFile(filePath, "utf-8");
-    const data = JSON.parse(content);
+    const data = JSON.parse(content) as unknown;
 
     // Validate with Zod
     const result = BranchMappingSchema.safeParse(data);
@@ -499,38 +499,51 @@ export function validateStatusTransition(
  * @param repoRoot - Repository root directory
  * @returns Repaired BranchMapping or null if cannot repair
  */
+interface RepairData {
+  version?: string;
+  branches?: Array<{
+    createdAt?: string | number;
+    updatedAt?: string | number;
+    [key: string]: unknown;
+  }>;
+  specIndex?: unknown;
+  [key: string]: unknown;
+}
+
 function attemptRepair(
-  data: any,
+  data: unknown,
   _repoRoot: string
 ): BranchMapping | null {
   try {
+    const repairData = data as RepairData;
+
     // Ensure version exists
-    if (!data.version) {
-      data.version = CURRENT_VERSION;
+    if (!repairData.version) {
+      repairData.version = CURRENT_VERSION;
     }
 
     // Ensure branches array exists
-    if (!Array.isArray(data.branches)) {
-      data.branches = [];
+    if (!Array.isArray(repairData.branches)) {
+      repairData.branches = [];
     }
 
     // Repair invalid timestamps
-    for (const branch of data.branches) {
-      if (!branch.createdAt || !isValidISOTimestamp(branch.createdAt)) {
+    for (const branch of repairData.branches) {
+      if (!branch.createdAt || !isValidISOTimestamp(branch.createdAt as string)) {
         branch.createdAt = new Date().toISOString();
       }
-      if (!branch.updatedAt || !isValidISOTimestamp(branch.updatedAt)) {
+      if (!branch.updatedAt || !isValidISOTimestamp(branch.updatedAt as string)) {
         branch.updatedAt = new Date().toISOString();
       }
     }
 
     // Rebuild missing or corrupted specIndex
-    if (!data.specIndex || typeof data.specIndex !== "object") {
-      data.specIndex = {};
+    if (!repairData.specIndex || typeof repairData.specIndex !== "object") {
+      repairData.specIndex = {};
     }
 
     // Rebuild index from branches
-    const repaired = rebuildSpecIndex(data as BranchMapping);
+    const repaired = rebuildSpecIndex(repairData as unknown as BranchMapping);
 
     // Validate repaired data
     const result = BranchMappingSchema.safeParse(repaired);

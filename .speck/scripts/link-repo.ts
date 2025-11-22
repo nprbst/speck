@@ -46,8 +46,9 @@ export async function linkRepo(targetPath: string): Promise<void> {
     if (!stats.isDirectory()) {
       throw new Error(`Target is not a directory: ${absoluteTarget}`);
     }
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code === 'ENOENT') {
       throw new Error(`Target does not exist: ${absoluteTarget}`);
     }
     throw error;
@@ -81,17 +82,19 @@ export async function linkRepo(targetPath: string): Promise<void> {
     console.log(`Updating link from ${currentTarget} to ${relativePath}`);
     await fs.unlink(symlinkPath);
 
-  } catch (error: any) {
-    if (error.code !== 'ENOENT') throw error;
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code !== 'ENOENT') throw error;
     // ENOENT is fine - symlink doesn't exist yet
   }
 
   // Create symlink
   try {
     await fs.symlink(relativePath, symlinkPath, 'dir');
-  } catch (error: any) {
+  } catch (error) {
     // Platform-specific error handling
-    if (process.platform === 'win32' && (error.code === 'EPERM' || error.code === 'EACCES')) {
+    const err = error as NodeJS.ErrnoException;
+    if (process.platform === 'win32' && (err.code === 'EPERM' || err.code === 'EACCES')) {
       throw new Error(
         'Symlink creation failed (Windows requires Developer Mode or WSL)\n\n' +
         'Fix options:\n' +
@@ -145,8 +148,9 @@ async function addGitignorePatterns(repoRoot: string): Promise<void> {
     let content = '';
     try {
       content = await fs.readFile(gitignorePath, 'utf-8');
-    } catch (error: any) {
-      if (error.code !== 'ENOENT') throw error;
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code !== 'ENOENT') throw error;
       // File doesn't exist - we'll create it
     }
 
@@ -179,8 +183,9 @@ async function addGitignorePatterns(repoRoot: string): Promise<void> {
       await fs.writeFile(gitignorePath, newContent, 'utf-8');
       console.log('✓ Added .gitignore patterns for symlinked files');
     }
-  } catch (error: any) {
-    console.warn(`Warning: Could not update .gitignore: ${error.message}`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.warn(`Warning: Could not update .gitignore: ${errorMessage}`);
   }
 }
 // [SPECK-EXTENSION:END]
@@ -201,8 +206,9 @@ export async function main(args: string[]): Promise<number> {
   try {
     await linkRepo(args[0]!);
     return 0;
-  } catch (error: any) {
-    console.error('ERROR:', error.message);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('ERROR:', errorMessage);
     return 1;
   }
 }

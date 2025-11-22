@@ -8,13 +8,20 @@ interface HookInput {
   cwd: string;
 }
 
-const hookInput: HookInput = await Bun.stdin.json();
+interface LogEvent {
+  type: string;
+  featureId?: string;
+  command?: string;
+  [key: string]: unknown;
+}
+
+const hookInput = await Bun.stdin.json() as HookInput;
 const { session_id, cwd } = hookInput;
 
 // Read session log
 const logPath = `${cwd}/.speck/test-logs/session-${session_id}.jsonl`;
 
-let events: any[] = [];
+let events: LogEvent[] = [];
 try {
   if (existsSync(logPath)) {
     const logContent = await readFile(logPath, 'utf-8');
@@ -22,7 +29,7 @@ try {
       .trim()
       .split('\n')
       .filter(Boolean)
-      .map((line) => JSON.parse(line));
+      .map((line) => JSON.parse(line) as LogEvent);
   }
 } catch {
   // No log file yet, skip validation
@@ -31,11 +38,11 @@ try {
 
 // Extract feature IDs and commands
 const featureIds = events
-  .filter((e) => e.type === 'session-context' && e.featureId)
+  .filter((e): e is LogEvent & { featureId: string } => e.type === 'session-context' && !!e.featureId)
   .map((e) => e.featureId);
 
 const commands = events
-  .filter((e) => e.type === 'session-context' && e.command)
+  .filter((e): e is LogEvent & { command: string } => e.type === 'session-context' && !!e.command)
   .map((e) => e.command);
 
 // Detect context switches (feature ID changed mid-session)

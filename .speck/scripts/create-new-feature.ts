@@ -489,9 +489,11 @@ export async function main(args: string[]): Promise<number> {
 
     try {
       symlinkSync(relativePath, localSpecFile, 'file');
-    } catch (error: any) {
-      if (error.code !== 'EEXIST') {
-        console.error(`Warning: Failed to create symlink for spec.md: ${error.message}`);
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code !== 'EEXIST') {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Warning: Failed to create symlink for spec.md: ${errorMessage}`);
         console.error(`  From: ${localSpecFile}`);
         console.error(`  To: ${specFile}`);
       }

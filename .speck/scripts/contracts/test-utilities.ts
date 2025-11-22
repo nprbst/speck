@@ -293,7 +293,7 @@ export function assertJsonOutput<T>(
   }
 
   try {
-    const data = JSON.parse(result.stdout);
+    const data = JSON.parse(result.stdout) as unknown;
     return validator(data);
   } catch (error) {
     throw new Error(

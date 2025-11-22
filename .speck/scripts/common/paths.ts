@@ -44,6 +44,24 @@ export interface MultiRepoContextMetadata extends SpeckConfig {
 // [SPECK-EXTENSION:END]
 
 /**
+ * Branch entry in branches.json (Feature 008)
+ */
+interface BranchEntry {
+  name: string;
+  specId?: string;
+  parentSpecId?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Branches mapping file structure (Feature 008)
+ */
+interface BranchesMapping {
+  branches?: BranchEntry[];
+  [key: string]: unknown;
+}
+
+/**
  * Feature paths returned by getFeaturePaths()
  */
 export interface FeaturePaths {
@@ -265,11 +283,12 @@ export async function detectSpeckRoot(): Promise<SpeckConfig> {
           `  2. Remove local specs: rm -rf ${localSpecsDir}\n`
         );
       }
-    } catch (error: any) {
+    } catch (error) {
       // Local specs/ does not exist - this is expected in multi-repo mode
-      if (error.code !== 'ENOENT') {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code !== 'ENOENT') {
         // Log unexpected errors but don't throw - allow multi-repo mode to work
-        console.warn(`Warning: Could not check local specs/ directory: ${error.message}`);
+        console.warn(`Warning: Could not check local specs/ directory: ${err.message}`);
       }
     }
     // [SPECK-EXTENSION:END]
@@ -283,8 +302,9 @@ export async function detectSpeckRoot(): Promise<SpeckConfig> {
     cachedConfig = config;
     return config;
 
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code === 'ENOENT') {
       // Symlink does not exist - check if this is a multi-repo root
       // Multi-repo root has .speck-link-* symlinks pointing to child repos
       const childRepos = await findChildRepos(repoRoot);
@@ -312,7 +332,7 @@ export async function detectSpeckRoot(): Promise<SpeckConfig> {
       return config;
     }
 
-    if (error.code === 'ELOOP') {
+    if (err.code === 'ELOOP') {
       throw new Error(
         'Multi-repo configuration broken: .speck/root contains circular reference\n' +
         'Fix: rm .speck/root && /speck.link <valid-path>'
@@ -430,15 +450,17 @@ export async function findChildRepos(speckRoot: string): Promise<string[]> {
             // Not a git repository - skip
             console.warn(`Warning: ${entry.name} points to non-git directory: ${targetPath}`);
           }
-        } catch (error: any) {
+        } catch (error) {
           // Broken symlink - skip with warning
-          console.warn(`Warning: Broken symlink ${entry.name}: ${error.message}`);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.warn(`Warning: Broken symlink ${entry.name}: ${errorMessage}`);
         }
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     // If speckRoot doesn't exist or can't be read, return empty array
-    if (error.code !== 'ENOENT') {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code !== 'ENOENT') {
       throw error;
     }
   }
@@ -495,15 +517,17 @@ export async function findChildReposWithNames(speckRoot: string): Promise<Map<st
             // Not a git repository - skip
             console.warn(`Warning: ${entry.name} points to non-git directory: ${targetPath}`);
           }
-        } catch (error: any) {
+        } catch (error) {
           // Broken symlink - skip with warning
-          console.warn(`Warning: Broken symlink ${entry.name}: ${error.message}`);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.warn(`Warning: Broken symlink ${entry.name}: ${errorMessage}`);
         }
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     // If speckRoot doesn't exist or can't be read, return empty map
-    if (error.code !== 'ENOENT') {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code !== 'ENOENT') {
       throw error;
     }
   }
@@ -549,11 +573,11 @@ export async function getMultiRepoContext(): Promise<MultiRepoContextMetadata> {
     try {
       const branchesJsonPath = path.join(config.repoRoot, '.speck', 'branches.json');
       const content = await fs.readFile(branchesJsonPath, 'utf-8');
-      const branchMapping = JSON.parse(content);
+      const branchMapping = JSON.parse(content) as { branches?: Array<{ parentSpecId?: string | null }> };
 
       // Get parentSpecId from the first branch entry (all branches in child repo should have same parentSpecId)
       if (branchMapping.branches && branchMapping.branches.length > 0) {
-        parentSpecId = branchMapping.branches[0].parentSpecId || null;
+        parentSpecId = branchMapping.branches[0]?.parentSpecId || null;
       }
     } catch {
       // If we can't read branches.json or it doesn't exist, leave parentSpecId as null
@@ -681,11 +705,11 @@ export async function checkFeatureBranch(branch: string, hasGitRepo: boolean, re
   if (existsSync(branchesFile)) {
     try {
       const content = await fs.readFile(branchesFile, "utf-8");
-      const mapping = JSON.parse(content);
+      const mapping = JSON.parse(content) as BranchesMapping;
 
       // Check if current branch is in branches.json
       if (mapping.branches && Array.isArray(mapping.branches)) {
-        const branchExists = mapping.branches.some((b: any) => b.name === branch);
+        const branchExists = mapping.branches.some((b) => b.name === branch);
         if (branchExists) {
           // Branch is in stacked mode - no NNN-pattern required
           return true;
@@ -731,11 +755,11 @@ export async function findFeatureDirByPrefix(specsDir: string, branchName: strin
   if (existsSync(branchesFile)) {
     try {
       const content = await fs.readFile(branchesFile, "utf-8");
-      const mapping = JSON.parse(content);
+      const mapping = JSON.parse(content) as BranchesMapping;
 
       // Find branch in mapping
       if (mapping.branches && Array.isArray(mapping.branches)) {
-        const branch = mapping.branches.find((b: any) => b.name === branchName);
+        const branch = mapping.branches.find((b) => b.name === branchName);
         if (branch && branch.specId) {
           // Found in branches.json - use specId
           return path.join(specsDir, branch.specId);
@@ -931,8 +955,9 @@ export async function syncSharedContracts(featureName: string): Promise<boolean>
       );
       return false;
     }
-  } catch (error: any) {
-    if (error.code !== 'ENOENT') throw error;
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code !== 'ENOENT') throw error;
     // Symlink doesn't exist - we'll create it
   }
 
@@ -943,8 +968,9 @@ export async function syncSharedContracts(featureName: string): Promise<boolean>
   try {
     await fs.symlink(relativePath, localContractsLink, 'dir');
     return true;
-  } catch (error: any) {
-    console.warn(`Warning: Failed to create contracts/ symlink: ${error.message}`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.warn(`Warning: Failed to create contracts/ symlink: ${errorMessage}`);
     return false;
   }
 }
