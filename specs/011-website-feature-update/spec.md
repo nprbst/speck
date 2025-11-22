@@ -5,6 +5,16 @@
 **Status**: Draft
 **Input**: User description: "Considering the new work we have implemented in specs 007, 008, 009 and 010, we need to update the website content to reflect. In particular, Speck is now a much more efficient by being Claude-native and taking advantage of Hooks to pre-fetch and provide virtual commands. Speck is now fully capable of working in multi-repos and monorepos, with per-package constitutions/plans/tasks referencing shared specs. Finally, Speck now understands how to work with stacked PRs and split plans into right-sized stacked PRs for faster delivery and easier reviewing."
 
+## Clarifications
+
+### Session 2025-11-22
+
+- Q: How should the website explicitly acknowledge the speck-kit relationship? → A: Options A, B, and D combined - prominent hero attribution, dedicated homepage section about origins, footer attribution on all pages, AND inline contextual attribution throughout documentation when describing features inherited from speck-kit
+- Q: What specific wording should appear in the homepage hero tagline for speck-kit attribution? → A: "Built on GitHub's speck-kit" (as subtitle below main tagline) with a link to the speck-kit GitHub project page
+- Q: What key speck-kit features should receive explicit inline attribution in documentation? → A: Core workflow features only: three-phase workflow (specify/plan/implement), constitution concept, template system
+- Q: Should the "About/Origins" section on the homepage include a call-to-action encouraging visitors to explore speck-kit itself? → A: Options B and C combined - Provide respectful acknowledgment and link without explicit CTA, BUT include conditional guidance that speck-kit may be better for non-Claude-Code users (e.g., "If you're not using Claude Code, consider exploring speck-kit directly")
+- Q: What level of detail should the homepage "About/Origins" section include about Speck's relationship to speck-kit? → A: Options B and D combined - Brief paragraph (2-3 sentences) on homepage covering foundation acknowledgment, what Speck adds, and compatibility statement, PLUS link to dedicated "About Speck & speck-kit" documentation page with full relationship details, inheritance breakdown, and compatibility guarantees
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Discovering Multi-Repo Capabilities (Priority: P1)
@@ -71,11 +81,12 @@ A potential Speck user visits the website for the first time and wants to quickl
 
 **Acceptance Scenarios**:
 
-1. **Given** a visitor lands on the homepage, **When** they read the hero section, **Then** they see a clear tagline capturing Speck's value: "Specification-driven development for Claude Code - from idea to implementation with shared specs, stacked PRs, and multi-repo support"
+1. **Given** a visitor lands on the homepage, **When** they read the hero section, **Then** they see a clear tagline capturing Speck's value: "Specification-driven development for Claude Code - from idea to implementation with shared specs, stacked PRs, and multi-repo support" AND attribution to speck-kit origin
 2. **Given** a visitor wants quick feature overview, **When** they scan the homepage, **Then** they see 4-6 key capabilities with 1-sentence descriptions: Multi-repo support, Stacked PR workflows, Claude-native performance, Plugin installation
 3. **Given** a developer wants to compare with alternatives, **When** they check positioning, **Then** they see differentiators: "Only tool built for Claude Code with native hook integration" and "Only spec system supporting multi-repo shared specifications"
 4. **Given** a visitor wants proof of value, **When** they review testimonials or metrics, **Then** they see measurable outcomes: "70% faster feature delivery with stacked PRs" or "Zero-config multi-repo setup in 2 minutes"
 5. **Given** a visitor is ready to try Speck, **When** they look for next steps, **Then** they see clear call-to-action: "Install via `/plugin` in Claude Code" with link to quickstart guide
+6. **Given** a visitor wants to understand Speck's origins, **When** they scroll through the homepage, **Then** they see a dedicated "About" or "Origins" section explaining Speck's relationship to GitHub's speck-kit project with respectful attribution
 
 ---
 
@@ -99,11 +110,11 @@ A website visitor who previously read the spec 006 documentation (plugin install
 
 ### Edge Cases
 
-- What happens when a visitor only has experience with single-repo workflows and reads multi-repo documentation? � Clear "When to use" guidance helps them determine relevance
-- How does website handle visitors who don't use Claude Code? � Prominent prerequisite section states "Requires Claude Code with plugin support"
+- What happens when a visitor only has experience with single-repo workflows and reads multi-repo documentation? → Clear "When to use" guidance helps them determine relevance
+- How does website handle visitors who don't use Claude Code? → Prominent prerequisite section states "Requires Claude Code with plugin support"
 - What if a visitor is confused about the relationship between features (multi-repo + stacked PRs)? → Capability matrix shows feature compatibility (stacked PRs work in all repository modes per spec 009, including multi-repo child repos with independent branch stacks)
-- How does website serve both technical and non-technical audiences? � Layered documentation: high-level benefits for decision-makers, technical details for implementers
-- What if visitor wants to see real examples before installing? � Screenshots, demo videos, or code examples show Speck in action without requiring installation
+- How does website serve both technical and non-technical audiences? → Layered documentation: high-level benefits for decision-makers, technical details for implementers
+- What if visitor wants to see real examples before installing? → Screenshots, demo videos, or code examples show Speck in action without requiring installation
 
 ## Requirements *(mandatory)*
 
@@ -111,9 +122,17 @@ A website visitor who previously read the spec 006 documentation (plugin install
 
 #### Core Value Proposition Updates
 
-- **FR-001**: Website MUST update hero section or primary tagline to reflect Speck's evolution as a Claude-native, multi-repo-capable specification system
+- **FR-001**: Website MUST update hero section or primary tagline to reflect Speck's evolution as a Claude-native, multi-repo-capable specification system, INCLUDING prominent attribution to speck-kit as the foundational project via subtitle reading "Built on GitHub's speck-kit" with hyperlink to speck-kit GitHub project page
 - **FR-002**: Website MUST prominently feature three major capability areas: (1) Multi-Repo & Monorepo Support, (2) Stacked PR Workflows, (3) Performance Improvements via Virtual Commands
 - **FR-003**: Website MUST preserve all content from spec 006 (plugin installation via `/plugin`, Speck skill documentation) as the foundation for new content
+
+#### speck-kit Attribution & Relationship (New Section)
+
+- **FR-029**: Website homepage MUST include a dedicated "About" or "Origins" section with brief paragraph (2-3 sentences) explaining Speck's relationship to GitHub's speck-kit project: foundation acknowledgment, what Speck adds (Claude Code integration, multi-repo, stacked PRs, performance), and compatibility statement. Section MUST include conditional guidance for non-Claude-Code users (e.g., "If you're not using Claude Code, consider exploring speck-kit directly") with link, but MUST NOT include explicit CTA encouraging Speck users to explore speck-kit. Section MUST link to dedicated "About Speck & speck-kit" documentation page for full details
+- **FR-033**: Website MUST include a dedicated documentation page "About Speck & speck-kit" (in Architecture or Getting Started section) providing comprehensive relationship details: full story of origins, detailed breakdown of inherited features vs extensions, compatibility guarantees, and positioning explanation
+- **FR-030**: Website MUST include footer attribution on all pages acknowledging speck-kit foundation (e.g., "Built on GitHub's speck-kit")
+- **FR-031**: Website documentation MUST use inline contextual attribution when describing core workflow features inherited from speck-kit: (1) three-phase workflow (specify/plan/implement), (2) constitution concept, (3) template system. Example phrasing: "The three-phase workflow (specify, plan, implement), inherited from speck-kit, forms the foundation..." or "Speck extends speck-kit's constitution concept to support...". Advanced features (multi-repo, stacked PRs, hooks) are positioned as Speck extensions without inline attribution
+- **FR-032**: All speck-kit attribution MUST convey tone: "Speck builds on and remains compatible with GitHub's excellent speck-kit project, extending it for Claude Code users with multi-repo support, stacked PR workflows, and performance optimizations"
 
 #### Multi-Repo & Monorepo Documentation
 
@@ -142,7 +161,7 @@ A website visitor who previously read the spec 006 documentation (plugin install
 #### Navigation & Information Architecture
 
 - **FR-019**: Website MUST organize documentation into clear sections: Getting Started (plugin install), Core Concepts (specs/plans/tasks), Advanced Features (multi-repo, stacked PRs), Architecture (performance, hooks)
-- **FR-020**: Website MUST provide clear navigation paths for different user types: new users � installation + quickstart, existing users � what's new + migration guides, evaluators � use cases + capabilities
+- **FR-020**: Website MUST provide clear navigation paths for different user types: new users → installation + quickstart, existing users → what's new + migration guides, evaluators → use cases + capabilities
 - **FR-021**: Website MUST include feature comparison or capability matrix showing which features work together (e.g., stacked PRs in single-repo vs multi-repo contexts)
 - **FR-022**: Website MUST provide searchable documentation enabling visitors to quickly find specific topics (multi-repo setup, stacked PR creation, performance metrics)
 
@@ -172,6 +191,8 @@ A website visitor who previously read the spec 006 documentation (plugin install
 
 - **Navigation Structure**: Information architecture organizing content by user journey (new users, existing users, evaluators) and feature area (core concepts, advanced features, architecture)
 
+- **speck-kit Attribution Content**: Homepage "About/Origins" section (brief 2-3 sentence paragraph), dedicated "About Speck & speck-kit" documentation page (comprehensive details), footer attribution on all pages, and inline contextual references acknowledging Speck's foundation on GitHub's speck-kit project with respectful, grateful tone
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
@@ -184,6 +205,7 @@ A website visitor who previously read the spec 006 documentation (plugin install
 - **SC-006**: Website navigation allows visitors to find any specific topic (multi-repo, stacked PRs, performance, installation) within 3 clicks from homepage
 - **SC-007**: Performance improvements are communicated with at least 3 specific, measurable metrics (e.g., "30% faster slash command execution", "sub-100ms hook latency", "zero manual prerequisite checks")
 - **SC-008**: Feature relationships and compatibility are clearly documented via capability matrix or equivalent showing what works together and known limitations (e.g., stacked PRs single-repo only)
+- **SC-009**: speck-kit attribution appears in at least 3 locations: (1) homepage hero/tagline area, (2) dedicated About/Origins section, (3) footer on all pages, with consistent respectful tone emphasizing compatibility and extension
 
 ## Assumptions
 
@@ -193,6 +215,7 @@ A website visitor who previously read the spec 006 documentation (plugin install
 - Visitors may or may not be familiar with concepts like stacked PRs, monorepos, or Claude Code hooks
 - Documentation updates can reference spec-specific content (quickstart guides, design docs) from specs 007-010 as source material
 - Website supports markdown content, syntax highlighting, and basic multimedia (screenshots, diagrams if needed)
+- GitHub's speck-kit project remains the canonical upstream source for core specification-driven development concepts (three-phase workflow, constitution, templates)
 
 ## Out of Scope
 

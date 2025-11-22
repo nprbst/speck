@@ -196,7 +196,15 @@ No constitutional violations requiring justification. This is a straightforward 
 
 ### Contracts (`/contracts/`)
 
-1. **`content-schema.md`**: Markdown frontmatter structure
+1. **`speck-kit-attribution-guide.md`**: Attribution strategy and tone guidance (NEW - from clarifications session)
+   - Where attribution appears: hero subtitle, Origins section, footer, inline contexts
+   - Tone requirements: respectful, grateful, compatibility-focused per FR-032
+   - Core features receiving inline attribution: three-phase workflow, constitution, templates (FR-031)
+   - Example phrasings: "The three-phase workflow (specify, plan, implement), inherited from speck-kit, forms the foundation..."
+   - Non-Claude-Code conditional guidance: "If you're not using Claude Code, consider exploring speck-kit directly"
+   - speck-kit GitHub URL: https://github.com/github/speck-kit
+
+2. **`content-schema.md`**: Markdown frontmatter structure (renumbered from 1 due to attribution guide addition)
    ```yaml
    ---
    title: String (required)
@@ -209,20 +217,20 @@ No constitutional violations requiring justification. This is a straightforward 
    ---
    ```
 
-2. **`navigation-structure.md`**: Information architecture
+3. **`navigation-structure.md`**: Information architecture
    - Sitemap showing all pages and hierarchy
    - Navigation menu structure (top-level, dropdowns)
    - Breadcrumb patterns
    - Cross-linking strategy
 
-3. **`capability-matrix.md`**: Feature compatibility table
+4. **`capability-matrix.md`**: Feature compatibility table
    | Feature | Single-Repo | Multi-Repo Root | Multi-Repo Child | Limitations |
    |---------|-------------|-----------------|------------------|-------------|
    | Stacked PRs | ✅ Supported | ✅ Supported | ✅ Supported | No cross-repo dependencies |
    | Shared Specs | N/A | ✅ Supported | ✅ Supported | Requires symlinks |
    | Virtual Commands | ✅ Supported | ✅ Supported | ✅ Supported | None |
 
-4. **`example-templates.md`**: Workflow documentation pattern
+5. **`example-templates.md`**: Workflow documentation pattern
    - Standard structure for example pages
    - Code sample formatting conventions
    - Before/after comparison template
@@ -264,8 +272,9 @@ Expected task categories:
 2. Navigation updates (2-3 components)
 3. Example workflows (3 complete examples)
 4. Capability matrix creation (1 reference page)
-5. Link validation and accessibility testing
-6. Preview deployment and review
+5. speck-kit attribution implementation (5-6 tasks: hero subtitle, Origins section, dedicated about page, footer, inline attribution in content, validation)
+6. Link validation and accessibility testing
+7. Preview deployment and review
 
 ---
 

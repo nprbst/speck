@@ -182,6 +182,8 @@ At end of report, output a concise Next Actions block:
 
 Ask the user: "Would you like me to suggest concrete remediation edits for the top N issues?" (Do NOT apply them automatically.)
 
+**CRITICAL**: If remediation edits are approved and applied, any tasks that are modified with new requirements MUST be unchecked (changed from `[X]` to `[ ]`) in tasks.md so they will be re-implemented with the updated requirements.
+
 ## Operating Principles
 
 ### Context Efficiency
