@@ -3,7 +3,7 @@ title: "Three-Phase Workflow"
 description: "Understanding Speck's structured specify → plan → implement cycle"
 category: "concepts"
 order: 1
-lastUpdated: 2025-11-17
+lastUpdated: 2025-11-22
 tags: ["workflow", "concepts", "methodology", "skill"]
 ---
 
@@ -431,6 +431,16 @@ For each feature, define tests first:
 ```
 
 ---
+
+## What's Next
+
+### Advanced Workflows
+
+Ready to scale beyond single-repo projects or handle large features?
+
+- **Multi-Repo Projects**: Share specifications across multiple repositories with `/speck.link` - [Learn more](/docs/advanced-features/multi-repo-support)
+- **Stacked PR Workflows**: Break large features into reviewable chunks with `/speck.branch` - [Learn more](/docs/advanced-features/stacked-prs)
+- **Monorepo Support**: Manage workspace projects with shared specs - [Learn more](/docs/advanced-features/monorepos)
 
 ## See Also
 

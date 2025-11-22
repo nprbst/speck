@@ -84,11 +84,11 @@ This tasks file breaks down the website content update into actionable, independ
 - [X] T014 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/multi-repo-support.md with step-by-step `/speck.link` setup instructions (following contracts/content-schema.md)
 - [X] T015 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/monorepos.md for monorepo workspace management (following contracts/content-schema.md)
 - [X] T016 [P] [US1] Create example workflow in website/src/content/docs/examples/multi-repo-workflow.md demonstrating frontend/backend coordination (following contracts/example-templates.md)
-- [ ] T017 [US1] Update quickstart guide in website/src/content/docs/getting-started/quick-start.md to add "What's Next" references to multi-repo capabilities
-- [ ] T018 [US1] Add multi-repo use cases to homepage in website/src/pages/index.astro: "Coordinated frontend/backend features" and "Monorepo workspace management"
-- [ ] T019 [US1] Update commands reference in website/src/content/docs/commands/reference.md to document `/speck.link` command with syntax and examples
-- [ ] T020 [US1] Verify all multi-repo pages cross-link correctly and prerequisites resolve
-- [ ] T021 [US1] Test multi-repo discovery flow: homepage → multi-repo concepts → setup guide → example workflow (5-minute path verification)
+- [X] T017 [US1] Update quickstart guide in website/src/content/docs/getting-started/quick-start.md to add "What's Next" references to multi-repo capabilities
+- [X] T018 [US1] Add multi-repo use cases to homepage in website/src/pages/index.astro: "Coordinated frontend/backend features" and "Monorepo workspace management"
+- [X] T019 [US1] Update commands reference in website/src/content/docs/commands/reference.md to document `/speck.link` command with syntax and examples
+- [X] T020 [US1] Verify all multi-repo pages cross-link correctly and prerequisites resolve
+- [X] T021 [US1] Test multi-repo discovery flow: homepage → multi-repo concepts → setup guide → example workflow (5-minute path verification)
 
 ---
 
@@ -102,15 +102,15 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T022 [P] [US2] Create core concepts page in website/src/content/docs/core-concepts/stacked-prs.md explaining branch dependency tracking, PR automation, and workflow benefits (following contracts/content-schema.md)
-- [ ] T023 [P] [US2] Create advanced features page in website/src/content/docs/advanced-features/stacked-prs.md with `/speck.branch` commands and workflow guide (following contracts/content-schema.md)
-- [ ] T024 [P] [US2] Create example workflow in website/src/content/docs/examples/stacked-pr-workflow.md demonstrating breaking feature into reviewable stack (following contracts/example-templates.md)
-- [ ] T025 [US2] Update homepage in website/src/pages/index.astro to highlight stacked PR support: "Break features into reviewable chunks" and "Faster delivery through parallel review"
-- [ ] T026 [US2] Add tool compatibility messaging to stacked PR pages: "Works with Graphite, GitHub Stack, or manual git workflows"
-- [ ] T027 [US2] Update commands reference in website/src/content/docs/commands/reference.md to document `/speck.branch` commands (create, list, status, import)
-- [ ] T028 [US2] Add decision guide section to website/src/content/docs/advanced-features/stacked-prs.md: "When to use stacked PRs vs single-branch"
-- [ ] T029 [US2] Verify stacked PR pages cross-link to capability matrix showing multi-repo compatibility
-- [ ] T030 [US2] Test stacked PR discovery flow: homepage → stacked PR concepts → setup guide → example workflow (10-minute path verification)
+- [X] T022 [P] [US2] Create core concepts page in website/src/content/docs/core-concepts/stacked-prs.md explaining branch dependency tracking, PR automation, and workflow benefits (following contracts/content-schema.md)
+- [X] T023 [P] [US2] Create advanced features page in website/src/content/docs/advanced-features/stacked-prs.md with `/speck.branch` commands and workflow guide (following contracts/content-schema.md)
+- [X] T024 [P] [US2] Create example workflow in website/src/content/docs/examples/stacked-pr-workflow.md demonstrating breaking feature into reviewable stack (following contracts/example-templates.md)
+- [X] T025 [US2] Update homepage in website/src/pages/index.astro to highlight stacked PR support: "Break features into reviewable chunks" and "Faster delivery through parallel review"
+- [X] T026 [US2] Add tool compatibility messaging to stacked PR pages: "Works with Graphite, GitHub Stack, or manual git workflows"
+- [X] T027 [US2] Update commands reference in website/src/content/docs/commands/reference.md to document `/speck.branch` commands (create, list, status, import)
+- [X] T028 [US2] Add decision guide section to website/src/content/docs/advanced-features/stacked-prs.md: "When to use stacked PRs vs single-branch"
+- [X] T029 [US2] Verify stacked PR pages cross-link to capability matrix showing multi-repo compatibility
+- [X] T030 [US2] Test stacked PR discovery flow: homepage → stacked PR concepts → setup guide → example workflow (10-minute path verification)
 
 ---
 
@@ -124,13 +124,13 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T031 [P] [US5] Update three-phase workflow page in website/src/content/docs/core-concepts/workflow.md to add references to multi-repo and stacked PR workflows in "What's Next" section
-- [ ] T032 [P] [US5] Verify installation guide in website/src/content/docs/getting-started/installation.md remains unchanged (SC-003 preservation requirement)
-- [ ] T033 [P] [US5] Update existing first feature example in website/src/content/docs/examples/first-feature.md to add "What's Next" references to advanced workflows
-- [ ] T034 [US5] Create "What's New" section in website/src/content/docs/whats-new.md highlighting specs 007-010 capabilities with dates (2025-11-XX for each spec)
-- [ ] T035 [US5] Run link validation across all spec 006 pages to ensure no broken links after navigation updates
-- [ ] T036 [US5] Verify all spec 006 pages have updated frontmatter (audience, tags, relatedPages) per contracts/content-schema.md migration guide
-- [ ] T037 [US5] Test returning user flow: check what's new → review updated content → verify no contradictions with previous knowledge
+- [X] T031 [P] [US5] Update three-phase workflow page in website/src/content/docs/core-concepts/workflow.md to add references to multi-repo and stacked PR workflows in "What's Next" section
+- [X] T032 [P] [US5] Verify installation guide in website/src/content/docs/getting-started/installation.md remains unchanged (SC-003 preservation requirement)
+- [X] T033 [P] [US5] Update existing first feature example in website/src/content/docs/examples/first-feature.md to add "What's Next" references to advanced workflows
+- [X] T034 [US5] Create "What's New" section in website/src/content/docs/whats-new.md highlighting specs 007-010 capabilities with dates (2025-11-XX for each spec)
+- [X] T035 [US5] Run link validation across all spec 006 pages to ensure no broken links after navigation updates
+- [X] T036 [US5] Verify all spec 006 pages have updated frontmatter (audience, tags, relatedPages) per contracts/content-schema.md migration guide
+- [X] T037 [US5] Test returning user flow: check what's new → review updated content → verify no contradictions with previous knowledge
 
 ---
 
@@ -147,7 +147,7 @@ This tasks file breaks down the website content update into actionable, independ
 - [ ] T038 [P] [US3] Create architecture page in website/src/content/docs/architecture/virtual-commands.md explaining hook-based command routing benefits (following contracts/content-schema.md)
 - [ ] T039 [P] [US3] Create architecture page in website/src/content/docs/architecture/hooks.md documenting PrePromptSubmit hook and prerequisite injection (following contracts/content-schema.md)
 - [ ] T040 [P] [US3] Create architecture page in website/src/content/docs/architecture/performance.md with metrics from spec 010: "30% faster slash command execution", "Sub-100ms hook latency" (following contracts/content-schema.md)
-- [ ] T041 [US3] Update homepage in website/src/pages/index.astro to add performance messaging: "Claude-native performance with hook-based architecture"
+- [X] T041 [US3] Update homepage in website/src/pages/index.astro to add performance messaging: "Claude-native performance with hook-based architecture"
 - [ ] T042 [US3] Add before/after comparison to performance page showing command invocation improvements (simplified workflow examples)
 - [ ] T043 [US3] Update commands reference in website/src/content/docs/commands/reference.md to show simplified virtual command usage (no path dependencies)
 - [ ] T044 [US3] Verify performance claims match spec 010 success criteria (SC-005, SC-007 metrics)

@@ -3,7 +3,7 @@ title: "Commands Reference"
 description: "Complete reference for all Speck slash commands and skill"
 category: "commands"
 order: 1
-lastUpdated: 2025-11-17
+lastUpdated: 2025-11-22
 tags: ["commands", "reference", "cli", "skill"]
 ---
 
@@ -243,6 +243,130 @@ Execute the implementation plan by processing all tasks in dependency order.
 4. Handle edge cases
 5. Run tests and validation
 6. Deploy (if configured)
+
+---
+
+## Multi-Repo Commands
+
+### `/speck.link`
+
+Link a child repository to a multi-repo specification root.
+
+**Usage:**
+```
+/speck.link
+```
+
+**What it does:**
+- Creates a symlink from child repo to root repo's `specs/` directory
+- Enables automatic multi-repo detection via symlink presence
+- Allows child repos to reference and implement shared specifications
+- Supports both microservices and monorepo architectures
+
+**Multi-Repo Structure:**
+```
+root-repo/
+└── specs/            # Shared specifications
+    └── 001-auth/
+
+child-repo-1/         # Frontend
+└── specs/            # Symlink → root-repo/specs/
+
+child-repo-2/         # Backend
+└── specs/            # Symlink → root-repo/specs/
+```
+
+**When to Use:**
+- Coordinating features across frontend/backend repositories
+- Managing monorepo workspace projects
+- Sharing specifications across microservices
+- Implementing cross-repo features
+
+**See Also:**
+- [Multi-Repo Support](/docs/advanced-features/multi-repo-support)
+- [Multi-Repo Workflow Example](/docs/examples/multi-repo-workflow)
+
+---
+
+## Stacked PR Commands
+
+### `/speck.branch create`
+
+Create a new stacked branch with dependency tracking.
+
+**Usage:**
+```
+/speck.branch create <branch-name> --base <parent-branch>
+```
+
+**Arguments:**
+- `<branch-name>`: Name for the new branch
+- `--base <parent-branch>`: Parent branch for dependency tracking (optional, defaults to current branch)
+
+**What it does:**
+- Creates a new git branch
+- Records branch dependency in `.speck/branches.json`
+- Tracks PR metadata (base, title, description, status)
+- Enables stacked PR workflows for large features
+
+**Example:**
+```
+# Start feature
+git checkout -b username/auth-feature
+
+# Create first stack
+/speck.branch create username/auth-models --base username/auth-feature
+
+# Create second stack (depends on first)
+/speck.branch create username/auth-routes --base username/auth-models
+```
+
+---
+
+### `/speck.branch list`
+
+List all stacked branches with dependency information.
+
+**Usage:**
+```
+/speck.branch list [--all]
+```
+
+**Flags:**
+- `--all`: Show all branches including merged/closed
+
+**What it does:**
+- Displays branch dependency tree
+- Shows PR status for each branch
+- Highlights current branch
+- Indicates merge state
+
+**Example Output:**
+```
+username/auth-feature (base: main)
+├── username/auth-models (PR #123, merged)
+└── username/auth-routes (PR #124, open)
+```
+
+---
+
+### `/speck.branch status`
+
+Show status of all stacked branches.
+
+**Usage:**
+```
+/speck.branch status [--all]
+```
+
+**Flags:**
+- `--all`: Include all repositories in multi-repo mode
+
+**What it does:**
+- Checks PR status for each branch
+- Validates branch dependencies
+- Shows merge conflicts
+- Reports CI/check status
 
 ---
 

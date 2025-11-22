@@ -1,12 +1,10 @@
 ---
 title: "Monorepo Support"
 description: "Manage workspace projects in monorepos with Speck's automatic detection and cross-workspace coordination."
-category: advanced-features
-audience: [existing-users, evaluators]
-prerequisites: ["/docs/getting-started/installation", "/docs/core-concepts/workflow"]
+category: "advanced-features"
+order: 2
 tags: ["monorepo", "workspace", "pnpm", "yarn", "lerna"]
 lastUpdated: 2025-11-22
-relatedPages: ["/docs/advanced-features/multi-repo-support", "/docs/core-concepts/multi-repo"]
 ---
 
 # Monorepo Support

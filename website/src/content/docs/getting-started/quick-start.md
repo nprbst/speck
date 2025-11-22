@@ -3,7 +3,7 @@ title: "Quick Start Guide"
 description: "Install Speck and run your first command in under 10 minutes"
 category: "getting-started"
 order: 1
-lastUpdated: 2025-11-17
+lastUpdated: 2025-11-22
 tags: ["installation", "setup", "beginner", "plugin"]
 ---
 
@@ -139,6 +139,14 @@ Or ask the Speck skill:
 ```
 What should I do next in the Speck workflow?
 ```
+
+### Advanced Capabilities
+
+Ready to scale beyond single-repo projects? Speck supports:
+
+- **Multi-Repo Projects**: Share specifications across microservices with `/speck.link` - [Learn more](/docs/advanced-features/multi-repo-support)
+- **Monorepo Workspaces**: Manage multiple features within a monorepo - [Learn more](/docs/advanced-features/monorepos)
+- **Stacked PR Workflows**: Break large features into reviewable chunks with `/speck.branch` - [Learn more](/docs/advanced-features/stacked-prs)
 
 ## Getting Help
 

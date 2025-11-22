@@ -1,12 +1,10 @@
 ---
 title: "Multi-Repo Setup"
 description: "Configure Speck for multi-repository projects using symlink-based detection and shared specifications."
-category: advanced-features
-audience: [existing-users, evaluators]
-prerequisites: ["/docs/getting-started/installation", "/docs/core-concepts/workflow", "/docs/core-concepts/multi-repo"]
+category: "advanced-features"
+order: 1
 tags: ["multi-repo", "symlinks", "speck.link", "setup"]
 lastUpdated: 2025-11-22
-relatedPages: ["/docs/advanced-features/monorepos", "/docs/examples/multi-repo-workflow"]
 ---
 
 # Multi-Repo Setup

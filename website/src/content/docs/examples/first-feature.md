@@ -3,7 +3,7 @@ title: "Your First Feature"
 description: "Complete walkthrough building a dark mode toggle with Speck"
 category: "examples"
 order: 1
-lastUpdated: 2025-11-17
+lastUpdated: 2025-11-22
 tags: ["tutorial", "example", "walkthrough", "plugin", "skill"]
 ---
 
@@ -559,6 +559,14 @@ Now that you've built your first feature with Speck:
 - **Explore contracts**: Use TypeScript interfaces to define API boundaries
 - **Read the concepts guide**: Understand the [three-phase workflow](/docs/concepts/workflow) in depth
 - **Check the commands reference**: See all available [Speck commands](/docs/commands/reference)
+
+### Advanced Workflows
+
+Ready to scale beyond single-repo projects?
+
+- **Multi-Repo Projects**: Coordinate features across frontend/backend repositories - [Multi-Repo Workflow Tutorial](/docs/examples/multi-repo-workflow)
+- **Stacked PR Workflows**: Break large features into reviewable chunks - [Stacked PR Tutorial](/docs/examples/stacked-pr-workflow)
+- **Monorepo Support**: Manage multiple workspace projects - [Learn more](/docs/advanced-features/monorepos)
 
 ---
 

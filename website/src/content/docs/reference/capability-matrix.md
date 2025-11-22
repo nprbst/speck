@@ -1,8 +1,8 @@
 ---
 title: "Capability Matrix"
 description: "Feature compatibility reference showing which Speck capabilities are supported across single-repo, multi-repo root, and multi-repo child contexts."
-category: reference
-audience: [all]
+category: "reference"
+order: 1
 tags: ["reference", "compatibility", "multi-repo", "stacked-pr", "features"]
 lastUpdated: 2025-11-22
 ---

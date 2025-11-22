@@ -1,12 +1,10 @@
 ---
 title: "Multi-Repo Concepts"
 description: "Understand how Speck detects multi-repo contexts, manages shared specifications, and coordinates implementations across repositories."
-category: core-concepts
-audience: [existing-users, evaluators]
-prerequisites: ["/docs/core-concepts/workflow"]
+category: "concepts"
+order: 3
 tags: ["multi-repo", "concepts", "symlinks", "architecture"]
 lastUpdated: 2025-11-22
-relatedPages: ["/docs/advanced-features/multi-repo-support", "/docs/advanced-features/monorepos"]
 ---
 
 # Multi-Repo Concepts

@@ -1,14 +1,11 @@
 ---
 title: "Multi-Repo Workflow Tutorial"
 description: "Learn how to coordinate feature development across frontend and backend repositories using Speck's multi-repo support."
-category: examples
-audience: [existing-users]
-prerequisites: ["/docs/advanced-features/multi-repo-support", "/docs/getting-started/quick-start"]
+category: "examples"
+order: 2
 tags: ["multi-repo", "tutorial", "frontend", "backend", "workflow"]
 lastUpdated: 2025-11-22
-estimatedDuration: "10-15 minutes"
-difficulty: intermediate
-relatedPages: ["/docs/examples/monorepo-workflow"]
+---
 ---
 
 # Multi-Repo Workflow Tutorial
