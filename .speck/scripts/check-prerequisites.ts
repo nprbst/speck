@@ -50,6 +50,7 @@ interface CheckPrerequisitesOptions {
   help: boolean;
   includeFileContents: boolean;
   includeWorkflowMode: boolean;
+  validateCodeQuality: boolean;
 }
 
 /**
@@ -89,6 +90,7 @@ function parseArgs(args: string[]): CheckPrerequisitesOptions {
     help: args.includes("--help") || args.includes("-h"),
     includeFileContents: args.includes("--include-file-contents"),
     includeWorkflowMode: args.includes("--include-workflow-mode"),
+    validateCodeQuality: args.includes("--validate-code-quality"),
   };
 }
 
@@ -96,27 +98,33 @@ function parseArgs(args: string[]): CheckPrerequisitesOptions {
  * Show help message
  */
 function showHelp(): void {
-  console.log(`Usage: check-prerequisites.sh [OPTIONS]
+  console.log(`Usage: check-prerequisites.ts [OPTIONS]
 
 Consolidated prerequisite checking for Spec-Driven Development workflow.
 
 OPTIONS:
-  --json              Output in JSON format
-  --require-tasks     Require tasks.md to exist (for implementation phase)
-  --include-tasks     Include tasks.md in AVAILABLE_DOCS list
-  --paths-only        Only output path variables (no prerequisite validation)
-  --skip-feature-check Skip feature directory and plan.md validation (for /speck.specify)
-  --help, -h          Show this help message
+  --json                   Output in JSON format
+  --require-tasks          Require tasks.md to exist (for implementation phase)
+  --include-tasks          Include tasks.md in AVAILABLE_DOCS list
+  --paths-only             Only output path variables (no prerequisite validation)
+  --skip-feature-check     Skip feature directory and plan.md validation (for /speck.specify)
+  --validate-code-quality  Validate TypeScript typecheck and ESLint (Constitution Principle IX)
+  --include-file-contents  Include file contents in JSON output
+  --include-workflow-mode  Include workflow mode in JSON output
+  --help, -h               Show this help message
 
 EXAMPLES:
   # Check task prerequisites (plan.md required)
-  ./check-prerequisites.sh --json
+  bun .speck/scripts/check-prerequisites.ts --json
 
   # Check implementation prerequisites (plan.md + tasks.md required)
-  ./check-prerequisites.sh --json --require-tasks --include-tasks
+  bun .speck/scripts/check-prerequisites.ts --json --require-tasks --include-tasks
+
+  # Validate code quality before feature completion
+  bun .speck/scripts/check-prerequisites.ts --validate-code-quality
 
   # Get feature paths only (no validation)
-  ./check-prerequisites.sh --paths-only
+  bun .speck/scripts/check-prerequisites.ts --paths-only
 `);
 }
 
@@ -150,7 +158,18 @@ function outputPathsOnly(paths: FeaturePaths, jsonMode: boolean): void {
  * Check for unknown options
  */
 function checkForUnknownOptions(args: string[]): void {
-  const validOptions = ["--json", "--require-tasks", "--include-tasks", "--paths-only", "--skip-feature-check", "--help", "-h", "--include-file-contents", "--include-workflow-mode"];
+  const validOptions = [
+    "--json",
+    "--require-tasks",
+    "--include-tasks",
+    "--paths-only",
+    "--skip-feature-check",
+    "--help",
+    "-h",
+    "--include-file-contents",
+    "--include-workflow-mode",
+    "--validate-code-quality"
+  ];
   for (const arg of args) {
     if (arg.startsWith("--") || arg.startsWith("-")) {
       if (!validOptions.includes(arg)) {
@@ -202,6 +221,40 @@ function loadFileContent(filePath: string, totalSize: { value: number }): string
   } catch (error) {
     return "NOT_FOUND";
   }
+}
+
+/**
+ * Validate code quality (Constitution Principle IX)
+ *
+ * Runs typecheck and lint to ensure zero errors and warnings.
+ * Returns error message if validation fails, null if passes.
+ */
+async function validateCodeQuality(repoRoot: string): Promise<{ passed: boolean; message: string }> {
+  const { $ } = await import("bun");
+
+  // Run typecheck
+  const typecheckResult = await $`bun run typecheck`.cwd(repoRoot).nothrow().quiet();
+  if (typecheckResult.exitCode !== 0) {
+    return {
+      passed: false,
+      message: `❌ TypeScript validation failed (exit code ${typecheckResult.exitCode})\n${typecheckResult.stderr.toString()}`
+    };
+  }
+
+  // Run lint
+  const lintResult = await $`bun run lint`.cwd(repoRoot).nothrow().quiet();
+  if (lintResult.exitCode !== 0) {
+    const output = lintResult.stdout.toString();
+    return {
+      passed: false,
+      message: `❌ ESLint validation failed (exit code ${lintResult.exitCode})\n${output}`
+    };
+  }
+
+  return {
+    passed: true,
+    message: "✅ Code quality validation passed (0 typecheck errors, 0 lint errors/warnings)"
+  };
 }
 
 /**
@@ -371,6 +424,20 @@ export async function main(args: string[]): Promise<number> {
   let workflowMode: string | undefined;
   if (options.includeWorkflowMode) {
     workflowMode = determineWorkflowMode(paths.FEATURE_DIR, paths.REPO_ROOT);
+  }
+
+  // Validate code quality if requested (Constitution Principle IX)
+  if (options.validateCodeQuality) {
+    const qualityResult = await validateCodeQuality(paths.REPO_ROOT);
+    if (!qualityResult.passed) {
+      console.error("\n" + qualityResult.message);
+      console.error("\nConstitution Principle IX requires zero typecheck errors and zero lint errors/warnings.");
+      console.error("Fix all issues before marking the feature complete.\n");
+      return ExitCode.USER_ERROR;
+    }
+    if (!options.json) {
+      console.log("\n" + qualityResult.message + "\n");
+    }
   }
 
   // Output results
