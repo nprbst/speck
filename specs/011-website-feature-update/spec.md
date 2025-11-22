@@ -101,7 +101,7 @@ A website visitor who previously read the spec 006 documentation (plugin install
 
 - What happens when a visitor only has experience with single-repo workflows and reads multi-repo documentation? � Clear "When to use" guidance helps them determine relevance
 - How does website handle visitors who don't use Claude Code? � Prominent prerequisite section states "Requires Claude Code with plugin support"
-- What if a visitor is confused about the relationship between features (multi-repo + stacked PRs)? � Capability matrix shows feature compatibility (stacked PRs work in single-repo, not in multi-repo child repos per spec 008)
+- What if a visitor is confused about the relationship between features (multi-repo + stacked PRs)? → Capability matrix shows feature compatibility (stacked PRs work in all repository modes per spec 009, including multi-repo child repos with independent branch stacks)
 - How does website serve both technical and non-technical audiences? � Layered documentation: high-level benefits for decision-makers, technical details for implementers
 - What if visitor wants to see real examples before installing? � Screenshots, demo videos, or code examples show Speck in action without requiring installation
 

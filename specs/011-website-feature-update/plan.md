@@ -85,11 +85,9 @@ website/                 # Astro-based static site (existing from spec 004)
 │   │   ├── getting-started/
 │   │   │   ├── installation.md           # FROM spec 006 - verify consistency
 │   │   │   └── quickstart.md             # UPDATE - add multi-repo, stacked PR refs
-│   │   ├── core-concepts/
-│   │   │   ├── specifications.md         # FROM spec 006 - preserve
-│   │   │   ├── plans.md                  # FROM spec 006 - preserve
-│   │   │   ├── tasks.md                  # FROM spec 006 - preserve
-│   │   │   └── skill.md                  # FROM spec 006 - preserve, extend for multi-repo
+│   │   ├── concepts/                      # DECISION NEEDED: Current dir is "concepts", but tasks/contracts use "core-concepts"
+│   │   │   └── workflow.md               # FROM spec 006 - preserve, extend with multi-repo/stacked PR refs
+│   │   │                                 # ACTION: Either rename concepts/ → core-concepts/ OR update tasks to use concepts/
 │   │   ├── advanced-features/            # NEW SECTION
 │   │   │   ├── multi-repo-support.md     # NEW - spec 007, 009 content
 │   │   │   ├── stacked-prs.md            # NEW - spec 008, 009 content
