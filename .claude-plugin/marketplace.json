@@ -11,7 +11,10 @@
   "plugins": [
     {
       "name": "speck",
-      "source": "./",
+      "source": {
+        "source": "github",
+        "repo": "nprbst/speck-market"
+      },
       "description": "Specification and planning workflow framework for Claude Code",
       "version": "1.0.0",
       "author": {
