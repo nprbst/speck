@@ -125,23 +125,30 @@ program
   .allowUnknownOption() // Allow flags like --all to pass through
   .action(async (args) => {
     const argsArray = Array.isArray(args) ? args : [args];
-    const commandString = `branch ${argsArray.join(" ")}`;
 
-    const context: CommandContext = {
-      mode: detectMode(),
-      rawCommand: commandString,
-      workingDirectory: process.cwd(),
-      isInteractive: process.stdin.isTTY ?? false,
-    };
+    // Handle lazyMain-based commands
+    if (branchEntry.lazyMain) {
+      const mainFn = await branchEntry.lazyMain();
+      const exitCode = await mainFn(argsArray);
+      process.exit(exitCode);
+    } else if (branchEntry.handler) {
+      const commandString = `branch ${argsArray.join(" ")}`;
+      const context: CommandContext = {
+        mode: detectMode(),
+        rawCommand: commandString,
+        workingDirectory: process.cwd(),
+        isInteractive: process.stdin.isTTY ?? false,
+      };
 
-    const parsedArgs = branchEntry.parseArgs!(commandString);
-    const result = await branchEntry.handler(parsedArgs, context);
+      const parsedArgs = branchEntry.parseArgs!(commandString);
+      const result = await branchEntry.handler(parsedArgs, context);
 
-    if (result.success) {
-      console.log(result.output);
-    } else {
-      console.error(result.errorOutput);
-      process.exit(result.exitCode);
+      if (result.success) {
+        console.log(result.output);
+      } else {
+        console.error(result.errorOutput);
+        process.exit(result.exitCode);
+      }
     }
   });
 
@@ -187,23 +194,30 @@ program
   .allowUnknownOption() // Allow flags to pass through
   .action(async (args) => {
     const argsArray = Array.isArray(args) ? args : [args];
-    const commandString = `create-new-feature ${argsArray.join(" ")}`;
 
-    const context: CommandContext = {
-      mode: detectMode(),
-      rawCommand: commandString,
-      workingDirectory: process.cwd(),
-      isInteractive: process.stdin.isTTY ?? false,
-    };
+    // Handle lazyMain-based commands
+    if (createNewFeatureEntry.lazyMain) {
+      const mainFn = await createNewFeatureEntry.lazyMain();
+      const exitCode = await mainFn(argsArray);
+      process.exit(exitCode);
+    } else if (createNewFeatureEntry.handler) {
+      const commandString = `create-new-feature ${argsArray.join(" ")}`;
+      const context: CommandContext = {
+        mode: detectMode(),
+        rawCommand: commandString,
+        workingDirectory: process.cwd(),
+        isInteractive: process.stdin.isTTY ?? false,
+      };
 
-    const parsedArgs = createNewFeatureEntry.parseArgs!(commandString);
-    const result = await createNewFeatureEntry.handler(parsedArgs, context);
+      const parsedArgs = createNewFeatureEntry.parseArgs!(commandString);
+      const result = await createNewFeatureEntry.handler(parsedArgs, context);
 
-    if (result.success) {
-      console.log(result.output);
-    } else {
-      console.error(result.errorOutput);
-      process.exit(result.exitCode);
+      if (result.success) {
+        console.log(result.output);
+      } else {
+        console.error(result.errorOutput);
+        process.exit(result.exitCode);
+      }
     }
   });
 
@@ -215,23 +229,30 @@ program
   .allowUnknownOption() // Allow flags to pass through
   .action(async (args) => {
     const argsArray = Array.isArray(args) ? args : [args];
-    const commandString = `setup-plan ${argsArray.join(" ")}`;
 
-    const context: CommandContext = {
-      mode: detectMode(),
-      rawCommand: commandString,
-      workingDirectory: process.cwd(),
-      isInteractive: process.stdin.isTTY ?? false,
-    };
+    // Handle lazyMain-based commands
+    if (setupPlanEntry.lazyMain) {
+      const mainFn = await setupPlanEntry.lazyMain();
+      const exitCode = await mainFn(argsArray);
+      process.exit(exitCode);
+    } else if (setupPlanEntry.handler) {
+      const commandString = `setup-plan ${argsArray.join(" ")}`;
+      const context: CommandContext = {
+        mode: detectMode(),
+        rawCommand: commandString,
+        workingDirectory: process.cwd(),
+        isInteractive: process.stdin.isTTY ?? false,
+      };
 
-    const parsedArgs = setupPlanEntry.parseArgs!(commandString);
-    const result = await setupPlanEntry.handler(parsedArgs, context);
+      const parsedArgs = setupPlanEntry.parseArgs!(commandString);
+      const result = await setupPlanEntry.handler(parsedArgs, context);
 
-    if (result.success) {
-      console.log(result.output);
-    } else {
-      console.error(result.errorOutput);
-      process.exit(result.exitCode);
+      if (result.success) {
+        console.log(result.output);
+      } else {
+        console.error(result.errorOutput);
+        process.exit(result.exitCode);
+      }
     }
   });
 
@@ -243,23 +264,30 @@ program
   .allowUnknownOption() // Allow flags to pass through
   .action(async (args) => {
     const argsArray = Array.isArray(args) ? args : [args];
-    const commandString = `link-repo ${argsArray.join(" ")}`;
 
-    const context: CommandContext = {
-      mode: detectMode(),
-      rawCommand: commandString,
-      workingDirectory: process.cwd(),
-      isInteractive: process.stdin.isTTY ?? false,
-    };
+    // Handle lazyMain-based commands
+    if (linkRepoEntry.lazyMain) {
+      const mainFn = await linkRepoEntry.lazyMain();
+      const exitCode = await mainFn(argsArray);
+      process.exit(exitCode);
+    } else if (linkRepoEntry.handler) {
+      const commandString = `link-repo ${argsArray.join(" ")}`;
+      const context: CommandContext = {
+        mode: detectMode(),
+        rawCommand: commandString,
+        workingDirectory: process.cwd(),
+        isInteractive: process.stdin.isTTY ?? false,
+      };
 
-    const parsedArgs = linkRepoEntry.parseArgs!(commandString);
-    const result = await linkRepoEntry.handler(parsedArgs, context);
+      const parsedArgs = linkRepoEntry.parseArgs!(commandString);
+      const result = await linkRepoEntry.handler(parsedArgs, context);
 
-    if (result.success) {
-      console.log(result.output);
-    } else {
-      console.error(result.errorOutput);
-      process.exit(result.exitCode);
+      if (result.success) {
+        console.log(result.output);
+      } else {
+        console.error(result.errorOutput);
+        process.exit(result.exitCode);
+      }
     }
   });
 
