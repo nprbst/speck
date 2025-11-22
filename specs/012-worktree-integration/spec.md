@@ -16,7 +16,7 @@
 - Q: When the system calculates a branch name automatically, should it proceed immediately or ask for user approval? → A: Branch name should be provided to the user for approval before creation
 - Q: Should the system support configurable branch name prefixes (e.g., `specs/` before `NNN-short-name`) for teams that want namespace organization? → A: Yes, support configurable standard branch prefix for spec branches (e.g., `specs/NNN-short-name`), opt-in configuration that breaks backwards compatibility with spec-kit
 - Q: When a worktree is manually deleted but the branch still exists (edge case from line 80), how should the system handle this inconsistency? → A: Auto-reconcile - Detect and clean up stale worktree references automatically, notify user
-- Q: When untracked files exist in the parent repository that match copy rules (e.g., `.env` files), should these files be copied to the new worktree? → A: Yes, copy untracked files
+- Q: When untracked files exist in the main repository that match copy rules (e.g., `.env` files), should these files be copied to the new worktree? → A: Yes, copy untracked files
 - Q: How should worktree directory names be calculated based on repository layout? → A: Two modes: (1) If repo directory name matches repo name, prefix worktree with `<repo-name>-<slugified-branch-name>`. (2) If repo directory name matches branch name (e.g., `main`, `master`), use only `<slugified-branch-name>`. In both cases, worktree directories are peers of the main repository directory.
 - Q: Should worktree directories be added to `.gitignore` since they're created outside the repository? → A: Don't add to `.gitignore` - Git automatically handles worktree exclusion
 - Q: Should symlinks created in worktrees use absolute or relative paths? → A: Relative paths - Symlinks use relative paths like `../main/node_modules` for portability
@@ -70,7 +70,7 @@ As a developer, I want dependencies to be pre-installed in the worktree before t
 
 1. **Given** I have worktree integration and dependency pre-installation enabled, **When** I create a new spec branch for a Node.js project, **Then** dependencies are installed with a progress indicator, and the IDE launches only after installation completes
 2. **Given** the dependency installation fails, **When** the failure is detected, **Then** the IDE does not launch and I see an error message with actionable troubleshooting steps
-3. **Given** I have multiple package managers available (npm, yarn, pnpm, bun), **When** dependencies are installed, **Then** the system uses the same package manager as the parent repository
+3. **Given** I have multiple package managers available (npm, yarn, pnpm, bun), **When** dependencies are installed, **Then** the system uses the same package manager as the main repository
 
 ---
 
@@ -85,20 +85,20 @@ As a developer, I want to configure which files and directories should be copied
 **Acceptance Scenarios**:
 
 1. **Given** I have configured `.env` files to be copied, **When** a worktree is created, **Then** the `.env` file is copied to the worktree and changes in the worktree don't affect the main repository
-2. **Given** I have configured `node_modules` to be symlinked, **When** a worktree is created, **Then** a symlink to the parent's `node_modules` is created (if it exists)
+2. **Given** I have configured `node_modules` to be symlinked, **When** a worktree is created, **Then** a symlink to the main repository's `node_modules` is created (if it exists)
 3. **Given** no worktree configuration exists, **When** a worktree is created, **Then** reasonable defaults are used (e.g., copy config files, symlink large dependency directories)
 
 ---
 
 ### Edge Cases
 
-- **Insufficient disk space**: When worktree creation fails due to insufficient disk space, abort with error message indicating required space and available space, suggest cleanup options
-- **Existing worktree collision**: When a directory already exists at the intended worktree location, abort with error by default. Support `--reuse-worktree` flag to skip recreation and reuse the existing worktree without modification.
+- **Insufficient disk space**: When worktree creation fails due to insufficient disk space (<1GB available), abort with error message indicating required space and available space, suggest cleanup options (remove unused worktrees via `git worktree prune`, clear package manager caches, identify large files via `du -sh *`)
+- **Existing worktree collision**: When a directory already exists at the intended worktree location, abort with error by default. Support `--reuse-worktree` flag to skip recreation and reuse the existing worktree without modification (if existing worktree is on a different branch, report error - cannot reuse worktree with branch mismatch).
 - **IDE launch failure**: When IDE launch fails (e.g., IDE not installed, permission denied), display error with troubleshooting steps (verify IDE installation path, check permissions), worktree remains usable for manual access
 - **Dependency installation failure**: When dependency installation fails (network error, incompatible versions, etc.), abort IDE launch and display error message with troubleshooting steps. Do not open a partially-configured worktree.
 - **Stale worktree references**: When a worktree is manually deleted but the branch still exists, automatically detect and clean up stale references (via `git worktree prune`), notify user of the cleanup action
 - **Multi-repo mode switching**: Worktree configuration applies independently per repository; switching between multi-repo and single-repo modes does not affect existing worktrees, but new worktree creation follows current mode's repository context
-- **Untracked file copying**: When untracked files in the parent repository match copy rules (e.g., `.env`, `.env.local`), copy them to the new worktree to ensure necessary local configuration is available
+- **Untracked file copying**: When untracked files in the main repository match copy rules (e.g., `.env`, `.env.local`), copy them to the new worktree to ensure necessary local configuration is available
 - **Unsupported Git version**: When Git version is below 2.5 (no worktree support), abort with error directing user to upgrade Git before enabling worktree integration
 
 ## Requirements *(mandatory)*
@@ -109,22 +109,30 @@ As a developer, I want to configure which files and directories should be copied
 - **FR-002**: System MUST create a worktree when a new spec branch is created via `/speck:specify` or `/speck:branch` (if worktree integration is enabled)
 - **FR-003**: System MUST calculate worktree directory names based on repository layout: (1) If repo directory name matches repo name, use `<repo-name>-<slugified-branch-name>`. (2) If repo directory name matches branch name (e.g., `main`, `master`), use `<slugified-branch-name>`. Worktree directories MUST be created as peers of the main repository directory (one level up from the main repo)
 - **FR-004**: System MUST record the user's IDE auto-launch preference in persistent configuration
-- **FR-005**: System MUST support configuring which IDE to launch (default: VSCode)
+- **FR-005**: System MUST support configuring which IDE to launch from supported options: VSCode, Cursor, JetBrains IDEs (default: VSCode)
 - **FR-006**: System MUST launch the configured IDE pointing to the worktree directory (if IDE auto-launch is enabled)
 - **FR-007**: System MUST detect the project's package manager (npm, yarn, pnpm, bun) for dependency installation
-- **FR-008**: System MUST install dependencies in the worktree before opening the IDE (if dependency pre-installation is enabled), blocking IDE launch until installation completes and displaying progress to the user
-- **FR-009**: System MUST support configurable rules for which files/directories to copy to worktrees, using glob patterns or explicit relative paths; copy operations include untracked files from parent repository when they match copy rules
-- **FR-010**: System MUST support configurable rules for which files/directories to symlink in worktrees, using glob patterns or explicit relative paths; symlinks MUST use relative paths for portability
-- **FR-011**: System MUST provide reasonable defaults for copy/symlink rules if no configuration exists
+- **FR-008**: System MUST install dependencies in the worktree before opening the IDE (if dependency pre-installation is enabled), blocking IDE launch until installation completes and displaying progress to stdout using a text-based progress indicator showing current operation and completion status
+- **FR-009**: System MUST support configurable rules for which files/directories to copy to worktrees, using Bun.Glob pattern syntax (supports `*`, `**`, `?`, `[abc]`, `{a,b}`) or explicit relative paths; copy operations include untracked files from main repository when they match copy rules
+- **FR-010**: System MUST support configurable rules for which files/directories to symlink in worktrees, using Bun.Glob pattern syntax (supports `*`, `**`, `?`, `[abc]`, `{a,b}`) or explicit relative paths; symlinks MUST use relative paths for portability
+- **FR-011**: System MUST provide reasonable defaults for copy/symlink rules if no configuration exists (default copy rules: `.env*`, `*.config.js`, `*.config.ts`; default symlink rules: `node_modules`, `.bun`, `.cache` if they exist in main repository)
 - **FR-012**: System MUST handle errors gracefully (worktree creation failure, IDE launch failure, dependency installation failure) with clear error messages
 - **FR-019**: System MUST detect Git version before attempting worktree creation and abort with error if Git version is below 2.5, directing user to upgrade
-- **FR-013**: System MUST detect and report conflicts when a worktree already exists at the intended location, aborting by default unless `--reuse-worktree` flag is provided
+- **FR-013**: System MUST detect and report conflicts when a worktree already exists at the intended location, aborting by default unless `--reuse-worktree` flag is provided (see Edge Case: Existing worktree collision)
 - **FR-014**: System MUST persist worktree configuration in `.speck/config.json`
-- **FR-015**: System MUST validate worktree configuration schema and report errors for invalid configurations
-- **FR-016**: System MUST present automatically calculated branch names to the user for approval before creating the branch
+- **FR-015**: System MUST validate worktree configuration schema using Zod validation and report errors for invalid configurations to stderr with clear field-level error messages
+- **FR-016**: System MUST present automatically calculated branch names to the user for approval via interactive CLI prompt with accept/edit/cancel options before creating the branch
 - **FR-017**: System MUST support optional configurable branch name prefix (e.g., `specs/`) for spec branches, stored in repository configuration
-- **FR-018**: System MUST automatically detect and clean up stale worktree references when worktrees are manually deleted, notifying the user of cleanup actions
-- **FR-020**: System MUST provide a worktree removal command that prompts for user confirmation before removing the worktree directory and cleaning up Git worktree references
+- **FR-018**: System MUST automatically detect and clean up stale worktree references when worktrees are manually deleted, notifying the user of cleanup actions (see Edge Case: Stale worktree references)
+- **FR-020**: System MUST provide a worktree removal command that prompts for user confirmation before removing: (1) the worktree filesystem directory and all contents, (2) Git worktree administrative references via `git worktree remove`, and (3) worktree metadata from `.speck/config.json` if present
+
+### Non-Functional Requirements
+
+- **NFR-001**: File operations MUST preserve Unix file permissions and ownership during copy operations to maintain security properties of configuration files
+- **NFR-002**: File copy operations MUST use concurrency limiting (maximum 10 concurrent operations) to prevent system resource exhaustion on large projects (>1000 files)
+- **NFR-003**: Worktree creation MUST be atomic or provide full rollback on failure - partial worktrees MUST NOT be left on disk if any setup step fails
+- **NFR-004**: Configuration validation MUST complete in <100ms to maintain fast command startup performance
+- **NFR-005**: Disk space checks MUST verify at least 1GB available space before worktree creation to prevent out-of-space failures during setup
 
 ### Key Entities
 
@@ -136,23 +144,23 @@ As a developer, I want to configure which files and directories should be copied
 
 ### Measurable Outcomes
 
-- **SC-001**: Developers can create a new spec branch and have a ready-to-use worktree in under 30 seconds (excluding dependency installation time)
+- **SC-001**: Developers can create a new spec branch and have a ready-to-use worktree in under 30 seconds (measured from command invocation to worktree creation completion, including Git worktree add, file copy/symlink operations, and branch setup; excluding dependency installation and IDE launch time)
 - **SC-002**: When IDE auto-launch is enabled, the IDE opens automatically within 5 seconds of worktree creation
-- **SC-003**: When dependency pre-installation is enabled, dependencies are installed before IDE launch for 95% of supported project types
+- **SC-003**: When dependency pre-installation is enabled, dependencies are installed before IDE launch for 95% of supported project types (Node.js with npm/yarn/pnpm/bun package managers)
 - **SC-004**: Developers can work on 3+ features simultaneously in separate worktrees without branch-switching
 - **SC-005**: Worktree configuration can be set up in under 2 minutes through interactive prompts or manual editing
 - **SC-006**: Error messages for worktree failures provide actionable troubleshooting steps in 100% of common error scenarios
 
 ## Assumptions
 
-1. **Worktree location**: Worktrees are created as peer directories of the main repository (one level up) with naming based on repository layout: either `<repo-name>-<slugified-branch-name>` or `<slugified-branch-name>` depending on whether the repo directory matches the repo name or branch name
+1. **Worktree location**: Worktrees are created as sibling directories of the main repository (both at same parent directory level) with naming based on repository layout: either `<repo-name>-<slugified-branch-name>` or `<slugified-branch-name>` depending on whether the repo directory matches the repo name or branch name
 2. **Git worktree support**: Users have Git 2.5+ which introduced the `git worktree` command
-3. **Disk space**: Users have sufficient disk space for multiple worktrees (system will check and warn if space is low)
+3. **Disk space**: Users have sufficient disk space for multiple worktrees (system will check and warn if space is low, threshold: <1GB available)
 4. **IDE detection**: VSCode is installed in standard locations (macOS: `/Applications/Visual Studio Code.app`, Windows: `%LOCALAPPDATA%\Programs\Microsoft VS Code`, Linux: `/usr/share/code` or `/usr/bin/code`)
 5. **Package manager detection**: Projects use standard package manager markers (`package-lock.json` for npm, `yarn.lock` for yarn, `pnpm-lock.yaml` for pnpm, `bun.lockb` for bun)
 6. **Configuration scope**: Worktree configuration is repository-specific (not global) and stored in `.speck/config.json`
 7. **Default copy rules**: Configuration files (`.env`, `.env.local`, `*.config.js`, `*.config.ts`) are copied by default
-8. **Default symlink rules**: Large dependency directories (`node_modules`, `.bun`, `.cache`) are candidates for symlinking but will only be symlinked if they exist in the parent
+8. **Default symlink rules**: Large dependency directories (`node_modules`, `.bun`, `.cache`) are candidates for symlinking but will only be symlinked if they exist in the main repository
 9. **Multi-repo compatibility**: Worktree configuration applies to each repository independently in multi-repo setups
 10. **Backward compatibility**: Existing workflows without worktrees continue to work unchanged when worktree integration is disabled
 11. **Branch name prefixes**: Optional branch name prefix (e.g., `specs/`) is opt-in and breaks backwards compatibility with spec-kit; default behavior uses no prefix for compatibility

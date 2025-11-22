@@ -171,7 +171,7 @@ tests/
 
 **Structure Decision**: Single project structure chosen because worktree integration is an enhancement to existing Speck CLI, not a separate application. All implementation resides in `.speck/scripts/worktree/` subdirectory to maintain modularity and testability. Configuration lives in `.speck/config.json` to align with Speck's file-based storage principle.
 
-**Worktree Location Strategy**: Worktrees are created as peer directories of the main repository (one level up) to avoid Git nesting issues and enable proper worktree isolation. The naming strategy uses two modes based on repository directory layout: (1) If the repository directory name matches the repository name, worktrees are prefixed with `<repo-name>-<slugified-branch-name>`. (2) If the repository directory name matches the current branch name (e.g., `main`, `master`), worktrees use only `<slugified-branch-name>` without prefix. This dual-mode approach accommodates different repository organization styles while maintaining predictable worktree naming.
+**Worktree Location Strategy**: Worktrees are created as sibling directories of the main repository (both at the same parent directory level) to avoid Git nesting issues and enable proper worktree isolation. The naming strategy uses two modes based on repository directory layout: (1) If the repository directory name matches the repository name, worktrees are prefixed with `<repo-name>-<slugified-branch-name>`. (2) If the repository directory name matches the current branch name (e.g., `main`, `master`), worktrees use only `<slugified-branch-name>` without prefix. This dual-mode approach accommodates different repository organization styles while maintaining predictable worktree naming.
 
 ## Complexity Tracking
 
