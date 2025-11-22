@@ -283,13 +283,13 @@ async function generatePRSuggestion(
   };
 }
 
-function displayBranchTree(mapping: BranchMapping, specId: string, currentBranch: string) {
+function displayBranchTree(mapping: BranchMapping, specId: string, currentBranch: string): void {
   const branches = mapping.branches.filter((b) => b.specId === specId);
   const roots = branches.filter(
     (b) => !branches.some((parent) => parent.name === b.baseBranch)
   );
 
-  function printBranch(branchName: string, depth: number, isLast: boolean) {
+  function printBranch(branchName: string, depth: number, isLast: boolean): void {
     const branch = branches.find((b) => b.name === branchName);
     if (!branch) return;
 
@@ -656,7 +656,7 @@ async function createCommand(args: string[]): Promise<number | void> {
   }
 }
 
-async function listCommand(args: string[]) {
+async function listCommand(args: string[]): Promise<void> {
   const showAll = args.includes("--all");
   const paths = await getFeaturePaths();
   const config = await detectSpeckRoot();
@@ -723,7 +723,7 @@ async function listCommand(args: string[]) {
  * T035 [US2] - Display aggregate list across all repositories
  * T037 [US2] - Handle branch name disambiguation by repo
  */
-async function displayAggregateListAll(speckRoot: string, repoRoot: string) {
+async function displayAggregateListAll(speckRoot: string, repoRoot: string): Promise<void> {
   const aggregated = await getAggregatedBranchStatus(speckRoot, repoRoot);
 
   console.log("Branch List (All Repositories)\n");
@@ -768,7 +768,7 @@ async function displayAggregateListAll(speckRoot: string, repoRoot: string) {
   }
 }
 
-async function statusCommand(args: string[] = []) {
+async function statusCommand(args: string[] = []): Promise<void> {
   const showAll = args.includes("--all");
   const paths = await getFeaturePaths();
   const config = await detectSpeckRoot();
@@ -876,7 +876,7 @@ async function statusCommand(args: string[] = []) {
 /**
  * T036 [US2] - Display aggregate status across all repositories
  */
-async function displayAggregateStatusAll(speckRoot: string, repoRoot: string) {
+async function displayAggregateStatusAll(speckRoot: string, repoRoot: string): Promise<void> {
   const aggregated = await getAggregatedBranchStatus(speckRoot, repoRoot);
 
   console.log("Branch Status (All Repositories)\n");
@@ -906,7 +906,7 @@ async function displayAggregateStatusAll(speckRoot: string, repoRoot: string) {
 /**
  * Display status for a single repository
  */
-async function displayRepoStatus(repoPath: string, summary: RepoBranchSummary) {
+async function displayRepoStatus(repoPath: string, summary: RepoBranchSummary): Promise<void> {
   const mapping = await readBranches(repoPath);
 
   // Display summary
@@ -932,7 +932,7 @@ async function displayRepoStatus(repoPath: string, summary: RepoBranchSummary) {
 /**
  * Display branch chain with status indicators
  */
-function displayBranchChain(branchNames: string[], mapping: BranchMapping) {
+function displayBranchChain(branchNames: string[], mapping: BranchMapping): void {
   branchNames.forEach((branchName, idx) => {
     const branch = mapping.branches.find(b => b.name === branchName);
     if (!branch) return;
@@ -950,7 +950,7 @@ function displayBranchChain(branchNames: string[], mapping: BranchMapping) {
   });
 }
 
-async function updateCommand(args: string[]) {
+async function updateCommand(args: string[]): Promise<void> {
   const name = args[0];
   if (!name) {
     throw new Error("Branch name required: /speck.branch update <name> [options]");
@@ -1019,7 +1019,7 @@ async function updateCommand(args: string[]) {
   console.log(`✓ Updated branch '${name}'`);
 }
 
-async function deleteCommand(args: string[]) {
+async function deleteCommand(args: string[]): Promise<void> {
   const name = args[0];
   if (!name) {
     throw new Error("Branch name required: /speck.branch delete <name>");

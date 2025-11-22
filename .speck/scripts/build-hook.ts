@@ -17,7 +17,7 @@ const ENTRY_POINT = join(SCRIPT_DIR, "speck.ts");
 const OUTPUT_DIR = join(SPECK_DIR, "dist");
 const OUTPUT_FILE = join(OUTPUT_DIR, "speck-hook.js");
 
-async function main() {
+async function main(): Promise<void> {
   console.log("Building Speck hook CLI...");
   console.log(`Entry point: ${ENTRY_POINT}`);
   console.log(`Output: ${OUTPUT_FILE}`);

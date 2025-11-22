@@ -25,7 +25,7 @@ import { appendFile } from "fs/promises";
 
 const LOG_FILE = "/private/tmp/.claude-hook-test/speck-hook-log.txt";
 
-const log = async (msg: string) => {
+const log = async (msg: string): Promise<void> => {
   await appendFile(LOG_FILE, `[${new Date().toISOString()}] [PrePromptSubmit] ${msg}\n`);
 };
 
@@ -117,7 +117,7 @@ function getCheckOptions(prompt: string): {
 /**
  * Main hook function
  */
-async function main() {
+async function main(): Promise<void> {
   try {
     // Read hook input from stdin
     const input = await Bun.stdin.text();

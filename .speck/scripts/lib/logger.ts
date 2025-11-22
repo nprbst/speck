@@ -176,13 +176,18 @@ export function error(message: string, data?: unknown): void {
 /**
  * Create a scoped logger with a prefix
  */
-export function createScopedLogger(scope: string) {
+export function createScopedLogger(scope: string): {
+  debug: (message: string, data?: unknown) => void;
+  info: (message: string, data?: unknown) => void;
+  warn: (message: string, data?: unknown) => void;
+  error: (message: string, data?: unknown) => void;
+} {
   return {
-    debug: (message: string, data?: unknown) =>
+    debug: (message: string, data?: unknown): void =>
       debug(`[${scope}] ${message}`, data),
-    info: (message: string, data?: unknown) => info(`[${scope}] ${message}`, data),
-    warn: (message: string, data?: unknown) => warn(`[${scope}] ${message}`, data),
-    error: (message: string, data?: unknown) =>
+    info: (message: string, data?: unknown): void => info(`[${scope}] ${message}`, data),
+    warn: (message: string, data?: unknown): void => warn(`[${scope}] ${message}`, data),
+    error: (message: string, data?: unknown): void =>
       error(`[${scope}] ${message}`, data),
   };
 }

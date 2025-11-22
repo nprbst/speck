@@ -114,7 +114,7 @@ export const registry: CommandRegistry = {
  * @param commandName - Command name without prefix (e.g., "env", "branch")
  * @returns CommandRegistryEntry if found, undefined otherwise
  */
-export function getCommand(commandName: string) {
+export function getCommand(commandName: string): CommandRegistryEntry | undefined {
   return registry[commandName];
 }
 

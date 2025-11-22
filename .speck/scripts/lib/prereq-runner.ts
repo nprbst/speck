@@ -37,11 +37,11 @@ async function captureOutput(fn: () => Promise<number>): Promise<{
   let stdout = "";
   let stderr = "";
 
-  console.log = (...args) => {
+  console.log = (...args): void => {
     stdout += args.join(" ") + "\n";
   };
 
-  console.error = (...args) => {
+  console.error = (...args): void => {
     stderr += args.join(" ") + "\n";
   };
 

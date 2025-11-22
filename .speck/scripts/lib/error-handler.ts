@@ -109,18 +109,18 @@ export function withErrorHandling<TArgs>(
  * Common error messages and constructors
  */
 export const ErrorMessages = {
-  INVALID_ARGUMENTS: (message: string) =>
+  INVALID_ARGUMENTS: (message: string): CommandError =>
     new CommandError(`Invalid arguments: ${message}`, 1),
-  MISSING_REQUIRED_ARG: (argName: string) =>
+  MISSING_REQUIRED_ARG: (argName: string): CommandError =>
     new CommandError(`Missing required argument: ${argName}`, 1),
-  COMMAND_NOT_FOUND: (commandName: string) =>
+  COMMAND_NOT_FOUND: (commandName: string): CommandError =>
     new CommandError(`Command not found: ${commandName}`, 127),
-  PERMISSION_DENIED: (resource: string) =>
+  PERMISSION_DENIED: (resource: string): CommandError =>
     new CommandError(`Permission denied: ${resource}`, 126),
-  FILE_NOT_FOUND: (filePath: string) =>
+  FILE_NOT_FOUND: (filePath: string): CommandError =>
     new CommandError(`File not found: ${filePath}`, 2),
-  INVALID_STATE: (message: string) =>
+  INVALID_STATE: (message: string): CommandError =>
     new CommandError(`Invalid state: ${message}`, 1),
-  EXECUTION_FAILED: (message: string) =>
+  EXECUTION_FAILED: (message: string): CommandError =>
     new CommandError(`Execution failed: ${message}`, 1),
 };

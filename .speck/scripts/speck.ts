@@ -16,7 +16,7 @@ import { CommandError, formatError, errorToResult } from "./lib/error-handler";
 
 const SPECK_LOG_FILE = "/private/tmp/.claude-hook-test/speck-hook-log.txt";
 
-const log = async (msg: string) => {
+const log = async (msg: string): Promise<void> => {
   await appendFile(SPECK_LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`);
 };
 
@@ -296,7 +296,7 @@ program
 /**
  * Main entry point - handles dual-mode operation
  */
-async function main() {
+async function main(): Promise<void> {
   const mode = detectMode();
 
   if (mode === "hook") {
@@ -309,7 +309,7 @@ async function main() {
 /**
  * Hook mode: Read JSON from stdin, execute command, return JSON output
  */
-async function runHookMode() {
+async function runHookMode(): Promise<void> {
   try {
     const hookInput = await readHookInput();
     const { command } = hookInput.tool_input;
@@ -352,11 +352,11 @@ async function runHookMode() {
     let output = "";
     let errorOutput = "";
 
-    console.log = (...args: unknown[]) => {
+    console.log = (...args: unknown[]): void => {
       output += args.join(" ") + "\n";
     };
 
-    console.error = (...args: unknown[]) => {
+    console.error = (...args: unknown[]): void => {
       errorOutput += args.join(" ") + "\n";
     };
 
@@ -417,7 +417,7 @@ async function runHookMode() {
 /**
  * CLI mode: Normal command-line execution with stdout/stderr
  */
-async function runCliMode() {
+async function runCliMode(): Promise<void> {
   try {
     await program.parseAsync(process.argv);
   } catch (error) {
