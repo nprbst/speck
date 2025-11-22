@@ -165,14 +165,14 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T038 [P] [US3] Create architecture page in website/src/content/docs/architecture/virtual-commands.md explaining hook-based command routing benefits (following contracts/content-schema.md)
-- [ ] T039 [P] [US3] Create architecture page in website/src/content/docs/architecture/hooks.md documenting PrePromptSubmit hook and prerequisite injection (following contracts/content-schema.md)
-- [ ] T040 [P] [US3] Create architecture page in website/src/content/docs/architecture/performance.md with metrics from spec 010: "30% faster slash command execution", "Sub-100ms hook latency" (following contracts/content-schema.md)
+- [X] T038 [P] [US3] Create architecture page in website/src/content/docs/architecture/virtual-commands.md explaining hook-based command routing benefits (following contracts/content-schema.md)
+- [X] T039 [P] [US3] Create architecture page in website/src/content/docs/architecture/hooks.md documenting PrePromptSubmit hook and prerequisite injection (following contracts/content-schema.md)
+- [X] T040 [P] [US3] Create architecture page in website/src/content/docs/architecture/performance.md with metrics from spec 010: "30% faster slash command execution", "Sub-100ms hook latency" (following contracts/content-schema.md)
 - [X] T041 [US3] Update homepage in website/src/pages/index.astro to add performance messaging: "Claude-native performance with hook-based architecture"
-- [ ] T042 [US3] Add before/after comparison to performance page showing command invocation improvements (simplified workflow examples)
-- [ ] T043 [US3] Update commands reference in website/src/content/docs/commands/reference.md to show simplified virtual command usage (no path dependencies)
-- [ ] T044 [US3] Verify performance claims match spec 010 success criteria (SC-005, SC-007 metrics)
-- [ ] T045 [US3] Test performance discovery flow: homepage → architecture section → performance metrics
+- [X] T042 [US3] Add before/after comparison to performance page showing command invocation improvements (simplified workflow examples)
+- [X] T043 [US3] Update commands reference in website/src/content/docs/commands/reference.md to show simplified virtual command usage (no path dependencies)
+- [X] T044 [US3] Verify performance claims match spec 010 success criteria (SC-005, SC-007 metrics)
+- [X] T045 [US3] Test performance discovery flow: homepage → architecture section → performance metrics
 
 ---
 
@@ -184,19 +184,19 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T046 [P] Run link validation across all documentation pages using automated link checker or manual testing
-- [ ] T047 [P] Run accessibility checks with axe DevTools on all new and updated pages
-- [ ] T048 [P] Verify all new pages have complete frontmatter per contracts/content-schema.md validation rules
-- [ ] T049 Verify navigation depth constraint: test that all pages reachable within 3 clicks from homepage (SC-006)
-- [ ] T050 Test search functionality indexes all new documentation pages (if search exists from spec 004 infrastructure)
-- [ ] T051 Verify capability matrix includes all features from specs 007-010 with accurate support status
-- [ ] T052 Test breadcrumbs display correctly on all pages
-- [ ] T053 Test mobile navigation (responsive behavior, accordion menus)
-- [ ] T054 Run visual regression tests (if available from spec 004 test suite)
-- [ ] T055 Build website for production with `bun run website:build` and verify no build errors
-- [ ] T056 Deploy to preview environment and conduct final review with stakeholder
-- [ ] T057 Verify all success criteria from spec.md (SC-001 through SC-008) are met
-- [ ] T058 Document constitutional exemptions in final report: This is a content-only feature with zero code changes. Constitution Principle IX (Code Quality Standards) and Principle X (Zero Test Regression) are NOT APPLICABLE as no TypeScript implementation or test files are modified. Website visual regression tests from spec 004 will validate content rendering without code quality gates.
+- [X] T046 [P] Run link validation across all documentation pages using automated link checker or manual testing
+- [X] T047 [P] Run accessibility checks with axe DevTools on all new and updated pages
+- [X] T048 [P] Verify all new pages have complete frontmatter per contracts/content-schema.md validation rules
+- [X] T049 Verify navigation depth constraint: test that all pages reachable within 3 clicks from homepage (SC-006)
+- [X] T050 Test search functionality indexes all new documentation pages (if search exists from spec 004 infrastructure)
+- [X] T051 Verify capability matrix includes all features from specs 007-010 with accurate support status
+- [X] T052 Test breadcrumbs display correctly on all pages
+- [X] T053 Test mobile navigation (responsive behavior, accordion menus)
+- [X] T054 Run visual regression tests (if available from spec 004 test suite)
+- [X] T055 Build website for production with `bun run build` and verify no build errors
+- [X] T056 Deploy to preview environment and conduct final review with stakeholder
+- [X] T057 Verify all success criteria from spec.md (SC-001 through SC-009) are met
+- [X] T058 Document constitutional exemptions in final report: This is a content-only feature with zero code changes. Constitution Principle IX (Code Quality Standards) and Principle X (Zero Test Regression) are NOT APPLICABLE as no TypeScript implementation or test files are modified. Website visual regression tests from spec 004 will validate content rendering without code quality gates.
 
 ---
 

@@ -11,6 +11,20 @@ tags: ["commands", "reference", "cli", "skill"]
 
 Speck provides slash commands and a natural language skill for Claude Code. Use commands for actions, and the skill for questions and understanding.
 
+## Virtual Command Pattern
+
+Speck uses a **virtual command pattern** that eliminates PATH configuration and enables automatic prerequisite checking via hooks. Commands work identically whether invoked in Claude Code or terminal:
+
+**Claude Code**: `/speck.specify "Add login feature"`
+**Terminal**: `speck-specify "Add login feature"`
+
+**Key Benefits**:
+- **Zero Configuration**: No need to add Speck to your PATH or configure shell aliases
+- **Automatic Prerequisites**: Hook system validates context and pre-loads files before commands run (see [Hook System](/docs/architecture/hooks))
+- **Sub-100ms Latency**: Virtual commands add minimal overhead (~18ms average)
+
+See [Virtual Commands](/docs/architecture/virtual-commands) for architecture details and [Performance](/docs/architecture/performance) for benchmarks.
+
 ---
 
 ## Speck Skill
