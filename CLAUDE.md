@@ -23,6 +23,7 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 - File-based JSON (`.speck/branches.json` per git repository), symlink-based multi-repo detection (009-multi-repo-stacked)
 - TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI framework), Bun Shell API (subprocess/stdio), Claude Code Plugin System 2.0+ (hooks) (010-virtual-command-pattern)
 - File-based (plugin.json for hook configuration, command registry as TypeScript module) (010-virtual-command-pattern)
+- Existing website infrastructure (Astro), content from specs 007-010 (source material) (011-website-feature-update)
 
 ## Project Structure
 
@@ -101,9 +102,9 @@ bun test                  # Run all tests (unit, visual, a11y)
 - **Parent spec**: The root specification directory referenced by `parentSpecId` field
 
 ## Recent Changes
+- 011-website-feature-update: Added Existing website infrastructure (Astro), content from specs 007-010 (source material)
 - 010-virtual-command-pattern: Added TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI framework), Bun Shell API (subprocess/stdio), Claude Code Plugin System 2.0+ (hooks)
 - 009-multi-repo-stacked: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (filesystem, git operations), Git 2.30+, GitHub CLI (optional for PR creation)
-- 008-stacked-pr-support: Added TypeScript 5.3+ + Bun 1.0+ runtime, Bun Shell API, Git 2.30+, Claude Code plugin system 2.0+
 
 
 <!-- MANUAL ADDITIONS START -->
