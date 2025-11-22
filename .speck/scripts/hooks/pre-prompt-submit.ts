@@ -76,6 +76,8 @@ function getCheckOptions(prompt: string): {
   requireTasks: boolean;
   includeTasks: boolean;
   skipFeatureCheck: boolean;
+  includeFileContents: boolean;
+  includeWorkflowMode: boolean;
 } {
   // Extract the slash command name (supports both . and : separators)
   const match = prompt.match(/^\/speck[.:](\w+)/);
@@ -90,10 +92,18 @@ function getCheckOptions(prompt: string): {
   // Commands that should skip feature check (e.g., /speck.specify runs before feature exists)
   const skipFeatureCheckCommands = ["specify"];
 
+  // Commands that should pre-load file contents (high/medium priority files)
+  const includeFileContentsCommands = ["implement"];
+
+  // Commands that should pre-determine workflow mode
+  const includeWorkflowModeCommands = ["implement"];
+
   return {
     requireTasks: requireTasksCommands.includes(command),
     includeTasks: includeTasksCommands.includes(command),
     skipFeatureCheck: skipFeatureCheckCommands.includes(command),
+    includeFileContents: includeFileContentsCommands.includes(command),
+    includeWorkflowMode: includeWorkflowModeCommands.includes(command),
   };
 }
 

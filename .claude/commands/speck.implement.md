@@ -22,10 +22,17 @@ Parse command-line flags from user input:
 1. Extract prerequisite context from the auto-injected comment in the prompt:
    ```
    <!-- SPECK_PREREQ_CONTEXT
-   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["research.md","tasks.md"]}
+   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["research.md","tasks.md"],"FILE_CONTENTS":{"tasks.md":"...","plan.md":"..."},"WORKFLOW_MODE":"single-branch"}
    -->
    ```
-   Use the FEATURE_DIR and AVAILABLE_DOCS values from this JSON. All paths are absolute.
+   Use the FEATURE_DIR, AVAILABLE_DOCS, FILE_CONTENTS, and WORKFLOW_MODE values from this JSON. All paths are absolute.
+
+   **FILE_CONTENTS field**: Contains pre-loaded file contents for high/medium priority files (tasks.md, plan.md, constitution.md, data-model.md). Possible values:
+   - Full file content (string): File was successfully pre-loaded
+   - `"NOT_FOUND"`: File does not exist
+   - `"TOO_LARGE"`: File exceeds size limits (use Read tool instead)
+
+   **WORKFLOW_MODE field**: Pre-determined workflow mode (`"stacked-pr"` or `"single-branch"`) from plan.md → constitution.md → default.
 
    **Fallback**: If the comment is not present (backwards compatibility), run:
    ```bash
@@ -64,24 +71,37 @@ Parse command-line flags from user input:
      - Automatically proceed to step 3
 
 3. Load and analyze the implementation context:
-   - **REQUIRED**: Read tasks.md for the complete task list and execution plan
-   - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
-   - **IF EXISTS**: Read data-model.md for entities and relationships
-   - **IF EXISTS**: Read contracts/ for API specifications and test requirements
-   - **IF EXISTS**: Read research.md for technical decisions and constraints
-   - **IF EXISTS**: Read quickstart.md for integration scenarios
+
+   **Check FILE_CONTENTS from prerequisite context first** (step 1):
+   - For tasks.md, plan.md, constitution.md, data-model.md:
+     - If FILE_CONTENTS[filename] exists and is NOT `"NOT_FOUND"` or `"TOO_LARGE"`: Use the pre-loaded content
+     - If FILE_CONTENTS[filename] is `"TOO_LARGE"`: Use Read tool to load the file
+     - If FILE_CONTENTS[filename] is `"NOT_FOUND"`: Skip this file
+     - If FILE_CONTENTS field is not present: Use Read tool (backwards compatibility)
+
+   **Required files**:
+   - **REQUIRED**: tasks.md (check FILE_CONTENTS first, then Read if needed)
+   - **REQUIRED**: plan.md (check FILE_CONTENTS first, then Read if needed)
+
+   **Optional files** (only if they exist):
+   - data-model.md (check FILE_CONTENTS first, then Read if needed)
+   - contracts/ (always use Read/Glob, not pre-loaded)
+   - research.md (always use Read, not pre-loaded)
+   - quickstart.md (always use Read, not pre-loaded)
 
 3a. **Determine Workflow Mode** (for stacked PR automation):
    - Check command-line flags first (highest priority):
      - If `--stacked` in user input → `workflowMode = "stacked-pr"`
      - If `--single-branch` in user input → `workflowMode = "single-branch"`
-   - If no flag provided, read from plan.md:
-     - Search for line matching: `**Workflow Mode**: stacked-pr` or `**Workflow Mode**: single-branch`
-     - If found → use that value
-   - If not in plan.md, read from constitution (.speck/memory/constitution.md):
-     - Search for line matching: `**Default Workflow Mode**: stacked-pr` or `**Default Workflow Mode**: single-branch`
-     - If found → use that value
-   - If not found anywhere → default to `"single-branch"`
+   - If no flag provided, check WORKFLOW_MODE from prerequisite context (step 1):
+     - If WORKFLOW_MODE field is present → use that value
+     - If WORKFLOW_MODE field is not present, read from plan.md:
+       - Search for line matching: `**Workflow Mode**: stacked-pr` or `**Workflow Mode**: single-branch`
+       - If found → use that value
+     - If not in plan.md, read from constitution (.speck/memory/constitution.md):
+       - Search for line matching: `**Default Workflow Mode**: stacked-pr` or `**Default Workflow Mode**: single-branch`
+       - If found → use that value
+     - If not found anywhere → default to `"single-branch"`
    - Store the determined workflow mode for use in step 8a
 
 4. **Project Setup Verification**:

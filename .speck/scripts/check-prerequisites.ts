@@ -27,7 +27,8 @@
  * - Preserved all CLI flags and exit codes exactly
  */
 
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   getFeaturePaths,
   checkFeatureBranch,
@@ -47,6 +48,8 @@ interface CheckPrerequisitesOptions {
   pathsOnly: boolean;
   skipFeatureCheck: boolean;
   help: boolean;
+  includeFileContents: boolean;
+  includeWorkflowMode: boolean;
 }
 
 /**
@@ -69,6 +72,8 @@ interface ValidationOutput {
   MODE: string;
   FEATURE_DIR: string;
   AVAILABLE_DOCS: string[];
+  FILE_CONTENTS?: Record<string, string>;
+  WORKFLOW_MODE?: string;
 }
 
 /**
@@ -82,6 +87,8 @@ function parseArgs(args: string[]): CheckPrerequisitesOptions {
     pathsOnly: args.includes("--paths-only"),
     skipFeatureCheck: args.includes("--skip-feature-check"),
     help: args.includes("--help") || args.includes("-h"),
+    includeFileContents: args.includes("--include-file-contents"),
+    includeWorkflowMode: args.includes("--include-workflow-mode"),
   };
 }
 
@@ -143,7 +150,7 @@ function outputPathsOnly(paths: FeaturePaths, jsonMode: boolean): void {
  * Check for unknown options
  */
 function checkForUnknownOptions(args: string[]): void {
-  const validOptions = ["--json", "--require-tasks", "--include-tasks", "--paths-only", "--skip-feature-check", "--help", "-h"];
+  const validOptions = ["--json", "--require-tasks", "--include-tasks", "--paths-only", "--skip-feature-check", "--help", "-h", "--include-file-contents", "--include-workflow-mode"];
   for (const arg of args) {
     if (arg.startsWith("--") || arg.startsWith("-")) {
       if (!validOptions.includes(arg)) {
@@ -152,6 +159,89 @@ function checkForUnknownOptions(args: string[]): void {
       }
     }
   }
+}
+
+/**
+ * File size limits for pre-loading
+ */
+const FILE_SIZE_LIMITS = {
+  maxSingleFile: 24 * 1024, // 24KB per file
+  maxTotalFiles: 60 * 1024, // 60KB total
+};
+
+/**
+ * Load file content with size checking
+ *
+ * @param filePath - Absolute path to file
+ * @param totalSize - Running total of loaded file sizes
+ * @returns File content or status indicator ("NOT_FOUND" or "TOO_LARGE")
+ */
+function loadFileContent(filePath: string, totalSize: { value: number }): string {
+  if (!existsSync(filePath)) {
+    return "NOT_FOUND";
+  }
+
+  try {
+    const stats = Bun.file(filePath);
+    const fileSize = stats.size;
+
+    // Check single file size limit
+    if (fileSize > FILE_SIZE_LIMITS.maxSingleFile) {
+      return "TOO_LARGE";
+    }
+
+    // Check total size limit
+    if (totalSize.value + fileSize > FILE_SIZE_LIMITS.maxTotalFiles) {
+      return "TOO_LARGE";
+    }
+
+    // Read file content
+    const content = readFileSync(filePath, "utf-8");
+    totalSize.value += fileSize;
+    return content;
+  } catch (error) {
+    return "NOT_FOUND";
+  }
+}
+
+/**
+ * Determine workflow mode from plan.md, constitution.md, or default
+ *
+ * @param featureDir - Absolute path to feature directory
+ * @param repoRoot - Absolute path to repository root
+ * @returns Workflow mode: "stacked-pr" or "single-branch"
+ */
+function determineWorkflowMode(featureDir: string, repoRoot: string): string {
+  // First, check plan.md
+  const planPath = join(featureDir, "plan.md");
+  if (existsSync(planPath)) {
+    try {
+      const planContent = readFileSync(planPath, "utf-8");
+      const workflowMatch = planContent.match(/\*\*Workflow Mode\*\*:\s*(stacked-pr|single-branch)/);
+      if (workflowMatch) {
+        return workflowMatch[1];
+      }
+    } catch {
+      // Continue to next fallback
+    }
+  }
+
+  // Second, check constitution.md
+  const constitutionPath = join(repoRoot, ".speck", "memory", "constitution.md");
+  if (existsSync(constitutionPath)) {
+    try {
+      const constitutionContent = readFileSync(constitutionPath, "utf-8");
+      const workflowMatch = constitutionContent.match(/\*\*Default Workflow Mode\*\*:\s*(stacked-pr|single-branch)/);
+      if (workflowMatch) {
+        return workflowMatch[1];
+      }
+    } catch {
+      // Continue to default
+    }
+  }
+
+  // Default
+  return "single-branch";
 }
 
 /**
@@ -245,12 +335,36 @@ export async function main(args: string[]): Promise<number> {
     docs.push("tasks.md");
   }
 
+  // Load file contents if requested
+  let fileContents: Record<string, string> | undefined;
+  if (options.includeFileContents) {
+    fileContents = {};
+    const totalSize = { value: 0 };
+
+    // High priority files (always attempt)
+    fileContents["tasks.md"] = loadFileContent(paths.TASKS, totalSize);
+    fileContents["plan.md"] = loadFileContent(paths.IMPL_PLAN, totalSize);
+
+    // Medium priority files (always attempt)
+    const constitutionPath = join(paths.REPO_ROOT, ".speck", "memory", "constitution.md");
+    fileContents["constitution.md"] = loadFileContent(constitutionPath, totalSize);
+    fileContents["data-model.md"] = loadFileContent(paths.DATA_MODEL, totalSize);
+  }
+
+  // Determine workflow mode if requested
+  let workflowMode: string | undefined;
+  if (options.includeWorkflowMode) {
+    workflowMode = determineWorkflowMode(paths.FEATURE_DIR, paths.REPO_ROOT);
+  }
+
   // Output results
   if (options.json) {
     const output: ValidationOutput = {
       MODE: paths.MODE,
       FEATURE_DIR: paths.FEATURE_DIR,
       AVAILABLE_DOCS: docs,
+      ...(fileContents && { FILE_CONTENTS: fileContents }),
+      ...(workflowMode && { WORKFLOW_MODE: workflowMode }),
     };
     console.log(JSON.stringify(output));
   } else {

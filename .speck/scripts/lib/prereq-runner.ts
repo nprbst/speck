@@ -71,6 +71,8 @@ export async function runPrerequisiteCheck(
     requireTasks?: boolean;
     includeTasks?: boolean;
     skipFeatureCheck?: boolean;
+    includeFileContents?: boolean;
+    includeWorkflowMode?: boolean;
   } = {},
   useCache = true
 ): Promise<PrereqCheckResult> {
@@ -93,6 +95,8 @@ export async function runPrerequisiteCheck(
     if (options.requireTasks) args.push("--require-tasks");
     if (options.includeTasks) args.push("--include-tasks");
     if (options.skipFeatureCheck) args.push("--skip-feature-check");
+    if (options.includeFileContents) args.push("--include-file-contents");
+    if (options.includeWorkflowMode) args.push("--include-workflow-mode");
 
     // Execute check-prerequisites directly (no subprocess)
     const { exitCode, stdout, stderr } = await captureOutput(() =>
@@ -198,13 +202,21 @@ export function formatPrereqContext(result: PrereqCheckResult): string {
     return "";
   }
 
-  const { FEATURE_DIR, AVAILABLE_DOCS, MODE } = result.output;
+  const { FEATURE_DIR, AVAILABLE_DOCS, MODE, FILE_CONTENTS, WORKFLOW_MODE } = result.output;
 
-  const contextData = {
+  const contextData: Record<string, unknown> = {
     MODE,
     FEATURE_DIR,
     AVAILABLE_DOCS,
   };
+
+  // Add optional fields if present
+  if (FILE_CONTENTS) {
+    contextData.FILE_CONTENTS = FILE_CONTENTS;
+  }
+  if (WORKFLOW_MODE) {
+    contextData.WORKFLOW_MODE = WORKFLOW_MODE;
+  }
 
   return `<!-- SPECK_PREREQ_CONTEXT
 ${JSON.stringify(contextData)}
