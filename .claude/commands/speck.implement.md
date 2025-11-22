@@ -27,10 +27,14 @@ Parse command-line flags from user input:
    ```
    Use the FEATURE_DIR, AVAILABLE_DOCS, FILE_CONTENTS, and WORKFLOW_MODE values from this JSON. All paths are absolute.
 
-   **FILE_CONTENTS field**: Contains pre-loaded file contents for high/medium priority files (tasks.md, plan.md, constitution.md, data-model.md). Possible values:
+   **FILE_CONTENTS field**: Contains pre-loaded file contents for high/medium priority files. Possible values:
    - Full file content (string): File was successfully pre-loaded
    - `"NOT_FOUND"`: File does not exist
    - `"TOO_LARGE"`: File exceeds size limits (use Read tool instead)
+
+   Pre-loaded files include:
+   - tasks.md, plan.md, constitution.md, data-model.md
+   - checklists/*.md (all checklist files in checklists/ directory, keyed as "checklists/filename.md")
 
    **WORKFLOW_MODE field**: Pre-determined workflow mode (`"stacked-pr"` or `"single-branch"`) from plan.md → constitution.md → default.
 
@@ -39,8 +43,11 @@ Parse command-line flags from user input:
    speck-check-prerequisites --json --require-tasks --include-tasks
    ```
 
-2. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
-   - Scan all checklist files in the checklists/ directory
+2. **Check checklists status** (if checklists exist):
+   - **Check FILE_CONTENTS from prerequisite context first** (step 1):
+     - Look for keys starting with "checklists/" (e.g., "checklists/requirements.md", "checklists/security.md")
+     - If checklist files found in FILE_CONTENTS: Use pre-loaded content
+     - If no checklists in FILE_CONTENTS: Use Glob tool to scan {FEATURE_DIR}/checklists/*.md
    - For each checklist, count:
      - Total items: All lines matching `- [ ]` or `- [X]` or `- [x]`
      - Completed items: Lines matching `- [X]` or `- [x]`

@@ -166,7 +166,7 @@ function checkForUnknownOptions(args: string[]): void {
  */
 const FILE_SIZE_LIMITS = {
   maxSingleFile: 24 * 1024, // 24KB per file
-  maxTotalFiles: 60 * 1024, // 60KB total
+  maxTotalFiles: 100 * 1024, // 100KB total
 };
 
 /**
@@ -349,6 +349,20 @@ export async function main(args: string[]): Promise<number> {
     const constitutionPath = join(paths.REPO_ROOT, ".speck", "memory", "constitution.md");
     fileContents["constitution.md"] = loadFileContent(constitutionPath, totalSize);
     fileContents["data-model.md"] = loadFileContent(paths.DATA_MODEL, totalSize);
+
+    // Load checklist files (if checklists/ directory exists)
+    const checklistsDir = join(paths.FEATURE_DIR, "checklists");
+    if (existsSync(checklistsDir)) {
+      try {
+        const checklistFiles = readdirSync(checklistsDir).filter(f => f.endsWith(".md"));
+        for (const file of checklistFiles) {
+          const checklistPath = join(checklistsDir, file);
+          fileContents[`checklists/${file}`] = loadFileContent(checklistPath, totalSize);
+        }
+      } catch {
+        // Directory not readable or error reading files, skip
+      }
+    }
   }
 
   // Determine workflow mode if requested
