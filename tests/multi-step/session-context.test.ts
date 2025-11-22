@@ -34,7 +34,7 @@ describe("Multi-Step: Session context preservation", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T068: Context preserved across branch operations in child repo", async () => {

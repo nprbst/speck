@@ -34,7 +34,7 @@ describe("E2E: Parallel branch workflows in multiple child repos", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T048.1: Create parallel stacked branches across three child repos", async () => {

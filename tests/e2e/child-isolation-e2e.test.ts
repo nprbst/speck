@@ -32,7 +32,7 @@ describe("E2E: Branch operations in one child don't affect another", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T049.1: Creating branches in child-a doesn't affect child-b", async () => {

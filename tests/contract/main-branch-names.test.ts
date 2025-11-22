@@ -31,7 +31,7 @@ describe("Contract: Non-standard main branch names", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T112: Branch creation works with 'main' as base", async () => {

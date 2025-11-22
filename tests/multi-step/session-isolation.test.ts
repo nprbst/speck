@@ -35,7 +35,7 @@ describe("Multi-Step: Session isolation between repos", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T069: Branch creation in repo A does not affect repo B", async () => {

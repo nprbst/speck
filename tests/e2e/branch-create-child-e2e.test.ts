@@ -32,7 +32,7 @@ describe("E2E: Complete branch creation workflow in child repo", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T026: Complete workflow - create first branch in child repo", async () => {

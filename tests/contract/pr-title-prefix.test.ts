@@ -32,7 +32,7 @@ describe("Contract: PR title prefix format", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T113: PR title is prefixed with [repo-name]", async () => {

@@ -30,7 +30,7 @@ describe("Integration: Plugin root resolution in multi-repo", () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T025: Plugin root resolution from child repo returns consistent path", async () => {

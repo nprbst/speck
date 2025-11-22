@@ -34,7 +34,7 @@ describe("Multi-Step: Branch create → confirm → stack → status workflow", 
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T066: Complete branch stacking workflow with status checks", async () => {

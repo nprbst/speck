@@ -31,7 +31,7 @@ describe("E2E: /speck.env from child validates local stack with parent context",
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T042: Display child context indicator", async () => {

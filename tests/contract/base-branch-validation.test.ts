@@ -30,7 +30,7 @@ describe("Contract: Base branch validation", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T017: Creating branch with non-existent base exits with code 1", async () => {

@@ -33,7 +33,7 @@ describe("Multi-Step: Specify → Plan → Tasks workflow", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T065: Complete workflow from specification to tasks in child repo", async () => {

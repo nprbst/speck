@@ -26,7 +26,7 @@ describe("E2E: Cross-repo branch dependency validation", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T027: Reject cross-repo base branch with clear error message", async () => {

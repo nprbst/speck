@@ -33,7 +33,7 @@ describe("Contract: Independent branches.json files per child repo", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T043.1: Each child repo has independent branches.json file", async () => {

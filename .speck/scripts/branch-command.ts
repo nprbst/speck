@@ -1247,29 +1247,34 @@ export async function main(args: string[] = process.argv.slice(2)): Promise<numb
   const commandArgs = args.slice(1);
 
   try {
+    let exitCode: number | void | undefined = undefined;
     switch (command) {
       case "create":
-        await createCommand(commandArgs);
+        exitCode = await createCommand(commandArgs);
         break;
       case "list":
-        await listCommand(commandArgs);
+        exitCode = await listCommand(commandArgs);
         break;
       case "status":
-        await statusCommand(commandArgs);
+        exitCode = await statusCommand(commandArgs);
         break;
       case "update":
-        await updateCommand(commandArgs);
+        exitCode = await updateCommand(commandArgs);
         break;
       case "delete":
-        await deleteCommand(commandArgs);
+        exitCode = await deleteCommand(commandArgs);
         break;
       case "import":
-        await importCommand(commandArgs);
+        exitCode = await importCommand(commandArgs);
         break;
       default:
         console.error(`Unknown command: ${command}`);
         console.error("Run '/speck.branch' for usage");
         return 1;
+    }
+    // Return exit code from command handler if provided (number), otherwise success (0)
+    if (typeof exitCode === 'number') {
+      return exitCode;
     }
   } catch (error) {
     if (error instanceof GitError || error instanceof ValidationError) {

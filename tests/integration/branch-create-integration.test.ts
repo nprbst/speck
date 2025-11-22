@@ -28,7 +28,7 @@ describe("Integration: Branch creation in multi-repo child", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T024: /speck.branch create invokes branch-command.ts with correct args", async () => {

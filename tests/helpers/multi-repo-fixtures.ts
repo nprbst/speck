@@ -66,7 +66,7 @@ export interface ChildRepoConfig {
  *
  * // Run tests...
  *
- * await fixture.cleanup();
+ * await fixture?.cleanup();
  * ```
  */
 export async function createMultiRepoTestFixture(

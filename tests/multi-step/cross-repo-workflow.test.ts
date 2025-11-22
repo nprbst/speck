@@ -35,7 +35,7 @@ describe("Multi-Step: Cross-repo specification workflow", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T067: Root spec → child A plan → child B plan workflow", async () => {

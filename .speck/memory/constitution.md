@@ -1,29 +1,31 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.3.1 → 1.4.0
+Version Change: 1.4.0 → 1.5.0
 Modified Principles: None
-Added Sections: "IX. Code Quality Standards" (new principle)
+Added Sections: "X. Zero Test Regression Policy" (new principle)
 Removed Sections: None
 
 Templates Requiring Updates:
-  ✅ .claude/commands/speck.implement.md - add quality validation step
-  ✅ .claude/commands/speck.tasks.md - add typecheck/lint task requirements
-  ⚠ .speck/scripts/check-prerequisites.ts - add typecheck/lint validation
-  ✅ Documentation - add code quality requirements to workflow
+  ✅ .claude/commands/speck.implement.md - add test validation step
+  ✅ .claude/commands/speck.tasks.md - add test regression check requirement
+  ⚠ .speck/scripts/check-prerequisites.ts - add test suite validation
+  ✅ Documentation - add test regression policy to workflow
 
 Follow-up TODOs:
-  - Add pre-commit hooks for typecheck and lint
-  - Update CI/CD to enforce quality gates
-  - Document quality standards in README.md
-  - Add quality gate validation to check-prerequisites.ts
+  - Add pre-implementation test baseline capture
+  - Update CI/CD to enforce zero regression policy
+  - Document test regression policy in README.md
+  - Add test suite validation to check-prerequisites.ts
+  - Consider pre-commit hooks for test validation
 
-Rationale for 1.4.0 (MINOR bump):
-  - New principle added: Code Quality Standards
-  - Establishes mandatory typecheck and lint requirements for spec completion
-  - Ensures pristine codebase going forward
+Rationale for 1.5.0 (MINOR bump):
+  - New principle added: Zero Test Regression Policy
+  - Establishes mandatory test suite health requirement for spec completion
+  - Prevents features from introducing test failures or reducing pass rate
   - No breaking changes to existing principles
   - Backwards compatible but raises quality bar for future features
+  - Complements existing Code Quality Standards (Principle IX)
 -->
 
 # Speck Constitution
@@ -243,6 +245,67 @@ pristine codebase is a productive codebase.
   - Feature completion checklist MUST include "Code quality: ✅ 0 typecheck errors, 0 lint warnings"
   - Pull request template MUST include quality verification step
 
+### X. Zero Test Regression Policy (NON-NEGOTIABLE)
+
+No feature specification can be considered complete if it introduces ANY test
+regressions. The test suite MUST maintain or improve its pass rate. Features
+that cause existing tests to fail MUST fix those failures before completion.
+
+**Rationale**: Test regressions indicate breaking changes, unintended side
+effects, or insufficient understanding of existing functionality. A declining
+test suite signals accumulating technical debt and eroding code quality.
+Allowing regressions normalizes failure and creates a culture of "good enough"
+rather than excellence. Every feature MUST leave the codebase healthier than it
+found it.
+
+**Implementation Requirements**:
+
+- MANDATORY test validation before spec completion:
+  - Capture baseline test results before feature implementation begins
+  - Run full test suite: `bun test`
+  - Compare final results against baseline
+  - ZERO tolerance for new test failures
+  - ZERO tolerance for reduced pass rate (e.g., 350 pass → 340 pass is FORBIDDEN)
+  - Test suite MUST show improvement or maintain same pass rate
+- Test baseline requirements:
+  - Document initial test status in feature planning phase
+  - Track metrics: total tests, pass count, fail count, skip count
+  - Store baseline in `<feature-dir>/test-baseline.md` or plan.md
+- Test validation enforcement:
+  - Before marking feature complete, run: `bun test > test-results.txt`
+  - Compare against baseline: failures MUST NOT increase, passes MUST NOT decrease
+  - Any test failures introduced by the feature MUST be fixed
+  - Features MAY improve test suite (fix existing failures, add new passing tests)
+- Acceptable test changes:
+  - ✅ Adding new passing tests for feature functionality
+  - ✅ Fixing existing failing tests (increases pass rate)
+  - ✅ Marking intentionally deferred tests as `.skip` with documented rationale
+  - ✅ Removing obsolete tests that no longer apply (with documented rationale)
+  - ❌ Introducing new test failures
+  - ❌ Reducing pass rate without fixing failures
+  - ❌ Commenting out failing tests to "make them pass"
+  - ❌ Marking tests as `.skip` to hide regressions
+- Test regression handling:
+  - If regressions discovered: HALT feature work immediately
+  - Investigate root cause: is it a real bug or test isolation issue?
+  - Fix the regression: update code or fix test isolation
+  - Document the fix in feature notes
+  - Only proceed once test suite is healthy again
+- Exceptions (RARE, requires explicit justification):
+  - Intentional breaking changes with migration plan (document in plan.md)
+  - Test infrastructure changes requiring temporary test updates (document in dedicated task)
+  - Known flaky tests being fixed as part of this feature (document flakiness evidence)
+- Quality gate validation:
+  - Feature completion checklist MUST include: "Test suite health: ✅ X pass / 0 new fail (baseline: Y pass)"
+  - Pull request template MUST require test regression verification
+  - `/speck.implement` workflow MUST validate test suite before marking complete
+  - `check-prerequisites.ts` SHOULD validate test suite health
+
+**Test Isolation Note**: Tests that pass individually but fail in full suite
+indicate test isolation or parallelism issues, NOT feature regressions. These
+are infrastructure bugs to be fixed separately, not blockers for feature
+completion (but SHOULD be documented and tracked for resolution).
+
 ## Upstream Sync Requirements
 
 ### Release-Based Synchronization
@@ -305,6 +368,8 @@ phases leads to ambiguous specs, incomplete plans, and implementation rework.
 - Clarification MUST resolve all `[NEEDS CLARIFICATION]` markers before planning
 - Analysis MUST verify cross-artifact consistency (spec ↔ plan ↔ tasks)
 - Implementation MUST pass code quality standards (typecheck + lint) before
+  feature completion
+- Implementation MUST pass test regression validation (zero new failures) before
   feature completion
 
 ### Testability
@@ -379,6 +444,7 @@ for existing artifacts.
 - All command files MUST delegate to implementation scripts (Principle VIII)
 - All implementations MUST pass typecheck and lint with zero errors/warnings
   (Principle IX)
+- All features MUST complete with zero test regressions (Principle X)
 
 **Versioning Policy**:
 
@@ -387,4 +453,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.4.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-21
+**Version**: 1.5.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-22

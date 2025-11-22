@@ -33,7 +33,7 @@ describe("Contract: No-remote warning", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T109: Branch creation succeeds despite missing remote", async () => {

@@ -31,7 +31,7 @@ describe("E2E: /speck.env from root validates complete aggregate view", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T040: Display aggregate view with root and child branches", async () => {

@@ -30,7 +30,7 @@ describe("Contract: Branch schema validation", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T015: branches.json uses schema version 1.1.0", async () => {

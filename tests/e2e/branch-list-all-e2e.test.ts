@@ -31,7 +31,7 @@ describe("E2E: /speck.branch list --all validates repo grouping and disambiguati
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T041: List all branches with repository grouping", async () => {

@@ -32,7 +32,7 @@ describe("E2E: Complete branch import workflow in child repo", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T063: Complete workflow - import single branch in child repo", async () => {

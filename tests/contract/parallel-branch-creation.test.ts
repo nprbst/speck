@@ -35,7 +35,7 @@ describe("Contract: Parallel branch creation across repos", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T044.1: Concurrent branch creation across repos exits with code 0", async () => {

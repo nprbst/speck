@@ -32,7 +32,7 @@ describe("Contract: Branch creation in child repo", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T014: Branch creation in child repo exits with code 0", async () => {

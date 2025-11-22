@@ -32,7 +32,7 @@ describe("Contract: PR suggestion in child repo", () => {
   });
 
   afterEach(async () => {
-    await fixture.cleanup();
+    await fixture?.cleanup();
   });
 
   test("T016: Creating second branch triggers PR suggestion with exit code 2", async () => {
