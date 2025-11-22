@@ -440,5 +440,5 @@ async function runCliMode() {
 
 // Run main if this is the entry point
 if (import.meta.main) {
-  main();
+  void main();
 }

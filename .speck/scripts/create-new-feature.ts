@@ -392,7 +392,7 @@ export async function main(args: string[]): Promise<number> {
     try {
       await $`git checkout -b ${branchName}`;
     } catch (error) {
-      console.error(`Error: Failed to create git branch: ${error}`);
+      console.error(`Error: Failed to create git branch: ${String(error)}`);
       return ExitCode.USER_ERROR;
     }
   } else {
@@ -443,14 +443,14 @@ export async function main(args: string[]): Promise<number> {
           // Create new branch in parent repo
           const createResult = await $`git -C ${parentRepoRoot} checkout -b ${branchName}`.quiet();
           if (createResult.exitCode !== 0) {
-            throw new Error(`git checkout -b failed with exit code ${createResult.exitCode}: ${createResult.stderr}`);
+            throw new Error(`git checkout -b failed with exit code ${String(createResult.exitCode)}: ${String(createResult.stderr)}`);
           }
           if (!options.json) {
             console.log(`[specify] Created branch in parent repo: ${branchName}`);
           }
         }
       } catch (error) {
-        console.error(`[specify] Warning: Failed to create branch in parent repo: ${error}`);
+        console.error(`[specify] Warning: Failed to create branch in parent repo: ${String(error)}`);
         console.error(`[specify] Parent repo: ${parentRepoRoot}`);
         console.error(`[specify] You may need to manually create the branch: git -C ${parentRepoRoot} checkout -b ${branchName}`);
       }

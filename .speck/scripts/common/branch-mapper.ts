@@ -125,7 +125,7 @@ export async function readBranches(repoRoot: string): Promise<BranchMapping> {
 
     if (!result.success) {
       // Attempt auto-repair for common issues
-      const repaired = await attemptRepair(data, repoRoot);
+      const repaired = attemptRepair(data, repoRoot);
       if (repaired) {
         console.warn("[WARN] Auto-repaired branches.json - review changes");
         await writeBranches(repoRoot, repaired);
@@ -376,10 +376,10 @@ export function removeBranch(
  * @param mapping - BranchMapping to validate
  * @throws Error if validation fails (circular dependency, invalid refs, etc.)
  */
-export async function validateBranchMapping(
+export function validateBranchMapping(
   mapping: BranchMapping,
   _repoRoot: string
-): Promise<void> {
+): void {
   // Schema validation
   const result = BranchMappingSchema.safeParse(mapping);
   if (!result.success) {
@@ -499,10 +499,10 @@ export function validateStatusTransition(
  * @param repoRoot - Repository root directory
  * @returns Repaired BranchMapping or null if cannot repair
  */
-async function attemptRepair(
+function attemptRepair(
   data: any,
   _repoRoot: string
-): Promise<BranchMapping | null> {
+): BranchMapping | null {
   try {
     // Ensure version exists
     if (!data.version) {

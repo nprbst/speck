@@ -75,7 +75,7 @@ export async function checkBranchMerged(
     return mergedBranches.includes(branchName);
   } catch (error) {
     if (error instanceof GitError) throw error;
-    throw new GitError(`Failed to check merged status: ${error}`);
+    throw new GitError(`Failed to check merged status: ${String(error)}`);
   }
 }
 
@@ -116,7 +116,7 @@ export async function listGitBranches(
       });
   } catch (error) {
     if (error instanceof GitError) throw error;
-    throw new GitError(`Failed to list branches: ${error}`);
+    throw new GitError(`Failed to list branches: ${String(error)}`);
   }
 }
 

@@ -370,7 +370,7 @@ async function createWorktree(
     if (existsSync(worktreePath)) {
       await $`rm -rf ${worktreePath}`;
     }
-    throw new Error(`Failed to create worktree: ${error}`);
+    throw new Error(`Failed to create worktree: ${String(error)}`);
   }
 }
 
@@ -610,7 +610,7 @@ async function main(): Promise<void> {
     if (error instanceof Error) {
       console.error(`Error: ${error.message}`);
     } else {
-      console.error(`Error: ${error}`);
+      console.error(`Error: ${String(error)}`);
     }
     process.exit(ExitCode.USER_ERROR);
   }
@@ -618,7 +618,7 @@ async function main(): Promise<void> {
 
 // Run if executed directly
 if (import.meta.main) {
-  main();
+  void main();
 }
 
 export { createWorktree, ensureBranchExists, sanitizeBranchName };

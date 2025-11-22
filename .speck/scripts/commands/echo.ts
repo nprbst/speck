@@ -37,6 +37,7 @@ export const parseEchoArgs: ArgumentParser<{ message: string }> = (commandString
  * @param context - Execution context (mode, working directory, etc.)
  * @returns CommandResult with echoed message
  */
+// eslint-disable-next-line @typescript-eslint/require-await
 export const echoHandler: CommandHandler<{ message: string }> = async (args) => {
   try {
     // Validate arguments

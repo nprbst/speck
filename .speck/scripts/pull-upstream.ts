@@ -414,7 +414,7 @@ export async function pullUpstream(
       }
 
       // Atomically move extracted content to final location
-      await atomicMove(extractDir, versionDir);
+      atomicMove(extractDir, versionDir);
 
       // Create release record
       const release: UpstreamRelease = {

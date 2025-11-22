@@ -27,37 +27,35 @@ export interface PrereqCheckResult {
 /**
  * Capture stdout/stderr during prerequisite check
  */
-function captureOutput(fn: () => Promise<number>): Promise<{
+async function captureOutput(fn: () => Promise<number>): Promise<{
   exitCode: number;
   stdout: string;
   stderr: string;
 }> {
-  return new Promise(async (resolve) => {
-    const originalLog = console.log;
-    const originalError = console.error;
-    let stdout = "";
-    let stderr = "";
+  const originalLog = console.log;
+  const originalError = console.error;
+  let stdout = "";
+  let stderr = "";
 
-    console.log = (...args) => {
-      stdout += args.join(" ") + "\n";
-    };
+  console.log = (...args) => {
+    stdout += args.join(" ") + "\n";
+  };
 
-    console.error = (...args) => {
-      stderr += args.join(" ") + "\n";
-    };
+  console.error = (...args) => {
+    stderr += args.join(" ") + "\n";
+  };
 
-    try {
-      const exitCode = await fn();
-      resolve({ exitCode, stdout: stdout.trim(), stderr: stderr.trim() });
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      stderr += `Error: ${err.message}\n`;
-      resolve({ exitCode: 2, stdout: stdout.trim(), stderr: stderr.trim() });
-    } finally {
-      console.log = originalLog;
-      console.error = originalError;
-    }
-  });
+  try {
+    const exitCode = await fn();
+    return { exitCode, stdout: stdout.trim(), stderr: stderr.trim() };
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    stderr += `Error: ${err.message}\n`;
+    return { exitCode: 2, stdout: stdout.trim(), stderr: stderr.trim() };
+  } finally {
+    console.log = originalLog;
+    console.error = originalError;
+  }
 }
 
 /**

@@ -120,7 +120,7 @@ export async function main(args: string[]): Promise<number> {
         }
       }
     } catch (error) {
-      console.error(`[specify] Warning: Could not manage git branch: ${error}`);
+      console.error(`[specify] Warning: Could not manage git branch: ${String(error)}`);
     }
 
     // T077-T079: Validate parent repo is on matching branch when using shared spec
@@ -159,7 +159,7 @@ export async function main(args: string[]): Promise<number> {
             console.error(`[specify]   git -C ${parentRepoRoot} checkout ${branchName}`);
           }
         } catch (error) {
-          console.error(`[specify] Warning: Could not check parent repo branch: ${error}`);
+          console.error(`[specify] Warning: Could not check parent repo branch: ${String(error)}`);
         }
       }
     }

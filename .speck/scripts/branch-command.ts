@@ -418,7 +418,7 @@ async function createCommand(args: string[]): Promise<number | void> {
   if (!specId) {
     // Try to auto-detect from current branch
     if (paths.FEATURE_DIR && paths.FEATURE_DIR.includes("/specs/")) {
-      const match = paths.FEATURE_DIR.match(/\/specs\/([^\/]+)/);
+      const match = paths.FEATURE_DIR.match(/\/specs\/([^/]+)/);
       if (match && match[1]) {
         specId = match[1];
         if (!jsonOutputFlag) {
