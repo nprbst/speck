@@ -64,7 +64,7 @@ const navLinks = [
       </div>
     </div>
     <div class="container footer-bottom">
-      <p>&copy; {new Date().getFullYear()} Speck. MIT License.</p>
+      <p>&copy; {new Date().getFullYear()} Speck. MIT License. Built on <a href="https://github.com/github/spec-kit" target="_blank" rel="noopener noreferrer">GitHub's spec-kit</a>.</p>
     </div>
   </footer>
 </BaseLayout>
@@ -130,5 +130,16 @@ const navLinks = [
   .footer-bottom p {
     color: var(--color-text-muted);
     font-size: 0.875rem;
+  }
+
+  .footer-bottom a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--transition-fast);
+  }
+
+  .footer-bottom a:hover {
+    border-bottom-color: var(--color-accent);
   }
 </style>

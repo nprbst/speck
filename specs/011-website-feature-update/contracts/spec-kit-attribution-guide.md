@@ -1,6 +1,6 @@
-# speck-kit Attribution Guide
+# spec-kit Attribution Guide
 
-**Purpose**: Ensure consistent, respectful attribution to GitHub's speck-kit project across all website content
+**Purpose**: Ensure consistent, respectful attribution to GitHub's spec-kit project across all website content
 
 **Source**: Clarifications session 2025-11-22 (spec.md#clarifications)
 
@@ -16,10 +16,10 @@ Per clarification Q1, attribution MUST appear in 4 distinct locations:
 
 **Location**: `website/src/pages/index.astro` - Hero section, below main tagline
 
-**Content**: "Built on GitHub's speck-kit"
+**Content**: "Built on GitHub's spec-kit"
 
 **Format**:
-- Hyperlinked to: `https://github.com/github/speck-kit`
+- Hyperlinked to: `https://github.com/github/spec-kit`
 - Displayed as subtitle or secondary tagline
 - Visually subordinate to main tagline but clearly visible
 
@@ -34,20 +34,20 @@ Per clarification Q1, attribution MUST appear in 4 distinct locations:
 **Length**: 2-3 sentences (brief paragraph)
 
 **Required Content Elements**:
-1. Foundation acknowledgment: "Speck builds on GitHub's speck-kit project"
+1. Foundation acknowledgment: "Speck builds on GitHub's spec-kit project"
 2. What Speck adds: "extending it for Claude Code users with multi-repo support, stacked PR workflows, and performance optimizations"
-3. Compatibility statement: "remains compatible with speck-kit"
+3. Compatibility statement: "remains compatible with spec-kit"
 
 **Additional Requirements**:
-- Conditional guidance for non-Claude-Code users: "If you're not using Claude Code, consider exploring [speck-kit](https://github.com/github/speck-kit) directly"
-- Link to dedicated documentation page: [About Speck & speck-kit](../about/speck-and-speck-kit.md)
-- NO explicit CTA encouraging Speck users to explore speck-kit (per Q4 clarification)
+- Conditional guidance for non-Claude-Code users: "If you're not using Claude Code, consider exploring [spec-kit](https://github.com/github/spec-kit) directly"
+- Link to dedicated documentation page: [About Speck & spec-kit](../about/speck-and-spec-kit.md)
+- NO explicit CTA encouraging Speck users to explore spec-kit (per Q4 clarification)
 
 **Tone**: Respectful, grateful, emphasizing extension NOT replacement
 
 **Example Paragraph**:
 
-> Speck builds on and remains compatible with GitHub's excellent [speck-kit](https://github.com/github/speck-kit) project, extending it for Claude Code users with multi-repo support, stacked PR workflows, and performance optimizations. If you're not using Claude Code, consider exploring speck-kit directly for specification-driven development. [Learn more about the relationship →](../about/speck-and-speck-kit.md)
+> Speck builds on and remains compatible with GitHub's excellent [spec-kit](https://github.com/github/spec-kit) project, extending it for Claude Code users with multi-repo support, stacked PR workflows, and performance optimizations. If you're not using Claude Code, consider exploring spec-kit directly for specification-driven development. [Learn more about the relationship →](../about/speck-and-spec-kit.md)
 
 **Implementation Reference**: Task T012b
 
@@ -57,10 +57,10 @@ Per clarification Q1, attribution MUST appear in 4 distinct locations:
 
 **Location**: `website/src/components/Footer.astro` (or equivalent footer component)
 
-**Content**: "Built on GitHub's speck-kit"
+**Content**: "Built on GitHub's spec-kit"
 
 **Format**:
-- Hyperlinked to: `https://github.com/github/speck-kit`
+- Hyperlinked to: `https://github.com/github/spec-kit`
 - Appears on ALL documentation pages
 - Subtle, non-intrusive placement (standard footer attribution style)
 
@@ -70,7 +70,7 @@ Per clarification Q1, attribution MUST appear in 4 distinct locations:
 
 ### 4. Inline Contextual Attribution (FR-031)
 
-**Scope**: ONLY core workflow features inherited from speck-kit (per Q3 clarification)
+**Scope**: ONLY core workflow features inherited from spec-kit (per Q3 clarification)
 
 **Features Requiring Inline Attribution**:
 1. **Three-phase workflow** (specify/plan/implement)
@@ -88,13 +88,13 @@ Per clarification Q1, attribution MUST appear in 4 distinct locations:
 **Example Phrasings**:
 
 **Three-Phase Workflow**:
-> "The three-phase workflow (specify, plan, implement), inherited from speck-kit, forms the foundation of Speck's structured development approach."
+> "The three-phase workflow (specify, plan, implement), inherited from spec-kit, forms the foundation of Speck's structured development approach."
 
 **Constitution Concept**:
-> "Speck extends speck-kit's constitution concept to support per-repository governance in multi-repo environments."
+> "Speck extends spec-kit's constitution concept to support per-repository governance in multi-repo environments."
 
 **Template System**:
-> "Building on speck-kit's Handlebars template system, Speck provides customizable templates for specifications, plans, and tasks."
+> "Building on spec-kit's Handlebars template system, Speck provides customizable templates for specifications, plans, and tasks."
 
 **Affected Pages**:
 - `website/src/content/docs/core-concepts/workflow.md` (three-phase workflow)
@@ -109,39 +109,39 @@ Per clarification Q1, attribution MUST appear in 4 distinct locations:
 ## Tone Requirements (FR-032)
 
 **Mandatory Tone Attributes**:
-- **Respectful**: Always refer to "GitHub's excellent speck-kit project"
+- **Respectful**: Always refer to "GitHub's excellent spec-kit project"
 - **Grateful**: Acknowledge foundation and value ("builds on", "extends", "thanks to")
 - **Compatibility-focused**: Emphasize "compatible with", not "replaces" or "improves upon"
 - **Extension-oriented**: "extending it for Claude Code users" (specific use case, not general superiority)
 
 **Canonical Tone Statement** (FR-032):
-> "Speck builds on and remains compatible with GitHub's excellent speck-kit project, extending it for Claude Code users with multi-repo support, stacked PR workflows, and performance optimizations."
+> "Speck builds on and remains compatible with GitHub's excellent spec-kit project, extending it for Claude Code users with multi-repo support, stacked PR workflows, and performance optimizations."
 
 **Avoid**:
-- ❌ "Speck improves on speck-kit..."
-- ❌ "Speck fixes limitations in speck-kit..."
-- ❌ "Speck is better than speck-kit..."
-- ❌ "Speck replaces speck-kit..."
+- ❌ "Speck improves on spec-kit..."
+- ❌ "Speck fixes limitations in spec-kit..."
+- ❌ "Speck is better than spec-kit..."
+- ❌ "Speck replaces spec-kit..."
 
 **Prefer**:
-- ✅ "Speck builds on speck-kit..."
-- ✅ "Speck extends speck-kit for Claude Code users..."
-- ✅ "Thanks to speck-kit's foundation..."
-- ✅ "Inheriting from speck-kit..."
+- ✅ "Speck builds on spec-kit..."
+- ✅ "Speck extends spec-kit for Claude Code users..."
+- ✅ "Thanks to spec-kit's foundation..."
+- ✅ "Inheriting from spec-kit..."
 
 ---
 
 ## Dedicated Documentation Page (FR-033)
 
-**Location**: `website/src/content/docs/about/speck-and-speck-kit.md`
+**Location**: `website/src/content/docs/about/speck-and-spec-kit.md`
 
 **Purpose**: Comprehensive relationship explanation (linked from homepage Origins section per Q5)
 
 **Required Content Sections**:
 
 1. **Origin Story**
-   - How Speck started as Claude Code adaptation of speck-kit
-   - Gratitude to GitHub's speck-kit team
+   - How Speck started as Claude Code adaptation of spec-kit
+   - Gratitude to GitHub's spec-kit team
    - Vision for Claude Code optimization
 
 2. **Inherited Features** (detailed breakdown)
@@ -160,14 +160,14 @@ Per clarification Q1, attribution MUST appear in 4 distinct locations:
 
 4. **Compatibility Guarantees**
    - File format 100% compatible (specs/ directory)
-   - Can switch between Speck and speck-kit without data loss
+   - Can switch between Speck and spec-kit without data loss
    - Upstream sync capability (`/speck.pull-upstream`, `/speck.transform-upstream`)
    - Constitution alignment (Principle I: Upstream Fidelity)
 
 5. **Positioning Statement**
    - Speck = Claude Code-optimized derivative, NOT fork or replacement
-   - speck-kit = canonical upstream for spec methodology
-   - Use Speck IF using Claude Code; use speck-kit for other AI assistants or standalone
+   - spec-kit = canonical upstream for spec methodology
+   - Use Speck IF using Claude Code; use spec-kit for other AI assistants or standalone
    - Both tools serve different but complementary use cases
 
 **Tone**: Same respectful, grateful tone per FR-032
@@ -178,26 +178,26 @@ Per clarification Q1, attribution MUST appear in 4 distinct locations:
 
 ## Validation Checklist (SC-009)
 
-**Success Criterion**: "speck-kit attribution appears in at least 3 locations: (1) homepage hero/tagline area, (2) dedicated About/Origins section, (3) footer on all pages, with consistent respectful tone emphasizing compatibility and extension"
+**Success Criterion**: "spec-kit attribution appears in at least 3 locations: (1) homepage hero/tagline area, (2) dedicated About/Origins section, (3) footer on all pages, with consistent respectful tone emphasizing compatibility and extension"
 
 **Verification Steps** (Task T012e):
 
 1. ✅ **Hero Subtitle Check**
    - Navigate to homepage
-   - Verify "Built on GitHub's speck-kit" appears below main tagline
-   - Verify hyperlink to https://github.com/github/speck-kit works
+   - Verify "Built on GitHub's spec-kit" appears below main tagline
+   - Verify hyperlink to https://github.com/github/spec-kit works
    - Verify visual hierarchy (subtitle, not main heading)
 
 2. ✅ **Origins Section Check**
    - Scroll through homepage
-   - Verify dedicated "About Speck & speck-kit" or "Origins" section exists
+   - Verify dedicated "About Speck & spec-kit" or "Origins" section exists
    - Verify 2-3 sentence paragraph with required elements (foundation, extensions, compatibility)
    - Verify conditional guidance for non-Claude-Code users present
    - Verify link to dedicated documentation page works
 
 3. ✅ **Footer Check**
    - Navigate to multiple documentation pages
-   - Verify "Built on GitHub's speck-kit" appears in footer on ALL pages
+   - Verify "Built on GitHub's spec-kit" appears in footer on ALL pages
    - Verify hyperlink works
    - Verify non-intrusive placement
 
@@ -213,7 +213,7 @@ Per clarification Q1, attribution MUST appear in 4 distinct locations:
    - Verify NO "replaces", "improves upon", "better than" language
 
 6. ✅ **Dedicated Page Check**
-   - Navigate to `about/speck-and-speck-kit.md`
+   - Navigate to `about/speck-and-spec-kit.md`
    - Verify all 5 required content sections present
    - Verify comprehensive, detailed coverage
    - Verify tone consistency
@@ -222,7 +222,7 @@ Per clarification Q1, attribution MUST appear in 4 distinct locations:
 
 ## Quick Reference
 
-**speck-kit GitHub URL**: `https://github.com/github/speck-kit`
+**spec-kit GitHub URL**: `https://github.com/github/spec-kit`
 
 **Core Features for Inline Attribution**:
 - Three-phase workflow

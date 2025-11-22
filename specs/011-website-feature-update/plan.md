@@ -196,13 +196,13 @@ No constitutional violations requiring justification. This is a straightforward 
 
 ### Contracts (`/contracts/`)
 
-1. **`speck-kit-attribution-guide.md`**: Attribution strategy and tone guidance (NEW - from clarifications session)
+1. **`spec-kit-attribution-guide.md`**: Attribution strategy and tone guidance (NEW - from clarifications session)
    - Where attribution appears: hero subtitle, Origins section, footer, inline contexts
    - Tone requirements: respectful, grateful, compatibility-focused per FR-032
    - Core features receiving inline attribution: three-phase workflow, constitution, templates (FR-031)
-   - Example phrasings: "The three-phase workflow (specify, plan, implement), inherited from speck-kit, forms the foundation..."
-   - Non-Claude-Code conditional guidance: "If you're not using Claude Code, consider exploring speck-kit directly"
-   - speck-kit GitHub URL: https://github.com/github/speck-kit
+   - Example phrasings: "The three-phase workflow (specify, plan, implement), inherited from spec-kit, forms the foundation..."
+   - Non-Claude-Code conditional guidance: "If you're not using Claude Code, consider exploring spec-kit directly"
+   - spec-kit GitHub URL: https://github.com/github/spec-kit
 
 2. **`content-schema.md`**: Markdown frontmatter structure (renumbered from 1 due to attribution guide addition)
    ```yaml
@@ -272,7 +272,7 @@ Expected task categories:
 2. Navigation updates (2-3 components)
 3. Example workflows (3 complete examples)
 4. Capability matrix creation (1 reference page)
-5. speck-kit attribution implementation (5-6 tasks: hero subtitle, Origins section, dedicated about page, footer, inline attribution in content, validation)
+5. spec-kit attribution implementation (5-6 tasks: hero subtitle, Origins section, dedicated about page, footer, inline attribution in content, validation)
 6. Link validation and accessibility testing
 7. Preview deployment and review
 

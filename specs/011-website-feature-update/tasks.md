@@ -15,7 +15,7 @@ This tasks file breaks down the website content update into actionable, independ
 - Phase 1: Setup (content infrastructure)
 - Phase 2: Foundational (shared artifacts)
 - Phase 3: User Story 4 - Value Proposition (P1)
-- Phase 3.5: speck-kit Attribution Implementation (P1)
+- Phase 3.5: spec-kit Attribution Implementation (P1)
 - Phase 4: User Story 1 - Multi-Repo Discovery (P1)
 - Phase 5: User Story 2 - Stacked PR Discovery (P1)
 - Phase 6: User Story 5 - Spec 006 Migration (P2)
@@ -63,7 +63,7 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [X] T008 [US4] Update homepage hero section in website/src/pages/index.astro with new tagline: "Specification-driven development for Claude Code - from idea to implementation with shared specs, stacked PRs, and multi-repo support" (Note: speck-kit subtitle added in Phase 3.5)
+- [X] T008 [US4] Update homepage hero section in website/src/pages/index.astro with new tagline: "Specification-driven development for Claude Code - from idea to implementation with shared specs, stacked PRs, and multi-repo support" (Note: spec-kit subtitle added in Phase 3.5)
 - [X] T009 [P] [US4] Update homepage feature cards in website/src/pages/index.astro to include: Multi-Repo & Monorepo Support, Stacked PR Workflows, Claude-Native Performance, Plugin Installation
 - [X] T010 [P] [US4] Add differentiators section to website/src/pages/index.astro highlighting: "Only tool built for Claude Code with native hook integration" and "Only spec system supporting multi-repo shared specifications"
 - [X] T011 [P] [US4] Add clear call-to-action in website/src/pages/index.astro: "Install via `/plugin` in Claude Code" with link to installation guide
@@ -71,23 +71,23 @@ This tasks file breaks down the website content update into actionable, independ
 
 ---
 
-## Phase 3.5: speck-kit Attribution Implementation (P1)
+## Phase 3.5: spec-kit Attribution Implementation (P1)
 
-**Goal**: Implement multi-channel speck-kit attribution strategy per clarifications session 2025-11-22 (FR-029 through FR-033)
+**Goal**: Implement multi-channel spec-kit attribution strategy per clarifications session 2025-11-22 (FR-029 through FR-033)
 
-**Story**: Website visitors should understand Speck's respectful relationship to GitHub's speck-kit project at multiple touchpoints: hero subtitle, Origins section, footer, and inline contexts for inherited features
+**Story**: Website visitors should understand Speck's respectful relationship to GitHub's spec-kit project at multiple touchpoints: hero subtitle, Origins section, footer, and inline contexts for inherited features
 
-**Independent Test**: Attribution appears in all required locations with consistent, grateful tone. Visitors understand Speck builds on speck-kit without replacing it.
+**Independent Test**: Attribution appears in all required locations with consistent, grateful tone. Visitors understand Speck builds on spec-kit without replacing it.
 
 **Reference**: Clarifications Q&A in [spec.md](spec.md#clarifications) - Attribution requirements (FR-029, FR-030, FR-031, FR-032, FR-033)
 
 **Tasks**:
 
-- [ ] T012a [P] [US4] Add speck-kit subtitle to homepage hero section in website/src/pages/index.astro: "Built on GitHub's speck-kit" as subtitle below main tagline with hyperlink to https://github.com/github/speck-kit (implements FR-001 clarification, Q2 answer)
-- [ ] T012b [P] [US4] Create "About Speck & speck-kit" Origins section on homepage in website/src/pages/index.astro with brief paragraph (2-3 sentences) covering: foundation acknowledgment, what Speck adds (Claude Code integration, multi-repo, stacked PRs, performance), compatibility statement. Include conditional guidance for non-Claude-Code users: "If you're not using Claude Code, consider exploring speck-kit directly" with link to https://github.com/github/speck-kit. Link to dedicated documentation page (see T012c). Tone: respectful, grateful per FR-032. (implements FR-029, Q4 and Q5 answers)
-- [ ] T012c [P] Create dedicated documentation page in website/src/content/docs/about/speck-and-speck-kit.md following contracts/content-schema.md. Content: comprehensive origin story, detailed breakdown of inherited features (three-phase workflow, constitution, templates) vs Speck extensions (multi-repo, stacked PRs, hooks, performance), compatibility guarantees, positioning explanation. Tone: "Speck builds on and remains compatible with GitHub's excellent speck-kit project, extending it for Claude Code users..." per FR-032. (implements FR-033, Q5 answer)
-- [ ] T012d [P] Update footer component in website/src/components/Footer.astro (or create if doesn't exist) to include speck-kit attribution: "Built on GitHub's speck-kit" with hyperlink to https://github.com/github/speck-kit. Ensure footer appears on all documentation pages. (implements FR-030, Q1 answer)
-- [ ] T012e [VALIDATION] Verify speck-kit attribution appears in all 3 required locations per SC-009: (1) Hero subtitle with link, (2) Origins section on homepage with conditional guidance and link to dedicated page, (3) Footer on all pages. Verify consistent tone per FR-032 across all locations. Preview in dev server and check multiple pages.
+- [X] T012a [P] [US4] Add spec-kit subtitle to homepage hero section in website/src/pages/index.astro: "Built on GitHub's spec-kit" as subtitle below main tagline with hyperlink to https://github.com/github/spec-kit (implements FR-001 clarification, Q2 answer)
+- [X] T012b [P] [US4] Create "About Speck & spec-kit" Origins section on homepage in website/src/pages/index.astro with brief paragraph (2-3 sentences) covering: foundation acknowledgment, what Speck adds (Claude Code integration, multi-repo, stacked PRs, performance), compatibility statement. Include conditional guidance for non-Claude-Code users: "If you're not using Claude Code, consider exploring spec-kit directly" with link to https://github.com/github/spec-kit. Link to dedicated documentation page (see T012c). Tone: respectful, grateful per FR-032. (implements FR-029, Q4 and Q5 answers)
+- [X] T012c [P] Create dedicated documentation page in website/src/content/docs/about/speck-and-spec-kit.md following contracts/content-schema.md. Content: comprehensive origin story, detailed breakdown of inherited features (three-phase workflow, constitution, templates) vs Speck extensions (multi-repo, stacked PRs, hooks, performance), compatibility guarantees, positioning explanation. Tone: "Speck builds on and remains compatible with GitHub's excellent spec-kit project, extending it for Claude Code users..." per FR-032. (implements FR-033, Q5 answer)
+- [X] T012d [P] Update footer component in website/src/components/Footer.astro (or create if doesn't exist) to include spec-kit attribution: "Built on GitHub's spec-kit" with hyperlink to https://github.com/github/spec-kit. Ensure footer appears on all documentation pages. (implements FR-030, Q1 answer)
+- [X] T012e [VALIDATION] Verify spec-kit attribution appears in all 3 required locations per SC-009: (1) Hero subtitle with link, (2) Origins section on homepage with conditional guidance and link to dedicated page, (3) Footer on all pages. Verify consistent tone per FR-032 across all locations. Preview in dev server and check multiple pages.
 
 ---
 
@@ -101,8 +101,8 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T013 [P] [US1] Create core concepts page in website/src/content/docs/core-concepts/multi-repo.md explaining symlink detection, shared specs, and per-repo constitutions (following contracts/content-schema.md). Include inline attribution when describing shared specs concept: reference speck-kit foundation per FR-031 and contracts/speck-kit-attribution-guide.md
-- [ ] T014 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/multi-repo-support.md with step-by-step `/speck.link` setup instructions (following contracts/content-schema.md). When describing per-repo constitutions, include inline attribution: "Speck extends speck-kit's constitution concept to support..." per FR-031
+- [ ] T013 [P] [US1] Create core concepts page in website/src/content/docs/core-concepts/multi-repo.md explaining symlink detection, shared specs, and per-repo constitutions (following contracts/content-schema.md). Include inline attribution when describing shared specs concept: reference spec-kit foundation per FR-031 and contracts/spec-kit-attribution-guide.md
+- [ ] T014 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/multi-repo-support.md with step-by-step `/speck.link` setup instructions (following contracts/content-schema.md). When describing per-repo constitutions, include inline attribution: "Speck extends spec-kit's constitution concept to support..." per FR-031
 - [ ] T015 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/monorepos.md for monorepo workspace management (following contracts/content-schema.md). Include inline attribution when mentioning constitution or template concepts per FR-031
 - [X] T016 [P] [US1] Create example workflow in website/src/content/docs/examples/multi-repo-workflow.md demonstrating frontend/backend coordination (following contracts/example-templates.md)
 - [X] T017 [US1] Update quickstart guide in website/src/content/docs/getting-started/quick-start.md to add "What's Next" references to multi-repo capabilities
@@ -123,7 +123,7 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T022 [P] [US2] Create core concepts page in website/src/content/docs/core-concepts/stacked-prs.md explaining branch dependency tracking, PR automation, and workflow benefits (following contracts/content-schema.md). Note: Stacked PRs are a Speck extension, NOT inherited from speck-kit, so NO inline attribution needed per FR-031
+- [ ] T022 [P] [US2] Create core concepts page in website/src/content/docs/core-concepts/stacked-prs.md explaining branch dependency tracking, PR automation, and workflow benefits (following contracts/content-schema.md). Note: Stacked PRs are a Speck extension, NOT inherited from spec-kit, so NO inline attribution needed per FR-031
 - [ ] T023 [P] [US2] Create advanced features page in website/src/content/docs/advanced-features/stacked-prs.md with `/speck.branch` commands and workflow guide (following contracts/content-schema.md). Note: Stacked PRs are a Speck extension, NO inline attribution per FR-031
 - [X] T024 [P] [US2] Create example workflow in website/src/content/docs/examples/stacked-pr-workflow.md demonstrating breaking feature into reviewable stack (following contracts/example-templates.md)
 - [X] T025 [US2] Update homepage in website/src/pages/index.astro to highlight stacked PR support: "Break features into reviewable chunks" and "Faster delivery through parallel review"
@@ -145,7 +145,7 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T031 [P] [US5] Update three-phase workflow page in website/src/content/docs/core-concepts/workflow.md to add references to multi-repo and stacked PR workflows in "What's Next" section. CRITICAL: Include inline attribution for three-phase workflow concept: "The three-phase workflow (specify, plan, implement), inherited from speck-kit, forms the foundation..." per FR-031 (Q3 clarification: core workflow features MUST receive attribution)
+- [ ] T031 [P] [US5] Update three-phase workflow page in website/src/content/docs/core-concepts/workflow.md to add references to multi-repo and stacked PR workflows in "What's Next" section. CRITICAL: Include inline attribution for three-phase workflow concept: "The three-phase workflow (specify, plan, implement), inherited from spec-kit, forms the foundation..." per FR-031 (Q3 clarification: core workflow features MUST receive attribution)
 - [X] T032 [P] [US5] Verify installation guide in website/src/content/docs/getting-started/installation.md remains unchanged (SC-003 preservation requirement)
 - [X] T033 [P] [US5] Update existing first feature example in website/src/content/docs/examples/first-feature.md to add "What's Next" references to advanced workflows
 - [X] T034 [US5] Create "What's New" section in website/src/content/docs/whats-new.md highlighting specs 007-010 capabilities with dates (2025-11-XX for each spec)

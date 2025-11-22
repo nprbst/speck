@@ -10,6 +10,8 @@ import FeatureCard from '@/components/FeatureCard.astro';
 // Homepage data
 const hero = {
   headline: "Specification-driven development for Claude Code",
+  subtitle: "Built on GitHub's spec-kit",
+  subtitleLink: "https://github.com/github/spec-kit",
   subheadline: "From idea to implementation with shared specs, stacked PRs, and multi-repo support. Built for Claude Code with native hook integration.",
   ctaPrimary: {
     text: "Install via /plugin",
@@ -84,6 +86,11 @@ const seo = {
     <div class="container">
       <div class="hero-content">
         <h1 class="hero-headline">{hero.headline}</h1>
+        <p class="hero-subtitle">
+          <a href={hero.subtitleLink} class="subtitle-link" target="_blank" rel="noopener noreferrer">
+            {hero.subtitle}
+          </a>
+        </p>
         <p class="hero-subheadline">{hero.subheadline}</p>
         <div class="hero-ctas">
           <a href={hero.ctaPrimary.href} class="btn btn-primary">
@@ -124,6 +131,21 @@ const seo = {
             <p class="differentiator-description">{diff.description}</p>
           </div>
         ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- About Speck & spec-kit Origins Section -->
+  <section class="origins">
+    <div class="container">
+      <h2 class="section-title">About Speck & spec-kit</h2>
+      <div class="origins-content">
+        <p>
+          Speck builds on and remains compatible with GitHub's excellent <a href="https://github.com/github/spec-kit" target="_blank" rel="noopener noreferrer">spec-kit</a> project,
+          extending it for Claude Code users with multi-repo support, stacked PR workflows, and performance optimizations.
+          If you're not using Claude Code, consider exploring <a href="https://github.com/github/spec-kit" target="_blank" rel="noopener noreferrer">spec-kit directly</a> for specification-driven development.
+          <a href="/docs/about/speck-and-spec-kit" class="learn-more-link">Learn more about the relationship →</a>
+        </p>
       </div>
     </div>
   </section>
@@ -211,9 +233,27 @@ const seo = {
   .hero-headline {
     font-size: clamp(2rem, 5vw, 3.5rem);
     font-weight: 700;
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-sm);
     line-height: 1.1;
     color: var(--color-text);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(0.875rem, 1.5vw, 1rem);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-lg);
+    font-style: italic;
+  }
+
+  .subtitle-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--transition-fast);
+  }
+
+  .subtitle-link:hover {
+    border-bottom-color: var(--color-accent);
   }
 
   .hero-subheadline {
@@ -325,6 +365,40 @@ const seo = {
     color: var(--color-text-muted);
     line-height: 1.6;
     margin: 0;
+  }
+
+  /* Origins Section */
+  .origins {
+    padding: var(--space-2xl) 0;
+    background: var(--color-bg);
+  }
+
+  .origins-content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .origins-content p {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .origins-content a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--transition-fast);
+  }
+
+  .origins-content a:hover {
+    border-bottom-color: var(--color-accent);
+  }
+
+  .learn-more-link {
+    font-weight: 600;
   }
 
   /* Comparison Preview */

@@ -1,7 +1,7 @@
-# Remediation Summary: speck-kit Attribution Integration
+# Remediation Summary: spec-kit Attribution Integration
 
 **Date**: 2025-11-22
-**Context**: Clarifications session added 5 new functional requirements (FR-029 through FR-033) for speck-kit attribution. Analysis revealed CRITICAL coverage gap: zero tasks existed to implement these requirements.
+**Context**: Clarifications session added 5 new functional requirements (FR-029 through FR-033) for spec-kit attribution. Analysis revealed CRITICAL coverage gap: zero tasks existed to implement these requirements.
 
 ---
 
@@ -11,14 +11,14 @@
 
 #### Phase Count Update
 - **Changed**: Total phases from 8 → 9
-- **Added**: Phase 3.5 "speck-kit Attribution Implementation (P1)"
+- **Added**: Phase 3.5 "spec-kit Attribution Implementation (P1)"
 - **Location**: Between Phase 3 (Value Proposition) and Phase 4 (Multi-Repo Discovery)
 
 #### New Phase 3.5 Tasks (5 new tasks)
 
 **T012a** [P] [US4] - Hero subtitle attribution
-- Add "Built on GitHub's speck-kit" subtitle to hero section
-- Hyperlink to https://github.com/github/speck-kit
+- Add "Built on GitHub's spec-kit" subtitle to hero section
+- Hyperlink to https://github.com/github/spec-kit
 - Implements FR-001 clarification (Q2 answer)
 
 **T012b** [P] [US4] - Homepage Origins section
@@ -28,14 +28,14 @@
 - Link to dedicated documentation page (T012c)
 - Implements FR-029 (Q4, Q5 answers)
 
-**T012c** [P] - Dedicated "About Speck & speck-kit" page
-- Create `website/src/content/docs/about/speck-and-speck-kit.md`
+**T012c** [P] - Dedicated "About Speck & spec-kit" page
+- Create `website/src/content/docs/about/speck-and-spec-kit.md`
 - Comprehensive content: origin story, inherited features, extensions, compatibility, positioning
 - Implements FR-033 (Q5 answer)
 
 **T012d** [P] - Footer attribution
 - Update `website/src/components/Footer.astro`
-- Add "Built on GitHub's speck-kit" with link on all pages
+- Add "Built on GitHub's spec-kit" with link on all pages
 - Implements FR-030 (Q1 answer)
 
 **T012e** [VALIDATION] - Attribution verification
@@ -46,7 +46,7 @@
 #### Updated Existing Tasks (6 tasks modified and unchecked for re-implementation)
 
 **T008** - Note added
-- Added reference: "speck-kit subtitle added in Phase 3.5"
+- Added reference: "spec-kit subtitle added in Phase 3.5"
 - Clarifies hero section work split between T008 and T012a
 
 **T013** - Inline attribution requirement added, **UNCHECKED** for re-implementation
@@ -55,7 +55,7 @@
 - Status: `[X]` → `[ ]` (must be re-done with new attribution)
 
 **T014** - Constitution attribution added, **UNCHECKED** for re-implementation
-- Multi-repo support page must include: "Speck extends speck-kit's constitution concept..."
+- Multi-repo support page must include: "Speck extends spec-kit's constitution concept..."
 - Per FR-031 (Q3: core features only)
 - Status: `[X]` → `[ ]` (must be re-done with new attribution)
 
@@ -76,7 +76,7 @@
 
 **T031** - CRITICAL update, **UNCHECKED** for re-implementation
 - Three-phase workflow page MUST include inline attribution
-- "The three-phase workflow (specify, plan, implement), inherited from speck-kit..."
+- "The three-phase workflow (specify, plan, implement), inherited from spec-kit..."
 - Per FR-031 (Q3 clarification: core workflow features MUST receive attribution)
 - Status: `[X]` → `[ ]` (must be re-done with CRITICAL attribution requirement)
 
@@ -86,27 +86,27 @@
 
 #### Contracts Section Enhancement
 
-**Added**: `speck-kit-attribution-guide.md` as Contract #1
+**Added**: `spec-kit-attribution-guide.md` as Contract #1
 - Where attribution appears: hero, Origins, footer, inline
 - Tone requirements per FR-032
 - Core features for inline attribution (Q3 answer)
 - Example phrasings
 - Non-Claude-Code conditional guidance
-- speck-kit GitHub URL
+- spec-kit GitHub URL
 
 **Renumbered**: Existing contracts 1-4 → 2-5
 
 #### Phase 2 Expected Tasks Update
 
 **Added**: Category #5
-- "speck-kit attribution implementation (5-6 tasks: hero subtitle, Origins section, dedicated about page, footer, inline attribution in content, validation)"
+- "spec-kit attribution implementation (5-6 tasks: hero subtitle, Origins section, dedicated about page, footer, inline attribution in content, validation)"
 - Renumbered existing categories 5-6 → 6-7
 
 ---
 
 ### 3. New Contract Created
 
-**File**: `contracts/speck-kit-attribution-guide.md`
+**File**: `contracts/spec-kit-attribution-guide.md`
 
 **Sections**:
 1. **Attribution Locations** (4 channels)
@@ -122,14 +122,14 @@
 
 3. **Dedicated Documentation Page** (FR-033)
    - Required content sections: origin story, inherited features, extensions, compatibility, positioning
-   - Content structure for `about/speck-and-speck-kit.md`
+   - Content structure for `about/speck-and-spec-kit.md`
 
 4. **Validation Checklist** (SC-009)
    - 6-step verification process for Task T012e
    - Hero, Origins, footer, inline, tone, dedicated page checks
 
 5. **Quick Reference**
-   - speck-kit URL
+   - spec-kit URL
    - Core features list (attribution required)
    - Extension features list (NO attribution)
    - Tone keywords (do/don't)
@@ -153,7 +153,7 @@
 - **High issues**: 0
 - **New tasks created**: 5 (T012a through T012e)
 - **Existing tasks updated**: 6 (T008, T013, T014, T015, T022, T023, T031)
-- **New contracts created**: 1 (speck-kit-attribution-guide.md)
+- **New contracts created**: 1 (spec-kit-attribution-guide.md)
 
 ---
 
@@ -176,7 +176,7 @@ Follow this sequence when executing Phase 3.5:
 All 5 clarification questions from session 2025-11-22 fully implemented:
 
 ✅ **Q1**: Attribution locations → Multi-channel strategy (hero, Origins, footer, inline)
-✅ **Q2**: Hero wording → "Built on GitHub's speck-kit" with hyperlink
+✅ **Q2**: Hero wording → "Built on GitHub's spec-kit" with hyperlink
 ✅ **Q3**: Inline attribution scope → Core workflow features only (three-phase, constitution, templates)
 ✅ **Q4**: Origins section CTA → Conditional guidance for non-Claude-Code users, NO CTA for Speck users
 ✅ **Q5**: Origins section detail → Brief homepage paragraph + dedicated comprehensive page
@@ -186,7 +186,7 @@ All 5 clarification questions from session 2025-11-22 fully implemented:
 ## Success Criteria Validation
 
 **SC-009** (newly added):
-> "speck-kit attribution appears in at least 3 locations: (1) homepage hero/tagline area, (2) dedicated About/Origins section, (3) footer on all pages, with consistent respectful tone emphasizing compatibility and extension"
+> "spec-kit attribution appears in at least 3 locations: (1) homepage hero/tagline area, (2) dedicated About/Origins section, (3) footer on all pages, with consistent respectful tone emphasizing compatibility and extension"
 
 **Validation Tasks**:
 - T012a validates location #1 (hero)
@@ -222,11 +222,11 @@ Clarifications added substantive new requirements (FR-029 through FR-033) rather
    - 6 existing tasks updated with attribution requirements and **unchecked** for re-implementation
 
 2. ✅ `specs/011-website-feature-update/plan.md`
-   - Contracts section: added speck-kit-attribution-guide.md
+   - Contracts section: added spec-kit-attribution-guide.md
    - Renumbered existing contracts
    - Phase 2 expected tasks: added attribution category
 
-3. ✅ `specs/011-website-feature-update/contracts/speck-kit-attribution-guide.md` (NEW)
+3. ✅ `specs/011-website-feature-update/contracts/spec-kit-attribution-guide.md` (NEW)
    - Comprehensive attribution guide
    - 4 location specifications
    - Tone requirements with examples
@@ -249,7 +249,7 @@ Clarifications added substantive new requirements (FR-029 through FR-033) rather
 3. ⏭️ Begin implementation with Phase 3.5 tasks
 
 ### During Implementation
-1. Reference `contracts/speck-kit-attribution-guide.md` for tone and content
+1. Reference `contracts/spec-kit-attribution-guide.md` for tone and content
 2. Follow implementation order (T012a → T012d → T012c → T012b → T012e)
 3. Verify tone consistency across all attribution touchpoints
 
@@ -257,7 +257,7 @@ Clarifications added substantive new requirements (FR-029 through FR-033) rather
 1. Run T012e validation task after all attribution tasks complete
 2. Preview in dev server: http://localhost:4321
 3. Check multiple pages for footer visibility
-4. Test all hyperlinks to https://github.com/github/speck-kit
+4. Test all hyperlinks to https://github.com/github/spec-kit
 
 ---
 
