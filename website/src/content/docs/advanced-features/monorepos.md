@@ -1,10 +1,13 @@
 ---
 title: "Monorepo Support"
 description: "Manage workspace projects in monorepos with Speck's automatic detection and cross-workspace coordination."
-category: "advanced-features"
-order: 2
+category: advanced-features
+audience: [existing-users, evaluators]
+prerequisites: ["/docs/core-concepts/workflow", "/docs/core-concepts/multi-repo"]
 tags: ["monorepo", "workspace", "pnpm", "yarn", "lerna"]
 lastUpdated: 2025-11-22
+relatedPages: ["/docs/advanced-features/multi-repo-support", "/docs/examples/multi-repo-workflow", "/docs/reference/capability-matrix"]
+order: 2
 ---
 
 # Monorepo Support
@@ -345,7 +348,7 @@ grep workspaces package.json
 
 **Symptom**: UI and API packages generate same implementation plan
 
-**Solution**: Each package should have its own constitution defining different tech stacks. Update per-package constitutions, then regenerate plans.
+**Solution**: Building on [spec-kit](https://github.com/github/spec-kit)'s constitution concept, each package should have its own constitution defining different tech stacks. Update per-package constitutions, then regenerate plans.
 
 ## Performance
 

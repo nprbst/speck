@@ -1,11 +1,12 @@
 ---
-title: "Speck & spec-kit"
+title: "Speck & github/spec-kit"
 description: "Understand the relationship between Speck and GitHub's spec-kit project, including inherited features, Speck extensions, and compatibility guarantees."
-category: about
+category: reference
 audience: [new-users, existing-users, evaluators]
 tags: ["spec-kit", "origins", "compatibility", "architecture", "foundation"]
 lastUpdated: 2025-11-22
 relatedPages: ["/docs/getting-started/quick-start", "/docs/core-concepts/workflow"]
+order: 2
 ---
 
 # Speck & spec-kit
@@ -170,14 +171,24 @@ Choose Speck if you are:
 ### When to Use spec-kit
 
 Choose [spec-kit](https://github.com/github/spec-kit) if you are:
-- **Not using Claude Code** (using other AI assistants, IDEs, or standalone)
-- **Want maximum flexibility** and customization
-- **Prefer bash-based universal compatibility**
-- **Don't need multi-repo or stacked PR features**
+- **Using any AI assistant** (GitHub Copilot, Cursor, Cody, or any LLM) - spec-kit is **multi-agent compatible**
+- **Want an easier getting started experience** - spec-kit has a gentler learning curve with simpler bash scripts
+- **Value universal compatibility** - works on any platform without runtime dependencies (just bash and git)
+- **Prefer lightweight, minimal tooling** - no plugin installation, no framework lock-in
+- **Not using Claude Code** - spec-kit is the better choice for VS Code, JetBrains, or terminal-based workflows
+- **Want community-driven development** - benefit from GitHub's open-source ecosystem and contributions
+
+**spec-kit's Advantages**:
+- **Simpler onboarding**: Fewer concepts to learn, straightforward bash scripts
+- **Multi-agent support**: Works with any AI assistant, not just Claude
+- **Zero dependencies**: No runtime requirements beyond bash and git
+- **Established ecosystem**: Backed by GitHub with active community support
 
 ### Both Tools Serve Different Use Cases
 
-Speck is a **Claude Code-optimized derivative** of spec-kit, not a replacement. The spec-kit project remains the **canonical upstream** for the specification-driven development methodology. Both tools are valuable, and the choice depends on your development environment and workflow preferences.
+Speck and spec-kit are complementary tools, not competitors. spec-kit is the **easier, more universal** choice for most developers. Speck trades simplicity for **Claude-native power** (multi-repo, stacked PRs, sub-100ms performance) when you're specifically using Claude Code.
+
+The spec-kit project remains the **canonical upstream** for the specification-driven development methodology. Speck is simply a Claude Code-optimized derivative that inherits spec-kit's methodology while adding features that require tight Claude integration.
 
 ---
 

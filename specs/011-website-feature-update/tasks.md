@@ -101,9 +101,9 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T013 [P] [US1] Create core concepts page in website/src/content/docs/core-concepts/multi-repo.md explaining symlink detection, shared specs, and per-repo constitutions (following contracts/content-schema.md). Include inline attribution when describing shared specs concept: reference spec-kit foundation per FR-031 and contracts/spec-kit-attribution-guide.md
-- [ ] T014 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/multi-repo-support.md with step-by-step `/speck.link` setup instructions (following contracts/content-schema.md). When describing per-repo constitutions, include inline attribution: "Speck extends spec-kit's constitution concept to support..." per FR-031
-- [ ] T015 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/monorepos.md for monorepo workspace management (following contracts/content-schema.md). Include inline attribution when mentioning constitution or template concepts per FR-031
+- [X] T013 [P] [US1] Create core concepts page in website/src/content/docs/core-concepts/multi-repo.md explaining symlink detection, shared specs, and per-repo constitutions (following contracts/content-schema.md). Include inline attribution when describing shared specs concept: reference spec-kit foundation per FR-031 and contracts/spec-kit-attribution-guide.md
+- [X] T014 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/multi-repo-support.md with step-by-step `/speck.link` setup instructions (following contracts/content-schema.md). When describing per-repo constitutions, include inline attribution: "Speck extends spec-kit's constitution concept to support..." per FR-031
+- [X] T015 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/monorepos.md for monorepo workspace management (following contracts/content-schema.md). Include inline attribution when mentioning constitution or template concepts per FR-031
 - [X] T016 [P] [US1] Create example workflow in website/src/content/docs/examples/multi-repo-workflow.md demonstrating frontend/backend coordination (following contracts/example-templates.md)
 - [X] T017 [US1] Update quickstart guide in website/src/content/docs/getting-started/quick-start.md to add "What's Next" references to multi-repo capabilities
 - [X] T018 [US1] Add multi-repo use cases to homepage in website/src/pages/index.astro: "Coordinated frontend/backend features" and "Monorepo workspace management"
@@ -123,8 +123,8 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T022 [P] [US2] Create core concepts page in website/src/content/docs/core-concepts/stacked-prs.md explaining branch dependency tracking, PR automation, and workflow benefits (following contracts/content-schema.md). Note: Stacked PRs are a Speck extension, NOT inherited from spec-kit, so NO inline attribution needed per FR-031
-- [ ] T023 [P] [US2] Create advanced features page in website/src/content/docs/advanced-features/stacked-prs.md with `/speck.branch` commands and workflow guide (following contracts/content-schema.md). Note: Stacked PRs are a Speck extension, NO inline attribution per FR-031
+- [X] T022 [P] [US2] Create core concepts page in website/src/content/docs/core-concepts/stacked-prs.md explaining branch dependency tracking, PR automation, and workflow benefits (following contracts/content-schema.md). Note: Stacked PRs are a Speck extension, NOT inherited from spec-kit, so NO inline attribution needed per FR-031
+- [X] T023 [P] [US2] Create advanced features page in website/src/content/docs/advanced-features/stacked-prs.md with `/speck.branch` commands and workflow guide (following contracts/content-schema.md). Note: Stacked PRs are a Speck extension, NO inline attribution per FR-031
 - [X] T024 [P] [US2] Create example workflow in website/src/content/docs/examples/stacked-pr-workflow.md demonstrating breaking feature into reviewable stack (following contracts/example-templates.md)
 - [X] T025 [US2] Update homepage in website/src/pages/index.astro to highlight stacked PR support: "Break features into reviewable chunks" and "Faster delivery through parallel review"
 - [X] T026 [US2] Add tool compatibility messaging to stacked PR pages: "Works with Graphite, GitHub Stack, or manual git workflows"
@@ -145,7 +145,7 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T031 [P] [US5] Update three-phase workflow page in website/src/content/docs/core-concepts/workflow.md to add references to multi-repo and stacked PR workflows in "What's Next" section. CRITICAL: Include inline attribution for three-phase workflow concept: "The three-phase workflow (specify, plan, implement), inherited from spec-kit, forms the foundation..." per FR-031 (Q3 clarification: core workflow features MUST receive attribution)
+- [X] T031 [P] [US5] Update three-phase workflow page in website/src/content/docs/core-concepts/workflow.md to add references to multi-repo and stacked PR workflows in "What's Next" section. CRITICAL: Include inline attribution for three-phase workflow concept: "The three-phase workflow (specify, plan, implement), inherited from spec-kit, forms the foundation..." per FR-031 (Q3 clarification: core workflow features MUST receive attribution)
 - [X] T032 [P] [US5] Verify installation guide in website/src/content/docs/getting-started/installation.md remains unchanged (SC-003 preservation requirement)
 - [X] T033 [P] [US5] Update existing first feature example in website/src/content/docs/examples/first-feature.md to add "What's Next" references to advanced workflows
 - [X] T034 [US5] Create "What's New" section in website/src/content/docs/whats-new.md highlighting specs 007-010 capabilities with dates (2025-11-XX for each spec)

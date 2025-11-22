@@ -1,10 +1,13 @@
 ---
 title: "Multi-Repo Concepts"
 description: "Understand how Speck detects multi-repo contexts, manages shared specifications, and coordinates implementations across repositories."
-category: "concepts"
-order: 3
+category: concepts
+audience: [existing-users, evaluators]
+prerequisites: ["/docs/core-concepts/workflow"]
 tags: ["multi-repo", "concepts", "symlinks", "architecture"]
 lastUpdated: 2025-11-22
+relatedPages: ["/docs/advanced-features/multi-repo-support", "/docs/advanced-features/monorepos", "/docs/examples/multi-repo-workflow"]
+order: 3
 ---
 
 # Multi-Repo Concepts
@@ -27,7 +30,7 @@ Speck detects multi-repo contexts by checking for a `.speck/root` symlink in you
 
 ### Shared Specifications
 
-In multi-repo mode, the **specification** (`spec.md`) lives at the root level and is shared across all child repositories. This ensures:
+Building on [spec-kit](https://github.com/github/spec-kit)'s specification structure, Speck extends the concept to support multi-repo coordination. In multi-repo mode, the **specification** (`spec.md`) lives at the root level and is shared across all child repositories. This ensures:
 
 - **Single source of truth**: All repos reference the same feature requirements
 - **Consistent understanding**: Everyone implements from the same specification

@@ -1,10 +1,13 @@
 ---
 title: "Multi-Repo Setup"
 description: "Configure Speck for multi-repository projects using symlink-based detection and shared specifications."
-category: "advanced-features"
-order: 1
+category: advanced-features
+audience: [existing-users, evaluators]
+prerequisites: ["/docs/getting-started/installation", "/docs/core-concepts/workflow", "/docs/core-concepts/multi-repo"]
 tags: ["multi-repo", "symlinks", "speck.link", "setup"]
 lastUpdated: 2025-11-22
+relatedPages: ["/docs/advanced-features/monorepos", "/docs/examples/multi-repo-workflow", "/docs/reference/capability-matrix"]
+order: 1
 ---
 
 # Multi-Repo Setup
@@ -317,7 +320,7 @@ cd backend-repo
 
 ### Per-Repo Constitutions
 
-Each child repo can have its own constitution with different architectural principles:
+Speck extends [spec-kit](https://github.com/github/spec-kit)'s constitution concept to support per-repository governance in multi-repo environments. Each child repo can have its own constitution with different architectural principles:
 
 ```bash
 # Frontend repo constitution

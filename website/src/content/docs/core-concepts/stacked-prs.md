@@ -1,10 +1,13 @@
 ---
 title: "Stacked PR Concepts"
 description: "Understand how Speck enables breaking large features into reviewable chunks with branch dependency tracking and PR automation."
-category: "concepts"
-order: 4
+category: concepts
+audience: [existing-users, evaluators]
+prerequisites: ["/docs/core-concepts/workflow"]
 tags: ["stacked-prs", "concepts", "branch-tracking", "workflow"]
 lastUpdated: 2025-11-22
+relatedPages: ["/docs/advanced-features/stacked-prs", "/docs/examples/stacked-pr-workflow", "/docs/reference/capability-matrix"]
+order: 4
 ---
 
 # Stacked PR Concepts

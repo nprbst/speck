@@ -1,10 +1,13 @@
 ---
 title: "Stacked PR Setup"
 description: "Configure Speck to break large features into reviewable chunks using branch dependency tracking and PR automation."
-category: "advanced-features"
-order: 3
+category: advanced-features
+audience: [existing-users, evaluators]
+prerequisites: ["/docs/core-concepts/workflow", "/docs/core-concepts/stacked-prs"]
 tags: ["stacked-prs", "speck.branch", "setup", "workflow"]
 lastUpdated: 2025-11-22
+relatedPages: ["/docs/examples/stacked-pr-workflow", "/docs/core-concepts/multi-repo", "/docs/reference/capability-matrix"]
+order: 3
 ---
 
 # Stacked PR Setup
