@@ -175,11 +175,28 @@ async function generatePluginManifest(): Promise<void> {
       'development-tools',
     ],
     hooks: {
-      PreToolUse: {
-        Bash: {
-          command: 'bun dist/speck-hook.js --hook',
+      PreToolUse: [
+        {
+          matcher: 'Bash',
+          hooks: [
+            {
+              type: 'command',
+              command: 'bun ${CLAUDE_PLUGIN_ROOT}/dist/speck-hook.js --hook',
+            },
+          ],
         },
-      },
+      ],
+      UserPromptSubmit: [
+        {
+          matcher: '.*',
+          hooks: [
+            {
+              type: 'command',
+              command: 'bun ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-prompt-submit.ts',
+            },
+          ],
+        },
+      ],
     },
   };
 
@@ -378,6 +395,12 @@ async function copyPluginFiles(): Promise<FileCounts> {
     const contractsPath = join(config.scriptsSourceDir, 'contracts');
     if (existsSync(contractsPath)) {
       await copyDir(contractsPath, join(scriptsDestDir, 'contracts'));
+    }
+
+    // Copy hooks/ directory (pre-prompt-submit.ts and other hooks)
+    const hooksPath = join(config.scriptsSourceDir, 'hooks');
+    if (existsSync(hooksPath)) {
+      await copyDir(hooksPath, join(scriptsDestDir, 'hooks'));
     }
 
     // Copy dist/ directory containing the bundled hook
