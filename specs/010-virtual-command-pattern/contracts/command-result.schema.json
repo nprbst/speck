@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://speck.dev/schemas/command-result.json",
+  "title": "Command Result",
+  "description": "Outcome of executing a command handler, including output and status",
+  "type": "object",
+  "required": ["success", "output", "exitCode"],
+  "properties": {
+    "success": {
+      "type": "boolean",
+      "description": "Whether command executed successfully (must equal exitCode === 0)"
+    },
+    "output": {
+      "type": "string",
+      "description": "Standard output content (empty string if no output)"
+    },
+    "errorOutput": {
+      "type": ["string", "null"],
+      "description": "Standard error content (null if no errors)"
+    },
+    "exitCode": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255,
+      "description": "Process exit code (0 for success, non-zero for failure)"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "description": "Optional structured data for programmatic consumption (e.g., JSON output)",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "success": true,
+      "output": "Plugin root: /Users/user/.claude/plugins/speck\nRepository mode: single-repo",
+      "errorOutput": null,
+      "exitCode": 0,
+      "metadata": {
+        "pluginRoot": "/Users/user/.claude/plugins/speck",
+        "repoMode": "single-repo"
+      }
+    },
+    {
+      "success": false,
+      "output": "",
+      "errorOutput": "Error: Not on a feature branch. Current branch: main",
+      "exitCode": 1,
+      "metadata": null
+    },
+    {
+      "success": true,
+      "output": "Hello world",
+      "errorOutput": null,
+      "exitCode": 0,
+      "metadata": null
+    }
+  ]
+}

@@ -91,7 +91,7 @@ test.describe('Homepage Dark Mode', () => {
 
     // Force dark mode
     await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
+      (globalThis as any).document.documentElement.setAttribute('data-theme', 'dark');
     });
 
     await page.waitForSelector('.hero-headline');
@@ -107,7 +107,7 @@ test.describe('Homepage Dark Mode', () => {
 
     // Force light mode
     await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
+      (globalThis as any).document.documentElement.setAttribute('data-theme', 'light');
     });
 
     await page.waitForSelector('.hero-headline');

@@ -7,7 +7,7 @@
  * Supports both interactive and programmatic usage via JSON output.
  *
  * Transformation Date: 2025-11-15
- * Source: augusthealth/frontend/master/bin/remove-worktree (bash)
+ * Source: remove-worktree.sh (bash)
  * Strategy: Bun Shell API with non-interactive defaults
  *
  * Key differences from bash version:
@@ -64,7 +64,7 @@ function parseArgs(): RemoveWorktreeOptions {
 
   // Parse positional and flag arguments
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
+    const arg = args[i]!;
 
     switch (arg) {
       case "--force":
@@ -200,8 +200,8 @@ async function getWorktreeInfo(
     if (isMainWorktree) {
       throw new Error(
         "Cannot remove the main worktree\n" +
-          "This is the primary worktree of the repository.\n" +
-          "You can only remove secondary worktrees created with 'git worktree add'."
+        "This is the primary worktree of the repository.\n" +
+        "You can only remove secondary worktrees created with 'git worktree add'."
       );
     }
   } catch (error) {
@@ -215,8 +215,8 @@ async function getWorktreeInfo(
   if (worktreeDirName === "main" || worktreeDirName === "master") {
     throw new Error(
       `Cannot remove worktree with directory name '${worktreeDirName}'\n` +
-        "This appears to be your primary worktree directory.\n" +
-        "Only remove secondary worktrees (e.g., ../feature-branch)."
+      "This appears to be your primary worktree directory.\n" +
+      "Only remove secondary worktrees (e.g., ../feature-branch)."
     );
   }
 
@@ -233,7 +233,7 @@ async function getWorktreeInfo(
  */
 async function checkGitStatus(
   worktreePath: string,
-  branchName: string,
+  _branchName: string,
   isDetached: boolean
 ): Promise<GitStatus> {
   // Check for staged changes
@@ -619,7 +619,7 @@ async function main(): Promise<void> {
     if (error instanceof Error) {
       console.error(`Error: ${error.message}`);
     } else {
-      console.error(`Error: ${error}`);
+      console.error(`Error: ${String(error)}`);
     }
     process.exit(ExitCode.USER_ERROR);
   }
@@ -627,7 +627,7 @@ async function main(): Promise<void> {
 
 // Run if executed directly
 if (import.meta.main) {
-  main();
+  void main();
 }
 
 export { removeWorktree, getWorktreeInfo, checkGitStatus };

@@ -3,6 +3,6 @@ dist/
 build/
 coverage/
 *.min.js
-.speck/
+.speck/test-logs/
 upstream/
 specs/

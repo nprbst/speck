@@ -16,7 +16,7 @@
  */
 
 import { mkdirSync, existsSync } from "fs";
-import { join, dirname } from "path";
+import { join } from "path";
 import { downloadTarball, GitHubApiClientError } from "./common/github-api";
 import { addRelease, releaseExists } from "./common/json-tracker";
 import { updateSymlink } from "./common/symlink-manager";
@@ -26,7 +26,6 @@ import type { UpstreamRelease } from "./contracts/release-registry";
 import {
   ExitCode,
   formatCliError,
-  formatCliSuccess,
 } from "./contracts/cli-interface";
 import type {
   CliResult,
@@ -117,17 +116,34 @@ async function extractZip(
 }
 
 /**
+ * GitHub API release response
+ */
+interface GitHubReleaseResponse {
+  target_commitish: string;
+  html_url: string;
+}
+
+/**
+ * GitHub API tag response
+ */
+interface GitHubTagResponse {
+  object: {
+    sha: string;
+  };
+}
+
+/**
  * Fetch release metadata from GitHub
  */
 async function fetchReleaseMetadata(
   version: string,
-  deps?: { github?: any }
+  deps?: { github?: MockGitHubClient }
 ): Promise<{ commit: string; releaseNotesUrl: string }> {
   try {
     if (deps?.github) {
       // Use mock for testing
       const result = await deps.github.fetchReleases();
-      const release = result.releases.find((r: any) => r.tag_name === version);
+      const release = result.releases.find((r) => r.tag_name === version);
 
       if (!release) {
         throw new Error(`Release ${version} not found`);
@@ -157,7 +173,7 @@ async function fetchReleaseMetadata(
       throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as GitHubReleaseResponse;
 
     // Resolve tag to commit SHA if target_commitish is not a valid SHA
     let commit = data.target_commitish;
@@ -179,7 +195,7 @@ async function fetchReleaseMetadata(
         throw new Error(`Failed to resolve tag ${version} to commit SHA`);
       }
 
-      const tagData = await tagResponse.json();
+      const tagData = await tagResponse.json() as GitHubTagResponse;
       commit = tagData.object.sha;
     }
 
@@ -228,6 +244,45 @@ function formatJson(release: UpstreamRelease, directory: string): string {
 }
 
 /**
+ * Mock GitHub release interface
+ */
+interface MockGitHubRelease {
+  tag_name: string;
+  target_commitish: string;
+  html_url: string;
+  assets?: Array<{ name: string; browser_download_url: string }>;
+}
+
+/**
+ * Mock GitHub client interface for testing
+ */
+interface MockGitHubClient {
+  fetchReleases: () => Promise<{
+    releases: MockGitHubRelease[];
+    rateLimit: { limit: number; remaining: number; reset: number };
+  }>;
+}
+
+/**
+ * Mock filesystem interface for testing
+ */
+interface MockFilesystem {
+  exists: (path: string) => Promise<boolean>;
+  readFile: (path: string) => Promise<string>;
+  writeFile: (path: string, content: string) => Promise<void>;
+  mkdir: (path: string) => Promise<void>;
+  symlink: (target: string, path: string) => Promise<void>;
+}
+
+/**
+ * Release registry structure
+ */
+interface ReleaseRegistry {
+  latest: string;
+  releases: UpstreamRelease[];
+}
+
+/**
  * Pull upstream release
  *
  * @param args - Command line arguments
@@ -235,7 +290,7 @@ function formatJson(release: UpstreamRelease, directory: string): string {
  */
 export async function pullUpstream(
   args: string[] = process.argv.slice(2),
-  deps?: { fs?: any; github?: any }
+  deps?: { fs?: MockFilesystem; github?: MockGitHubClient }
 ): Promise<CliResult<PullUpstreamOutput>> {
   const options = parseArgs(args);
 
@@ -285,8 +340,8 @@ export async function pullUpstream(
       const exists = await fs.exists(registryPath);
       if (exists) {
         const content = await fs.readFile(registryPath);
-        const registry = JSON.parse(content);
-        if (registry.releases.some((r: any) => r.version === version)) {
+        const registry = JSON.parse(content) as ReleaseRegistry;
+        if (registry.releases.some((r) => r.version === version)) {
           return {
             exitCode: ExitCode.USER_ERROR,
             stdout: "",
@@ -335,11 +390,11 @@ export async function pullUpstream(
       };
 
       const registryExists = await fs.exists(registryPath);
-      let registry;
+      let registry: ReleaseRegistry;
 
       if (registryExists) {
         const content = await fs.readFile(registryPath);
-        registry = JSON.parse(content);
+        registry = JSON.parse(content) as ReleaseRegistry;
         registry.releases.unshift(release);
         registry.latest = version;
       } else {
@@ -388,16 +443,25 @@ export async function pullUpstream(
         throw new Error(`Failed to fetch release ${version}: ${releaseResponse.statusText}`);
       }
 
-      const releaseData = await releaseResponse.json();
+      interface GitHubAsset {
+        name: string;
+        browser_download_url: string;
+      }
+
+      interface GitHubReleaseData {
+        assets?: GitHubAsset[];
+      }
+
+      const releaseData = await releaseResponse.json() as GitHubReleaseData;
 
       // Find the spec-kit-template-claude-sh artifact
       const artifactName = `spec-kit-template-claude-sh-${version}.zip`;
-      const asset = releaseData.assets?.find((a: any) => a.name === artifactName);
+      const asset = releaseData.assets?.find((a) => a.name === artifactName);
 
       if (!asset) {
         throw new Error(
           `Release artifact not found: ${artifactName}\n` +
-          `Available assets: ${releaseData.assets?.map((a: any) => a.name).join(', ') || 'none'}`
+          `Available assets: ${releaseData.assets?.map((a) => a.name).join(', ') || 'none'}`
         );
       }
 
@@ -415,7 +479,7 @@ export async function pullUpstream(
       }
 
       // Atomically move extracted content to final location
-      await atomicMove(extractDir, versionDir);
+      atomicMove(extractDir, versionDir);
 
       // Create release record
       const release: UpstreamRelease = {

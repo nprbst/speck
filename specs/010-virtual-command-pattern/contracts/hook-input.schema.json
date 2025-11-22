@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://speck.dev/schemas/hook-input.json",
+  "title": "Claude Code PreToolUse Hook Input",
+  "description": "JSON structure received via stdin when Claude Code invokes PreToolUse hook for Bash commands",
+  "type": "object",
+  "required": ["tool_name", "tool_input"],
+  "properties": {
+    "tool_name": {
+      "type": "string",
+      "const": "Bash",
+      "description": "Always 'Bash' for PreToolUse hooks targeting bash command execution"
+    },
+    "tool_input": {
+      "type": "object",
+      "required": ["command"],
+      "properties": {
+        "command": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The bash command Claude intends to execute",
+          "examples": [
+            "speck-env",
+            "speck-branch list",
+            "speck-branch create my-feature --base main",
+            "ls -la"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional human-readable description of what the command does"
+        },
+        "timeout": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Optional timeout in milliseconds"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "tool_name": "Bash",
+      "tool_input": {
+        "command": "speck-env",
+        "description": "Show Speck environment info"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_input": {
+        "command": "speck-branch create my-feature --base main",
+        "timeout": 30000
+      }
+    }
+  ]
+}

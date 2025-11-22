@@ -6,5 +6,28 @@
     ],
     "deny": [],
     "ask": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun \"/Users/nathan/git/github.com/nprbst/speck/.speck/dist/speck-hook.js\" --hook"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun \"/Users/nathan/git/github.com/nprbst/speck/.speck/scripts/hooks/pre-prompt-submit.ts\""
+          }
+        ]
+      }
+    ]
   }
 }

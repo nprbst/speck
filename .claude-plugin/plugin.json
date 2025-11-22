@@ -15,5 +15,15 @@
     "workflow",
     "feature-management",
     "development-tools"
-  ]
+  ],
+  "hooks": {
+    "PreToolUse": {
+      "Bash": {
+        "command": "bun .speck/dist/speck-hook.js --hook"
+      }
+    },
+    "PrePromptSubmit": {
+      "command": "bun .speck/scripts/hooks/pre-prompt-submit.ts"
+    }
+  }
 }

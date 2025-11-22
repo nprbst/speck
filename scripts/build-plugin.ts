@@ -174,6 +174,13 @@ async function generatePluginManifest(): Promise<void> {
       'feature-management',
       'development-tools',
     ],
+    hooks: {
+      PreToolUse: {
+        Bash: {
+          command: 'bun dist/speck-hook.js --hook',
+        },
+      },
+    },
   };
 
   const manifestDir = join(config.outputDir, '.claude-plugin');
@@ -371,6 +378,12 @@ async function copyPluginFiles(): Promise<FileCounts> {
     const contractsPath = join(config.scriptsSourceDir, 'contracts');
     if (existsSync(contractsPath)) {
       await copyDir(contractsPath, join(scriptsDestDir, 'contracts'));
+    }
+
+    // Copy dist/ directory containing the bundled hook
+    const distPath = join(config.scriptsSourceDir, '../dist');
+    if (existsSync(distPath)) {
+      await copyDir(distPath, join(config.outputDir, 'dist'));
     }
   }
 
@@ -657,6 +670,23 @@ async function main() {
   console.log('🚀 Building Speck Plugin Package...\n');
 
   try {
+    // Step 0: Build hook bundle first
+    console.log('🔨 Building hook bundle...');
+    const buildHookScript = join(config.scriptsSourceDir, 'build-hook.ts');
+    if (existsSync(buildHookScript)) {
+      const buildResult = Bun.spawn(['bun', 'run', buildHookScript], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      });
+      const exitCode = await buildResult.exited;
+      if (exitCode !== 0) {
+        throw new Error('Hook bundle build failed');
+      }
+      console.log('   ✓ Hook bundle built successfully\n');
+    } else {
+      console.log('   ⚠️  Hook build script not found, skipping\n');
+    }
+
     // T009: Load version from package.json
     console.log('📦 Loading version from package.json...');
     config.version = await loadVersion();

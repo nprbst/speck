@@ -126,6 +126,16 @@ function formatJson(releases: GitHubRelease[]): string {
 }
 
 /**
+ * Mock GitHub client interface for testing
+ */
+interface MockGitHubClient {
+  fetchReleases: () => Promise<{
+    releases: GitHubRelease[];
+    rateLimit: { limit: number; remaining: number; reset: number };
+  }>;
+}
+
+/**
  * Check upstream releases
  *
  * @param args - Command line arguments
@@ -133,7 +143,7 @@ function formatJson(releases: GitHubRelease[]): string {
  */
 export async function checkUpstream(
   args: string[] = process.argv.slice(2),
-  deps?: { github?: any }
+  deps?: { github?: MockGitHubClient }
 ): Promise<CliResult<CheckUpstreamOutput>> {
   const options = parseArgs(args);
 

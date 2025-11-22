@@ -7,7 +7,7 @@
  * Supports both interactive and programmatic usage via JSON output.
  *
  * Transformation Date: 2025-11-15
- * Source: augusthealth/frontend/master/bin/create-worktree (bash)
+ * Source: create-worktree.sh (bash)
  * Strategy: Bun Shell API with non-interactive defaults
  *
  * Key differences from bash version:
@@ -97,9 +97,9 @@ function parseArgs(): CreateWorktreeOptions {
         options.json = true;
         break;
       default:
-        if (!options.branchName && !arg.startsWith("-")) {
+        if (!options.branchName && arg && !arg.startsWith("-")) {
           options.branchName = arg;
-        } else if (!arg.startsWith("-")) {
+        } else if (arg && !arg.startsWith("-")) {
           console.error(`Error: Unknown argument '${arg}'`);
           process.exit(ExitCode.USER_ERROR);
         }
@@ -370,7 +370,7 @@ async function createWorktree(
     if (existsSync(worktreePath)) {
       await $`rm -rf ${worktreePath}`;
     }
-    throw new Error(`Failed to create worktree: ${error}`);
+    throw new Error(`Failed to create worktree: ${String(error)}`);
   }
 }
 
@@ -610,7 +610,7 @@ async function main(): Promise<void> {
     if (error instanceof Error) {
       console.error(`Error: ${error.message}`);
     } else {
-      console.error(`Error: ${error}`);
+      console.error(`Error: ${String(error)}`);
     }
     process.exit(ExitCode.USER_ERROR);
   }
@@ -618,7 +618,7 @@ async function main(): Promise<void> {
 
 // Run if executed directly
 if (import.meta.main) {
-  main();
+  void main();
 }
 
 export { createWorktree, ensureBranchExists, sanitizeBranchName };

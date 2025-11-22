@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://speck.dev/schemas/command-registry.json",
+  "title": "Command Registry Schema",
+  "description": "Centralized registry mapping virtual command names to handler metadata (TypeScript representation)",
+  "type": "object",
+  "patternProperties": {
+    "^[a-z][a-z0-9-]*$": {
+      "type": "object",
+      "required": ["handler", "description", "version"],
+      "properties": {
+        "handler": {
+          "type": "string",
+          "description": "Function name reference (actual implementation is TypeScript function)",
+          "examples": ["branchHandler", "envHandler", "testHelloHandler"]
+        },
+        "parseArgs": {
+          "type": ["string", "null"],
+          "description": "Optional argument parser function name (null means use default parser)",
+          "examples": ["parseBranchArgs", "parseEnvArgs", null]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable help text for the command",
+          "examples": [
+            "Manage feature branches",
+            "Show Speck environment info",
+            "Test hello world command"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version of the command handler",
+          "examples": ["1.0.0", "2.3.1"]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "branch": {
+        "handler": "branchHandler",
+        "parseArgs": "parseBranchArgs",
+        "description": "Manage feature branches with stacked PR support",
+        "version": "1.0.0"
+      },
+      "env": {
+        "handler": "envHandler",
+        "parseArgs": null,
+        "description": "Show Speck environment and configuration info",
+        "version": "1.0.0"
+      },
+      "test-hello": {
+        "handler": "testHelloHandler",
+        "parseArgs": null,
+        "description": "POC test command for hook validation",
+        "version": "0.1.0"
+      }
+    }
+  ]
+}
