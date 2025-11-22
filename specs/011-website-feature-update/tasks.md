@@ -31,10 +31,10 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T001 Start website development server with `bun run website:dev` to verify existing infrastructure
-- [ ] T002 Audit existing content in website/src/content/docs/ and verify spec 006 pages are intact
-- [ ] T003 Create new directories: website/src/content/docs/advanced-features/, website/src/content/docs/architecture/, website/src/content/docs/reference/
-- [ ] T004 Verify navigation component structure in website/src/components/Navigation.astro
+- [X] T001 Start website development server with `bun run website:dev` to verify existing infrastructure
+- [X] T002 Audit existing content in website/src/content/docs/ and verify spec 006 pages are intact
+- [X] T003 Create new directories: website/src/content/docs/advanced-features/, website/src/content/docs/architecture/, website/src/content/docs/reference/
+- [X] T004 Verify navigation component structure in website/src/components/Navigation.astro
 
 ---
 
@@ -46,9 +46,9 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T005 Create capability matrix page in website/src/content/docs/reference/capability-matrix.md using table structure from contracts/capability-matrix.md and populate with all features from specs 007-010
-- [ ] T006 Update navigation component in website/src/components/Navigation.astro to add "Advanced Features", "Architecture", and "Reference" sections
-- [ ] T007 Verify navigation depth constraint (max 3 clicks from homepage) using manual click testing
+- [X] T005 Create capability matrix page in website/src/content/docs/reference/capability-matrix.md using table structure from contracts/capability-matrix.md and populate with all features from specs 007-010
+- [X] T006 Update navigation component in website/src/components/Navigation.astro to add "Advanced Features", "Architecture", and "Reference" sections
+- [X] T007 Verify navigation depth constraint (max 3 clicks from homepage) using manual click testing
 
 ---
 
@@ -62,11 +62,11 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T008 [US4] Update homepage hero section in website/src/pages/index.astro with new tagline: "Specification-driven development for Claude Code - from idea to implementation with shared specs, stacked PRs, and multi-repo support"
-- [ ] T009 [P] [US4] Update homepage feature cards in website/src/pages/index.astro to include: Multi-Repo & Monorepo Support, Stacked PR Workflows, Claude-Native Performance, Plugin Installation
-- [ ] T010 [P] [US4] Add differentiators section to website/src/pages/index.astro highlighting: "Only tool built for Claude Code with native hook integration" and "Only spec system supporting multi-repo shared specifications"
-- [ ] T011 [P] [US4] Add clear call-to-action in website/src/pages/index.astro: "Install via `/plugin` in Claude Code" with link to installation guide
-- [ ] T012 [US4] Preview homepage in local dev server at http://localhost:4321 and verify 3-minute comprehension test with colleague
+- [X] T008 [US4] Update homepage hero section in website/src/pages/index.astro with new tagline: "Specification-driven development for Claude Code - from idea to implementation with shared specs, stacked PRs, and multi-repo support"
+- [X] T009 [P] [US4] Update homepage feature cards in website/src/pages/index.astro to include: Multi-Repo & Monorepo Support, Stacked PR Workflows, Claude-Native Performance, Plugin Installation
+- [X] T010 [P] [US4] Add differentiators section to website/src/pages/index.astro highlighting: "Only tool built for Claude Code with native hook integration" and "Only spec system supporting multi-repo shared specifications"
+- [X] T011 [P] [US4] Add clear call-to-action in website/src/pages/index.astro: "Install via `/plugin` in Claude Code" with link to installation guide
+- [X] T012 [US4] Preview homepage in local dev server at http://localhost:4321 and verify 3-minute comprehension test with colleague
 
 ---
 
@@ -80,10 +80,10 @@ This tasks file breaks down the website content update into actionable, independ
 
 **Tasks**:
 
-- [ ] T013 [P] [US1] Create core concepts page in website/src/content/docs/core-concepts/multi-repo.md explaining symlink detection, shared specs, and per-repo constitutions (following contracts/content-schema.md)
-- [ ] T014 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/multi-repo-support.md with step-by-step `/speck.link` setup instructions (following contracts/content-schema.md)
-- [ ] T015 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/monorepos.md for monorepo workspace management (following contracts/content-schema.md)
-- [ ] T016 [P] [US1] Create example workflow in website/src/content/docs/examples/multi-repo-workflow.md demonstrating frontend/backend coordination (following contracts/example-templates.md)
+- [X] T013 [P] [US1] Create core concepts page in website/src/content/docs/core-concepts/multi-repo.md explaining symlink detection, shared specs, and per-repo constitutions (following contracts/content-schema.md)
+- [X] T014 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/multi-repo-support.md with step-by-step `/speck.link` setup instructions (following contracts/content-schema.md)
+- [X] T015 [P] [US1] Create advanced features page in website/src/content/docs/advanced-features/monorepos.md for monorepo workspace management (following contracts/content-schema.md)
+- [X] T016 [P] [US1] Create example workflow in website/src/content/docs/examples/multi-repo-workflow.md demonstrating frontend/backend coordination (following contracts/example-templates.md)
 - [ ] T017 [US1] Update quickstart guide in website/src/content/docs/getting-started/quick-start.md to add "What's Next" references to multi-repo capabilities
 - [ ] T018 [US1] Add multi-repo use cases to homepage in website/src/pages/index.astro: "Coordinated frontend/backend features" and "Monorepo workspace management"
 - [ ] T019 [US1] Update commands reference in website/src/content/docs/commands/reference.md to document `/speck.link` command with syntax and examples
