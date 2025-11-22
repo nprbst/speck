@@ -70,6 +70,7 @@ export async function runPrerequisiteCheck(
     requireTasks?: boolean;
     includeTasks?: boolean;
     skipFeatureCheck?: boolean;
+    skipPlanCheck?: boolean;
     includeFileContents?: boolean;
     includeWorkflowMode?: boolean;
   } = {},
@@ -94,6 +95,7 @@ export async function runPrerequisiteCheck(
     if (options.requireTasks) args.push("--require-tasks");
     if (options.includeTasks) args.push("--include-tasks");
     if (options.skipFeatureCheck) args.push("--skip-feature-check");
+    if (options.skipPlanCheck) args.push("--skip-plan-check");
     if (options.includeFileContents) args.push("--include-file-contents");
     if (options.includeWorkflowMode) args.push("--include-workflow-mode");
 
