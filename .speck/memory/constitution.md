@@ -1,31 +1,29 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.2.0 → 1.3.1
+Version Change: 1.3.1 → 1.4.0
 Modified Principles: None
-Added Sections: "VIII. Command-Implementation Separation" (new principle)
+Added Sections: "IX. Code Quality Standards" (new principle)
 Removed Sections: None
 
 Templates Requiring Updates:
-  ⚠ .claude/commands/*.md - all command files must delegate to scripts, not contain implementations
-  ⚠ .speck/scripts/ - verify all commands have corresponding implementation scripts
-  ✅ Documentation - add guidance on command vs implementation separation
+  ✅ .claude/commands/speck.implement.md - add quality validation step
+  ✅ .claude/commands/speck.tasks.md - add typecheck/lint task requirements
+  ⚠ .speck/scripts/check-prerequisites.ts - add typecheck/lint validation
+  ✅ Documentation - add code quality requirements to workflow
 
 Follow-up TODOs:
-  - Audit existing .claude/commands/*.md files for embedded TypeScript
-  - Create implementation script templates/patterns
-  - Document command file structure best practices
-  - Add validation to check-prerequisites.ts to flag implementation code in command files
+  - Add pre-commit hooks for typecheck and lint
+  - Update CI/CD to enforce quality gates
+  - Document quality standards in README.md
+  - Add quality gate validation to check-prerequisites.ts
 
-Rationale for 1.3.0 (MINOR bump):
-  - New principle added: Command-Implementation Separation
-  - Establishes clear boundary between declarative command definitions and executable code
-  - Prevents mixing of concerns (markdown documentation vs TypeScript implementation)
+Rationale for 1.4.0 (MINOR bump):
+  - New principle added: Code Quality Standards
+  - Establishes mandatory typecheck and lint requirements for spec completion
+  - Ensures pristine codebase going forward
   - No breaking changes to existing principles
-  - Backwards compatible but requires refactoring of non-compliant commands
-
-Rationale for 1.3.1 (PATCH bump):
-  - Clarifications, simplifications and corrections.
+  - Backwards compatible but raises quality bar for future features
 -->
 
 # Speck Constitution
@@ -119,8 +117,8 @@ proposition.
 - Agents MUST be used for long-running, iterative processes (clarification,
   transformation)
 - Skills MUST extract reusable patterns (template rendering, validation)
-- Exception: SessionStart hooks MAY establish runtime environment configuration 
-  (e.g., script path resolution) when plugin context requires session-persistent 
+- Exception: SessionStart hooks MAY establish runtime environment configuration
+  (e.g., script path resolution) when plugin context requires session-persistent
   state not achievable through individual command execution
 
 ### VI. Technology Agnosticism
@@ -202,6 +200,49 @@ that delegate to well-structured, testable implementation scripts.
   TypeScript knowledge. Implementation scripts MUST be runnable/testable
   independently of Claude Code.
 
+### IX. Code Quality Standards (NON-NEGOTIABLE)
+
+All implementation code MUST pass TypeScript type checking with zero errors and
+ESLint validation with zero errors and zero warnings before a feature
+specification can be considered complete.
+
+**Rationale**: Type safety and code quality are non-negotiable for
+maintainability, refactoring confidence, and long-term codebase health.
+Allowing type errors or lint warnings creates technical debt that compounds
+over time, makes refactoring dangerous, and degrades developer experience. A
+pristine codebase is a productive codebase.
+
+**Implementation Requirements**:
+
+- MANDATORY validation before spec completion:
+  - `bun run typecheck` MUST exit with code 0 (zero TypeScript errors)
+  - `bun run lint` MUST exit with code 0 (zero ESLint errors, zero warnings)
+- TypeScript configuration MUST enforce strict type checking:
+  - `strict: true`
+  - `noUncheckedIndexedAccess: true`
+  - `noImplicitAny: true`
+  - `strictNullChecks: true`
+- ESLint configuration MUST enforce:
+  - All `@typescript-eslint/recommended` rules
+  - All `@typescript-eslint/recommended-requiring-type-checking` rules
+  - `@typescript-eslint/no-explicit-any: warn` (explicit any types require justification)
+  - `@typescript-eslint/no-unsafe-*: error` (unsafe any operations forbidden)
+  - `@typescript-eslint/explicit-function-return-type: warn`
+- Code quality MUST be verified:
+  - During implementation (`/speck.implement` workflow)
+  - Before marking tasks complete
+  - As part of pull request review
+  - In pre-commit hooks (recommended)
+  - In CI/CD pipelines (mandatory for production)
+- Exceptions:
+  - Test files MAY have relaxed rules where test framework requires dynamic types
+  - Generated code MAY be excluded from linting via `.eslintignore`
+  - Temporary `eslint-disable` comments MUST include justification and TODO for removal
+- Quality gate validation:
+  - `check-prerequisites.ts` MUST verify typecheck and lint pass
+  - Feature completion checklist MUST include "Code quality: ✅ 0 typecheck errors, 0 lint warnings"
+  - Pull request template MUST include quality verification step
+
 ## Upstream Sync Requirements
 
 ### Release-Based Synchronization
@@ -263,6 +304,8 @@ phases leads to ambiguous specs, incomplete plans, and implementation rework.
 - Each phase produces artifacts in `specs/<feature-num>-<short-name>/`
 - Clarification MUST resolve all `[NEEDS CLARIFICATION]` markers before planning
 - Analysis MUST verify cross-artifact consistency (spec ↔ plan ↔ tasks)
+- Implementation MUST pass code quality standards (typecheck + lint) before
+  feature completion
 
 ### Testability
 
@@ -320,7 +363,7 @@ for existing artifacts.
 
 **Amendment Process**:
 
-1. Propose change via `/speckit.constitution` with rationale
+1. Propose change via `/speck.constitution` with rationale
 2. Version bump (MAJOR: breaking governance changes, MINOR: new
    principles/sections, PATCH: clarifications/typos)
 3. Update sync impact report documenting affected templates and commands
@@ -334,6 +377,8 @@ for existing artifacts.
 - All upstream syncs MUST preserve extension markers
 - All slash commands MUST follow Claude Code native principle
 - All command files MUST delegate to implementation scripts (Principle VIII)
+- All implementations MUST pass typecheck and lint with zero errors/warnings
+  (Principle IX)
 
 **Versioning Policy**:
 
@@ -342,4 +387,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.3.1 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-20
+**Version**: 1.4.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-21
