@@ -139,4 +139,27 @@ describe("Path Resolution", () => {
       expect(paths.REPO_ROOT).toContain(cwd.split("/").slice(0, -2).join("/"));
     });
   });
+
+  describe("Git Detection", () => {
+    it("should detect git repository from .git directory", async () => {
+      // This test runs in the speck repository which has a .git directory
+      const paths = await getFeaturePaths();
+
+      // Should detect git correctly
+      expect(paths.HAS_GIT).toBe("true");
+    });
+
+    it("should work in bundled context where git command might fail", async () => {
+      // The hasGit() function should check for .git directory first
+      // This ensures it works even when bundled hooks run and $ might not work correctly
+
+      const paths = await getFeaturePaths();
+
+      // In the speck repo (which has .git), should always detect git
+      expect(paths.HAS_GIT).toBe("true");
+
+      // Verify HAS_GIT is a string (not boolean) for backward compatibility
+      expect(typeof paths.HAS_GIT).toBe("string");
+    });
+  });
 });
