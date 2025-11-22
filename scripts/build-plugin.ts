@@ -192,7 +192,7 @@ async function generatePluginManifest(): Promise<void> {
           hooks: [
             {
               type: 'command',
-              command: 'bun ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-prompt-submit.ts',
+              command: 'bun ${CLAUDE_PLUGIN_ROOT}/dist/pre-prompt-submit-hook.js',
             },
           ],
         },
@@ -410,13 +410,8 @@ async function copyPluginFiles(): Promise<FileCounts> {
       await copyDir(contractsPath, join(scriptsDestDir, 'contracts'));
     }
 
-    // Copy hooks/ directory (pre-prompt-submit.ts and other hooks)
-    const hooksPath = join(config.scriptsSourceDir, 'hooks');
-    if (existsSync(hooksPath)) {
-      await copyDir(hooksPath, join(scriptsDestDir, 'hooks'));
-    }
-
-    // Copy dist/ directory containing the bundled hook
+    // Copy dist/ directory containing the bundled hooks
+    // (speck-hook.js and pre-prompt-submit-hook.js)
     const distPath = join(config.scriptsSourceDir, '../dist');
     if (existsSync(distPath)) {
       await copyDir(distPath, join(config.outputDir, 'dist'));

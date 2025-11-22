@@ -34,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun ${CLAUDE_PLUGIN_ROOT}/.speck/scripts/hooks/pre-prompt-submit.ts"
+            "command": "bun ${CLAUDE_PLUGIN_ROOT}/.speck/dist/pre-prompt-submit-hook.js"
           }
         ]
       }
