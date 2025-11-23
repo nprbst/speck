@@ -155,19 +155,19 @@ Based on plan.md, this feature uses:
 
 ### Unit & Integration Tests for User Story 4
 
-- [ ] T051-TEST [P] [US4] [TEST] Write unit tests for file-ops.ts (matchFiles, getUntrackedFiles, copyFiles, symlinkDirectories, applyFileRules, includeUntracked, DEFAULT_FILE_RULES) in tests/unit/file-ops.test.ts
-- [ ] T052-TEST [US4] [TEST] Write integration test for file copy/symlink operations in tests/integration/file-ops.test.ts - use temp Git repo, verify files copied/symlinked correctly
+- [X] T051-TEST [P] [US4] [TEST] Write unit tests for file-ops.ts (matchFiles, getUntrackedFiles, copyFiles, symlinkDirectories, applyFileRules, includeUntracked, DEFAULT_FILE_RULES) in tests/unit/file-ops.test.ts
+- [X] T052-TEST [US4] [TEST] Write integration test for file copy/symlink operations in tests/integration/file-ops.test.ts - use temp Git repo, verify files copied/symlinked correctly
 
 ### Implementation for User Story 4 (TDD: write tests first, then implement)
 
-- [ ] T043 [P] [US4] Implement matchFiles function using Bun.Glob in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
-- [ ] T044 [P] [US4] Implement getUntrackedFiles function in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
-- [ ] T045 [P] [US4] Implement copyFiles function with concurrency in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
-- [ ] T046 [P] [US4] Implement symlinkDirectories function with relative paths in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
-- [ ] T047 [US4] Implement applyFileRules function in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
-- [ ] T048 [US4] Integrate file operations into createWorktree workflow in .speck/scripts/worktree/create.ts (red-green-refactor)
-- [ ] T049 [US4] Add support for includeUntracked in applyFileRules in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
-- [ ] T050 [US4] Apply DEFAULT_FILE_RULES when config.files.rules is empty in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [X] T043 [P] [US4] Implement matchFiles function using Bun.Glob in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [X] T044 [P] [US4] Implement getUntrackedFiles function in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [X] T045 [P] [US4] Implement copyFiles function with concurrency in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [X] T046 [P] [US4] Implement symlinkDirectories function with relative paths in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [X] T047 [US4] Implement applyFileRules function in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [X] T048 [US4] Integrate file operations into createWorktree workflow in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [X] T049 [US4] Add support for includeUntracked in applyFileRules in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [X] T050 [US4] Apply DEFAULT_FILE_RULES when config.files.rules is empty in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
 
 **Checkpoint**: At this point, User Stories 1, 2, AND 4 should all work independently with comprehensive test coverage - worktrees have proper file isolation and shared resources
 
@@ -181,21 +181,21 @@ Based on plan.md, this feature uses:
 
 ### Unit & Integration Tests for User Story 3
 
-- [ ] T053-TEST [P] [US3] [TEST] Write unit tests for deps-install.ts (detectPackageManager, getInstallCommand, installDependencies, interpretInstallError) in tests/unit/deps-install.test.ts - mock all package manager commands
-- [ ] T063-TEST [US3] [TEST] Write integration test for dependency installation in tests/integration/deps-install.test.ts - verify installation workflow with mocked package manager
+- [X] T053-TEST [P] [US3] [TEST] Write unit tests for deps-install.ts (detectPackageManager, getInstallCommand, installDependencies, interpretInstallError) in tests/unit/deps-install.test.ts - mock all package manager commands
+- [X] T063-TEST [US3] [TEST] Write integration test for dependency installation in tests/integration/deps-install.test.ts - verify installation workflow with mocked package manager
 
 ### Implementation for User Story 3 (TDD: write tests first, then implement)
 
-- [ ] T053 [P] [US3] Implement detectPackageManager function in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
-- [ ] T054 [P] [US3] Implement getInstallCommand function in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
-- [ ] T055 [US3] Implement installDependencies function with progress streaming in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
-- [ ] T056 [US3] Implement interpretInstallError function in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
-- [ ] T057 [US3] Integrate dependency installation into createWorktree workflow (blocking, before IDE launch) in .speck/scripts/worktree/create.ts (red-green-refactor)
-- [ ] T058 [US3] Add progress indicator for dependency installation in .speck/scripts/worktree/create.ts (red-green-refactor)
-- [ ] T059 [US3] Add --no-deps flag support to createWorktree in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [X] T053 [P] [US3] Implement detectPackageManager function in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
+- [X] T054 [P] [US3] Implement getInstallCommand function in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
+- [X] T055 [US3] Implement installDependencies function with progress streaming in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
+- [X] T056 [US3] Implement interpretInstallError function in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
+- [X] T057 [US3] Integrate dependency installation into createWorktree workflow (blocking, before IDE launch) in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [X] T058 [US3] Add progress indicator for dependency installation in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [X] T059 [US3] Add --no-deps flag support to createWorktree in .speck/scripts/worktree/create.ts (red-green-refactor)
 - [ ] T060 [US3] Add --no-deps flag to .claude/commands/speck.specify.md
 - [ ] T061 [US3] Add --no-deps flag to .claude/commands/speck.branch.md
-- [ ] T062 [US3] Handle dependency installation failure (abort IDE launch, show error) in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [X] T062 [US3] Handle dependency installation failure (abort IDE launch, show error) in .speck/scripts/worktree/create.ts (red-green-refactor)
 
 **Checkpoint**: All user stories should now be independently functional with comprehensive test coverage - worktrees are created with files, dependencies, and IDE launch
 

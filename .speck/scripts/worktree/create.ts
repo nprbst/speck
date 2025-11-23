@@ -11,6 +11,8 @@ import { addWorktree, pruneWorktrees, getWorktreePath } from "./git";
 import { checkWorktreePath, hasSufficientDiskSpace, branchExists } from "./validation";
 import { GitWorktreeError, DiskSpaceError } from "./errors";
 import { launchIDE } from "./ide-launch";
+import { applyFileRules, DEFAULT_FILE_RULES } from "./file-ops";
+import { installDependencies } from "./deps-install";
 import type {
   CreateWorktreeOptions,
   CreateWorktreeResult,
@@ -43,6 +45,7 @@ export async function createWorktree(
     worktreePath: customWorktreePath,
     reuseExisting = false,
     force = false,
+    skipDeps = false,
     skipIDE = false,
     onProgress,
   } = options;
@@ -129,21 +132,60 @@ export async function createWorktree(
     await addWorktree(repoPath, worktreePath, fullBranchName);
     progress("Worktree created successfully", 50);
 
-    // Step 9-11: File operations, dependency installation, and IDE launch
-    // These will be implemented in later phases (US2-US4)
-    // For now, we just return success
+    // Step 9: Apply file rules (T048 - integrate file operations into createWorktree)
+    // Use configured rules, or DEFAULT_FILE_RULES if no rules configured (T050)
+    const fileRules = config.worktree.files.rules.length > 0
+      ? config.worktree.files.rules
+      : DEFAULT_FILE_RULES;
 
-    // TODO Phase 5 (US4): Apply file rules (copy/symlink)
-    // if (config.worktree.files.rules.length > 0) {
-    //   progress("Applying file rules...", 60);
-    //   await applyFileRules({ ... });
-    // }
+    if (fileRules.length > 0) {
+      progress("Applying file rules...", 60);
+      const fileResult = await applyFileRules({
+        sourcePath: repoPath,
+        destPath: worktreePath,
+        rules: fileRules,
+        includeUntracked: config.worktree.files.includeUntracked,
+        onProgress: (message) => progress(message, 65)
+      });
 
-    // TODO Phase 6 (US3): Install dependencies
-    // if (config.worktree.dependencies.autoInstall && !skipDeps) {
-    //   progress("Installing dependencies...", 70);
-    //   await installDependencies({ ... });
-    // }
+      // Report file operations results
+      if (fileResult.copiedCount > 0) {
+        progress(`Copied ${fileResult.copiedCount} files`, 70);
+      }
+      if (fileResult.symlinkedCount > 0) {
+        progress(`Created ${fileResult.symlinkedCount} symlinks`, 75);
+      }
+      if (fileResult.errors.length > 0) {
+        // File operation errors are non-fatal, add to errors array
+        fileResult.errors.forEach(err => {
+          errors.push(`File operation error (${err.path}): ${err.error}`);
+        });
+      }
+    }
+
+    // Step 10: Install dependencies (T057 - integrate dependency installation)
+    if (config.worktree.dependencies.autoInstall && !skipDeps) {
+      progress("Installing dependencies...", 80);
+      try {
+        const depsResult = await installDependencies({
+          worktreePath,
+          packageManager: config.worktree.dependencies.packageManager,
+          onProgress: (line) => progress(line, 85)
+        });
+
+        if (depsResult.success) {
+          progress(`Dependencies installed with ${depsResult.packageManager} in ${depsResult.duration}ms`, 88);
+        } else {
+          // Dependency installation failure is fatal (T062 - abort IDE launch, show error)
+          throw new Error(
+            `Dependency installation failed: ${depsResult.error}\n\nSuggestion: ${depsResult.interpretation}`
+          );
+        }
+      } catch (error) {
+        // Re-throw dependency errors as fatal
+        throw error;
+      }
+    }
 
     // Phase 4 (US2): Launch IDE (T037)
     if (config.worktree.ide.autoLaunch && !skipIDE) {
