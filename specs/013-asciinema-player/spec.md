@@ -176,6 +176,18 @@ Content creators (documentation authors, blog post writers) want to easily embed
   - CSS variables for colors, spacing, borders, radius
   - Dark/light theme toggle functionality
 
+## Development Methodology
+
+**TDD Exemption**: This feature is exempt from TDD workflow (Constitution Principle XII) due to:
+
+- **Visual/behavioral component testing**: This is primarily a website component integration that renders an interactive player. Testing focuses on visual appearance, responsive behavior, accessibility, and user interaction rather than complex business logic requiring unit tests.
+- **Library-provided functionality**: Core player functionality is provided by the asciinema-player library (maintained externally). Our component is a thin Astro wrapper with configuration and error handling.
+- **Sufficient coverage via integration testing**: Accessibility testing (@axe-core/playwright), visual regression testing (browser-based), and manual keyboard navigation testing provide comprehensive coverage for this component's primary concerns.
+- **No critical business logic**: Component does not contain complex algorithms, data transformations, or critical business rules that would benefit from fine-grained unit test coverage.
+- **Qualifies as trivial feature per Constitution**: Estimated <200 lines of component code, no complex logic, no external integrations beyond library usage.
+
+**Testing Strategy**: While exempt from TDD red-green-refactor workflow, the feature includes comprehensive validation via Phase 6 tasks (T054-T066): accessibility audits, keyboard navigation testing, screen reader compatibility, responsive behavior verification, and performance measurement.
+
 ## Open Questions
 
 None - all requirements are sufficiently specified for planning and implementation.
