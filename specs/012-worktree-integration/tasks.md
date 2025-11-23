@@ -66,20 +66,20 @@ Based on plan.md, this feature uses:
 
 ### Implementation for User Story 1
 
-- [ ] T017 [P] [US1] Implement repository layout detection in .speck/scripts/worktree/naming.ts
-- [ ] T018 [P] [US1] Implement worktree naming logic based on repo layout in .speck/scripts/worktree/naming.ts
-- [ ] T019 [US1] Implement basic createWorktree function (Git worktree add only) in .speck/scripts/worktree/create.ts
-- [ ] T020 [US1] Implement removeWorktree function in .speck/scripts/worktree/remove.ts
-- [ ] T021 [US1] Add worktree collision detection to createWorktree in .speck/scripts/worktree/create.ts
-- [ ] T022 [US1] Add --reuse-worktree flag support in .speck/scripts/worktree/create.ts
-- [ ] T023 [US1] Implement stale worktree cleanup (call pruneWorktrees before creation) in .speck/scripts/worktree/create.ts
-- [ ] T024 [US1] Add --no-worktree flag to .claude/commands/speck.specify.md
-- [ ] T025 [US1] Add --no-worktree flag to .claude/commands/speck.branch.md
-- [ ] T026 [US1] Integrate worktree creation into /speck:specify command in .claude/commands/speck.specify.md
-- [ ] T027 [US1] Integrate worktree creation into /speck:branch command in .claude/commands/speck.branch.md
-- [ ] T028 [US1] Add branch name approval prompt before worktree creation in .speck/scripts/worktree/workflows.ts
-- [ ] T029 [US1] Create integration test for basic worktree creation in tests/integration/worktree-create.test.ts
-- [ ] T030 [US1] Create integration test for worktree lifecycle (create/list/remove) in tests/integration/worktree-lifecycle.test.ts
+- [X] T017 [P] [US1] Implement repository layout detection in .speck/scripts/worktree/naming.ts
+- [X] T018 [P] [US1] Implement worktree naming logic based on repo layout in .speck/scripts/worktree/naming.ts
+- [X] T019 [US1] Implement basic createWorktree function (Git worktree add only) in .speck/scripts/worktree/create.ts
+- [X] T020 [US1] Implement removeWorktree function in .speck/scripts/worktree/remove.ts
+- [X] T021 [US1] Add worktree collision detection to createWorktree in .speck/scripts/worktree/create.ts
+- [X] T022 [US1] Add --reuse-worktree flag support in .speck/scripts/worktree/create.ts
+- [X] T023 [US1] Implement stale worktree cleanup (call pruneWorktrees before creation) in .speck/scripts/worktree/create.ts
+- [ ] T024 [US1] Add --no-worktree flag to .claude/commands/speck.specify.md (DEFERRED - needs command refactoring)
+- [ ] T025 [US1] Add --no-worktree flag to .claude/commands/speck.branch.md (DEFERRED - needs command refactoring)
+- [ ] T026 [US1] Integrate worktree creation into /speck:specify command in .claude/commands/speck.specify.md (DEFERRED - needs command refactoring)
+- [ ] T027 [US1] Integrate worktree creation into /speck:branch command in .claude/commands/speck.branch.md (DEFERRED - needs command refactoring)
+- [X] T028 [US1] Add branch name approval prompt before worktree creation in .speck/scripts/worktree/workflows.ts
+- [X] T029 [US1] Create integration test for basic worktree creation in tests/integration/worktree-create.test.ts
+- [X] T030 [US1] Create integration test for worktree lifecycle (create/list/remove) in tests/integration/worktree-lifecycle.test.ts
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - developers can create spec branches with worktrees and work on multiple features simultaneously
 
