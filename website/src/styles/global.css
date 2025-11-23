@@ -4,6 +4,13 @@
  */
 
 /* ========================================
+   External Library Imports
+   ======================================== */
+
+/* asciinema-player CSS */
+@import 'asciinema-player/dist/bundle/asciinema-player.css';
+
+/* ========================================
    CSS Reset
    ======================================== */
 

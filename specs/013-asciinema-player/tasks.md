@@ -35,15 +35,15 @@ This document provides a **dependency-ordered, executable task list** for implem
 
 ### Tasks
 
-- [ ] T001 Install asciinema-player and astro-terminal-player dependencies in website/package.json
-- [ ] T002 Install @astrojs/mdx dependency for inline component embedding in website/package.json
-- [ ] T003 [P] Install accessibility testing dependencies (@axe-core/playwright) in website/package.json
-- [ ] T004 Configure MDX integration in website/astro.config.mjs
-- [ ] T005 Configure Vite optimization for asciinema-player in website/astro.config.mjs
-- [ ] T006 Import asciinema-player CSS in website/src/styles/global.css
-- [ ] T007 Add CSS variable overrides for dark/light theme support in website/src/styles/global.css
-- [ ] T008 Create directory structure for .cast recordings at website/src/assets/demos/
-- [ ] T009 Create directory structure for fallback content at website/src/assets/demos/fallbacks/
+- [X] T001 Install asciinema-player and astro-terminal-player dependencies in website/package.json
+- [X] T002 Install @astrojs/mdx dependency for inline component embedding in website/package.json
+- [X] T003 [P] Install accessibility testing dependencies (@axe-core/playwright) in website/package.json
+- [X] T004 Configure MDX integration in website/astro.config.mjs
+- [X] T005 Configure Vite optimization for asciinema-player in website/astro.config.mjs
+- [X] T006 Import asciinema-player CSS in website/src/styles/global.css
+- [X] T007 Add CSS variable overrides for dark/light theme support in website/src/styles/global.css
+- [X] T008 Create directory structure for .cast recordings at website/src/assets/demos/
+- [X] T009 Create directory structure for fallback content at website/src/assets/demos/fallbacks/
 
 **Completion Criteria**:
 - `bun install` completes successfully with all dependencies
@@ -64,17 +64,17 @@ This document provides a **dependency-ordered, executable task list** for implem
 
 ### Tasks
 
-- [ ] T010 Create AsciinemaPlayer.astro component in website/src/components/
-- [ ] T011 Define TypeScript interface for AsciinemaPlayerProps in website/src/components/AsciinemaPlayer.astro
-- [ ] T012 Implement component prop validation (VR-001 through VR-008 from data-model.md) in website/src/components/AsciinemaPlayer.astro
-- [ ] T013 Implement client:visible hydration directive for viewport-based loading in website/src/components/AsciinemaPlayer.astro
-- [ ] T014 Implement error state handling with retry logic (max 3 retries) in website/src/components/AsciinemaPlayer.astro
-- [ ] T015 Implement fallback content rendering (image and text) in website/src/components/AsciinemaPlayer.astro
-- [ ] T016 Add ARIA labels and accessibility attributes (role, aria-label, aria-describedby, tabindex) in website/src/components/AsciinemaPlayer.astro
-- [ ] T017 Implement keyboard navigation instructions (screen reader only text) in website/src/components/AsciinemaPlayer.astro
-- [ ] T018 Add responsive styling for viewports 320px to 2560px in website/src/components/AsciinemaPlayer.astro
-- [ ] T019 Implement theme integration (asciinema theme with CSS variable overrides) in website/src/components/AsciinemaPlayer.astro
-- [ ] T020 Add noscript fallback for JavaScript-disabled users in website/src/components/AsciinemaPlayer.astro
+- [X] T010 Create AsciinemaPlayer.astro component in website/src/components/
+- [X] T011 Define TypeScript interface for AsciinemaPlayerProps in website/src/components/AsciinemaPlayer.astro
+- [X] T012 Implement component prop validation (VR-001 through VR-008 from data-model.md) in website/src/components/AsciinemaPlayer.astro
+- [X] T013 Implement client:visible hydration directive for viewport-based loading in website/src/components/AsciinemaPlayer.astro
+- [X] T014 Implement error state handling with retry logic (max 3 retries) in website/src/components/AsciinemaPlayer.astro
+- [X] T015 Implement fallback content rendering (image and text) in website/src/components/AsciinemaPlayer.astro
+- [X] T016 Add ARIA labels and accessibility attributes (role, aria-label, aria-describedby, tabindex) in website/src/components/AsciinemaPlayer.astro
+- [X] T017 Implement keyboard navigation instructions (screen reader only text) in website/src/components/AsciinemaPlayer.astro
+- [X] T018 Add responsive styling for viewports 320px to 2560px in website/src/components/AsciinemaPlayer.astro
+- [X] T019 Implement theme integration (asciinema theme with CSS variable overrides) in website/src/components/AsciinemaPlayer.astro
+- [X] T020 Add noscript fallback for JavaScript-disabled users in website/src/components/AsciinemaPlayer.astro
 
 **Completion Criteria**:
 - Component accepts all required and optional props per AsciinemaPlayerProps interface
@@ -99,16 +99,16 @@ This document provides a **dependency-ordered, executable task list** for implem
 
 ### Tasks
 
-- [ ] T021 [US1] Create demo section structure in website/src/pages/index.astro
-- [ ] T022 [US1] Import AsciinemaPlayer component in website/src/pages/index.astro
-- [ ] T023 [US1] Create placeholder .cast recording file at website/src/assets/demos/speck-install.cast
-- [ ] T024 [US1] Import speck-install.cast recording in website/src/pages/index.astro
-- [ ] T025 [US1] Configure AsciinemaPlayer with homepage demo props (title, loop, speed) in website/src/pages/index.astro
-- [ ] T026 [P] [US1] Create fallback screenshot placeholder at website/public/demos/fallbacks/speck-install.png
-- [ ] T027 [P] [US1] Create fallback text description at website/src/assets/demos/fallbacks/speck-install.md
-- [ ] T028 [US1] Add fallbackImage and fallbackText props to player in website/src/pages/index.astro
-- [ ] T029 [US1] Add section heading and description text for demo section in website/src/pages/index.astro
-- [ ] T030 [US1] Style demo section to match Speck design system in website/src/pages/index.astro
+- [X] T021 [US1] Create demo section structure in website/src/pages/index.astro
+- [X] T022 [US1] Import AsciinemaPlayer component in website/src/pages/index.astro
+- [X] T023 [US1] Create placeholder .cast recording file at website/src/assets/demos/speck-install.cast
+- [X] T024 [US1] Import speck-install.cast recording in website/src/pages/index.astro
+- [X] T025 [US1] Configure AsciinemaPlayer with homepage demo props (title, loop, speed) in website/src/pages/index.astro
+- [X] T026 [P] [US1] Create fallback screenshot placeholder at website/public/demos/fallbacks/speck-install.png (skipped - fallback text provided instead)
+- [X] T027 [P] [US1] Create fallback text description at website/src/assets/demos/fallbacks/speck-install.md
+- [X] T028 [US1] Add fallbackImage and fallbackText props to player in website/src/pages/index.astro
+- [X] T029 [US1] Add section heading and description text for demo section in website/src/pages/index.astro
+- [X] T030 [US1] Style demo section to match Speck design system in website/src/pages/index.astro
 
 **Completion Criteria (Acceptance Scenarios)**:
 - ✅ Visitor lands on homepage and sees titled asciinema player in demo section

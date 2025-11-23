@@ -145,3 +145,36 @@
 html {
   transition: background-color var(--transition-normal), color var(--transition-normal);
 }
+
+/* ========================================
+   asciinema Player Theme Overrides
+   ======================================== */
+
+/* Light mode overrides */
+:root {
+  --asciinema-player-bg: var(--color-code-bg);
+  --asciinema-player-text: var(--color-code-text);
+  --asciinema-player-border: var(--color-border);
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --asciinema-player-bg: var(--color-code-bg);
+    --asciinema-player-text: var(--color-code-text);
+    --asciinema-player-border: var(--color-border);
+  }
+}
+
+/* Manual theme overrides */
+[data-theme='light'] {
+  --asciinema-player-bg: #f5f5f5;
+  --asciinema-player-text: #1a1a1a;
+  --asciinema-player-border: #e0e0e0;
+}
+
+[data-theme='dark'] {
+  --asciinema-player-bg: #2a2a2a;
+  --asciinema-player-text: #e8e6e3;
+  --asciinema-player-border: #3a3a3a;
+}

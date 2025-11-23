@@ -6,6 +6,11 @@
 
 import HomeLayout from '@/layouts/HomeLayout.astro';
 import FeatureCard from '@/components/FeatureCard.astro';
+import AsciinemaPlayer from '@/components/AsciinemaPlayer.astro';
+import speckInstallFallback from '@/assets/demos/fallbacks/speck-install.md?raw';
+
+// Use relative path to .cast file (will be copied to public during build)
+const speckInstallCast = '/demos/speck-install.cast';
 
 // Homepage data
 const hero = {
@@ -210,6 +215,25 @@ const seo = {
             View Installation Guide
           </a>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Installation Demo Section -->
+  <section class="installation-demo">
+    <div class="container">
+      <h2 class="section-title">See Speck in Action</h2>
+      <p class="demo-description">
+        Watch how easy it is to install Speck in Claude Code. The entire process takes less than a minute.
+      </p>
+      <div class="demo-player-wrapper">
+        <AsciinemaPlayer
+          src={speckInstallCast}
+          title="Installing Speck via Claude Code"
+          loop={true}
+          speed={1.2}
+          fallbackText={speckInstallFallback}
+        />
       </div>
     </div>
   </section>
@@ -510,6 +534,27 @@ const seo = {
 
   .quick-start-cta {
     text-align: center;
+  }
+
+  /* Installation Demo Section */
+  .installation-demo {
+    padding: var(--space-2xl) 0;
+    background: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .demo-description {
+    text-align: center;
+    color: var(--color-text-muted);
+    max-width: 700px;
+    margin: 0 auto var(--space-2xl);
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+
+  .demo-player-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
   }
 
   /* Responsive */

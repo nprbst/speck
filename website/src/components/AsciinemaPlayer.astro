@@ -1,0 +1,451 @@
+---
+/**
+ * AsciinemaPlayer Component
+ * Feature: 013-asciinema-player
+ *
+ * Displays asciinema terminal recordings with error handling, fallback content,
+ * and accessibility features. Integrates with Speck website dark/light theme.
+ */
+
+// T011: Define TypeScript interface for component props
+interface Props {
+  src: string;
+  title?: string;
+  loop?: boolean | number;
+  autoPlay?: boolean;
+  speed?: number;
+  theme?: 'asciinema' | 'monokai' | 'solarized-dark' | 'solarized-light';
+  terminalFontSize?: 'small' | 'medium' | 'big';
+  fallbackImage?: string;
+  fallbackText?: string;
+}
+
+const {
+  src,
+  title,
+  loop = false,
+  autoPlay = false,
+  speed = 1,
+  theme = 'asciinema',
+  terminalFontSize = 'medium',
+  fallbackImage,
+  fallbackText,
+} = Astro.props;
+
+// T012: Prop validation (VR-001 through VR-008)
+// VR-001: src must be non-empty string ending in .cast
+if (!src || typeof src !== 'string' || !src.endsWith('.cast')) {
+  throw new Error(
+    `AsciinemaPlayer: Invalid src prop. Must be non-empty string ending in .cast. Received: ${src}`
+  );
+}
+
+// VR-002: speed must be positive number between 0.1 and 10
+if (speed < 0.1 || speed > 10) {
+  throw new Error(
+    `AsciinemaPlayer: Invalid speed prop. Must be between 0.1 and 10. Received: ${speed}`
+  );
+}
+
+// VR-003: loop must be boolean or positive integer
+if (typeof loop === 'number' && (loop < 1 || !Number.isInteger(loop))) {
+  throw new Error(
+    `AsciinemaPlayer: Invalid loop prop. Must be boolean or positive integer. Received: ${loop}`
+  );
+}
+
+// VR-004: theme validation
+const validThemes = ['asciinema', 'monokai', 'solarized-dark', 'solarized-light'];
+if (!validThemes.includes(theme)) {
+  throw new Error(
+    `AsciinemaPlayer: Invalid theme prop. Must be one of: ${validThemes.join(', ')}. Received: ${theme}`
+  );
+}
+
+// VR-005: terminalFontSize validation
+const validSizes = ['small', 'medium', 'big'];
+if (!validSizes.includes(terminalFontSize)) {
+  throw new Error(
+    `AsciinemaPlayer: Invalid terminalFontSize prop. Must be one of: ${validSizes.join(', ')}. Received: ${terminalFontSize}`
+  );
+}
+
+// VR-006: fallbackImage format validation (basic check)
+if (fallbackImage && !/\.(png|jpg|jpeg|webp|gif)$/i.test(fallbackImage)) {
+  console.warn(
+    `AsciinemaPlayer: fallbackImage should be a valid image path. Received: ${fallbackImage}`
+  );
+}
+
+// VR-007: Accessibility - fallbackText should be provided if fallbackImage is set
+if (fallbackImage && !fallbackText) {
+  console.warn(
+    `AsciinemaPlayer: fallbackText should be provided when fallbackImage is set for accessibility.`
+  );
+}
+
+// VR-008: title should be provided for accessibility
+if (!title) {
+  console.warn(
+    `AsciinemaPlayer: title prop should be provided for screen reader accessibility.`
+  );
+}
+
+// Generate unique ID for this player instance
+const playerId = `asciinema-player-${Math.random().toString(36).substring(2, 11)}`;
+const ariaDescribedById = `${playerId}-description`;
+---
+
+<!-- T016: ARIA labels and accessibility attributes -->
+<div
+  class="asciinema-player-wrapper"
+  role="region"
+  aria-label={title || 'Terminal recording player'}
+  tabindex="0"
+>
+  {title && <h3 class="player-title">{title}</h3>}
+
+  <!-- T017: Keyboard navigation instructions (screen reader only) -->
+  <div id={ariaDescribedById} class="sr-only">
+    Terminal recording player. Use space bar to play or pause. Use arrow keys to seek forward or
+    backward. Use 'f' for fullscreen toggle.
+  </div>
+
+  <!-- T013: client:visible hydration for viewport-based loading -->
+  <!-- T020: noscript fallback for JS-disabled users -->
+  <noscript>
+    <div class="noscript-fallback">
+      {
+        fallbackImage && (
+          <img src={fallbackImage} alt={fallbackText || 'Terminal recording screenshot'} />
+        )
+      }
+      {fallbackText && <p class="fallback-text">{fallbackText}</p>}
+      {!fallbackImage && !fallbackText && (
+        <p class="fallback-text">
+          This page requires JavaScript to display the terminal recording. Please enable JavaScript
+          to view the demo.
+        </p>
+      )}
+    </div>
+  </noscript>
+
+  <!-- T015: Fallback content rendering (shown on error) -->
+  <div
+    id={`${playerId}-container`}
+    class="player-container"
+    data-src={src}
+    data-loop={loop}
+    data-autoplay={autoPlay}
+    data-speed={speed}
+    data-theme={theme}
+    data-font-size={terminalFontSize}
+    data-fallback-image={fallbackImage}
+    data-fallback-text={fallbackText}
+    aria-describedby={ariaDescribedById}
+  >
+    <!-- Player will be initialized here via client-side script -->
+  </div>
+
+  <!-- T014: Error state with retry logic (rendered client-side) -->
+  <div id={`${playerId}-error`} class="error-fallback" style="display: none;">
+    <div class="error-content">
+      <p class="error-message"></p>
+      <button class="retry-button" style="display: none;">Retry</button>
+      <div class="fallback-content" style="display: none;">
+        {
+          fallbackImage && (
+            <img
+              src={fallbackImage}
+              alt={fallbackText || 'Terminal recording screenshot'}
+              class="fallback-image"
+            />
+          )
+        }
+        {fallbackText && <p class="fallback-text">{fallbackText}</p>}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- T013: Client-side initialization with viewport-based loading -->
+<script>
+  // This script runs client-side to initialize the asciinema player
+  // @ts-ignore - asciinema-player doesn't have type definitions
+  import * as AsciinemaPlayer from 'asciinema-player';
+
+  // Initialize all players on the page
+  document.addEventListener('DOMContentLoaded', () => {
+    const playerContainers = document.querySelectorAll('.player-container');
+
+    playerContainers.forEach((container) => {
+      const playerId = container.id.replace('-container', '');
+      const src = container.getAttribute('data-src');
+      const loop = container.getAttribute('data-loop');
+      const autoPlay = container.getAttribute('data-autoplay') === 'true';
+      const speed = parseFloat(container.getAttribute('data-speed') || '1');
+      const theme = container.getAttribute('data-theme') || 'asciinema';
+      const fontSize = container.getAttribute('data-font-size') || 'medium';
+      // Fallback content (not currently used but available for future enhancements)
+      // const fallbackImage = container.getAttribute('data-fallback-image');
+      // const fallbackText = container.getAttribute('data-fallback-text');
+
+      const errorContainer = document.getElementById(`${playerId}-error`);
+      let retryCount = 0;
+      const MAX_RETRIES = 3;
+
+      // Intersection Observer for viewport-based loading
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              // T014: Load player when visible, with error handling and retry logic
+              loadPlayer();
+              observer.unobserve(container);
+            }
+          });
+        },
+        {
+          rootMargin: '50px', // Start loading 50px before entering viewport
+        }
+      );
+
+      observer.observe(container);
+
+      function loadPlayer() {
+        if (!src) {
+          showError('NotFound', 'Recording not found. Please refresh the page.', false);
+          return;
+        }
+
+        try {
+          // Convert loop prop format
+          let loopValue: boolean | number = false;
+          if (loop === 'true') {
+            loopValue = true;
+          } else if (loop === 'false') {
+            loopValue = false;
+          } else if (loop && !isNaN(Number(loop))) {
+            loopValue = Number(loop);
+          }
+
+          AsciinemaPlayer.create(src, container as HTMLElement, {
+            loop: loopValue,
+            autoPlay: autoPlay,
+            speed: speed,
+            theme: theme,
+            terminalFontSize: fontSize,
+            fit: 'width', // Responsive sizing
+            idleTimeLimit: 3, // Speed up idle time in recordings
+          });
+        } catch (error) {
+          console.error('AsciinemaPlayer error:', error);
+          handleLoadError(error);
+        }
+      }
+
+      function handleLoadError(error: unknown) {
+        retryCount++;
+
+        let errorType: 'NetworkError' | 'CorruptFile' | 'NotFound' | 'TimeoutError' = 'NetworkError';
+        let message = 'Unable to load recording. Please check your connection.';
+
+        if (error instanceof Error) {
+          if (error.message.includes('404') || error.message.includes('not found')) {
+            errorType = 'NotFound';
+            message = 'Recording not found. Please refresh the page.';
+          } else if (error.message.includes('timeout')) {
+            errorType = 'TimeoutError';
+            message = 'Loading timed out. Please try again.';
+          } else if (error.message.includes('parse') || error.message.includes('JSON')) {
+            errorType = 'CorruptFile';
+            message = 'Recording file is corrupted or invalid.';
+          }
+        }
+
+        const canRetry = retryCount < MAX_RETRIES && errorType !== 'CorruptFile';
+        showError(errorType, message, canRetry);
+      }
+
+      function showError(
+        _errorType: 'NetworkError' | 'CorruptFile' | 'NotFound' | 'TimeoutError',
+        message: string,
+        canRetry: boolean
+      ) {
+        if (!errorContainer) return;
+
+        const errorMessage = errorContainer.querySelector('.error-message');
+        const retryButton = errorContainer.querySelector('.retry-button') as HTMLButtonElement;
+        const fallbackContent = errorContainer.querySelector('.fallback-content') as HTMLElement;
+
+        if (errorMessage) {
+          errorMessage.textContent = message;
+        }
+
+        // T014: Show retry button if retries available
+        if (retryButton) {
+          if (canRetry) {
+            retryButton.style.display = 'inline-block';
+            retryButton.onclick = () => {
+              errorContainer.style.display = 'none';
+              container.innerHTML = ''; // Clear previous attempt
+              loadPlayer();
+            };
+          } else {
+            retryButton.style.display = 'none';
+          }
+        }
+
+        // T015: Show fallback content if max retries exceeded
+        if (fallbackContent && (!canRetry || retryCount >= MAX_RETRIES)) {
+          fallbackContent.style.display = 'block';
+        }
+
+        (errorContainer as HTMLElement).style.display = 'block';
+        (container as HTMLElement).style.display = 'none';
+      }
+    });
+  });
+</script>
+
+<!-- T018: Responsive styling for viewports 320px to 2560px -->
+<!-- T019: Theme integration with CSS variable overrides -->
+<style>
+  .asciinema-player-wrapper {
+    margin: 2rem 0;
+    max-width: 100%;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    border-radius: var(--radius-md, 6px);
+  }
+
+  .asciinema-player-wrapper:focus-visible {
+    outline-color: var(--color-accent);
+  }
+
+  .player-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+  }
+
+  .player-container {
+    position: relative;
+    width: 100%;
+    min-height: 300px;
+    border-radius: var(--radius-md, 6px);
+    overflow: hidden;
+    background-color: var(--color-code-bg);
+  }
+
+  /* T020: Noscript fallback styling */
+  .noscript-fallback {
+    padding: 2rem;
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 6px);
+    text-align: center;
+  }
+
+  .noscript-fallback img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm, 4px);
+    margin: 0 auto 1rem;
+  }
+
+  /* T014 & T015: Error fallback styling */
+  .error-fallback {
+    padding: 2rem;
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 6px);
+    text-align: center;
+  }
+
+  .error-message {
+    color: var(--color-error, #ef4444);
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  .retry-button {
+    padding: 0.5rem 1.5rem;
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm, 4px);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast, 150ms ease);
+  }
+
+  .retry-button:hover {
+    background-color: var(--color-accent-hover);
+  }
+
+  .retry-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .fallback-content {
+    margin-top: 1.5rem;
+  }
+
+  .fallback-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm, 4px);
+    margin: 0 auto 1rem;
+  }
+
+  .fallback-text {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  /* T018: Responsive breakpoints */
+  /* Mobile: 320px - 479px */
+  @media (max-width: 479px) {
+    .player-container {
+      min-height: 200px;
+    }
+
+    .player-title {
+      font-size: 1.125rem;
+    }
+  }
+
+  /* Tablet: 480px - 767px */
+  @media (min-width: 480px) and (max-width: 767px) {
+    .player-container {
+      min-height: 250px;
+    }
+  }
+
+  /* Desktop: 768px - 2560px */
+  @media (min-width: 768px) {
+    .player-container {
+      min-height: 350px;
+    }
+  }
+
+  /* Ultra-wide: 2560px+ */
+  @media (min-width: 2560px) {
+    .asciinema-player-wrapper {
+      max-width: 2560px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  /* T019: Theme-aware player styling */
+  :global(.asciinema-player-wrapper .asciinema-player) {
+    background-color: var(--asciinema-player-bg, var(--color-code-bg));
+    color: var(--asciinema-player-text, var(--color-code-text));
+    border: 1px solid var(--asciinema-player-border, var(--color-border));
+  }
+</style>
