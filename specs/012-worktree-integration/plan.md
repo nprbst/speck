@@ -12,7 +12,23 @@ Integrate Git worktrees as a first-class, opt-in feature in the Speck workflow. 
 **Language/Version**: TypeScript 5.3+ with Bun 1.0+ runtime
 **Primary Dependencies**: Zod (schema validation), Git 2.5+ CLI (worktree support), Bun Shell API
 **Storage**: File-based configuration (`.speck/config.json`), Git worktrees as peer directories of main repository (naming based on repository layout)
-**Testing**: Bun test framework, integration tests for worktree lifecycle, manual tests for IDE launch
+**Testing**: Test-Driven Development (TDD) with Bun test framework
+- **Development Approach**: Red-green-refactor per task (write failing tests first, implement minimum code to pass, refactor)
+- **Unit Tests**: Required for all modules (individual functions in `.speck/scripts/worktree/`)
+  - Test all public (exported) functions
+  - Test all critical error paths (disk space, Git version, worktree collision, IDE launch failures, dependency failures)
+  - Verify error detection AND actionable error messages (must include: cause, impact, remediation steps)
+- **Integration Tests**: Required for workflows (multi-step operations)
+  - Use real Git operations with temporary repositories in `tests/fixtures/tmp-*` (auto-cleanup after test)
+  - Mock IDE launches and package manager operations (use test doubles to verify commands without executing)
+  - Test worktree lifecycle, file operations, end-to-end workflows
+- **Test Coverage Enforcement**:
+  - **Minimum Thresholds**: 80% line coverage for all modules, 100% coverage for critical error paths
+  - **Tool**: Bun built-in coverage (`bun test --coverage`)
+  - **Enforcement**: Build MUST fail if coverage drops below thresholds
+  - **Configuration**: Coverage thresholds in `bunfig.toml` or test configuration
+- **Test Fixtures**: Shared utilities for temporary Git repository creation/cleanup, mock IDE commands, mock package manager commands
+- **Test Environment Requirements**: Git 2.5+ installed for integration tests
 **Target Platform**: Cross-platform (macOS, Linux, Windows) with platform-specific IDE detection
 **Project Type**: Single project (CLI enhancement to existing Speck)
 **Performance Goals**:
@@ -165,14 +181,26 @@ specs/012-worktree-integration/
 src/                     # Existing Speck source (if applicable)
 
 tests/
+├── fixtures/
+│   └── test-utils.ts        # Shared test utilities (temp Git repo, mocks)
 ├── integration/
 │   ├── worktree-create.test.ts
 │   ├── worktree-lifecycle.test.ts
-│   └── worktree-config.test.ts
+│   ├── worktree-config.test.ts
+│   ├── ide-launch.test.ts
+│   ├── file-ops.test.ts
+│   └── deps-install.test.ts
 └── unit/
+    ├── config.test.ts
+    ├── config-schema.test.ts
+    ├── validation.test.ts
+    ├── naming.test.ts
+    ├── git.test.ts
+    ├── errors.test.ts
     ├── file-ops.test.ts
     ├── ide-launch.test.ts
-    └── config-schema.test.ts
+    ├── deps-install.test.ts
+    └── workflows.test.ts
 ```
 
 **Structure Decision**: Single project structure chosen because worktree integration is an enhancement to existing Speck CLI, not a separate application. All implementation resides in `.speck/scripts/worktree/` subdirectory to maintain modularity and testability. Configuration lives in `.speck/config.json` to align with Speck's file-based storage principle.

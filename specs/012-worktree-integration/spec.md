@@ -9,6 +9,11 @@
 
 ### Session 2025-11-22
 
+- Q: When implementing this feature with TDD, what test-writing cadence should be followed? → A: Write tests before implementation for each task (red-green-refactor per task)
+- Q: Given the TDD approach, what test coverage levels are expected for this feature? → A: Unit tests for all modules, integration tests for workflows
+- Q: For unit tests, which code paths should have mandatory test coverage? → A: All public functions and critical error paths
+- Q: For integration tests, should external dependencies (Git, IDE, package managers) be mocked or use real implementations? → A: Temporary Git repos, mocked IDE/package managers
+- Q: How should test coverage metrics be enforced during development? → A: Fail build if coverage drops below thresholds
 - Q: When a worktree already exists at the intended location (edge case from line 77), how should the system respond? → A: Error with reuse option - Abort by default, but allow `--reuse-worktree` flag to skip recreation
 - Q: When dependency installation is enabled (User Story 3), should the IDE launch wait for dependencies to finish installing, or should it launch immediately and install in the background? → A: Blocking install - IDE launches only after dependency installation completes (user sees progress indicator)
 - Q: The spec mentions configurable copy/symlink rules for files (FR-009, FR-010), but doesn't specify the pattern matching syntax. What pattern syntax should be supported for file/directory rules? → A: Glob patterns and explicit list of relative paths, stored in a Speck configuration file in a well known location
@@ -140,6 +145,25 @@ As a developer, I want to configure which files and directories should be copied
 - **Worktree Configuration**: Represents user preferences for worktree integration (enabled/disabled, IDE auto-launch preference, IDE choice, dependency pre-installation preference)
 - **File Rule**: Represents a rule for how a file or directory should be handled in worktrees (copy, symlink, or ignore), using glob patterns (e.g., `*.env`, `**/*.config.js`) or explicit relative paths
 - **Worktree Metadata**: Represents information about a created worktree (branch name, worktree path, creation timestamp, status)
+
+## Development Methodology
+
+This feature MUST be implemented using Test-Driven Development (TDD) with the following approach:
+
+- **Red-Green-Refactor per task**: For each task in [tasks.md](tasks.md), write failing tests first, implement the minimum code to pass the tests, then refactor as needed
+- **Test-first discipline**: No implementation code should be written before corresponding test cases exist
+- **Task-level granularity**: The red-green-refactor cycle operates at the task level, not at the phase or user story level
+- **Test coverage requirements**:
+  - **Unit tests**: Required for all modules (individual functions and classes in `.speck/scripts/worktree/`)
+    - Mandatory coverage: All public functions and critical error paths (disk space checks, Git version validation, worktree collision detection, IDE launch failures, dependency installation failures)
+    - Critical error paths must verify both error detection and actionable error messages
+  - **Integration tests**: Required for workflows (multi-step operations like worktree creation, IDE launch, dependency installation)
+    - **Real implementations**: Git operations (use temporary Git repositories in `tests/fixtures/tmp-*`)
+    - **Mocked implementations**: IDE launches and package manager operations (use test doubles to verify commands without executing)
+- **Coverage enforcement**: Build MUST fail if test coverage drops below thresholds
+  - Minimum coverage thresholds to be defined during planning phase
+  - Coverage checking runs automatically during `bun test` and blocks builds on failure
+  - Ensures TDD discipline is maintained throughout implementation
 
 ## Success Criteria *(mandatory)*
 

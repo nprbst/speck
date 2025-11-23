@@ -1,31 +1,32 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.5.0 → 1.6.0
+Version Change: 1.6.0 → 1.7.0
 Modified Principles: None
-Added Sections: "XI. Website Documentation Synchronization" (new principle)
+Added Sections: "XII. Test-Driven Development (TDD)" (new principle)
 Removed Sections: None
 
 Templates Requiring Updates:
-  ⚠ .claude/commands/speck.implement.md - add website sync step
-  ⚠ .claude/commands/speck.tasks.md - add website update task requirement
-  ⚠ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/tasks-template.md - add website documentation tasks
-  ⚠ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/plan-template.md - add website impact assessment
+  ⚠ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/plan-template.md - add TDD methodology section in Technical Context
+  ⚠ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/tasks-template.md - add guidance for test task ordering (tests before implementation)
+  ⚠ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/spec-template.md - add optional Development Methodology section for TDD specification
+  ⚠ .claude/commands/speck.implement.md - add TDD workflow enforcement (write tests first)
+  ⚠ .claude/commands/speck.tasks.md - add TDD task generation (generate test tasks before implementation tasks)
 
 Follow-up TODOs:
-  - Add website sync validation to check-prerequisites.ts
-  - Update implementation workflow to include website documentation step
-  - Create guidance for determining when website updates are required
-  - Document website synchronization process in README.md
-  - Consider automation for website content generation from specs
+  - Add TDD validation to check-prerequisites.ts (verify test tasks exist before implementation tasks)
+  - Update quickstart.md with TDD workflow guidance
+  - Create TDD examples in feature templates
+  - Document TDD opt-out mechanism for trivial features
+  - Consider tooling for automatic test task generation
 
-Rationale for 1.6.0 (MINOR bump):
-  - New principle added: Website Documentation Synchronization
-  - Establishes mandatory website update requirement for user-facing features
-  - Ensures public documentation stays current with feature development
+Rationale for 1.7.0 (MINOR bump):
+  - New principle added: Test-Driven Development (TDD)
+  - Establishes TDD as default development methodology with red-green-refactor workflow
+  - Allows opt-out for trivial features (explicitly requested by user)
   - No breaking changes to existing principles
-  - Backwards compatible but adds new quality gate for completion
-  - Complements existing quality standards and ensures user-facing visibility
+  - Backwards compatible but adds new quality expectation for implementation
+  - Complements Code Quality Standards (Principle IX) and Zero Test Regression (Principle X)
 -->
 
 # Speck Constitution
@@ -366,6 +367,76 @@ source of truth. Documentation is not optional—it is a core deliverable.
 documentation debt. This principle ensures that debt is paid before the feature
 ships, not deferred indefinitely.
 
+### XII. Test-Driven Development (TDD)
+
+Features MUST be implemented using Test-Driven Development (TDD) methodology
+with red-green-refactor workflow unless explicitly exempted for trivial
+features.
+
+**Rationale**: TDD ensures comprehensive test coverage, prevents regressions,
+improves code design through testability constraints, and provides
+living documentation of system behavior. Writing tests first forces clarity
+about requirements and edge cases before implementation complexity obscures
+them. TDD complements Zero Test Regression Policy (Principle X) by preventing
+untested code from entering the codebase.
+
+**Implementation Requirements**:
+
+- MANDATORY TDD workflow for all features (default):
+  - **Red**: Write failing test first that captures requirement or bug fix
+  - **Green**: Implement minimum code to make the test pass
+  - **Refactor**: Improve code quality while keeping tests green
+  - Cycle repeats at task-level granularity (per task in `tasks.md`)
+- Test-first discipline:
+  - NO implementation code MAY be written before corresponding test exists
+  - Test tasks MUST precede implementation tasks in `tasks.md`
+  - Task descriptions MUST indicate test-first ordering (e.g., "T005-TEST
+    [TEST] Write tests for loadConfig" before "T005 Implement loadConfig")
+- Required test coverage levels (specified in `plan.md`):
+  - **Unit tests**: All public (exported) functions and critical error paths
+  - **Integration tests**: All multi-step workflows and component interactions
+  - **Minimum thresholds**: Define in `plan.md` (suggested: 80% line coverage,
+    100% critical paths)
+  - **Coverage enforcement**: Build MUST fail if coverage drops below thresholds
+- Test quality standards:
+  - Tests MUST verify both success paths and error handling
+  - Error path tests MUST verify actionable error messages (cause + impact +
+    remediation)
+  - Integration tests MUST use realistic test fixtures (e.g., temporary Git
+    repos, not mocks)
+  - External dependencies (IDE, package managers) SHOULD be mocked for speed
+    and determinism
+- TDD task structure in `tasks.md`:
+  - Phase 1 MUST include test infrastructure setup tasks (fixtures, mocks,
+    coverage config)
+  - Each implementation task MUST have corresponding test task(s) listed first
+  - Test tasks marked with `[TEST]` marker for clear identification
+  - Implementation tasks note "(red-green-refactor)" to reinforce workflow
+- Opt-out mechanism (RARE, requires explicit justification):
+  - User MAY request TDD exemption for trivial features during `/speck.specify`
+  - Exemption criteria: <50 lines of code, no complex logic, no critical paths,
+    no external integrations
+  - Exemption MUST be documented in `spec.md` under "Development Methodology"
+    section
+  - Even trivial features MUST have basic smoke tests (not full TDD)
+- Quality gate validation:
+  - `/speck.tasks` MUST generate test tasks before implementation tasks
+  - `/speck.implement` SHOULD warn if implementation tasks completed before test
+    tasks
+  - Feature completion checklist MUST include: "TDD: ✅ All tests written
+    before implementation"
+  - Pull request template MUST verify TDD workflow followed
+- Template integration:
+  - `plan.md` MUST include "Testing" section documenting TDD approach, coverage
+    thresholds, fixture strategy
+  - `spec.md` MAY include "Development Methodology" section specifying TDD or
+    documenting exemption
+  - `tasks.md` MUST organize tasks with test-first ordering
+
+**TDD Principle**: Tests are not an afterthought—they are the specification of
+correct behavior. Writing tests first ensures we build what we intend to build,
+not what we accidentally implemented.
+
 ## Upstream Sync Requirements
 
 ### Release-Based Synchronization
@@ -427,6 +498,7 @@ phases leads to ambiguous specs, incomplete plans, and implementation rework.
 - Each phase produces artifacts in `specs/<feature-num>-<short-name>/`
 - Clarification MUST resolve all `[NEEDS CLARIFICATION]` markers before planning
 - Analysis MUST verify cross-artifact consistency (spec ↔ plan ↔ tasks)
+- Implementation MUST follow TDD workflow (tests first) per Principle XII
 - Implementation MUST pass code quality standards (typecheck + lint) before
   feature completion
 - Implementation MUST pass test regression validation (zero new failures) before
@@ -508,6 +580,8 @@ for existing artifacts.
   (Principle IX)
 - All features MUST complete with zero test regressions (Principle X)
 - All user-facing features MUST update website documentation (Principle XI)
+- All features MUST follow TDD workflow unless explicitly exempted (Principle
+  XII)
 
 **Versioning Policy**:
 
@@ -516,4 +590,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.6.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-01-22
+**Version**: 1.7.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-01-22

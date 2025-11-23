@@ -3,14 +3,20 @@
 **Input**: Design documents from `/specs/012-worktree-integration/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
 
-**Tests**: No test tasks included (not explicitly requested in specification)
+**Development Methodology**: Test-Driven Development (TDD)
+- Write failing tests BEFORE implementation for each task
+- Follow red-green-refactor cycle at task level
+- Unit tests for all modules (exported functions, critical error paths)
+- Integration tests for workflows (worktree creation, IDE launch, file operations)
+- Test coverage enforcement: 80% line coverage minimum, 100% for critical paths
 
-**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
+**Organization**: Tasks are grouped by user story. Test tasks precede implementation tasks to enforce TDD discipline.
 
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- **[TEST]**: Test task (must be completed before corresponding implementation task)
 - Include exact file paths in descriptions
 
 ## Path Conventions
@@ -23,15 +29,18 @@ Based on plan.md, this feature uses:
 
 ---
 
-## Phase 1: Setup (Shared Infrastructure)
+## Phase 1: Setup (Shared Infrastructure + TDD)
 
-**Purpose**: Project initialization, configuration schema setup, and test baseline capture
+**Purpose**: Project initialization, configuration schema setup, test baseline capture, and TDD infrastructure
 
 - [X] T000 [Constitution] Capture test baseline before implementation (`bun test > specs/012-worktree-integration/test-baseline.txt`) to enable zero-regression validation per Constitution Principle X
 - [X] T001 Add Zod dependency to package.json
 - [X] T002 [P] Create .speck/scripts/worktree/ directory structure
 - [X] T003 [P] Copy contracts/config-schema.ts to .speck/scripts/worktree/config-schema.ts
 - [X] T004 [P] Copy contracts/internal-api.ts to .speck/scripts/worktree/types.ts (as type definitions only)
+- [ ] T004a [P] [TDD] Create tests/fixtures/ directory structure
+- [ ] T004b [TDD] Create test utilities in tests/fixtures/test-utils.ts (temp Git repo creation/cleanup, mock IDE commands, mock package manager commands)
+- [ ] T004c [TDD] Configure test coverage thresholds (80% line coverage, 100% critical paths) in bunfig.toml or test configuration with build-blocking enforcement
 
 ---
 
@@ -41,20 +50,32 @@ Based on plan.md, this feature uses:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [X] T005 Implement loadConfig function in .speck/scripts/worktree/config.ts
-- [X] T006 [P] Implement saveConfig function in .speck/scripts/worktree/config.ts
-- [X] T007 [P] Implement migrateConfig function in .speck/scripts/worktree/config.ts
-- [X] T008 [P] Implement hasWorktreeSupport function (Git version check) in .speck/scripts/worktree/validation.ts
-- [X] T009 Implement isValidBranchName function in .speck/scripts/worktree/validation.ts
-- [X] T010 [P] Implement constructBranchName function in .speck/scripts/worktree/naming.ts
-- [X] T011 [P] Implement constructWorktreePath function in .speck/scripts/worktree/naming.ts
-- [X] T012 Create Git worktree operations (listWorktrees, getWorktreePath, isWorktree) in .speck/scripts/worktree/git.ts
-- [X] T013 [P] Implement pruneWorktrees function in .speck/scripts/worktree/git.ts
-- [X] T014 [P] Implement checkWorktreePath function in .speck/scripts/worktree/validation.ts
-- [X] T015 [P] Implement hasSufficientDiskSpace function in .speck/scripts/worktree/validation.ts
-- [X] T016 Define error classes (WorktreeError, GitWorktreeError, etc.) in .speck/scripts/worktree/errors.ts
+**⚠️ TDD NOTE**: Tasks T005-T016 were implemented WITHOUT tests. They must be re-implemented following TDD (write tests first, then re-implement to pass tests).
 
-**Checkpoint**: Foundation ready - user story implementation can now begin in parallel
+### Unit Tests for Foundational Modules
+
+- [ ] T005-TEST [P] [TEST] Write unit tests for config.ts (loadConfig, saveConfig, migrateConfig) in tests/unit/config.test.ts
+- [ ] T008-TEST [P] [TEST] Write unit tests for validation.ts (hasWorktreeSupport, isValidBranchName, checkWorktreePath, hasSufficientDiskSpace) in tests/unit/validation.test.ts - verify error detection AND actionable error messages
+- [ ] T010-TEST [P] [TEST] Write unit tests for naming.ts (constructBranchName, constructWorktreePath, repository layout detection) in tests/unit/naming.test.ts
+- [ ] T012-TEST [P] [TEST] Write unit tests for git.ts (listWorktrees, getWorktreePath, isWorktree, pruneWorktrees) in tests/unit/git.test.ts - use temp Git repos from test fixtures
+- [ ] T016-TEST [P] [TEST] Write unit tests for errors.ts (WorktreeError, GitWorktreeError, error message formatting) in tests/unit/errors.test.ts - verify actionable error messages (cause + impact + remediation)
+
+### Implementation (Re-implement to pass tests)
+
+- [ ] T005 Re-implement loadConfig function in .speck/scripts/worktree/config.ts (red-green-refactor)
+- [ ] T006 [P] Re-implement saveConfig function in .speck/scripts/worktree/config.ts (red-green-refactor)
+- [ ] T007 [P] Re-implement migrateConfig function in .speck/scripts/worktree/config.ts (red-green-refactor)
+- [ ] T008 [P] Re-implement hasWorktreeSupport function (Git version check) in .speck/scripts/worktree/validation.ts (red-green-refactor)
+- [ ] T009 Re-implement isValidBranchName function in .speck/scripts/worktree/validation.ts (red-green-refactor)
+- [ ] T010 [P] Re-implement constructBranchName function in .speck/scripts/worktree/naming.ts (red-green-refactor)
+- [ ] T011 [P] Re-implement constructWorktreePath function in .speck/scripts/worktree/naming.ts (red-green-refactor)
+- [ ] T012 Re-implement Git worktree operations (listWorktrees, getWorktreePath, isWorktree) in .speck/scripts/worktree/git.ts (red-green-refactor)
+- [ ] T013 [P] Re-implement pruneWorktrees function in .speck/scripts/worktree/git.ts (red-green-refactor)
+- [ ] T014 [P] Re-implement checkWorktreePath function in .speck/scripts/worktree/validation.ts (red-green-refactor)
+- [ ] T015 [P] Re-implement hasSufficientDiskSpace function in .speck/scripts/worktree/validation.ts (red-green-refactor)
+- [ ] T016 Re-define error classes (WorktreeError, GitWorktreeError, etc.) in .speck/scripts/worktree/errors.ts with actionable error messages (red-green-refactor)
+
+**Checkpoint**: Foundation ready with full test coverage - user story implementation can now begin in parallel
 
 ---
 
@@ -64,24 +85,33 @@ Based on plan.md, this feature uses:
 
 **Independent Test**: Create a new spec branch and verify a worktree is created at the expected location with the feature branch checked out. The worktree should be immediately usable for development work.
 
-### Implementation for User Story 1
+**⚠️ TDD NOTE**: Tasks T017-T023, T028-T030 were implemented WITHOUT following TDD. They must be re-implemented with tests first.
 
-- [X] T017 [P] [US1] Implement repository layout detection in .speck/scripts/worktree/naming.ts
-- [X] T018 [P] [US1] Implement worktree naming logic based on repo layout in .speck/scripts/worktree/naming.ts
-- [X] T019 [US1] Implement basic createWorktree function (Git worktree add only) in .speck/scripts/worktree/create.ts
-- [X] T020 [US1] Implement removeWorktree function in .speck/scripts/worktree/remove.ts
-- [X] T021 [US1] Add worktree collision detection to createWorktree in .speck/scripts/worktree/create.ts
-- [X] T022 [US1] Add --reuse-worktree flag support in .speck/scripts/worktree/create.ts
-- [X] T023 [US1] Implement stale worktree cleanup (call pruneWorktrees before creation) in .speck/scripts/worktree/create.ts
+### Unit & Integration Tests for User Story 1
+
+- [ ] T017-TEST [P] [US1] [TEST] Write unit tests for repository layout detection in tests/unit/naming.test.ts (extends T010-TEST)
+- [ ] T019-TEST [US1] [TEST] Write unit tests for createWorktree function in tests/unit/create.test.ts (collision detection, --reuse-worktree flag, stale cleanup)
+- [ ] T020-TEST [P] [US1] [TEST] Write unit tests for removeWorktree function in tests/unit/remove.test.ts
+- [ ] T028-TEST [P] [US1] [TEST] Write unit tests for workflows.ts (branch name approval prompt) in tests/unit/workflows.test.ts
+- [ ] T029-TEST [US1] [TEST] Write integration test for basic worktree creation in tests/integration/worktree-create.test.ts (use temp Git repo, verify worktree exists, branch checked out)
+- [ ] T030-TEST [US1] [TEST] Write integration test for worktree lifecycle (create/list/remove) in tests/integration/worktree-lifecycle.test.ts
+
+### Implementation for User Story 1 (Re-implement to pass tests)
+
+- [ ] T017 [P] [US1] Re-implement repository layout detection in .speck/scripts/worktree/naming.ts (red-green-refactor)
+- [ ] T018 [P] [US1] Re-implement worktree naming logic based on repo layout in .speck/scripts/worktree/naming.ts (red-green-refactor)
+- [ ] T019 [US1] Re-implement basic createWorktree function (Git worktree add only) in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [ ] T020 [US1] Re-implement removeWorktree function in .speck/scripts/worktree/remove.ts (red-green-refactor)
+- [ ] T021 [US1] Re-add worktree collision detection to createWorktree in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [ ] T022 [US1] Re-add --reuse-worktree flag support in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [ ] T023 [US1] Re-implement stale worktree cleanup (call pruneWorktrees before creation) in .speck/scripts/worktree/create.ts (red-green-refactor)
 - [ ] T024 [US1] Add --no-worktree flag to .claude/commands/speck.specify.md (DEFERRED - needs command refactoring)
 - [ ] T025 [US1] Add --no-worktree flag to .claude/commands/speck.branch.md (DEFERRED - needs command refactoring)
 - [ ] T026 [US1] Integrate worktree creation into /speck:specify command in .claude/commands/speck.specify.md (DEFERRED - needs command refactoring)
 - [ ] T027 [US1] Integrate worktree creation into /speck:branch command in .claude/commands/speck.branch.md (DEFERRED - needs command refactoring)
-- [X] T028 [US1] Add branch name approval prompt before worktree creation in .speck/scripts/worktree/workflows.ts
-- [X] T029 [US1] Create integration test for basic worktree creation in tests/integration/worktree-create.test.ts
-- [X] T030 [US1] Create integration test for worktree lifecycle (create/list/remove) in tests/integration/worktree-lifecycle.test.ts
+- [ ] T028 [US1] Re-implement branch name approval prompt before worktree creation in .speck/scripts/worktree/workflows.ts (red-green-refactor)
 
-**Checkpoint**: At this point, User Story 1 should be fully functional - developers can create spec branches with worktrees and work on multiple features simultaneously
+**Checkpoint**: At this point, User Story 1 should be fully functional with comprehensive test coverage - developers can create spec branches with worktrees and work on multiple features simultaneously
 
 ---
 
@@ -91,22 +121,26 @@ Based on plan.md, this feature uses:
 
 **Independent Test**: Create a new spec branch with IDE auto-launch enabled and verify that the configured IDE opens with the worktree directory as the workspace root
 
-### Implementation for User Story 2
+### Unit & Integration Tests for User Story 2
 
-- [ ] T031 [P] [US2] Implement detectAvailableIDEs function in .speck/scripts/worktree/ide-launch.ts
-- [ ] T032 [P] [US2] Implement isIDEAvailable function in .speck/scripts/worktree/ide-launch.ts
-- [ ] T033 [P] [US2] Implement getIDECommand function for VSCode in .speck/scripts/worktree/ide-launch.ts
-- [ ] T034 [P] [US2] Implement getIDECommand function for Cursor in .speck/scripts/worktree/ide-launch.ts
-- [ ] T035 [P] [US2] Implement getIDECommand function for JetBrains IDEs in .speck/scripts/worktree/ide-launch.ts
-- [ ] T036 [US2] Implement launchIDE function with error handling in .speck/scripts/worktree/ide-launch.ts
-- [ ] T037 [US2] Integrate IDE launch into createWorktree workflow in .speck/scripts/worktree/create.ts
-- [ ] T038 [US2] Add --no-ide flag support to createWorktree in .speck/scripts/worktree/create.ts
+- [ ] T031-TEST [P] [US2] [TEST] Write unit tests for ide-launch.ts (detectAvailableIDEs, isIDEAvailable, getIDECommand for VSCode/Cursor/JetBrains, launchIDE, error handling) in tests/unit/ide-launch.test.ts - mock all IDE commands
+- [ ] T042-TEST [US2] [TEST] Write integration test for IDE launch in tests/integration/ide-launch.test.ts - verify IDE command generated correctly with mocked execution
+
+### Implementation for User Story 2 (TDD: write tests first, then implement)
+
+- [ ] T031 [P] [US2] Implement detectAvailableIDEs function in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [ ] T032 [P] [US2] Implement isIDEAvailable function in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [ ] T033 [P] [US2] Implement getIDECommand function for VSCode in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [ ] T034 [P] [US2] Implement getIDECommand function for Cursor in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [ ] T035 [P] [US2] Implement getIDECommand function for JetBrains IDEs in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [ ] T036 [US2] Implement launchIDE function with error handling in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [ ] T037 [US2] Integrate IDE launch into createWorktree workflow in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [ ] T038 [US2] Add --no-ide flag support to createWorktree in .speck/scripts/worktree/create.ts (red-green-refactor)
 - [ ] T039 [US2] Add --no-ide flag to .claude/commands/speck.specify.md
 - [ ] T040 [US2] Add --no-ide flag to .claude/commands/speck.branch.md
-- [ ] T041 [US2] Handle IDE launch failure gracefully (non-fatal) in .speck/scripts/worktree/create.ts
-- [ ] T042 [US2] Create integration test for IDE launch in tests/integration/ide-launch.test.ts
+- [ ] T041 [US2] Handle IDE launch failure gracefully (non-fatal) in .speck/scripts/worktree/create.ts (red-green-refactor)
 
-**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - worktrees can be created with or without IDE auto-launch
+**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently with comprehensive test coverage - worktrees can be created with or without IDE auto-launch
 
 ---
 
@@ -118,20 +152,23 @@ Based on plan.md, this feature uses:
 
 **Note**: Implementing US4 before US3 because file operations are a dependency for US3's dependency installation
 
-### Implementation for User Story 4
+### Unit & Integration Tests for User Story 4
 
-- [ ] T043 [P] [US4] Implement matchFiles function using Bun.Glob in .speck/scripts/worktree/file-ops.ts
-- [ ] T044 [P] [US4] Implement getUntrackedFiles function in .speck/scripts/worktree/file-ops.ts
-- [ ] T045 [P] [US4] Implement copyFiles function with concurrency in .speck/scripts/worktree/file-ops.ts
-- [ ] T046 [P] [US4] Implement symlinkDirectories function with relative paths in .speck/scripts/worktree/file-ops.ts
-- [ ] T047 [US4] Implement applyFileRules function in .speck/scripts/worktree/file-ops.ts
-- [ ] T048 [US4] Integrate file operations into createWorktree workflow in .speck/scripts/worktree/create.ts
-- [ ] T049 [US4] Add support for includeUntracked in applyFileRules in .speck/scripts/worktree/file-ops.ts
-- [ ] T050 [US4] Apply DEFAULT_FILE_RULES when config.files.rules is empty in .speck/scripts/worktree/file-ops.ts
-- [ ] T051 [US4] Create unit test for file matching in tests/unit/file-ops.test.ts
-- [ ] T052 [US4] Create integration test for file copy/symlink operations in tests/integration/file-ops.test.ts
+- [ ] T051-TEST [P] [US4] [TEST] Write unit tests for file-ops.ts (matchFiles, getUntrackedFiles, copyFiles, symlinkDirectories, applyFileRules, includeUntracked, DEFAULT_FILE_RULES) in tests/unit/file-ops.test.ts
+- [ ] T052-TEST [US4] [TEST] Write integration test for file copy/symlink operations in tests/integration/file-ops.test.ts - use temp Git repo, verify files copied/symlinked correctly
 
-**Checkpoint**: At this point, User Stories 1, 2, AND 4 should all work independently - worktrees have proper file isolation and shared resources
+### Implementation for User Story 4 (TDD: write tests first, then implement)
+
+- [ ] T043 [P] [US4] Implement matchFiles function using Bun.Glob in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [ ] T044 [P] [US4] Implement getUntrackedFiles function in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [ ] T045 [P] [US4] Implement copyFiles function with concurrency in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [ ] T046 [P] [US4] Implement symlinkDirectories function with relative paths in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [ ] T047 [US4] Implement applyFileRules function in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [ ] T048 [US4] Integrate file operations into createWorktree workflow in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [ ] T049 [US4] Add support for includeUntracked in applyFileRules in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+- [ ] T050 [US4] Apply DEFAULT_FILE_RULES when config.files.rules is empty in .speck/scripts/worktree/file-ops.ts (red-green-refactor)
+
+**Checkpoint**: At this point, User Stories 1, 2, AND 4 should all work independently with comprehensive test coverage - worktrees have proper file isolation and shared resources
 
 ---
 
@@ -141,21 +178,25 @@ Based on plan.md, this feature uses:
 
 **Independent Test**: Create a new spec branch, wait for the IDE to open, and verify that dependencies are already installed (e.g., node_modules exists and is populated)
 
-### Implementation for User Story 3
+### Unit & Integration Tests for User Story 3
 
-- [ ] T053 [P] [US3] Implement detectPackageManager function in .speck/scripts/worktree/deps-install.ts
-- [ ] T054 [P] [US3] Implement getInstallCommand function in .speck/scripts/worktree/deps-install.ts
-- [ ] T055 [US3] Implement installDependencies function with progress streaming in .speck/scripts/worktree/deps-install.ts
-- [ ] T056 [US3] Implement interpretInstallError function in .speck/scripts/worktree/deps-install.ts
-- [ ] T057 [US3] Integrate dependency installation into createWorktree workflow (blocking, before IDE launch) in .speck/scripts/worktree/create.ts
-- [ ] T058 [US3] Add progress indicator for dependency installation in .speck/scripts/worktree/create.ts
-- [ ] T059 [US3] Add --no-deps flag support to createWorktree in .speck/scripts/worktree/create.ts
+- [ ] T053-TEST [P] [US3] [TEST] Write unit tests for deps-install.ts (detectPackageManager, getInstallCommand, installDependencies, interpretInstallError) in tests/unit/deps-install.test.ts - mock all package manager commands
+- [ ] T063-TEST [US3] [TEST] Write integration test for dependency installation in tests/integration/deps-install.test.ts - verify installation workflow with mocked package manager
+
+### Implementation for User Story 3 (TDD: write tests first, then implement)
+
+- [ ] T053 [P] [US3] Implement detectPackageManager function in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
+- [ ] T054 [P] [US3] Implement getInstallCommand function in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
+- [ ] T055 [US3] Implement installDependencies function with progress streaming in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
+- [ ] T056 [US3] Implement interpretInstallError function in .speck/scripts/worktree/deps-install.ts (red-green-refactor)
+- [ ] T057 [US3] Integrate dependency installation into createWorktree workflow (blocking, before IDE launch) in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [ ] T058 [US3] Add progress indicator for dependency installation in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [ ] T059 [US3] Add --no-deps flag support to createWorktree in .speck/scripts/worktree/create.ts (red-green-refactor)
 - [ ] T060 [US3] Add --no-deps flag to .claude/commands/speck.specify.md
 - [ ] T061 [US3] Add --no-deps flag to .claude/commands/speck.branch.md
-- [ ] T062 [US3] Handle dependency installation failure (abort IDE launch, show error) in .speck/scripts/worktree/create.ts
-- [ ] T063 [US3] Create integration test for dependency installation in tests/integration/deps-install.test.ts
+- [ ] T062 [US3] Handle dependency installation failure (abort IDE launch, show error) in .speck/scripts/worktree/create.ts (red-green-refactor)
 
-**Checkpoint**: All user stories should now be independently functional - worktrees are created with files, dependencies, and IDE launch
+**Checkpoint**: All user stories should now be independently functional with comprehensive test coverage - worktrees are created with files, dependencies, and IDE launch
 
 ---
 
