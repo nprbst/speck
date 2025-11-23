@@ -193,8 +193,8 @@ Based on plan.md, this feature uses:
 - [X] T057 [US3] Integrate dependency installation into createWorktree workflow (blocking, before IDE launch) in .speck/scripts/worktree/create.ts (red-green-refactor)
 - [X] T058 [US3] Add progress indicator for dependency installation in .speck/scripts/worktree/create.ts (red-green-refactor)
 - [X] T059 [US3] Add --no-deps flag support to createWorktree in .speck/scripts/worktree/create.ts (red-green-refactor)
-- [ ] T060 [US3] Add --no-deps flag to .claude/commands/speck.specify.md
-- [ ] T061 [US3] Add --no-deps flag to .claude/commands/speck.branch.md
+- [X] T060 [US3] Add --no-deps flag to .claude/commands/speck.specify.md (ALREADY IMPLEMENTED - line 104)
+- [ ] T061 [US3] Add --no-deps flag to .claude/commands/speck.branch.md (DEFERRED - /speck:branch not modified yet)
 - [X] T062 [US3] Handle dependency installation failure (abort IDE launch, show error) in .speck/scripts/worktree/create.ts (red-green-refactor)
 
 **Checkpoint**: All user stories should now be independently functional with comprehensive test coverage - worktrees are created with files, dependencies, and IDE launch

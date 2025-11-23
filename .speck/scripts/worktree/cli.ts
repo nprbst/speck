@@ -70,8 +70,8 @@ async function main() {
 
   // Parse command (first positional arg)
   const command = args[0];
-  if (!["create", "remove", "list"].includes(command)) {
-    console.error(`Error: Unknown command '${command}'`);
+  if (!command || !["create", "remove", "list"].includes(command)) {
+    console.error(`Error: Unknown command '${command || "(none)"}'`);
     console.log(USAGE);
     process.exit(1);
   }
@@ -156,7 +156,11 @@ async function main() {
           throw new Error("--branch and --repo-path are required for 'remove' command");
         }
 
-        await removeWorktree(repoPath, values.branch, { force: false });
+        await removeWorktree({
+          repoPath,
+          branchName: values.branch,
+          force: false,
+        });
 
         if (outputJson) {
           console.log(JSON.stringify({ success: true, branchName: values.branch }));

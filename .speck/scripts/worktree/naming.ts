@@ -157,7 +157,7 @@ export function constructBranchName(
  */
 export async function constructWorktreePath(
   repoPath: string,
-  config: WorktreeConfig,
+  _config: WorktreeConfig,
   branchName: string
 ): Promise<string> {
   // Get the parent directory of the repository

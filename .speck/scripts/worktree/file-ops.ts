@@ -4,7 +4,7 @@
  * Handles file copy/symlink operations for worktree setup
  */
 
-import { mkdir, copyFile, symlink, readlink, access } from "node:fs/promises";
+import { mkdir, copyFile, symlink, access } from "node:fs/promises";
 import { join, relative, dirname } from "node:path";
 import { constants } from "node:fs";
 import { Glob } from "bun";

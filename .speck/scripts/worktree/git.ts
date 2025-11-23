@@ -146,7 +146,7 @@ export async function pruneWorktrees(
 
     return {
       prunedCount: prunablePaths.length,
-      prunedPaths,
+      prunedPaths: prunablePaths,
     };
   } catch (error) {
     // If prune fails, return empty result

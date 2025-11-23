@@ -170,9 +170,10 @@ export const DEFAULT_SPECK_CONFIG: SpeckConfig = {
 // ============================================================================
 
 /**
- * Supported package managers (detected from lockfiles)
+ * Supported package managers (detected from lockfiles or explicitly configured)
+ * "auto" means auto-detect from lockfiles
  */
-export type PackageManager = "bun" | "pnpm" | "yarn" | "npm";
+export type PackageManager = "bun" | "pnpm" | "yarn" | "npm" | "auto";
 
 /**
  * Supported IDE editors

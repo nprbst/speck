@@ -7,7 +7,7 @@
 import { access } from "node:fs/promises";
 import { constants } from "node:fs";
 import { join } from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import type { PackageManager } from "./config-schema";
 
 /**
@@ -163,13 +163,19 @@ export async function installDependencies(
     }
 
     // Get install command
-    const [command, ...args] = getInstallCommand(packageManager);
+    const commandParts = getInstallCommand(packageManager);
+    const command = commandParts[0];
+    const args = commandParts.slice(1);
+
+    if (!command) {
+      throw new Error(`No command found for package manager: ${packageManager}`);
+    }
 
     onProgress?.(`Installing dependencies with ${packageManager}...`);
 
     // Run install command
     return new Promise((resolve) => {
-      const proc = spawn(command, args, {
+      const proc: ChildProcess = spawn(command, args, {
         cwd: worktreePath,
         stdio: ["ignore", "pipe", "pipe"],
         shell: true
@@ -178,19 +184,19 @@ export async function installDependencies(
       let stdout = "";
       let stderr = "";
 
-      proc.stdout?.on("data", (data) => {
+      proc.stdout?.on("data", (data: Buffer) => {
         const line = data.toString();
         stdout += line;
         onProgress?.(line.trim());
       });
 
-      proc.stderr?.on("data", (data) => {
+      proc.stderr?.on("data", (data: Buffer) => {
         const line = data.toString();
         stderr += line;
         onProgress?.(line.trim());
       });
 
-      proc.on("close", (code) => {
+      proc.on("close", (code: number | null) => {
         const duration = Date.now() - startTime;
 
         if (code === 0) {
@@ -211,7 +217,7 @@ export async function installDependencies(
         }
       });
 
-      proc.on("error", (err) => {
+      proc.on("error", (err: Error) => {
         const duration = Date.now() - startTime;
         const error = err.message;
 
