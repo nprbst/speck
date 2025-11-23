@@ -14,10 +14,14 @@ import { registry } from "./commands/index";
 import { appendFile } from "node:fs/promises";
 import { CommandError, formatError, errorToResult } from "./lib/error-handler";
 
-const SPECK_LOG_FILE = "/private/tmp/.claude-hook-test/speck-hook-log.txt";
+const SPECK_LOG_FILE = "/tmp/speck-hook-debug.log";
 
 const log = async (msg: string): Promise<void> => {
-  await appendFile(SPECK_LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`);
+  try {
+    await appendFile(SPECK_LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`);
+  } catch (error) {
+    // Silently fail if we can't write to log file
+  }
 };
 
 const program = new Command();
@@ -299,9 +303,16 @@ program
 async function main(): Promise<void> {
   const mode = detectMode();
 
+  await log(`=== SPECK ENTRY POINT ===`);
+  await log(`Detected mode: ${mode}`);
+  await log(`Process argv: ${JSON.stringify(process.argv)}`);
+  await log(`stdin isTTY: ${process.stdin.isTTY}`);
+
   if (mode === "hook") {
+    await log(`Entering hook mode...`);
     await runHookMode();
   } else {
+    await log(`Entering CLI mode...`);
     await runCliMode();
   }
 }
@@ -311,10 +322,17 @@ async function main(): Promise<void> {
  */
 async function runHookMode(): Promise<void> {
   try {
-    const hookInput = await readHookInput();
-    const { command } = hookInput.tool_input;
+    await log(`=== HOOK INVOKED ===`);
+    await log(`Environment: ${process.env.CLAUDE_PLUGIN_ROOT || 'NOT SET'}`);
+    await log(`CWD: ${process.cwd()}`);
+    await log(`Platform: ${process.platform}`);
 
+    const hookInput = await readHookInput();
+    await log(`Hook input received: ${JSON.stringify(hookInput)}`);
+
+    const { command } = hookInput.tool_input;
     await log(`Speck hook called - Command: ${command}`);
+    await log(`Command type: ${typeof command}`);
 
     // Only intercept commands matching speck-* pattern
     if (!command.match(/^speck-/)) {
@@ -337,14 +355,23 @@ async function runHookMode(): Promise<void> {
     const [, commandName, argsString = ""] = commandMatch;
     const args = argsString.split(/\s+/).filter((arg) => arg.length > 0);
 
+    await log(`Parsed command name: ${commandName}`);
+    await log(`Parsed args: ${JSON.stringify(args)}`);
+    await log(`Registry keys: ${JSON.stringify(Object.keys(registry))}`);
+
     // Lookup command in registry
     const commandEntry = commandName ? registry[commandName] : undefined;
     if (!commandEntry) {
-      await log(`Unknown command: ${commandName}`);
+      await log(`Unknown command: ${commandName} (not in registry)`);
       console.error(`Unknown command: ${commandName}`);
       console.log(JSON.stringify(passThrough()));
       return;
     }
+
+    await log(`Command found in registry: ${commandName}`);
+    await log(`Command entry has main: ${!!commandEntry.main}`);
+    await log(`Command entry has lazyMain: ${!!commandEntry.lazyMain}`);
+    await log(`Command entry has handler: ${!!commandEntry.handler}`);
 
     // Capture output
     const originalLog = console.log;
@@ -362,15 +389,22 @@ async function runHookMode(): Promise<void> {
 
     // Execute command using main/lazyMain function if available, otherwise fall back to handler
     try {
+      await log(`Starting command execution...`);
       if (commandEntry.main) {
         // Static main function - already loaded
+        await log(`Executing via main function`);
         await commandEntry.main(args);
+        await log(`main function completed`);
       } else if (commandEntry.lazyMain) {
         // Lazy-loaded main function - load on demand
+        await log(`Executing via lazyMain function`);
         const mainFn = await commandEntry.lazyMain();
+        await log(`lazyMain loaded, executing...`);
         await mainFn(args);
+        await log(`lazyMain function completed`);
       } else if (commandEntry.handler) {
         // Handler-based command (legacy/simple commands)
+        await log(`Executing via handler`);
         const context: CommandContext = {
           mode: "hook",
           rawCommand: command,
@@ -378,7 +412,9 @@ async function runHookMode(): Promise<void> {
           isInteractive: false,
         };
         const parsedArgs = commandEntry.parseArgs ? (commandEntry.parseArgs(command) as unknown) : {};
+        await log(`Parsed args for handler: ${JSON.stringify(parsedArgs)}`);
         const result = await commandEntry.handler(parsedArgs, context);
+        await log(`Handler result: success=${result.success}, output length=${result.output?.length || 0}`);
         if (result.success && result.output) {
           output += result.output;
         }
@@ -390,6 +426,8 @@ async function runHookMode(): Promise<void> {
       }
     } catch (error) {
       // Command execution error - capture in errorOutput with proper formatting
+      await log(`Command execution error: ${error instanceof Error ? error.message : String(error)}`);
+      await log(`Error stack: ${error instanceof Error ? error.stack : 'N/A'}`);
       const errorResult = errorToResult(
         error instanceof Error ? error : new Error(String(error))
       );
@@ -400,14 +438,25 @@ async function runHookMode(): Promise<void> {
     console.log = originalLog;
     console.error = originalError;
 
+    await log(`Captured output length: ${output.length}`);
+    await log(`Captured error output length: ${errorOutput.length}`);
+    await log(`Output preview: ${output.substring(0, 200)}`);
+    await log(`Error output preview: ${errorOutput.substring(0, 200)}`);
+
     // Return hook output with captured result
     const result = output.trim() || errorOutput.trim() || "";
     const hookOutput = formatHookOutput(result, hookInput.tool_input);
-    await log(`Returning result: ${result.substring(0, 100)}`);
+    await log(`Returning result length: ${result.length}`);
+    await log(`Result preview: ${result.substring(0, 100)}`);
+    await log(`Hook output: ${JSON.stringify(hookOutput).substring(0, 200)}`);
+    await log(`=== HOOK COMPLETE ===`);
     console.log(JSON.stringify(hookOutput));
   } catch (error) {
     // Hook-level error - log to stderr, return empty JSON (pass-through)
+    await log(`!!! HOOK ERROR !!!`);
     await log(`Hook error: ${error instanceof Error ? error.message : String(error)}`);
+    await log(`Error stack: ${error instanceof Error ? error.stack : 'N/A'}`);
+    await log(`=== HOOK FAILED ===`);
     console.error("Hook error:", error instanceof Error ? error.message : String(error));
     console.log("{}");
     process.exit(1);
