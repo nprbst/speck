@@ -53,7 +53,7 @@ export async function createWorktree(
   const errors: string[] = [];
 
   // Report progress
-  const progress = (message: string, percent: number) => {
+  const progress = (message: string, percent: number): void => {
     if (onProgress) {
       onProgress(message, percent);
     }
@@ -166,24 +166,19 @@ export async function createWorktree(
     // Step 10: Install dependencies (T057 - integrate dependency installation)
     if (config.worktree.dependencies.autoInstall && !skipDeps) {
       progress("Installing dependencies...", 80);
-      try {
-        const depsResult = await installDependencies({
-          worktreePath,
-          packageManager: config.worktree.dependencies.packageManager,
-          onProgress: (line) => progress(line, 85)
-        });
+      const depsResult = await installDependencies({
+        worktreePath,
+        packageManager: config.worktree.dependencies.packageManager,
+        onProgress: (line) => progress(line, 85)
+      });
 
-        if (depsResult.success) {
-          progress(`Dependencies installed with ${depsResult.packageManager} in ${depsResult.duration}ms`, 88);
-        } else {
-          // Dependency installation failure is fatal (T062 - abort IDE launch, show error)
-          throw new Error(
-            `Dependency installation failed: ${depsResult.error}\n\nSuggestion: ${depsResult.interpretation}`
-          );
-        }
-      } catch (error) {
-        // Re-throw dependency errors as fatal
-        throw error;
+      if (depsResult.success) {
+        progress(`Dependencies installed with ${depsResult.packageManager} in ${depsResult.duration}ms`, 88);
+      } else {
+        // Dependency installation failure is fatal (T062 - abort IDE launch, show error)
+        throw new Error(
+          `Dependency installation failed: ${depsResult.error}\n\nSuggestion: ${depsResult.interpretation}`
+        );
       }
     }
 

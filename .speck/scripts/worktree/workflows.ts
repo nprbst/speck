@@ -96,13 +96,15 @@ export async function interactiveCreateWorktree(
   const config = await loadConfig(repoPath);
 
   // Prompt for branch name
-  const { branchName } = await prompts({
+  const branchResponse = await prompts({
     type: "text",
     name: "branchName",
     message: "Branch name:",
-    validate: (value) =>
+    validate: (value: string) =>
       isValidBranchName(value) || "Invalid branch name format",
   });
+
+  const branchName = branchResponse.branchName as string | undefined;
 
   if (!branchName) {
     return null; // User cancelled
@@ -115,12 +117,14 @@ export async function interactiveCreateWorktree(
   );
 
   // Confirm creation
-  const { confirmed } = await prompts({
+  const confirmResponse = await prompts({
     type: "confirm",
     name: "confirmed",
     message: `Create worktree for '${fullBranchName}'?`,
     initial: true,
   });
+
+  const confirmed = confirmResponse.confirmed as boolean | undefined;
 
   if (!confirmed) {
     return null;

@@ -177,8 +177,9 @@ export async function addWorktree(
   try {
     await $`git -C ${repoPath} worktree add ${worktreePath} ${branchName}`.quiet();
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
-      `Failed to create worktree at ${worktreePath} for branch ${branchName}: ${error}`
+      `Failed to create worktree at ${worktreePath} for branch ${branchName}: ${errorMessage}`
     );
   }
 }
@@ -207,8 +208,9 @@ export async function removeWorktreeGit(
       await $`git -C ${repoPath} worktree remove ${worktreePath}`.quiet();
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
-      `Failed to remove worktree at ${worktreePath}: ${error}`
+      `Failed to remove worktree at ${worktreePath}: ${errorMessage}`
     );
   }
 }

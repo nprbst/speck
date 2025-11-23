@@ -43,7 +43,7 @@ export async function loadConfig(repoPath: string): Promise<SpeckConfig> {
 
   try {
     const content = await readFile(configPath, "utf-8");
-    const rawConfig = JSON.parse(content);
+    const rawConfig: unknown = JSON.parse(content);
 
     // Validate and apply defaults
     return validateSpeckConfig(rawConfig);
@@ -101,10 +101,10 @@ export async function migrateConfig(repoPath: string): Promise<boolean> {
 
   try {
     const content = await readFile(configPath, "utf-8");
-    const rawConfig = JSON.parse(content);
+    const rawConfig: unknown = JSON.parse(content);
 
     // Check if migration is needed (version mismatch)
-    const currentVersion = rawConfig.version;
+    const currentVersion = (rawConfig as { version?: string }).version;
     const targetVersion = "1.0";
 
     if (currentVersion === targetVersion) {

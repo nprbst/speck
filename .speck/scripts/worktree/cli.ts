@@ -59,7 +59,7 @@ interface CliArgs {
   help?: boolean;
 }
 
-async function main() {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
   // Show help if no args
@@ -207,4 +207,4 @@ async function main() {
   }
 }
 
-main();
+void main();
