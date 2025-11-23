@@ -1,5 +1,8 @@
 [test]
 # Test configuration for Bun test runner
+# Coverage thresholds (per Constitution Principle IX and TDD requirements)
+# Build MUST fail if coverage drops below 80%
+# Critical path coverage (100%) must be verified manually in tests
 coverage = true
 coverageThreshold = 80
 coverageSkipTestFiles = true

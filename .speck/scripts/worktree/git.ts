@@ -137,7 +137,7 @@ export async function pruneWorktrees(
     if (dryRun) {
       return {
         prunedCount: prunablePaths.length,
-        prunedPaths,
+        prunedPaths: prunablePaths,
       };
     }
 

@@ -43,13 +43,10 @@ export async function createWorktree(
     worktreePath: customWorktreePath,
     reuseExisting = false,
     force = false,
-    skipDeps = false,
-    skipIDE = false,
     onProgress,
   } = options;
 
   const errors: string[] = [];
-  const startTime = Date.now();
 
   // Report progress
   const progress = (message: string, percent: number) => {

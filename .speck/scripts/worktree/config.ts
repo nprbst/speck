@@ -9,7 +9,6 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import {
   type SpeckConfig,
-  SpeckConfigSchema,
   DEFAULT_SPECK_CONFIG,
   validateSpeckConfig,
 } from "./config-schema";
