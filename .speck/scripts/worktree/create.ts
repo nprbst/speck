@@ -5,12 +5,12 @@
  * orchestrating Git operations, file setup, dependency installation, and IDE launch.
  */
 
-import { existsSync } from "fs";
 import { loadConfig } from "./config";
 import { constructWorktreePath, constructBranchName } from "./naming";
 import { addWorktree, pruneWorktrees, getWorktreePath } from "./git";
 import { checkWorktreePath, hasSufficientDiskSpace, branchExists } from "./validation";
 import { GitWorktreeError, DiskSpaceError } from "./errors";
+import { launchIDE } from "./ide-launch";
 import type {
   CreateWorktreeOptions,
   CreateWorktreeResult,
@@ -43,6 +43,7 @@ export async function createWorktree(
     worktreePath: customWorktreePath,
     reuseExisting = false,
     force = false,
+    skipIDE = false,
     onProgress,
   } = options;
 
@@ -144,11 +145,26 @@ export async function createWorktree(
     //   await installDependencies({ ... });
     // }
 
-    // TODO Phase 4 (US2): Launch IDE
-    // if (config.worktree.ide.autoLaunch && !skipIDE) {
-    //   progress("Launching IDE...", 90);
-    //   await launchIDE({ ... });
-    // }
+    // Phase 4 (US2): Launch IDE (T037)
+    if (config.worktree.ide.autoLaunch && !skipIDE) {
+      progress("Launching IDE...", 90);
+      try {
+        const ideResult = await launchIDE({
+          worktreePath,
+          editor: config.worktree.ide.editor,
+          newWindow: config.worktree.ide.newWindow,
+        });
+
+        if (!ideResult.success) {
+          // IDE launch failure is non-fatal (T041)
+          errors.push(`IDE launch failed: ${ideResult.error}`);
+        }
+      } catch (error) {
+        // IDE launch errors are non-fatal
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        errors.push(`IDE launch failed: ${errorMessage}`);
+      }
+    }
 
     progress("Worktree ready for use", 100);
 

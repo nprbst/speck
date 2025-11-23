@@ -100,6 +100,8 @@ Given that feature description, do this:
       - **Flag support** (override config):
         - If user passed `--no-worktree` flag: Skip worktree creation even if enabled in config
         - If user passed `--worktree` flag: Create worktree even if disabled in config
+        - If user passed `--no-ide` flag: Pass `--no-ide` to worktree creation to skip IDE launch
+        - If user passed `--no-deps` flag: Pass `--no-deps` to worktree creation to skip dependency installation
 
 3. Load `${CLAUDE_PLUGIN_ROOT}/templates/spec-template.md` to understand required sections.
 

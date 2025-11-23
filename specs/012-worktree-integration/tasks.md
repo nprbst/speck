@@ -124,22 +124,22 @@ Based on plan.md, this feature uses:
 
 ### Unit & Integration Tests for User Story 2
 
-- [ ] T031-TEST [P] [US2] [TEST] Write unit tests for ide-launch.ts (detectAvailableIDEs, isIDEAvailable, getIDECommand for VSCode/Cursor/JetBrains, launchIDE, error handling) in tests/unit/ide-launch.test.ts - mock all IDE commands
-- [ ] T042-TEST [US2] [TEST] Write integration test for IDE launch in tests/integration/ide-launch.test.ts - verify IDE command generated correctly with mocked execution
+- [X] T031-TEST [P] [US2] [TEST] Write unit tests for ide-launch.ts (detectAvailableIDEs, isIDEAvailable, getIDECommand for VSCode/Cursor/JetBrains, launchIDE, error handling) in tests/unit/ide-launch.test.ts - mock all IDE commands
+- [X] T042-TEST [US2] [TEST] Write integration test for IDE launch in tests/integration/ide-launch.test.ts - verify IDE command generated correctly with mocked execution
 
 ### Implementation for User Story 2 (TDD: write tests first, then implement)
 
-- [ ] T031 [P] [US2] Implement detectAvailableIDEs function in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
-- [ ] T032 [P] [US2] Implement isIDEAvailable function in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
-- [ ] T033 [P] [US2] Implement getIDECommand function for VSCode in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
-- [ ] T034 [P] [US2] Implement getIDECommand function for Cursor in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
-- [ ] T035 [P] [US2] Implement getIDECommand function for JetBrains IDEs in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
-- [ ] T036 [US2] Implement launchIDE function with error handling in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
-- [ ] T037 [US2] Integrate IDE launch into createWorktree workflow in .speck/scripts/worktree/create.ts (red-green-refactor)
-- [ ] T038 [US2] Add --no-ide flag support to createWorktree in .speck/scripts/worktree/create.ts (red-green-refactor)
-- [ ] T039 [US2] Add --no-ide flag to .claude/commands/speck.specify.md
-- [ ] T040 [US2] Add --no-ide flag to .claude/commands/speck.branch.md
-- [ ] T041 [US2] Handle IDE launch failure gracefully (non-fatal) in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [X] T031 [P] [US2] Implement detectAvailableIDEs function in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [X] T032 [P] [US2] Implement isIDEAvailable function in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [X] T033 [P] [US2] Implement getIDECommand function for VSCode in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [X] T034 [P] [US2] Implement getIDECommand function for Cursor in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [X] T035 [P] [US2] Implement getIDECommand function for JetBrains IDEs in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [X] T036 [US2] Implement launchIDE function with error handling in .speck/scripts/worktree/ide-launch.ts (red-green-refactor)
+- [X] T037 [US2] Integrate IDE launch into createWorktree workflow in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [X] T038 [US2] Add --no-ide flag support to createWorktree in .speck/scripts/worktree/create.ts (red-green-refactor)
+- [X] T039 [US2] Add --no-ide flag to .claude/commands/speck.specify.md
+- [ ] T040 [US2] Add --no-ide flag to .claude/commands/speck.branch.md (DEFERRED - /speck:branch not modified yet)
+- [X] T041 [US2] Handle IDE launch failure gracefully (non-fatal) in .speck/scripts/worktree/create.ts (red-green-refactor)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently with comprehensive test coverage - worktrees can be created with or without IDE auto-launch
 
