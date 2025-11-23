@@ -1,32 +1,31 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.6.0 → 1.7.0
+Version Change: 1.7.0 → 1.8.0
 Modified Principles: None
-Added Sections: "XII. Test-Driven Development (TDD)" (new principle)
+Added Sections: "XIII. Documentation Skill Synchronization (NON-NEGOTIABLE)" (new principle)
 Removed Sections: None
 
 Templates Requiring Updates:
-  ⚠ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/plan-template.md - add TDD methodology section in Technical Context
-  ⚠ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/tasks-template.md - add guidance for test task ordering (tests before implementation)
-  ⚠ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/spec-template.md - add optional Development Methodology section for TDD specification
-  ⚠ .claude/commands/speck.implement.md - add TDD workflow enforcement (write tests first)
-  ⚠ .claude/commands/speck.tasks.md - add TDD task generation (generate test tasks before implementation tasks)
+  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/plan-template.md - add speck-knowledge skill update task
+  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/tasks-template.md - add speck-knowledge skill update task to final phase
+  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/spec-template.md - no changes required
+  ⚠ .claude/commands/speck.implement.md - add speck-knowledge skill update reminder at completion
+  ⚠ .claude/commands/speck.tasks.md - add speck-knowledge skill update task generation
 
 Follow-up TODOs:
-  - Add TDD validation to check-prerequisites.ts (verify test tasks exist before implementation tasks)
-  - Update quickstart.md with TDD workflow guidance
-  - Create TDD examples in feature templates
-  - Document TDD opt-out mechanism for trivial features
-  - Consider tooling for automatic test task generation
+  - Backfill speck-knowledge skill with features 007-012 content
+  - Add speck-knowledge skill validation to check-prerequisites.ts
+  - Update quickstart.md with speck-knowledge skill update guidance
+  - Consider automating speck-knowledge skill updates from spec artifacts
 
-Rationale for 1.7.0 (MINOR bump):
-  - New principle added: Test-Driven Development (TDD)
-  - Establishes TDD as default development methodology with red-green-refactor workflow
-  - Allows opt-out for trivial features (explicitly requested by user)
+Rationale for 1.8.0 (MINOR bump):
+  - New principle added: Documentation Skill Synchronization
+  - Establishes requirement to keep speck-knowledge Claude Skill current with feature additions
+  - Complements Website Documentation Synchronization (Principle XI)
   - No breaking changes to existing principles
-  - Backwards compatible but adds new quality expectation for implementation
-  - Complements Code Quality Standards (Principle IX) and Zero Test Regression (Principle X)
+  - Backwards compatible but adds new quality expectation for feature completion
+  - Ensures Claude AI assistant has accurate context about Speck features
 -->
 
 # Speck Constitution
@@ -437,6 +436,77 @@ untested code from entering the codebase.
 correct behavior. Writing tests first ensures we build what we intend to build,
 not what we accidentally implemented.
 
+### XIII. Documentation Skill Synchronization (NON-NEGOTIABLE)
+
+The `speck-knowledge` Claude Skill MUST be kept current with all Speck features,
+workflows, commands, and capabilities. Every feature that adds or modifies
+user-facing functionality MUST update the skill documentation before completion.
+
+**Rationale**: The `speck-knowledge` skill is the primary interface for Claude AI
+to understand and assist with Speck workflows. Outdated skill documentation leads
+to incorrect guidance, missing feature awareness, and degraded user experience
+when working with Claude on Speck projects. Just as the website serves human
+users (Principle XI), the skill serves AI assistance—both MUST stay synchronized
+with the evolving feature set.
+
+**Implementation Requirements**:
+
+- MANDATORY skill updates for features that:
+  - Add, modify, or remove slash commands (`/speck.*`)
+  - Change workflow phases or artifact structures (spec.md, plan.md, tasks.md)
+  - Modify template sections or mandatory/optional markers
+  - Add new file types or metadata conventions
+  - Change validation rules or quality gates
+  - Update constitutional principles affecting workflows
+  - Introduce new capabilities or configuration options
+- Skill update scope determination:
+  - During planning phase, identify affected skill sections
+  - Add skill update tasks to `tasks.md` for applicable features
+  - Document skill impact in `plan.md` under "Documentation Impact" section
+  - Internal-only changes (refactoring, performance optimizations) MAY skip
+    skill updates if AI-visible behavior is unchanged
+- Skill file location and structure:
+  - Skill file: `.claude/skills/speck-knowledge/SKILL.md`
+  - Contains YAML frontmatter with activation triggers
+  - Organized by capability: Feature Discovery, Template References, File
+    Interpretation, etc.
+  - Includes examples, error handling, and edge case guidance
+- Skill synchronization process:
+  - Updates MUST be made before feature completion
+  - Update affected sections to reflect new features or changed behavior
+  - Add new sections if feature introduces entirely new capabilities
+  - Update examples to include new feature usage
+  - Ensure activation triggers include new terminology or command names
+- Skill quality standards:
+  - Examples MUST be accurate and tested
+  - Section references MUST match current template structure
+  - Command guidance MUST match implemented slash command behavior
+  - File interpretation logic MUST align with actual artifact formats
+  - Error messages and recovery guidance MUST be current
+- Quality gate validation:
+  - Feature completion checklist MUST include: "Skill docs: ✅ speck-knowledge
+    updated and verified"
+  - Pull request template MUST include skill documentation verification
+  - `/speck.implement` workflow SHOULD prompt for skill updates if workflow or
+    artifact changes detected
+  - Manual verification: Ask Claude to explain new feature using skill—should
+    provide accurate guidance
+- Exceptions:
+  - Pure bug fixes with no workflow or output changes MAY skip skill updates
+  - Internal refactoring with no AI-visible changes MAY skip skill updates
+  - Experimental features marked unstable MAY defer skill updates until
+    stabilization (document deferral rationale in plan.md)
+- Backfill requirements:
+  - When principle adopted, conduct one-time backfill of recent features
+    (007-012) into skill
+  - Future features MUST update skill as part of normal completion criteria
+  - Skill version or last-updated metadata SHOULD be maintained in frontmatter
+
+**Skill Documentation Principle**: Claude AI assistance is only as good as its
+knowledge of Speck. Keeping the skill current ensures users receive accurate,
+helpful guidance when working with Claude on Speck projects. This is a
+user-facing quality requirement, not optional documentation.
+
 ## Upstream Sync Requirements
 
 ### Release-Based Synchronization
@@ -505,6 +575,8 @@ phases leads to ambiguous specs, incomplete plans, and implementation rework.
   feature completion
 - Implementation MUST update website documentation (if user-facing changes)
   before feature completion
+- Implementation MUST update speck-knowledge skill (if workflow/artifact
+  changes) before feature completion
 
 ### Testability
 
@@ -582,6 +654,8 @@ for existing artifacts.
 - All user-facing features MUST update website documentation (Principle XI)
 - All features MUST follow TDD workflow unless explicitly exempted (Principle
   XII)
+- All workflow/artifact changes MUST update speck-knowledge skill (Principle
+  XIII)
 
 **Versioning Policy**:
 
@@ -590,4 +664,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.7.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-01-22
+**Version**: 1.8.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-22
