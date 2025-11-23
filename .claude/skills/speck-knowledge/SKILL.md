@@ -30,6 +30,11 @@ description: |
 
 **Scope**: Read-only operations. This skill NEVER modifies files. For creating or updating files, guide users to appropriate slash commands.
 
+**Additional Resources**:
+- **[reference.md](reference.md)** - Detailed interpretation rules, file states, error formats
+- **[examples.md](examples.md)** - 9 usage examples showing skill in action
+- **[workflows.md](workflows.md)** - Advanced features (multi-repo, stacked PRs, worktrees)
+
 ---
 
 ## Plugin Path Setup
@@ -52,47 +57,22 @@ When users reference features, use **three-tier matching** to locate the correct
 
 #### Tier 1: Exact Match (Highest Priority)
 - Direct directory name match: `specs/005-speck-skill/`
-- Pattern: User provides full feature name
 
 #### Tier 2: Numeric Prefix Match (High Priority)
 - User provides feature number (e.g., "005", "5", "feature 003")
 - Zero-pad numbers to 3 digits: "5" → "005"
-- Match against pattern: `specs/NNN-*/` where NNN is the padded number
+- Match against pattern: `specs/NNN-*/`
 
 #### Tier 3: Fuzzy/Substring Match (Lower Priority)
 - User provides partial name (e.g., "skill", "auth", "plugin")
-- Search all features matching: `specs/[0-9][0-9][0-9]-*/`
 - Filter by case-insensitive substring match
 - If multiple matches, ask for clarification
 
-**Feature Number Padding Logic**:
-- "5" → "005"
-- "42" → "042"
-- "123" → "123"
+**Disambiguation**: When multiple features match, check conversation context first. If ambiguous, ask: "Did you mean: 003-user-auth or 012-auth-tokens?"
 
-**Disambiguation for Multiple Matches**:
-When multiple features match (e.g., "auth" matches both "003-user-auth" and "012-auth-tokens"):
-1. Check conversation context: Was a feature recently mentioned?
-2. If no context, list all matches and ask: "Did you mean: 003-user-auth or 012-auth-tokens?"
-3. Include brief descriptions from spec.md H1 title if available
+**Error Handling**: List all available features, use Levenshtein distance for typo suggestions, explain matching rules.
 
-**Error Handling for Missing Features**:
-When a feature cannot be found:
-1. List all available features in `specs/` directory
-2. Use Levenshtein distance to suggest similar features (typo tolerance)
-3. Explain matching rules: "Use full name (005-speck-skill) or just number (005)"
-
-**Example Queries**:
-- "What are the requirements for feature 005?" → Tier 2 match
-- "Tell me about the speck-skill" → Tier 3 match
-- "Show me 005-speck-skill spec" → Tier 1 match
-
-**Worktree Context**:
-When searching for features in a worktree environment:
-- Check if current directory is a Git worktree (via `git worktree list`)
-- Worktrees share the same `specs/` directory as main repository
-- Feature discovery works identically in worktrees and main repo
-- Worktree metadata in `.speck/worktrees/<branch>.json` associates branch with feature
+**Worktree Context**: Worktrees share the same `specs/` directory as main repository. Feature discovery works identically in worktrees and main repo.
 
 ---
 
@@ -106,151 +86,46 @@ Speck uses templates in `$PLUGIN_ROOT/templates/` to define expected structure f
 - Tasks template: `$PLUGIN_ROOT/templates/tasks-template.md`
 
 **When to Reference Templates**:
-- User asks "What should go in [section]?" → Extract HTML comments from template for that section
-- User asks "Does my [spec/plan/tasks] follow the template?" → Compare actual file against template (see Template Comparison below)
-- During file interpretation, validate structure against template
+- User asks "What should go in [section]?" → Extract HTML comments from template
+- User asks "Does my [spec/plan/tasks] follow the template?" → Compare against template (see [reference.md](reference.md) for workflow)
 
-**Template Structure Conventions**:
-Templates use consistent markdown patterns:
-- H1: `# Feature Specification: [FEATURE NAME]` (or Plan/Tasks)
-- H2: Major sections with optional annotations
-- H3: Subsections
-- HTML comments: Section purposes and guidelines
+**Template Structure**: Templates use consistent markdown patterns (H1/H2/H3) with HTML comments for section purposes and guidelines.
 
 ---
 
 ### 3. Section Annotation Patterns
 
-Templates and artifact files use inline annotations to indicate section requirements:
+**Summary**: Templates use inline annotations to indicate section requirements.
 
-**Mandatory Sections**:
-- Pattern: `## Section Name *(mandatory)*`
-- Detection regex: `/\*\(mandatory\)\*/`
-- Examples:
-  - `## User Scenarios & Testing *(mandatory)*`
-  - `## Requirements *(mandatory)*`
-  - `## Success Criteria *(mandatory)*`
+- **Mandatory sections**: `## Section Name *(mandatory)*`
+- **Conditional sections**: `## Section Name *(include if...)*`
+- **HTML comments**: Provide guidance (ACTION REQUIRED, IMPORTANT, general purpose)
 
-**Conditional Sections**:
-- Pattern: `## Section Name *(include if...)*`
-- Detection regex: `/\*(include if|OPTIONAL).*\*/`
-- Example: `### Key Entities *(include if feature involves data)*`
-
-**HTML Comments for Guidance**:
-Templates include HTML comments with three types:
-
-1. **ACTION REQUIRED** - User must fill this section:
-   ```markdown
-   <!--
-     ACTION REQUIRED: Fill them out with the right requirements.
-   -->
-   ```
-
-2. **IMPORTANT** - Critical guidance:
-   ```markdown
-   <!--
-     IMPORTANT: User stories should be PRIORITIZED as user journeys.
-   -->
-   ```
-
-3. **General purpose** - Section explanation:
-   ```markdown
-   <!--
-     This section explains what the feature should accomplish.
-   -->
-   ```
-
-**Extracting Section Purposes**:
-When user asks "What goes in Requirements?":
-1. Load relevant template ($PLUGIN_ROOT/templates/spec-template.md)
-2. Find the Requirements section
-3. Extract HTML comment immediately following the header
-4. Parse first line as section purpose
-5. Present to user with actionable guidance
+**For full details**: See [reference.md](reference.md#section-annotation-patterns)
 
 ---
 
 ### 4. File State Classification
 
-Every artifact file (spec.md, plan.md, tasks.md) can be in one of five states:
+Every artifact file can be in one of **five states**:
 
-#### State 1: MISSING
-- **Detection**: File does not exist at expected path
-- **Severity**: ERROR
-- **Recovery Guidance**:
-  - spec.md missing → "Run `/speck.specify 'Feature description'` to create spec"
-  - plan.md missing → "Run `/speck.plan` to generate plan"
-  - tasks.md missing → "Run `/speck.tasks` to generate tasks"
+1. **MISSING** - File doesn't exist → ERROR
+2. **EMPTY** - File exists but has no content → ERROR
+3. **MALFORMED** - Invalid markdown/structure → WARNING (extract partial info)
+4. **INCOMPLETE** - Missing mandatory sections → WARNING (calculate completeness %)
+5. **VALID** - All mandatory sections present → SUCCESS
 
-#### State 2: EMPTY
-- **Detection**: File exists but has no content (size 0 bytes or only whitespace)
-- **Severity**: ERROR
-- **Recovery Guidance**: Same as MISSING
+**Graceful Degradation**: For MALFORMED and INCOMPLETE states, extract maximum possible information, return completeness score, list warnings, provide recovery guidance.
 
-#### State 3: MALFORMED
-- **Detection**: File has content but cannot be parsed (invalid markdown, corrupted structure)
-- **Severity**: WARNING
-- **Behavior**: Extract whatever partial information is available
-- **Recovery Guidance**: "File structure is invalid. Manually fix markdown or regenerate with appropriate `/speck.*` command"
-
-#### State 4: INCOMPLETE
-- **Detection**: Valid structure but missing mandatory sections
-- **Severity**: WARNING
-- **Behavior**: Parse available sections, warn about missing mandatory sections
-- **Recovery Guidance**:
-  - spec.md incomplete → "Run `/speck.clarify` to add missing sections"
-  - plan.md incomplete → "Run `/speck.clarify` for missing research, or continue filling manually"
-  - tasks.md incomplete → "Complete tasks or regenerate with `/speck.tasks`"
-- **Report**: List missing mandatory sections, calculate completeness percentage
-
-#### State 5: VALID
-- **Detection**: All mandatory sections present, proper structure
-- **Severity**: SUCCESS
-- **Behavior**: Extract and return all data
-
-**Graceful Degradation**:
-For MALFORMED and INCOMPLETE states:
-1. Extract maximum possible information from available sections
-2. Return completeness score (0-100%)
-3. List warnings with specific missing/broken sections
-4. Provide actionable recovery guidance
-5. Continue answering user's question with partial data + warnings
-
-**Common Malformation Patterns**:
-- Missing H1 title
-- Unclosed code blocks
-- Broken cross-file references
-- Invalid subsection formats (e.g., acceptance scenarios missing Given/When/Then)
-- Inconsistent heading levels (H2 → H4 skip)
+**For full details**: See [reference.md](reference.md#file-state-classification)
 
 ---
 
 ### 5. Error Message Format
 
-When reporting issues with files, use this structured format:
+**Summary**: Use structured format with severity, context, and recovery guidance.
 
-```
-[SEVERITY]: Brief Title
-┌─────────────────────────────────────────┐
-│ Descriptive explanation of issue        │
-├─────────────────────────────────────────┤
-│ Context: What's missing/wrong           │
-├─────────────────────────────────────────┤
-│ Recovery: Specific command or action    │
-└─────────────────────────────────────────┘
-
-[Optional: Available data summary]
-[Optional: Completeness percentage]
-```
-
-**Severity Levels**:
-- **ERROR**: Blocking issue (file missing, empty, cannot parse)
-- **WARNING**: Non-blocking issue (missing optional sections, malformed subsections)
-- **INFO**: Informational (unresolved [NEEDS CLARIFICATION] markers)
-
-**Example Error Messages**:
-
-**Missing File**:
+Example:
 ```
 ERROR: Spec Not Found
 ┌──────────────────────────────────────────────────┐
@@ -260,1023 +135,100 @@ ERROR: Spec Not Found
 └──────────────────────────────────────────────────┘
 ```
 
-**Incomplete Spec**:
-```
-WARNING: Incomplete Specification
-┌──────────────────────────────────────────────────┐
-│ spec.md is missing mandatory sections            │
-├──────────────────────────────────────────────────┤
-│ Missing:                                         │
-│ - Success Criteria (mandatory)                   │
-│ - User Scenarios & Testing (mandatory)           │
-├──────────────────────────────────────────────────┤
-│ Recovery: Run /speck.clarify to fill sections    │
-└──────────────────────────────────────────────────┘
+**Severity Levels**: ERROR (blocking), WARNING (non-blocking), INFO (informational)
 
-Found: 5 functional requirements, 2 key entities
-Completeness: 40% (2/5 mandatory sections)
-```
+**For full details and examples**: See [reference.md](reference.md#error-message-format)
 
 ---
 
 ### 6. Conversation Context Tracking
 
-Maintain session context to resolve implicit feature references:
-
 **Track**:
-- **Recently mentioned features**: Last 5 features discussed (with timestamps)
-- **Current feature context**: The feature currently being discussed
-- **Implicit references**: Map pronouns ("it", "that", "the spec") to features
+- Recently mentioned features (last 5)
+- Current feature context
+- Implicit references ("it", "that", "the spec")
 
-**Usage**:
-1. User: "Tell me about feature 005"
-   - Store "005-speck-skill" as current context
-
-2. User: "What are the requirements?" (no explicit feature reference)
-   - Resolve to "005-speck-skill" via current context
-   - Read specs/005-speck-skill/spec.md
-
-3. User: "What about the plan?"
-   - Resolve "the plan" to specs/005-speck-skill/plan.md
-
-**Context Reset**:
-- When user explicitly mentions a different feature
-- After 10+ turns without feature mention (context becomes stale)
-- When user starts a new topic (clear shift in conversation)
-
-**Disambiguation**:
-If context is ambiguous (multiple features mentioned recently):
-- Ask: "Which feature? You recently mentioned 003-user-auth and 005-speck-skill."
+**Usage**: Resolve implicit references to features discussed earlier in conversation. Reset context when user explicitly mentions different feature or after 10+ turns.
 
 ---
 
 ### 7. Multi-Repo Mode Detection
 
-When interpreting Speck artifacts, determine if the project is in multi-repo mode:
+**Summary**: Detect if project uses multi-repo mode via `.speck/root` symlink.
 
-**Detection Method**:
-- Check for `.speck/root` symlink in `.speck/` directory
-- If symlink exists and points to parent directory → multi-repo child repo
-- If no symlink → single-repo mode
+**Key Concepts**:
+- **Detection**: Check for `.speck/root` symlink → multi-repo child repo
+- **Child repos**: Share specs/ directory, have local plan.md/tasks.md
+- **Root repo**: Contains shared specs/, manages constitution
 
-**Child Repo Context**:
-When in child repo:
-- Specs MAY reference parent specs via `**Parent Spec**` field in spec.md metadata
-- Feature numbers MUST be coordinated across all child repos (no duplicates)
-- Constitution lives in root repo (`.speck/constitution.md`), child repos may have their own
-- Plan and tasks artifacts (plan.md, tasks.md) are per-repo (not shared)
+**Query Examples**:
+- "Is this a multi-repo setup?" → Check for symlink
+- "What's the parent spec?" → Read metadata from spec.md
 
-**Root Repo Context**:
-- Contains shared `specs/` directory with feature specifications
-- Child repos symlink via `.speck/root` pointing to root repo directory
-- Manages spec.md files (shared across child repos)
-
-**Symlink Structure**:
-```bash
-# Child repo structure
-.speck/
-  root -> ../../  # Points to shared specs root directory
-
-# Resolves to shared specs
-specs/ -> (via symlink resolution)
-```
-
-**User Query Examples**:
-- "Is this a multi-repo setup?" → Check for `.speck/root` symlink
-- "What's the parent spec?" → Read `**Parent Spec**` from spec.md metadata
-- "Where's the constitution?" → Check local `.speck/constitution.md` or follow symlink to root
-
-**Multi-Repo + Stacked PRs**:
-When combining both modes:
-- Each child repo MAY use stacked PRs independently
-- Branch naming remains per-repo: `NNN-feature-name` or custom naming
-- Feature numbers MUST still be unique across all child repos
-- `.speck/branches.json` lives in each child repo (not shared)
+**For full details**: See [workflows.md](workflows.md#multi-repo-mode-detection)
 
 ---
 
 ### 8. Stacked PR Mode Detection
 
-Features MAY use stacked PR workflow where each user story or logical unit gets its own branch/PR:
+**Summary**: Detect stacked PR workflow via `.speck/branches.json` or plan.md metadata.
 
-**Detection Method**:
-- Check for `.speck/branches.json` file in repository root
-- Check for `**Workflow Mode**: stacked-pr` in plan.md metadata
-- If present → feature uses stacked PRs
+**Key Concepts**:
+- **Detection**: Check for `.speck/branches.json` or `**Workflow Mode**: stacked-pr` in plan.md
+- **Branch metadata**: Tracks branch dependencies, status, PR numbers
+- **Freeform naming**: Supports any branch naming convention (tool-agnostic)
 
-**Branch Metadata Structure** (`.speck/branches.json`):
-```json
-{
-  "schemaVersion": "1.0.0",
-  "branches": [
-    {
-      "branchName": "007-multi-repo",
-      "baseBranch": "main",
-      "specId": "007-multi-repo-monorepo-support",
-      "prNumber": 123,
-      "status": "active",
-      "createdAt": "2025-11-18T10:00:00Z",
-      "updatedAt": "2025-11-18T10:00:00Z"
-    },
-    {
-      "branchName": "nprbst/db-layer",
-      "baseBranch": "007-multi-repo",
-      "specId": "007-multi-repo-monorepo-support",
-      "status": "active",
-      "createdAt": "2025-11-19T14:30:00Z",
-      "updatedAt": "2025-11-19T14:30:00Z"
-    }
-  ],
-  "specIndex": {
-    "007-multi-repo-monorepo-support": ["007-multi-repo", "nprbst/db-layer"]
-  }
-}
-```
+**Query Examples**:
+- "Which branches exist for this feature?" → Read branches.json
+- "What's the dependency order?" → Parse baseBranch chain
 
-**Branch Status Values**:
-- `active`: Branch exists, work in progress
-- `submitted`: PR created, under review
-- `merged`: PR merged, branch may still exist
-- `abandoned`: Branch/PR abandoned
-
-**Naming Conventions**:
-- Supports **freeform naming** (not limited to `NNN-feature-usX` pattern)
-- Examples: `007-multi-repo`, `nprbst/db-layer`, `feature/authentication`
-- Tool-agnostic: Works with Graphite, GitHub Stack, or manual git workflow
-
-**Branch-Aware Task Generation**:
-- Command: `/speck.tasks --branch <name> --stories <US1,US2>`
-- Generates subset of tasks for specific branch
-- Output: `tasks-<branch-name>.md` or `tasks.md` (if no --branch flag)
-- Tasks filtered by user story labels matching `--stories` parameter
-
-**User Query Examples**:
-- "Which branches exist for this feature?" → Read `.speck/branches.json`, filter by `specId`
-- "What's the dependency order?" → Parse `baseBranch` chain (e.g., main → 007-multi-repo → nprbst/db-layer)
-- "Is this using stacked PRs?" → Check workflow mode in plan.md or presence of branches.json
-
-**Interrupt-Resume PR Suggestion Pattern**:
-When creating branches, `/speck.branch create` may exit with code 2 (suggestion pending):
-1. Script outputs JSON to stderr: `{"type": "pr-suggestion", "branch": "...", "suggestedTitle": "...", ...}`
-2. Claude Code agent prompts user: "Create PR now? (yes/no/skip)"
-3. Re-invokes with `--create-pr` or `--skip-pr-prompt` based on user response
-4. Allows workflow customization without blocking automation
+**For full details**: See [workflows.md](workflows.md#stacked-pr-mode-detection)
 
 ---
 
 ### 9. Virtual Command Architecture
 
-Speck uses virtual commands for sub-100ms execution via Claude Code hooks:
+**Summary**: Speck uses hooks for sub-100ms command execution.
 
-**Virtual Command Pattern**:
-- Commands appear as `/speck.*` slash commands in Claude Code
-- Actual implementation in `.speck/scripts/*.ts` and hook handlers
-- Hooks handle prerequisite checking and context pre-loading
-- Example commands: `/speck.specify`, `/speck.plan`, `/speck.tasks`, `/speck.branch`
+**Key Concepts**:
+- **PreToolUse hook**: Intercepts commands, routes to CLI handler
+- **PrePromptSubmit hook**: Pre-loads context, validates prerequisites
+- **Dual-mode**: Works in Claude Code (hooks) and CLI (`bun run`)
+- **Performance**: <100ms latency via prerequisite caching
 
-**Hook Types**:
+**Query Examples**:
+- "Why are commands so fast?" → Explain hook-based architecture
+- "What's the virtual command pattern?" → Explain hooks + dual-mode
 
-1. **PreToolUse hook**: Runs when virtual command is invoked (before tool execution)
-   - Intercepts commands matching pattern `speck-*` (e.g., `speck-env`, `speck-branch`)
-   - Reads JSON from stdin: `{"tool_input": {"command": "speck-branch list"}}`
-   - Routes to unified CLI handler (`speck.ts`)
-   - Returns JSON to stdout with `permissionDecision: "allow"` and transformed command
-   - Enables path-independent command execution
-
-2. **PrePromptSubmit hook**: Runs on every user message (before slash command expansion)
-   - Detects if user is in feature directory
-   - Runs prerequisite checks automatically
-   - Pre-loads context and injects into prompt as markdown comment
-   - Enables sub-100ms command execution (prerequisites already satisfied)
-   - Slash commands parse injected context directly (no manual `check-prerequisites`)
-
-**Command Registry Pattern**:
-Centralized registry maps command names to handlers:
-```typescript
-// .speck/scripts/commands/index.ts
-export const registry: CommandRegistry = {
-  "env": { handler: envHandler, description: "Check environment" },
-  "branch": { handler: branchHandler, description: "Manage stacked branches" }
-}
-```
-
-**Dual-Mode Execution**:
-Commands work identically in two modes:
-1. **Claude Code mode**: Invoked via hooks, JSON stdin/stdout
-2. **CLI mode**: Invoked via `bun run .speck/scripts/<name>.ts`, terminal I/O
-
-Detection logic:
-```typescript
-const isHookMode = args.includes('--hook') || !process.stdin.isTTY
-```
-
-**Performance Characteristics**:
-- Hook routing: <100ms latency (SC-003 from feature 010)
-- Prerequisite caching: 30% faster execution via PrePromptSubmit context injection
-- No manual prerequisite checks needed in slash commands (pre-validated)
-
-**When Explaining Commands**:
-- Commands execute instantly because hooks pre-validate context
-- No need for manual directory checking or path resolution
-- Works in both Claude Code and direct CLI (`bun run`)
-
-**User Query Examples**:
-- "Why are commands so fast?" → Explain hook-based prerequisite checking and context injection
-- "What's the virtual command pattern?" → Explain hooks + dual-mode execution
-- "How do slash commands work?" → Explain PreToolUse routing and PrePromptSubmit context loading
+**For full details**: See [workflows.md](workflows.md#virtual-command-architecture)
 
 ---
 
 ### 10. Worktree Mode Detection
 
-Features MAY use Git worktrees for isolated parallel development:
+**Summary**: Detect Git worktree integration for isolated parallel development.
 
-**Detection Method**:
-- Check for `.speck/config.json` with `worktree.enabled: true`
-- Check for `.speck/worktrees/<branch-name>.json` metadata files
-- Verify Git version supports worktrees (Git 2.5+)
+**Key Concepts**:
+- **Detection**: Check `.speck/config.json` for `worktree.enabled: true`
+- **Metadata**: `.speck/worktrees/<branch>.json` tracks worktree associations
+- **File rules**: Configuration files copied, dependencies symlinked
+- **IDE auto-launch**: VSCode/Cursor/JetBrains launch automatically
 
-**Worktree Configuration** (`.speck/config.json`):
-```json
-{
-  "worktree": {
-    "enabled": true,
-    "autoLaunchIDE": true,
-    "preferredIDE": "vscode",
-    "installDependencies": true,
-    "branchPrefix": "specs/"
-  },
-  "files": {
-    "rules": [
-      {"pattern": ".env*", "action": "copy"},
-      {"pattern": "*.config.{js,ts}", "action": "copy"},
-      {"pattern": "node_modules", "action": "symlink"},
-      {"pattern": ".bun", "action": "symlink"}
-    ]
-  }
-}
-```
+**Query Examples**:
+- "Is this in a worktree?" → Check metadata or git worktree list
+- "What's the worktree config?" → Read config.json
 
-**Worktree Metadata** (`.speck/worktrees/<branch-name>.json`):
-```json
-{
-  "branchName": "012-worktree-integration",
-  "worktreePath": "../speck-012-worktree-integration",
-  "createdAt": "2025-11-22T10:00:00Z",
-  "status": "active"
-}
-```
-
-**Worktree Naming Logic**:
-Path calculation based on repository layout:
-- If repo directory name = repo name: `<repo-name>-<branch-name>`
-- If repo directory name = branch name: `<branch-name>`
-- Example: Repo at `/projects/speck/`, branch `012-worktree` → worktree at `/projects/speck-012-worktree/`
-
-**File Copy vs Symlink Rules**:
-Configuration files copied (isolated per worktree):
-- `.env*` files (environment variables)
-- `*.config.{js,ts}` (build configs)
-
-Dependencies symlinked (shared across worktrees):
-- `node_modules/` (npm/yarn/pnpm packages)
-- `.bun/` (Bun cache)
-
-**Worktree Lifecycle**:
-
-1. **Creation**: `/speck.specify` with worktree flags OR manual `git worktree add`
-   - `--no-worktree`: Skip worktree creation
-   - `--no-ide`: Skip IDE auto-launch
-   - `--no-deps`: Skip dependency installation
-   - `--reuse-worktree`: Reuse existing worktree if present
-
-2. **Update**: Metadata tracks feature association in `.speck/worktrees/<branch>.json`
-
-3. **Cleanup**: Worktree removal cleans up metadata
-   - `speck worktree remove <branch>`: Remove worktree (with confirmation)
-   - `speck worktree prune`: Cleanup stale worktree references
-
-**IDE Auto-Launch**:
-After worktree creation:
-- Copies config files (`.env`, `*.config.js`)
-- Symlinks dependencies (`node_modules`)
-- Installs dependencies with progress indicator (if `installDependencies: true`)
-- Launches IDE pointing to worktree path
-- Supported IDEs: VSCode (`code`), Cursor (`cursor`), JetBrains (`idea`/`webstorm`)
-
-**User Query Examples**:
-- "Is this in a worktree?" → Check current directory path for worktree metadata or Git worktree list
-- "What's the worktree config?" → Read `.speck/config.json` worktree section
-- "Which worktrees exist?" → List `.speck/worktrees/*/metadata.json` files or `git worktree list`
-- "How are files managed?" → Explain copy vs symlink rules from config.json
+**For full details**: See [workflows.md](workflows.md#worktree-mode-detection)
 
 ---
 
-## Artifact-Specific Interpretation
+## Artifact Interpretation Quick Reference
 
-### spec.md Interpretation
+**For detailed artifact interpretation** (metadata blocks, mandatory sections, parsing rules), see [reference.md](reference.md#artifact-specific-interpretation).
 
-**H1 Title Format**:
-- Pattern: `# Feature Specification: [FEATURE NAME]`
-- Extract feature name from H1
-
-**Metadata Block**:
-Located immediately after H1, typically:
-```
-**Feature Branch**: 005-speck-skill
-**Created**: YYYY-MM-DD
-**Status**: Draft/Reviewed/Approved
-**Input**: Natural language feature description
-```
-
-**Multi-Repo Metadata** (optional, only in child repos):
-```
-**Parent Spec**: [007-multi-repo-monorepo-support](link)
-```
-- Indicates this feature builds on or extends a parent feature
-- Used in multi-repo child repositories to reference shared parent spec
-- Link typically points to spec in shared specs/ directory
-
-**Mandatory Sections**:
-
-#### User Scenarios & Testing
-- Section header: `## User Scenarios & Testing *(mandatory)*`
-- Contains H3 subsections following pattern: `### User Story N - [Title] (Priority: PN)`
-- Priority values: P1 (highest) through P4 (lowest)
-- Each user story includes:
-  - Independent test description
-  - Acceptance scenarios (Given/When/Then format)
-- Edge cases subsection: `### Edge Cases`
-
-#### Requirements
-- Section header: `## Requirements *(mandatory)*`
-- Subsection: `### Functional Requirements`
-  - Format: `**FR-XXX**: Description`
-  - Numbering: FR-001, FR-002, etc.
-- Conditional subsection: `### Key Entities *(include if feature involves data)*`
-  - Lists data entities with fields and relationships
-
-#### Success Criteria
-- Section header: `## Success Criteria *(mandatory)*`
-- Subsection: `### Measurable Outcomes`
-  - Format: `**SC-XXX**: Metric/measurement`
-  - Must be measurable (percentages, counts, yes/no)
-  - Technology-agnostic (no implementation details)
-
-**Optional Sections**:
-- `## Clarifications`: Q&A from `/speck.clarify` sessions
-- `## Assumptions`: Project assumptions
-- `## Edge Cases`: Already mentioned in User Scenarios
-
-**[NEEDS CLARIFICATION] Markers**:
-- Pattern: `[NEEDS CLARIFICATION]` or `[NEEDS CLARIFICATION: specific question]`
-- Indicates unresolved questions in spec
-- Guidance: "Run `/speck.clarify` to resolve clarifications before planning"
-
-**Handling Missing/Incomplete spec.md**:
-- **MISSING**: "Spec not found. Run `/speck.specify 'Feature description'`"
-- **EMPTY**: Same as MISSING
-- **MALFORMED**: Extract partial sections, warn about structure issues
-- **INCOMPLETE**: List missing mandatory sections with completeness percentage
-
-**Graceful Degradation Example**:
-If spec.md has Requirements but missing Success Criteria:
-- Return available FR-XXX items
-- Warn: "Missing Success Criteria (mandatory) - 66% complete"
-- Suggest: "Run `/speck.clarify` to add Success Criteria"
-
----
-
-### plan.md Interpretation
-
-**H1 Title Format**:
-- Pattern: `# Implementation Plan: [FEATURE]`
-
-**Metadata Block**:
-```
-**Branch**: feature-branch-name
-**Date**: YYYY-MM-DD
-**Spec**: [spec.md](spec.md)
-**Input**: Feature specification from /specs/NNN-feature/spec.md
-```
-
-**Workflow Mode Metadata** (optional):
-```
-**Workflow Mode**: stacked-pr
-```
-or
-```
-**Workflow Mode**: single-branch
-```
-- `stacked-pr`: Feature uses stacked PR workflow with multiple branches
-- `single-branch`: Traditional single branch workflow (default if not specified)
-- When `stacked-pr`, expect `.speck/branches.json` in repository root
-
-**Mandatory Sections**:
-
-#### Summary
-- Section header: `## Summary`
-- Concise description of primary requirement + technical approach
-- Typically 2-3 sentences
-
-#### Technical Context
-- Section header: `## Technical Context`
-- Fields (in table or list format):
-  - **Language/Version**: Programming language and version
-  - **Primary Dependencies**: Key libraries/frameworks
-  - **Storage**: Database or file-based storage approach
-  - **Testing**: Testing strategy
-  - **Target Platform**: Runtime environment
-  - **Performance Goals**: Latency, throughput, etc.
-  - **Constraints**: Technical limitations
-  - **Scale/Scope**: Expected size/complexity
-
-**Explaining Scope Boundaries**:
-When user asks "What's in scope?" or "What's out of scope?":
-- Extract `## In Scope` and `## Out of Scope` sections (if present)
-- If missing, extract from Summary or Technical Context constraints
-- Explain decision rationale
-
-#### Constitution Check
-- Section header: `## Constitution Check`
-- References constitutional principles from `$PLUGIN_ROOT/memory/constitution.md`
-- Format per principle:
-  ```
-  ### Principle N: [Name]
-   **PASS/VIOLATION** - Explanation
-  ```
-- If violations exist, must have justification in Complexity Tracking section
-
-#### Project Structure
-- Section header: `## Project Structure`
-- Two subsections:
-  - `### Documentation (this feature)`: Shows specs/NNN-feature/ structure
-  - `### Source Code (repository root)`: Shows actual implementation file structure
-
-**Optional Sections**:
-
-#### Phase 0: Research & Unknowns
-- Contains research tasks with `[NEEDS CLARIFICATION]` markers
-- Output artifact: research.md
-
-#### Phase 1: Design & Contracts
-- Prerequisites: research.md complete
-- Subsections:
-  - `### Data Model (data-model.md)`
-  - `### API Contracts (contracts/)`
-  - `### Quickstart Guide (quickstart.md)`
-
-#### Complexity Tracking
-- Only present if Constitution Check has violations
-- Justifies complexity with decision rationale
-
-**Parsing Constitution Check**:
-Extract principle references:
-- Principle number and name
-- PASS/VIOLATION status
-- Justification text
-
-**Handling Missing/Incomplete plan.md**:
-- **MISSING**: "Plan not found. Run `/speck.plan` to generate implementation plan"
-- **INCOMPLETE**: Detect missing phases or [NEEDS CLARIFICATION] markers
-  - If Phase 0 incomplete: "Run `/speck.clarify` to resolve research unknowns"
-  - If Phase 1 incomplete: "Continue filling design artifacts or run `/speck.clarify`"
-
----
-
-### tasks.md Interpretation
-
-**YAML Frontmatter**:
-Located at top of file:
-```yaml
----
-description: "Task list for [Feature Name] implementation"
----
-```
-
-**H1 Title Format**:
-- Pattern: `# Tasks: [FEATURE NAME]`
-
-**Header Block**:
-Immediately after H1:
-```
-**Input**: Design documents from /specs/NNN-feature/
-**Prerequisites**: plan.md (required), spec.md (required), research.md, data-model.md, contracts/
-```
-
-**Format Explanation Section**:
-- Section header: `## Format: [ID] [P?] [Story] Description`
-- Explains task ID format:
-  - `[ID]`: Task identifier (T001, T002, IMPL-001, etc.)
-  - `[P]`: Optional parallelizable marker (can run concurrently)
-  - `[Story]`: User story label (US1, US2, etc.)
-  - Description with exact file paths
-
-**Task Format Parsing**:
-Each task follows checkbox format:
-```markdown
-- [ ] T001 [P] [US1] Description of task with file path
-```
-
-**Task Status Detection**:
-- Unchecked `- [ ]`: **pending**
-- Checked `- [x]` or `- [X]`: **completed**
-- Text marker "in_progress": **in_progress** (if explicitly marked)
-
-**Phase Structure**:
-Tasks are grouped into phases:
-- `## Phase 1: Setup` (or Phase N: Purpose Name)
-- Each phase ends with **Checkpoint**: marker explaining completion criteria
-
-**Common Phases**:
-1. **Phase 1: Setup** - Project initialization
-2. **Phase 2: Foundational** - Blocking prerequisites
-3. **Phase 3+: User Stories** - One phase per user story (US1, US2, etc.)
-4. **Final Phase: Polish** - Cross-cutting concerns, validation
-
-**Task Dependencies**:
-- Section: `## Dependencies & Execution Order`
-- Explains:
-  - Phase dependencies (which phases must complete before others)
-  - User story dependencies (which stories are independent)
-  - Within-story task order
-  - Parallel opportunities ([P] tasks)
-
-**Identifying Available Work**:
-When user asks "What can I work on next?":
-1. Find current phase (first phase with pending tasks)
-2. Check dependencies are satisfied
-3. List pending tasks with satisfied dependencies
-4. If task marked [P], note it can run in parallel with other [P] tasks
-
-**Example Task Counting**:
-User: "How many tasks are completed?"
-- Count all lines matching `- [x]` or `- [X]`
-- Count total tasks (all lines matching `- [ ]` or `- [x]`)
-- Calculate percentage: completed / total
-
-**Handling Missing/Incomplete tasks.md**:
-- **MISSING**: "Tasks not found. Run `/speck.tasks` to generate task breakdown"
-- **INCOMPLETE**: Count pending vs completed tasks, identify current phase
-
----
-
-## Template Comparison Workflow
-
-When user asks to compare files against templates (e.g., "Does my spec follow the template?"):
-
-### Step 1: Load Both Files
-1. Identify file type from user query (spec/plan/tasks)
-2. Load template: `$PLUGIN_ROOT/templates/{type}-template.md`
-3. Load actual file: `specs/NNN-feature/{type}.md`
-
-### Step 2: Extract Sections
-Parse both files to extract:
-- Section headers (H2, H3)
-- Section annotations (mandatory/optional markers)
-- Section order (sequence of headers)
-
-**Section Extraction Pattern**:
-- Use regex: `/^(#{1,6})\s+(.+?)\s*(\*\(.*?\))?$/`
-- Capture: heading level, title, annotation
-
-### Step 3: Structural Comparison
-Compare extracted sections:
-
-**Check for Missing Mandatory Sections**:
-- For each template section with `*(mandatory)*` annotation
-- Verify actual file has matching H2/H3 header
-- If missing, mark as ERROR
-
-**Check for Out-of-Order Sections**:
-- Compare section sequence between template and actual
-- If major sections (H2) are reordered, mark as WARNING
-- Minor reordering of H3 subsections is acceptable
-
-**Check for Wrong Heading Levels**:
-- Verify H2 sections in template remain H2 in actual
-- Verify H3 subsections remain H3
-- If levels mismatch (H2 → H3 or vice versa), mark as WARNING
-
-### Step 4: Content Completeness
-Check section content:
-
-**Detect Empty Sections**:
-- Section header present but no content between header and next header
-- Mark as WARNING: "Section [name] is empty"
-
-**Detect Placeholder Markers**:
-- Search for: `[FEATURE]`, `[DATE]`, `TODO`, `[NEEDS CLARIFICATION]`
-- Mark as INFO or WARNING depending on marker type
-
-### Step 5: Extract Section Purposes
-For each section in template:
-- Find HTML comment immediately after header or within section
-- Parse comment for ACTION REQUIRED, IMPORTANT keywords
-- Extract first line as section purpose
-- Store purpose for explanation if user asks
-
-### Step 6: Generate Comparison Report
-
-**Report Format**:
-```
-Template Comparison: specs/NNN-feature/spec.md vs spec-template.md
-┌──────────────────────────────────────────────────────────────┐
-│ Structure: [% match]                                         │
-├──────────────────────────────────────────────────────────────┤
-│ ✅ Present: User Scenarios & Testing, Requirements           │
-│ ❌ Missing: Success Criteria (mandatory)                     │
-│ ⚠️  Empty: Assumptions (optional, but header present)        │
-│ ⚠️  Out of order: Edge Cases (expected after Requirements)   │
-├──────────────────────────────────────────────────────────────┤
-│ Completeness: 80% (4/5 mandatory sections)                  │
-├──────────────────────────────────────────────────────────────┤
-│ Recommendations:                                             │
-│ 1. Add ## Success Criteria *(mandatory)* section            │
-│ 2. Fill Assumptions section or remove empty header          │
-│ 3. Move Edge Cases after Requirements                       │
-└──────────────────────────────────────────────────────────────┘
-```
-
-**Calculate Completeness Percentage**:
-- Count mandatory sections present in actual file
-- Divide by total mandatory sections in template
-- Multiply by 100
-
-**Specific Fix Suggestions**:
-For each issue:
-- **Missing mandatory section**: "Add ## [Section Name] *(mandatory)* section"
-- **Empty section**: "Fill [Section Name] with content or remove header"
-- **Wrong order**: "Move [Section Name] to appear after [Previous Section]"
-- **Placeholder markers**: "Replace [FEATURE] with actual feature name"
-
-### Step 7: Explain Section Purposes
-If user asks "What should go in [Section Name]?":
-1. Load template for file type
-2. Find the section header
-3. Extract HTML comment
-4. Present purpose and guidelines:
-   ```
-   Purpose of Success Criteria section:
-   "Define measurable outcomes that indicate feature completion. Each criterion should have a specific metric (SC-001, SC-002, etc.) and be technology-agnostic."
-
-   Guidelines:
-   - Use format: **SC-XXX**: Description
-   - Must be measurable (percentages, counts, yes/no)
-   - No implementation details
-   ```
-
-### Template Version Tolerance
-When comparing files to templates:
-- **Ignore**: Minor formatting differences (extra whitespace, comment style variations)
-- **Focus on**: Structural completeness (mandatory sections present)
-- **Warn but don't error**: If template has new sections not in user's file (template may have been updated)
-- Explain: "Template includes new optional section [Name]. Consider adding if relevant."
-
----
-
-## Edge Case Handling
-
-### Non-Existent Feature References
-User references feature that doesn't exist:
-1. List all available features in `specs/` directory
-2. Use Levenshtein distance to suggest similar features (typo tolerance):
-   - Distance ≤ 2: "Did you mean [feature]?"
-   - Distance > 2: List all features
-3. Explain matching rules: "Use full name (005-speck-skill), number (005), or partial name (skill)"
-
-**Example**:
-```
-User: "Tell me about feature 006"
-Response:
-  Feature "006" not found in specs/
-
-  Did you mean:
-  - 005-speck-skill (Speck Workflow Skill)
-
-  Available features:
-    001-speck-core-project
-    002-claude-plugin-packaging
-    005-speck-skill
-
-  Tip: Use full name (e.g., "005-speck-skill") or just number ("005").
-```
-
-### Invalid File Type Requests
-User asks about file type that doesn't exist:
-```
-User: "Show me the architecture.md for feature 005"
-Response:
-  File type "architecture.md" is not a standard Speck artifact.
-
-  Valid file types:
-  - spec.md: Feature specification
-  - plan.md: Implementation plan
-  - tasks.md: Task breakdown
-  - research.md: Phase 0 research (if exists)
-  - data-model.md: Entity definitions (if exists)
-  - contracts/: API specifications (if exists)
-
-  Did you mean plan.md (contains architecture decisions)?
-```
-
-### Ambiguous Feature Names
-Multiple features match partial name:
-```
-User: "What's in the auth spec?"
-Response:
-  Multiple features match "auth":
-  - 003-user-auth: User Authentication System
-  - 012-auth-tokens: OAuth Token Management
-
-  Which one? Please specify by number (003 or 012) or full name.
-```
-
-### Multi-Feature Conversation Handling
-User discusses multiple features in one session:
-1. Track recently mentioned features (last 5)
-2. When user asks question without explicit feature reference:
-   - Check current context (most recent feature)
-   - If context is clear, use it
-   - If ambiguous (2+ features mentioned recently), ask for clarification
-
-**Example**:
-```
-User: "Compare the requirements between 003 and 005"
-[System stores both features in context]
-
-User: "What about the success criteria?"
-Response: "Which feature? You recently mentioned 003-user-auth and 005-speck-skill."
-```
-
-### Malformed File Graceful Degradation
-File exists but has parsing issues:
-1. Attempt to extract partial information:
-   - Parse individual sections independently
-   - Skip unparseable sections but continue with others
-2. Report what was successfully extracted
-3. Warn about issues:
-   ```
-   ⚠️ WARNING: File Partially Malformed
-   ┌──────────────────────────────────────────────────┐
-   │ specs/004-feature/spec.md has structural issues  │
-   ├──────────────────────────────────────────────────┤
-   │ Successfully extracted:                          │
-   │ - User Scenarios (2 stories)                     │
-   │ - Requirements (5 functional requirements)       │
-   │                                                  │
-   │ Could not parse:                                 │
-   │ - Success Criteria (unclosed code block)         │
-   ├──────────────────────────────────────────────────┤
-   │ Partial data follows. Fix markdown errors.       │
-   └──────────────────────────────────────────────────┘
-
-   Available Requirements:
-   FR-001: ...
-   FR-002: ...
-   ```
-
----
-
-## Usage Examples
-
-### Example 1: Ask About Requirements
-```
-User: What are the functional requirements for feature 005?
-
-Skill Actions:
-1. Parse query → feature "005" (Tier 2: numeric match)
-2. Pad to "005", match specs/005-speck-skill/
-3. Load specs/005-speck-skill/spec.md
-4. Extract Requirements section
-5. Parse FR-XXX items
-6. Return list
-
-Response:
-  Feature 005 (Speck Workflow Skill) has 12 functional requirements:
-
-  FR-001: Skill automatically activates when users ask questions about Speck features
-  FR-002: Skill interprets spec.md structure and extracts user stories
-  FR-003: Skill interprets spec.md structure and extracts requirements
-  ... [etc]
-```
-
-### Example 2: Check Task Status
-```
-User: How many tasks are completed for the speck skill?
-
-Skill Actions:
-1. Parse query → "speck skill" (Tier 3: fuzzy match)
-2. Find specs/005-speck-skill/
-3. Load specs/005-speck-skill/tasks.md
-4. Count `- [x]` (completed) and `- [ ]` (pending)
-5. Calculate percentage
-
-Response:
-  Feature 005-speck-skill: 0/47 tasks completed (0%)
-
-  Current phase: Phase 1 - Setup (0/3 tasks done)
-  Next task: T001 - Create .claude/skills/speck-workflow.md with YAML frontmatter structure
-```
-
-### Example 3: Compare Against Template
-```
-User: Does my spec for feature 005 follow the template?
-
-Skill Actions:
-1. Load $PLUGIN_ROOT/templates/spec-template.md
-2. Load specs/005-speck-skill/spec.md
-3. Extract sections from both
-4. Compare mandatory sections
-5. Generate comparison report
-
-Response:
-  Template Comparison: specs/005-speck-skill/spec.md vs spec-template.md
-  ┌──────────────────────────────────────────────────────────────┐
-  │ Structure: 100% match                                        │
-  ├──────────────────────────────────────────────────────────────┤
-  │ ✅ Present: All mandatory sections                           │
-  │   - User Scenarios & Testing                                 │
-  │   - Requirements (Functional Requirements, Key Entities)     │
-  │   - Success Criteria (Measurable Outcomes)                   │
-  ├──────────────────────────────────────────────────────────────┤
-  │ Completeness: 100% (5/5 mandatory sections)                 │
-  │                                                              │
-  │ ✓ Spec is ready for planning                                │
-  └──────────────────────────────────────────────────────────────┘
-```
-
-### Example 4: Handle Missing File
-```
-User: What's in the tasks.md for feature 003?
-
-Skill Actions:
-1. Parse query → feature "003" (Tier 2: numeric match)
-2. Attempt to load specs/003-user-auth/tasks.md
-3. File not found (State: MISSING)
-4. Generate error with recovery guidance
-
-Response:
-  ERROR: Tasks Not Found
-  ┌────────────────────────────────────────────────────┐
-  │ tasks.md not found at specs/003-user-auth/         │
-  ├────────────────────────────────────────────────────┤
-  │ Recovery: Run /speck.tasks to generate tasks       │
-  └────────────────────────────────────────────────────┘
-```
-
-### Example 5: Explain Section Purpose
-```
-User: What should go in the Success Criteria section?
-
-Skill Actions:
-1. Detect question about section purpose
-2. Load $PLUGIN_ROOT/templates/spec-template.md
-3. Find "Success Criteria" section
-4. Extract HTML comment
-5. Parse guidelines
-
-Response:
-  Purpose of Success Criteria section:
-  "Define measurable outcomes that indicate feature completion. Each criterion should have a specific metric and be technology-agnostic."
-
-  Guidelines:
-  - Use format: **SC-XXX**: Description
-  - Must be measurable (include percentages, counts, or clear pass/fail)
-  - No implementation details (focus on what, not how)
-  - Each criterion should be independently verifiable
-
-  Example:
-    **SC-001**: 95% accuracy in answering natural language questions about spec.md files
-    **SC-002**: 100% accuracy in extracting all sections from valid spec files
-```
-
-### Example 6: Multi-Repo Mode Detection
-```
-User: Is this a multi-repo setup?
-
-Skill Actions:
-1. Check for .speck/root symlink
-2. If exists, read symlink target
-3. Determine mode (multi-repo child vs single-repo)
-
-Response:
-  Yes, this is a multi-repo child repository.
-
-  Detection:
-  - Found .speck/root symlink → ../../
-  - Speck root: /Users/nathan/git/github.com/nprbst/
-  - Current repo: /Users/nathan/git/github.com/nprbst/speck/
-
-  Configuration:
-  - Shared specs/ directory from root repo
-  - Local plan.md and tasks.md (per-repo)
-  - Constitution: Check .speck/constitution.md or root repo
-
-  To link a child repo: Run /speck.link <path-to-root>
-```
-
-### Example 7: Stacked PR Branch Status
-```
-User: Which branches exist for feature 007?
-
-Skill Actions:
-1. Load .speck/branches.json
-2. Filter branches by specId "007-multi-repo-monorepo-support"
-3. Parse branch relationships and status
-
-Response:
-  Feature 007-multi-repo-monorepo-support has 2 stacked branches:
-
-  Branch Stack:
-  main
-  └── 007-multi-repo (PR #5, merged)
-      └── nprbst/db-layer (active, no PR yet)
-
-  Details:
-  - 007-multi-repo: Base branch for feature, merged to main
-  - nprbst/db-layer: Active development, stacked on 007-multi-repo
-
-  Workflow Mode: stacked-pr (from plan.md)
-
-  Next steps:
-  - Create PR for nprbst/db-layer with base 007-multi-repo
-  - Use /speck.branch create to add more branches
-```
-
-### Example 8: Virtual Command Performance
-```
-User: Why are Speck commands so fast?
-
-Skill Actions:
-1. Explain virtual command pattern
-2. Describe hook-based architecture
-3. Detail performance characteristics
-
-Response:
-  Speck commands execute in <100ms due to the virtual command pattern:
-
-  Architecture:
-  1. PrePromptSubmit hook runs on every user message
-     - Automatically checks prerequisites (feature dir, git status)
-     - Pre-loads context and injects into prompt
-     - No manual prerequisite checks needed
-
-  2. PreToolUse hook intercepts command execution
-     - Routes speck-* commands to unified CLI handler
-     - Path-independent execution (no hardcoded paths)
-     - Returns transformed command with context
-
-  Performance Benefits:
-  - Hook routing: <100ms latency
-  - Prerequisite caching: 30% faster execution
-  - Context pre-loading: No redundant checks
-
-  Dual-Mode Execution:
-  - Works in Claude Code (via hooks)
-  - Works in CLI (via bun run .speck/scripts/*.ts)
-  - Same codebase, different I/O (JSON vs terminal)
-
-  Examples:
-  - /speck.env: Instant environment check (prerequisites cached)
-  - /speck.branch list: Fast branch listing (context pre-loaded)
-```
-
-### Example 9: Worktree Configuration
-```
-User: What's the worktree config for this feature?
-
-Skill Actions:
-1. Load .speck/config.json
-2. Extract worktree section
-3. Check for worktree metadata in .speck/worktrees/
-
-Response:
-  Worktree integration is enabled for this repository.
-
-  Configuration (.speck/config.json):
-  - Worktree creation: enabled
-  - Auto-launch IDE: VSCode (vscode)
-  - Install dependencies: Yes (automatic npm/yarn/bun install)
-  - Branch prefix: specs/
-
-  File Management Rules:
-  - Copy (isolated): .env*, *.config.{js,ts}
-  - Symlink (shared): node_modules, .bun
-
-  Active Worktrees:
-  - 012-worktree-integration → ../speck-012-worktree-integration/
-    Created: 2025-11-22T10:00:00Z
-    Status: active
-
-  Worktree Naming:
-  - Repo directory: speck/
-  - Branch: 012-worktree-integration
-  - Worktree path: speck-012-worktree-integration/ (peer directory)
-
-  To create worktree: Run /speck.specify with default flags
-  To skip worktree: Use --no-worktree flag
-```
+**spec.md**: Requirements, user stories, success criteria
+**plan.md**: Implementation approach, technical context, constitution check
+**tasks.md**: Task breakdown, dependencies, checkpoints
 
 ---
 
@@ -1292,46 +244,35 @@ This skill NEVER modifies files. For creating or updating Speck artifacts:
 - Analyzing consistency: `/speck.analyze`
 
 **Non-Destructive Constraint**:
-Per FR-012 and specification assumptions, the skill:
 - Only reads existing files
 - Never writes, modifies, or deletes files
 - Never runs external commands or tools
 - Provides guidance to appropriate slash commands when modifications needed
 
 **Activation Limitations**:
-Skill may not activate if:
-- Query is too vague (no feature reference, no Speck terminology)
-- Query is about non-Speck topics (implementation details, external docs)
-- User doesn't establish feature context in ambiguous queries
-
-**When Skill Won't Activate**:
-- Generic questions: "What's in the file?" (no Speck context)
-- Implementation questions: "How do I write TypeScript?" (not about Speck artifacts)
-- External documentation: "What's in the HTTP/2 spec?" (not about Speck features)
+Skill may not activate if query is too vague, about non-Speck topics, or doesn't establish feature context.
 
 ---
 
 ## Troubleshooting Activation Issues
 
-If skill doesn't activate when expected:
-
-### Issue: Too Vague
+**Issue: Too Vague**
 ❌ "What's left?"
 ✅ "What tasks are left for feature 005?"
 
-### Issue: No Speck Context
+**Issue: No Speck Context**
 ❌ "Show me the plan"
 ✅ "Show me plan.md for the speck skill"
 
-### Issue: Wrong Topic
+**Issue: Wrong Topic**
 ❌ "How do I implement this in TypeScript?"
 ✅ "What's the technical approach in the plan for feature 005?"
 
-### Best Practices for Reliable Activation
-1. **Mention feature explicitly**: Use number (005) or name (speck-skill)
-2. **Use Speck terminology**: spec, plan, tasks, requirements, user stories
-3. **Be specific about file types**: Mention spec.md, plan.md, or tasks.md
-4. **Establish context first**: "Tell me about feature 005" then ask follow-ups
+**Best Practices**:
+1. Mention feature explicitly (number or name)
+2. Use Speck terminology (spec, plan, tasks, requirements)
+3. Be specific about file types
+4. Establish context first
 
 ---
 
@@ -1373,7 +314,7 @@ This skill is for **reading and understanding** existing Speck artifacts. When u
 - **[NEEDS CLARIFICATION] markers** → Suggest `/speck.clarify`
 - **Missing plan.md** → Suggest `/speck.plan`
 - **Missing tasks.md** → Suggest `/speck.tasks`
-- **Incomplete sections or new requirements** → Suggest `/speck.clarify` or manual editing
+- **Incomplete sections** → Suggest `/speck.clarify` or manual editing
 - **After clarification** → Suggest `/speck.analyze` to check consistency
 - **After task generation** → Suggest `/speck.implement` to execute tasks
 
@@ -1394,4 +335,9 @@ This skill enables natural language interaction with Speck workflow artifacts:
 - ✅ Maintains conversation context for follow-up questions
 - ✅ Read-only operations (non-destructive)
 
-**Goal**: Reduce need for manual file reading and slash command usage by 80% (SC-004), enabling developers to ask natural questions and get accurate answers about their Speck features.
+**Additional Resources**:
+- **[reference.md](reference.md)** - Detailed rules, workflows, edge cases
+- **[examples.md](examples.md)** - 9 usage examples
+- **[workflows.md](workflows.md)** - Advanced features (multi-repo, stacked PRs, worktrees)
+
+**Goal**: Reduce need for manual file reading and slash command usage by 80%, enabling developers to ask natural questions and get accurate answers about their Speck features.
