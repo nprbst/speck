@@ -1,31 +1,31 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.4.0 → 1.5.0
+Version Change: 1.7.0 → 1.8.0
 Modified Principles: None
-Added Sections: "X. Zero Test Regression Policy" (new principle)
+Added Sections: "XIII. Documentation Skill Synchronization (NON-NEGOTIABLE)" (new principle)
 Removed Sections: None
 
 Templates Requiring Updates:
-  ✅ .claude/commands/speck.implement.md - add test validation step
-  ✅ .claude/commands/speck.tasks.md - add test regression check requirement
-  ⚠ .speck/scripts/check-prerequisites.ts - add test suite validation
-  ✅ Documentation - add test regression policy to workflow
+  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/plan-template.md - add speck-knowledge skill update task
+  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/tasks-template.md - add speck-knowledge skill update task to final phase
+  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/spec-template.md - no changes required
+  ⚠ .claude/commands/speck.implement.md - add speck-knowledge skill update reminder at completion
+  ⚠ .claude/commands/speck.tasks.md - add speck-knowledge skill update task generation
 
 Follow-up TODOs:
-  - Add pre-implementation test baseline capture
-  - Update CI/CD to enforce zero regression policy
-  - Document test regression policy in README.md
-  - Add test suite validation to check-prerequisites.ts
-  - Consider pre-commit hooks for test validation
+  - Backfill speck-knowledge skill with features 007-012 content
+  - Add speck-knowledge skill validation to check-prerequisites.ts
+  - Update quickstart.md with speck-knowledge skill update guidance
+  - Consider automating speck-knowledge skill updates from spec artifacts
 
-Rationale for 1.5.0 (MINOR bump):
-  - New principle added: Zero Test Regression Policy
-  - Establishes mandatory test suite health requirement for spec completion
-  - Prevents features from introducing test failures or reducing pass rate
+Rationale for 1.8.0 (MINOR bump):
+  - New principle added: Documentation Skill Synchronization
+  - Establishes requirement to keep speck-knowledge Claude Skill current with feature additions
+  - Complements Website Documentation Synchronization (Principle XI)
   - No breaking changes to existing principles
-  - Backwards compatible but raises quality bar for future features
-  - Complements existing Code Quality Standards (Principle IX)
+  - Backwards compatible but adds new quality expectation for feature completion
+  - Ensures Claude AI assistant has accurate context about Speck features
 -->
 
 # Speck Constitution
@@ -306,6 +306,207 @@ indicate test isolation or parallelism issues, NOT feature regressions. These
 are infrastructure bugs to be fixed separately, not blockers for feature
 completion (but SHOULD be documented and tracked for resolution).
 
+### XI. Website Documentation Synchronization (NON-NEGOTIABLE)
+
+Features that affect user-facing functionality, workflows, or capabilities MUST
+update the project website documentation before completion. The website MUST
+accurately reflect current feature set and usage patterns.
+
+**Rationale**: Outdated documentation creates friction for new users, hides
+valuable features, and damages trust in the project. The website is the primary
+entry point for users evaluating or learning Speck. Documentation drift creates
+technical debt that compounds over time and makes the website an unreliable
+source of truth. Documentation is not optional—it is a core deliverable.
+
+**Implementation Requirements**:
+
+- MANDATORY website updates for features that:
+  - Add, modify, or remove user-facing commands (`/speck.*`)
+  - Change workflow steps or phase requirements
+  - Add new capabilities or configuration options
+  - Modify CLI behavior or output formats
+  - Update constitutional principles or governance policies
+  - Affect getting-started experience or quickstart guides
+- Website update scope determination:
+  - During planning phase, identify affected documentation pages
+  - Add website update tasks to `tasks.md` for applicable features
+  - Document website impact in `plan.md` under "Documentation Impact" section
+  - Internal-only changes (refactoring, performance optimizations without API
+    changes) MAY skip website updates if user experience is unchanged
+- Website synchronization process:
+  - Website content lives in `website/src/content/docs/` (Markdown files)
+  - Updates MUST be made before feature completion
+  - Run `bun run website:sync` to synchronize documentation from specs if
+    automated sync is available
+  - Manually update affected pages if automated sync is not applicable
+  - Verify updates by building website locally: `bun run website:build`
+  - Preview changes: `bun run website:dev` (localhost:4321)
+- Documentation quality standards:
+  - Examples MUST be tested and verified to work
+  - Screenshots MUST be current (if applicable)
+  - Links MUST be validated (no broken references)
+  - Terminology MUST match current implementation
+  - Version-specific guidance MUST note version requirements
+- Quality gate validation:
+  - Feature completion checklist MUST include: "Website docs: ✅ Updated and
+    verified"
+  - Pull request template MUST include website documentation verification
+  - `/speck.implement` workflow SHOULD prompt for website updates if user-facing
+    changes detected
+  - `check-prerequisites.ts` MAY validate that website builds without errors
+- Exceptions:
+  - Pure bug fixes that don't change documented behavior MAY skip website updates
+  - Internal refactoring with no user-visible changes MAY skip website updates
+  - Experimental features marked as unstable/beta MAY defer website updates until
+    stabilization (document deferral rationale in plan.md)
+  - Website infrastructure changes (styling, navigation) follow their own
+    workflow and don't require spec-driven updates
+
+**Documentation Principle**: Every user-facing feature change creates a
+documentation debt. This principle ensures that debt is paid before the feature
+ships, not deferred indefinitely.
+
+### XII. Test-Driven Development (TDD)
+
+Features MUST be implemented using Test-Driven Development (TDD) methodology
+with red-green-refactor workflow unless explicitly exempted for trivial
+features.
+
+**Rationale**: TDD ensures comprehensive test coverage, prevents regressions,
+improves code design through testability constraints, and provides
+living documentation of system behavior. Writing tests first forces clarity
+about requirements and edge cases before implementation complexity obscures
+them. TDD complements Zero Test Regression Policy (Principle X) by preventing
+untested code from entering the codebase.
+
+**Implementation Requirements**:
+
+- MANDATORY TDD workflow for all features (default):
+  - **Red**: Write failing test first that captures requirement or bug fix
+  - **Green**: Implement minimum code to make the test pass
+  - **Refactor**: Improve code quality while keeping tests green
+  - Cycle repeats at task-level granularity (per task in `tasks.md`)
+- Test-first discipline:
+  - NO implementation code MAY be written before corresponding test exists
+  - Test tasks MUST precede implementation tasks in `tasks.md`
+  - Task descriptions MUST indicate test-first ordering (e.g., "T005-TEST
+    [TEST] Write tests for loadConfig" before "T005 Implement loadConfig")
+- Required test coverage levels (specified in `plan.md`):
+  - **Unit tests**: All public (exported) functions and critical error paths
+  - **Integration tests**: All multi-step workflows and component interactions
+  - **Minimum thresholds**: Define in `plan.md` (suggested: 80% line coverage,
+    100% critical paths)
+  - **Coverage enforcement**: Build MUST fail if coverage drops below thresholds
+- Test quality standards:
+  - Tests MUST verify both success paths and error handling
+  - Error path tests MUST verify actionable error messages (cause + impact +
+    remediation)
+  - Integration tests MUST use realistic test fixtures (e.g., temporary Git
+    repos, not mocks)
+  - External dependencies (IDE, package managers) SHOULD be mocked for speed
+    and determinism
+- TDD task structure in `tasks.md`:
+  - Phase 1 MUST include test infrastructure setup tasks (fixtures, mocks,
+    coverage config)
+  - Each implementation task MUST have corresponding test task(s) listed first
+  - Test tasks marked with `[TEST]` marker for clear identification
+  - Implementation tasks note "(red-green-refactor)" to reinforce workflow
+- Opt-out mechanism (RARE, requires explicit justification):
+  - User MAY request TDD exemption for trivial features during `/speck.specify`
+  - Exemption criteria: <50 lines of code, no complex logic, no critical paths,
+    no external integrations
+  - Exemption MUST be documented in `spec.md` under "Development Methodology"
+    section
+  - Even trivial features MUST have basic smoke tests (not full TDD)
+- Quality gate validation:
+  - `/speck.tasks` MUST generate test tasks before implementation tasks
+  - `/speck.implement` SHOULD warn if implementation tasks completed before test
+    tasks
+  - Feature completion checklist MUST include: "TDD: ✅ All tests written
+    before implementation"
+  - Pull request template MUST verify TDD workflow followed
+- Template integration:
+  - `plan.md` MUST include "Testing" section documenting TDD approach, coverage
+    thresholds, fixture strategy
+  - `spec.md` MAY include "Development Methodology" section specifying TDD or
+    documenting exemption
+  - `tasks.md` MUST organize tasks with test-first ordering
+
+**TDD Principle**: Tests are not an afterthought—they are the specification of
+correct behavior. Writing tests first ensures we build what we intend to build,
+not what we accidentally implemented.
+
+### XIII. Documentation Skill Synchronization (NON-NEGOTIABLE)
+
+The `speck-knowledge` Claude Skill MUST be kept current with all Speck features,
+workflows, commands, and capabilities. Every feature that adds or modifies
+user-facing functionality MUST update the skill documentation before completion.
+
+**Rationale**: The `speck-knowledge` skill is the primary interface for Claude AI
+to understand and assist with Speck workflows. Outdated skill documentation leads
+to incorrect guidance, missing feature awareness, and degraded user experience
+when working with Claude on Speck projects. Just as the website serves human
+users (Principle XI), the skill serves AI assistance—both MUST stay synchronized
+with the evolving feature set.
+
+**Implementation Requirements**:
+
+- MANDATORY skill updates for features that:
+  - Add, modify, or remove slash commands (`/speck.*`)
+  - Change workflow phases or artifact structures (spec.md, plan.md, tasks.md)
+  - Modify template sections or mandatory/optional markers
+  - Add new file types or metadata conventions
+  - Change validation rules or quality gates
+  - Update constitutional principles affecting workflows
+  - Introduce new capabilities or configuration options
+- Skill update scope determination:
+  - During planning phase, identify affected skill sections
+  - Add skill update tasks to `tasks.md` for applicable features
+  - Document skill impact in `plan.md` under "Documentation Impact" section
+  - Internal-only changes (refactoring, performance optimizations) MAY skip
+    skill updates if AI-visible behavior is unchanged
+- Skill file location and structure:
+  - Skill file: `.claude/skills/speck-knowledge/SKILL.md`
+  - Contains YAML frontmatter with activation triggers
+  - Organized by capability: Feature Discovery, Template References, File
+    Interpretation, etc.
+  - Includes examples, error handling, and edge case guidance
+- Skill synchronization process:
+  - Updates MUST be made before feature completion
+  - Update affected sections to reflect new features or changed behavior
+  - Add new sections if feature introduces entirely new capabilities
+  - Update examples to include new feature usage
+  - Ensure activation triggers include new terminology or command names
+- Skill quality standards:
+  - Examples MUST be accurate and tested
+  - Section references MUST match current template structure
+  - Command guidance MUST match implemented slash command behavior
+  - File interpretation logic MUST align with actual artifact formats
+  - Error messages and recovery guidance MUST be current
+- Quality gate validation:
+  - Feature completion checklist MUST include: "Skill docs: ✅ speck-knowledge
+    updated and verified"
+  - Pull request template MUST include skill documentation verification
+  - `/speck.implement` workflow SHOULD prompt for skill updates if workflow or
+    artifact changes detected
+  - Manual verification: Ask Claude to explain new feature using skill—should
+    provide accurate guidance
+- Exceptions:
+  - Pure bug fixes with no workflow or output changes MAY skip skill updates
+  - Internal refactoring with no AI-visible changes MAY skip skill updates
+  - Experimental features marked unstable MAY defer skill updates until
+    stabilization (document deferral rationale in plan.md)
+- Backfill requirements:
+  - When principle adopted, conduct one-time backfill of recent features
+    (007-012) into skill
+  - Future features MUST update skill as part of normal completion criteria
+  - Skill version or last-updated metadata SHOULD be maintained in frontmatter
+
+**Skill Documentation Principle**: Claude AI assistance is only as good as its
+knowledge of Speck. Keeping the skill current ensures users receive accurate,
+helpful guidance when working with Claude on Speck projects. This is a
+user-facing quality requirement, not optional documentation.
+
 ## Upstream Sync Requirements
 
 ### Release-Based Synchronization
@@ -367,10 +568,15 @@ phases leads to ambiguous specs, incomplete plans, and implementation rework.
 - Each phase produces artifacts in `specs/<feature-num>-<short-name>/`
 - Clarification MUST resolve all `[NEEDS CLARIFICATION]` markers before planning
 - Analysis MUST verify cross-artifact consistency (spec ↔ plan ↔ tasks)
+- Implementation MUST follow TDD workflow (tests first) per Principle XII
 - Implementation MUST pass code quality standards (typecheck + lint) before
   feature completion
 - Implementation MUST pass test regression validation (zero new failures) before
   feature completion
+- Implementation MUST update website documentation (if user-facing changes)
+  before feature completion
+- Implementation MUST update speck-knowledge skill (if workflow/artifact
+  changes) before feature completion
 
 ### Testability
 
@@ -445,6 +651,11 @@ for existing artifacts.
 - All implementations MUST pass typecheck and lint with zero errors/warnings
   (Principle IX)
 - All features MUST complete with zero test regressions (Principle X)
+- All user-facing features MUST update website documentation (Principle XI)
+- All features MUST follow TDD workflow unless explicitly exempted (Principle
+  XII)
+- All workflow/artifact changes MUST update speck-knowledge skill (Principle
+  XIII)
 
 **Versioning Policy**:
 
@@ -453,4 +664,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.5.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-22
+**Version**: 1.8.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-22

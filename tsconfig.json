@@ -48,6 +48,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    ".speck/test-logs"
+    ".speck/test-logs",
+    "specs/**/contracts/**/*"
   ]
 }

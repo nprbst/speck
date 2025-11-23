@@ -23,6 +23,7 @@ coverage/
 .speck/sync-reports/
 .test-workspace-*/
 dist/
+**/test-baseline.txt
 
 # Website-specific
 .astro/

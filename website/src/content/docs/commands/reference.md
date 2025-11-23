@@ -136,21 +136,37 @@ Create or update a feature specification from natural language input.
 
 **Usage:**
 ```
-/speck.specify [feature description]
+/speck.specify [feature description] [flags]
 ```
 
 **What it does:**
 - Prompts you to describe your feature in plain English
 - Generates a structured `spec.md` file with user stories, requirements, and success criteria
 - Creates the feature directory structure in `specs/###-feature-name/`
+- Optionally creates a worktree for the feature (if worktree integration is enabled)
+- Optionally launches your IDE and pre-installs dependencies
 - Ensures specifications are technology-agnostic and stakeholder-friendly
+
+**Worktree Flags** (requires [worktree integration](/docs/advanced-features/worktrees) enabled):
+- `--no-worktree` - Create branch without worktree (override config)
+- `--no-ide` - Skip IDE auto-launch (override config)
+- `--no-deps` - Skip dependency installation (override config)
+- `--reuse-worktree` - Reuse existing worktree if it exists
 
 **Example:**
 ```
 /speck.specify Add a dark mode toggle to the application settings
 ```
 
-**Output:** `specs/001-dark-mode-toggle/spec.md`
+**With worktrees enabled:**
+```
+/speck.specify Add dark mode toggle --no-ide
+# Creates worktree but skips IDE launch
+```
+
+**Output:**
+- `specs/001-dark-mode-toggle/spec.md`
+- Worktree directory (if enabled): `../my-app-001-dark-mode-toggle/`
 
 ---
 
@@ -310,17 +326,25 @@ Create a new stacked branch with dependency tracking.
 
 **Usage:**
 ```
-/speck.branch create <branch-name> --base <parent-branch>
+/speck.branch create <branch-name> [flags]
 ```
 
 **Arguments:**
 - `<branch-name>`: Name for the new branch
+
+**Flags:**
 - `--base <parent-branch>`: Parent branch for dependency tracking (optional, defaults to current branch)
+- `--no-worktree` - Create branch without worktree (override config, requires [worktree integration](/docs/advanced-features/worktrees))
+- `--no-ide` - Skip IDE auto-launch (override config)
+- `--no-deps` - Skip dependency installation (override config)
+- `--reuse-worktree` - Reuse existing worktree if it exists
 
 **What it does:**
 - Creates a new git branch
 - Records branch dependency in `.speck/branches.json`
 - Tracks PR metadata (base, title, description, status)
+- Optionally creates a worktree for the branch (if worktree integration is enabled)
+- Optionally launches your IDE and pre-installs dependencies
 - Enables stacked PR workflows for large features
 
 **Example:**
@@ -328,11 +352,14 @@ Create a new stacked branch with dependency tracking.
 # Start feature
 git checkout -b username/auth-feature
 
-# Create first stack
+# Create first stack (with worktree if enabled)
 /speck.branch create username/auth-models --base username/auth-feature
 
 # Create second stack (depends on first)
 /speck.branch create username/auth-routes --base username/auth-models
+
+# Create stack without worktree (override config)
+/speck.branch create username/auth-tests --base username/auth-routes --no-worktree
 ```
 
 ---

@@ -54,6 +54,59 @@ claude --version
 
 ✅ **Done!** Speck is now installed.
 
+## Optional: Worktree Integration Setup
+
+**New in Speck 1.0**: Work on multiple features simultaneously using Git worktrees with automatic IDE launch and dependency installation.
+
+### What are Worktrees?
+
+Worktrees let you have multiple branches checked out at the same time, eliminating branch-switching overhead. When enabled, Speck automatically:
+- Creates isolated worktree directories for each feature
+- Launches your IDE pointing to the worktree
+- Pre-installs dependencies before the IDE opens
+
+**Benefits**: Context-switch instantly between features, maintain multiple working states, keep separate IDE windows open.
+
+### Quick Setup (2 minutes)
+
+**Option 1: Interactive Wizard** (Recommended)
+
+```bash
+bun .speck/scripts/worktree/cli.ts init
+```
+
+Follow the prompts to configure:
+- Enable/disable worktree integration
+- Choose your IDE (VSCode, Cursor, WebStorm, etc.)
+- Configure dependency auto-install
+- Set file copy/symlink rules
+
+**Option 2: Manual Configuration**
+
+Create `.speck/config.json` in your repository:
+
+```json
+{
+  "version": "1.0",
+  "worktree": {
+    "enabled": true,
+    "ide": {
+      "autoLaunch": true,
+      "editor": "code"
+    },
+    "dependencies": {
+      "autoInstall": true
+    }
+  }
+}
+```
+
+**Option 3: Skip for Now**
+
+Worktree integration is completely optional. You can skip this step and use Speck with the traditional Git workflow (single working directory, branch switching).
+
+**Learn more**: [Worktree Integration Guide](/docs/advanced-features/worktrees)
+
 ## Your First Specification
 
 Now that Speck is installed, let's create your first feature specification.
