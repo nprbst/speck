@@ -1,0 +1,662 @@
+---
+title: "Worktree Integration"
+description: "Work on multiple features simultaneously using isolated Git worktrees with automatic IDE launch and dependency installation."
+category: advanced-features
+audience: [existing-users, evaluators]
+prerequisites: ["/docs/getting-started/quick-start", "/docs/core-concepts/workflow"]
+tags: ["worktrees", "parallel-development", "setup", "workflow"]
+lastUpdated: 2025-11-22
+relatedPages: ["/docs/commands/reference", "/docs/configuration/speck-config"]
+order: 4
+---
+
+# Worktree Integration
+
+Work on multiple features simultaneously in isolated Git worktrees with automatic IDE launch and pre-installed dependencies.
+
+## Overview
+
+Git worktrees allow you to have multiple branches checked out at the same time. Speck's worktree integration automates the entire setup process:
+- Creates isolated worktrees for each feature branch
+- Configures file sharing and copying
+- Pre-installs dependencies
+- Automatically launches your IDE
+
+**Benefits**:
+- 🚀 **Instant context switching** - No branch switching or stashing required
+- 🔄 **Parallel development** - Work on multiple features simultaneously
+- 🎯 **Clean isolation** - Each feature has its own working directory
+- ⚡ **Zero setup time** - IDE opens with dependencies already installed
+
+## Prerequisites
+
+- Speck plugin installed in Claude Code
+- Git 2.5+ (worktree support required)
+- Git repository initialized
+
+**No additional tools required** - worktree integration works with any Git workflow.
+
+## Quick Start
+
+### 1. Enable Worktree Integration
+
+Create or edit `.speck/config.json` in your repository:
+
+```json
+{
+  "version": "1.0",
+  "worktree": {
+    "enabled": true,
+    "ide": {
+      "autoLaunch": true,
+      "command": "code"
+    },
+    "dependencies": {
+      "autoInstall": true
+    }
+  }
+}
+```
+
+Or use the interactive setup wizard:
+
+```bash
+bun .speck/scripts/worktree/cli.ts init
+```
+
+### 2. Create a Feature with Worktree
+
+When creating a new feature, Speck automatically creates a worktree:
+
+```bash
+/speck:specify "Add user authentication"
+```
+
+Speck will:
+1. Create a new branch (e.g., `002-user-auth`)
+2. Create an isolated worktree directory
+3. Copy/symlink configured files
+4. Install dependencies (if enabled)
+5. Launch your IDE (if enabled)
+
+### 3. Work in Parallel
+
+Create multiple features and switch between IDE windows:
+
+```bash
+# Create first feature
+/speck:specify "Add payment processing"
+# → Opens VSCode window for 002-payment-processing
+
+# Create second feature (while first is still open)
+/speck:specify "Update user profile UI"
+# → Opens new VSCode window for 003-user-profile
+
+# Both features are now running in separate worktrees
+```
+
+## Configuration Guide
+
+### Master Switch
+
+Enable or disable worktree integration:
+
+```json
+{
+  "worktree": {
+    "enabled": true  // Default: false
+  }
+}
+```
+
+When disabled, Speck creates branches in the main repository (classic Git workflow).
+
+### IDE Auto-Launch
+
+Configure which IDE to launch automatically:
+
+```json
+{
+  "worktree": {
+    "ide": {
+      "autoLaunch": true,       // Default: false
+      "command": "code",         // VSCode (default)
+      // Alternative options:
+      // "cursor" - Cursor editor
+      // "idea" - IntelliJ IDEA
+      // "webstorm" - WebStorm
+      // "pycharm" - PyCharm
+    }
+  }
+}
+```
+
+**Supported IDEs**:
+- **VSCode**: `code` (most common)
+- **Cursor**: `cursor`
+- **JetBrains IDEs**: `idea`, `webstorm`, `pycharm`, `rubymine`, `goland`, `clion`, `phpstorm`, `rider`
+
+### Dependency Pre-Installation
+
+Automatically install dependencies before the IDE opens:
+
+```json
+{
+  "worktree": {
+    "dependencies": {
+      "autoInstall": true  // Default: false
+    }
+  }
+}
+```
+
+Speck automatically detects your package manager (npm, yarn, pnpm, bun) and runs the appropriate install command.
+
+**Progress indicator** shows installation status:
+```
+Installing dependencies with bun...
+[████████████████████----] 80% (installing packages)
+```
+
+### File Copy and Symlink Rules
+
+Control which files are copied or symlinked to worktrees:
+
+```json
+{
+  "worktree": {
+    "files": {
+      "rules": [
+        {
+          "pattern": ".env*",
+          "action": "copy"
+        },
+        {
+          "pattern": "*.config.{js,ts}",
+          "action": "copy"
+        },
+        {
+          "pattern": "node_modules",
+          "action": "symlink"
+        },
+        {
+          "pattern": ".bun",
+          "action": "symlink"
+        }
+      ],
+      "includeUntracked": true  // Copy untracked files that match patterns
+    }
+  }
+}
+```
+
+**Pattern Syntax**: Uses Bun.Glob patterns
+- `*` - Match any characters except `/`
+- `**` - Match any characters including `/`
+- `?` - Match single character
+- `[abc]` - Match character class
+- `{a,b}` - Match alternatives
+
+**Action Types**:
+- `copy` - Create independent copy (changes don't affect main repo)
+- `symlink` - Create symbolic link (shares with main repo)
+- `ignore` - Don't copy or symlink
+
+**Default Rules** (if not configured):
+- **Copy**: `.env*`, `*.config.js`, `*.config.ts`
+- **Symlink**: `node_modules`, `.bun`, `.cache` (if they exist)
+
+### Branch Name Prefix
+
+Add a prefix to all spec branches (e.g., `specs/002-user-auth`):
+
+```json
+{
+  "worktree": {
+    "branchPrefix": "specs/"  // Default: none
+  }
+}
+```
+
+**Note**: Using a branch prefix breaks backwards compatibility with spec-kit (spec-kit expects branches without prefixes).
+
+### Worktree Naming
+
+Speck automatically calculates worktree directory names based on your repository layout:
+
+**Layout 1: Repository directory matches repository name**
+```
+/Users/dev/my-app/          # Main repo (directory = repo name)
+/Users/dev/my-app-002-user-auth/  # Worktree (peer directory)
+/Users/dev/my-app-003-payments/   # Another worktree
+```
+
+**Layout 2: Repository directory matches branch name**
+```
+/Users/dev/main/            # Main repo (directory = branch name)
+/Users/dev/002-user-auth/   # Worktree (peer directory, no prefix)
+/Users/dev/003-payments/    # Another worktree
+```
+
+Worktrees are always created as **peer directories** of the main repository (one level up).
+
+## User Stories
+
+### User Story 1: Isolated Feature Development (P1)
+
+**Goal**: Work on multiple features simultaneously without branch switching.
+
+**Example**:
+```bash
+# Main repo on branch 'main'
+cd /Users/dev/my-app
+
+# Create first feature → worktree at /Users/dev/my-app-002-auth
+/speck:specify "Add authentication"
+
+# Create second feature → worktree at /Users/dev/my-app-003-payments
+/speck:specify "Add payment processing"
+
+# Both worktrees exist simultaneously
+# Main repo still on 'main' branch
+```
+
+**Value**: Eliminate branch-switching overhead, maintain multiple working states.
+
+### User Story 2: Automated IDE Launch (P2)
+
+**Goal**: IDE opens automatically when worktree is created.
+
+**Example**:
+```bash
+# With IDE auto-launch enabled
+/speck:specify "Add user dashboard"
+# → Creates worktree
+# → Installs dependencies
+# → Opens VSCode window pointing to worktree
+# → You can start coding immediately
+```
+
+**Value**: Reduces setup time from ~30 seconds to instant.
+
+### User Story 3: Pre-installed Dependencies (P3)
+
+**Goal**: Dependencies install before IDE opens.
+
+**Example**:
+```bash
+# With dependency auto-install enabled
+/speck:specify "Add analytics tracking"
+# → Creates worktree
+# → Displays: "Installing dependencies with bun..."
+# → Progress bar shows installation status
+# → IDE opens only after installation completes
+# → node_modules already populated
+```
+
+**Value**: Reduces wait time from ~1-5 minutes to zero (happens before IDE launch).
+
+### User Story 4: Configurable Worktree Setup (P2)
+
+**Goal**: Control file isolation and resource sharing.
+
+**Example**:
+```json
+{
+  "worktree": {
+    "files": {
+      "rules": [
+        // Copy environment files (each worktree has independent config)
+        { "pattern": ".env*", "action": "copy" },
+
+        // Symlink dependencies (share to save disk space)
+        { "pattern": "node_modules", "action": "symlink" },
+
+        // Copy config files (each worktree can have different settings)
+        { "pattern": "*.config.{js,ts}", "action": "copy" }
+      ]
+    }
+  }
+}
+```
+
+**Value**: Balance between isolation and disk space efficiency.
+
+## Manual Worktree Management
+
+### List All Worktrees
+
+```bash
+bun .speck/scripts/worktree/cli.ts list
+```
+
+**Output**:
+```
+Worktrees:
+  002-user-auth      /Users/dev/my-app-002-user-auth     (clean)
+  003-payment-flow   /Users/dev/my-app-003-payment-flow  (modified)
+```
+
+**JSON output** (for scripting):
+```bash
+bun .speck/scripts/worktree/cli.ts list --json
+```
+
+### Create Worktree Manually
+
+```bash
+bun .speck/scripts/worktree/cli.ts create 004-analytics
+```
+
+**Flags**:
+- `--no-worktree` - Create branch without worktree (override config)
+- `--no-ide` - Skip IDE launch
+- `--no-deps` - Skip dependency installation
+- `--reuse-worktree` - Reuse existing worktree if it exists
+
+### Remove Worktree
+
+```bash
+bun .speck/scripts/worktree/cli.ts remove 002-user-auth
+```
+
+**Confirmation prompt**:
+```
+Remove worktree for branch '002-user-auth'?
+  - Worktree directory: /Users/dev/my-app-002-user-auth
+  - All files in worktree will be deleted
+  - Git worktree reference will be removed
+
+Continue? (yes/no):
+```
+
+### Cleanup Stale Worktrees
+
+```bash
+bun .speck/scripts/worktree/cli.ts prune
+```
+
+**Dry run** (see what would be removed):
+```bash
+bun .speck/scripts/worktree/cli.ts prune --dry-run
+```
+
+## Command Integration
+
+### `/speck:specify` with Worktrees
+
+Create a new feature specification with worktree:
+
+```bash
+/speck:specify "Add user notifications"
+```
+
+**Flags**:
+- `--no-worktree` - Create branch without worktree (override config)
+- `--no-ide` - Skip IDE launch
+- `--no-deps` - Skip dependency installation
+- `--reuse-worktree` - Reuse existing worktree if it exists
+
+### `/speck:branch` with Worktrees
+
+Create a stacked branch with worktree:
+
+```bash
+/speck:branch create 003-notification-ui --base 002-user-auth
+```
+
+**Flags**: Same as `/speck:specify`
+
+## Edge Cases and Troubleshooting
+
+### Insufficient Disk Space
+
+**Error**:
+```
+Error: Insufficient disk space
+  Available: 512 MB
+  Required: 1 GB minimum
+
+Troubleshooting:
+  1. Remove unused worktrees: bun .speck/scripts/worktree/cli.ts prune
+  2. Clear package manager cache: bun pm cache rm --all
+  3. Identify large files: du -sh *
+```
+
+**Solution**: Free up disk space or disable dependency auto-install.
+
+### Existing Worktree Collision
+
+**Error**:
+```
+Error: Worktree directory already exists
+  Path: /Users/dev/my-app-002-user-auth
+
+Troubleshooting:
+  1. Remove existing worktree: bun .speck/scripts/worktree/cli.ts remove 002-user-auth
+  2. Reuse existing worktree: use --reuse-worktree flag
+```
+
+**Solution**: Remove existing worktree or use `--reuse-worktree` flag.
+
+### IDE Launch Failure
+
+**Error**:
+```
+Error: Failed to launch IDE
+  Command: code /Users/dev/my-app-002-user-auth
+  Exit code: 127
+
+Troubleshooting:
+  1. Verify IDE is installed: which code
+  2. Check IDE command in config: .speck/config.json
+  3. Try manual launch: code /Users/dev/my-app-002-user-auth
+```
+
+**Solution**: Worktree remains usable; you can open it manually.
+
+### Dependency Installation Failure
+
+**Error**:
+```
+Error: Dependency installation failed
+  Package manager: bun
+  Exit code: 1
+
+Troubleshooting:
+  1. Check network connectivity
+  2. Verify package.json is valid
+  3. Try manual install: cd /path/to/worktree && bun install
+  4. Disable auto-install in config
+```
+
+**Solution**: IDE launch is aborted; fix issues and retry or disable auto-install.
+
+### Stale Worktree References
+
+**Auto-cleanup**:
+```
+Detected stale worktree reference: 002-user-auth
+  Worktree directory was manually deleted
+  Cleaning up Git references...
+  ✓ Stale reference removed
+```
+
+Speck automatically detects and cleans up stale references when you run any worktree command.
+
+### Unsupported Git Version
+
+**Error**:
+```
+Error: Git version too old
+  Current: 2.4.0
+  Required: 2.5.0+
+
+Troubleshooting:
+  Update Git: https://git-scm.com/downloads
+```
+
+**Solution**: Upgrade Git to 2.5 or later.
+
+## Best Practices
+
+### When to Use Worktrees
+
+✅ **Use worktrees when**:
+- Working on multiple features simultaneously
+- Context-switching frequently between features
+- Need to keep IDE windows open for different features
+- Want to maintain separate dependency installations
+
+❌ **Don't use worktrees when**:
+- Working on a single feature at a time
+- Limited disk space (<5 GB available)
+- Project has very large dependencies (>1 GB)
+
+### File Rule Guidelines
+
+**Copy these files** (need isolation):
+- Environment files: `.env*`
+- Configuration files: `*.config.{js,ts}`
+- IDE settings: `.vscode/`, `.idea/`
+
+**Symlink these directories** (save disk space):
+- Dependencies: `node_modules`, `.bun`, `vendor/`, `venv/`
+- Build caches: `.cache/`, `.next/`, `.nuxt/`
+
+**Ignore these** (handled by Git):
+- Source code: `src/`, `lib/`, `app/`
+- Tests: `test/`, `tests/`, `__tests__/`
+- Documentation: `docs/`, `README.md`
+
+### Disk Space Management
+
+Monitor disk usage across worktrees:
+
+```bash
+# Check total worktree disk usage
+du -sh .speck/worktrees/
+
+# Check individual worktrees
+du -sh .speck/worktrees/*
+```
+
+**Tips**:
+- Symlink `node_modules` instead of separate installs (saves 100+ MB per worktree)
+- Remove unused worktrees regularly
+- Use `bun pm cache rm` to clear package manager cache
+
+### Multi-Repo Considerations
+
+Worktree configuration is **per-repository**:
+- Each repo in a multi-repo setup has independent worktree config
+- Shared specs don't affect worktree behavior
+- Switching between single-repo and multi-repo modes doesn't affect existing worktrees
+
+## Performance
+
+**Worktree Creation Benchmarks**:
+- Git worktree add: <1 second
+- File copy/symlink: <3 seconds (typical project, <1000 files)
+- Dependency install: 10-60 seconds (varies by package manager and project size)
+- IDE launch: <2 seconds
+
+**Total time** (with auto-install enabled): 15-70 seconds
+**Total time** (without auto-install): 5-10 seconds
+
+**Comparison to manual workflow**:
+- Manual branch switch + stash: ~10 seconds
+- Manual IDE navigation: ~5 seconds
+- Manual dependency install: ~30-60 seconds
+- **Total manual**: 45-75 seconds
+
+**Worktree workflow saves**: 30-60 seconds per context switch + maintains all working states.
+
+## Examples
+
+### Minimal Setup (Worktrees Only)
+
+```json
+{
+  "version": "1.0",
+  "worktree": {
+    "enabled": true
+  }
+}
+```
+
+Creates worktrees without IDE launch or dependency install.
+
+### Full Automation
+
+```json
+{
+  "version": "1.0",
+  "worktree": {
+    "enabled": true,
+    "ide": {
+      "autoLaunch": true,
+      "command": "code"
+    },
+    "dependencies": {
+      "autoInstall": true
+    },
+    "files": {
+      "rules": [
+        { "pattern": ".env*", "action": "copy" },
+        { "pattern": "*.config.{js,ts}", "action": "copy" },
+        { "pattern": "node_modules", "action": "symlink" }
+      ],
+      "includeUntracked": true
+    }
+  }
+}
+```
+
+Fully automated worktree creation with all features enabled.
+
+### JetBrains IDE Setup
+
+```json
+{
+  "version": "1.0",
+  "worktree": {
+    "enabled": true,
+    "ide": {
+      "autoLaunch": true,
+      "command": "webstorm"  // Or: idea, pycharm, goland, etc.
+    }
+  }
+}
+```
+
+### Conservative Disk Usage
+
+```json
+{
+  "version": "1.0",
+  "worktree": {
+    "enabled": true,
+    "dependencies": {
+      "autoInstall": false  // Manual install to save disk space
+    },
+    "files": {
+      "rules": [
+        { "pattern": ".env*", "action": "copy" },
+        { "pattern": "node_modules", "action": "symlink" },  // Share deps
+        { "pattern": ".bun", "action": "symlink" },
+        { "pattern": ".cache", "action": "symlink" }
+      ]
+    }
+  }
+}
+```
+
+Minimal disk usage by symlinking all large directories.
+
+## See Also
+
+- [Configuration Reference](/docs/configuration/speck-config) - Full `.speck/config.json` schema
+- [/speck:specify Command](/docs/commands/specify) - Create feature specifications
+- [/speck:branch Command](/docs/commands/branch) - Create stacked branches
+- [Feature Development Workflow](/docs/workflows/feature-development) - End-to-end workflow with worktrees

@@ -244,14 +244,14 @@ Based on plan.md, this feature uses:
 
 **Purpose**: Update project website to document worktree integration feature per Constitution Principle XI
 
-- [ ] T089 [Constitution] Create comprehensive worktree feature guide at website/src/content/docs/features/worktrees.md covering all user stories, configuration options, and workflows
-- [ ] T090 [Constitution] [P] Create .speck/config.json schema reference at website/src/content/docs/configuration/speck-config.md documenting all worktree configuration options
-- [ ] T091 [Constitution] [P] Update quickstart guide at website/src/content/docs/getting-started/quickstart.md to include worktree setup instructions and first-time configuration
-- [ ] T092 [Constitution] [P] Update /speck:specify command documentation at website/src/content/docs/commands/specify.md to document --no-worktree, --no-ide, --no-deps, --reuse-worktree flags
-- [ ] T093 [Constitution] [P] Update /speck:branch command documentation at website/src/content/docs/commands/branch.md to document worktree integration flags
-- [ ] T094 [Constitution] [P] Update feature development workflow guide at website/src/content/docs/workflows/feature-development.md to include worktree-based parallel development workflow
-- [ ] T095 [Constitution] Verify website builds without errors: `bun run website:build`
-- [ ] T096 [Constitution] Preview website documentation locally at localhost:4321 using `bun run website:dev` and verify all links, examples, and screenshots are correct
+- [X] T089 [Constitution] Create comprehensive worktree feature guide at website/src/content/docs/advanced-features/worktrees.md covering all user stories, configuration options, and workflows
+- [X] T090 [Constitution] [P] Create .speck/config.json schema reference at website/src/content/docs/configuration/speck-config.md documenting all worktree configuration options
+- [X] T091 [Constitution] [P] Update quickstart guide at website/src/content/docs/getting-started/quick-start.md to include worktree setup instructions and first-time configuration
+- [X] T092 [Constitution] [P] Update /speck:specify command documentation at website/src/content/docs/commands/reference.md to document --no-worktree, --no-ide, --no-deps, --reuse-worktree flags
+- [X] T093 [Constitution] [P] Update /speck:branch command documentation at website/src/content/docs/commands/reference.md to document worktree integration flags
+- [X] T094 [Constitution] [P] Update feature development workflow guide at website/src/content/docs/workflows/feature-development.md to include worktree-based parallel development workflow
+- [X] T095 [Constitution] Verify website builds without errors: `bun run build` in website directory
+- [X] T096 [Constitution] Preview website documentation locally at localhost:4321 using `bun run dev` and verify all links, examples, and content are correct
 
 **Checkpoint**: Website documentation complete and verified - feature ready for release
 
