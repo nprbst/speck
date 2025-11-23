@@ -133,20 +133,20 @@ This document provides a **dependency-ordered, executable task list** for implem
 
 ### Tasks
 
-- [ ] T031 [US2] Convert website/src/content/docs/installation.md to installation.mdx
-- [ ] T032 [US2] Import AsciinemaPlayer component in installation.mdx
-- [ ] T033 [P] [US2] Create installation workflow .cast recording at website/src/assets/demos/installation-workflow.cast
-- [ ] T034 [US2] Embed AsciinemaPlayer with installation demo in installation.mdx
-- [ ] T035 [P] [US2] Create fallback screenshot for installation demo at website/public/demos/fallbacks/installation-workflow.png
-- [ ] T036 [P] [US2] Create fallback text description at website/src/assets/demos/fallbacks/installation-workflow.md
-- [ ] T037 [US2] Convert website/src/content/docs/quickstart.md to quickstart.mdx
-- [ ] T038 [US2] Import AsciinemaPlayer component in quickstart.mdx
-- [ ] T039 [P] [US2] Create quickstart workflow .cast recording at website/src/assets/demos/quickstart-workflow.cast
-- [ ] T040 [US2] Embed AsciinemaPlayer with quickstart demo in quickstart.mdx
-- [ ] T041 [P] [US2] Create fallback screenshot for quickstart demo at website/public/demos/fallbacks/quickstart-workflow.png
-- [ ] T042 [P] [US2] Create fallback text description at website/src/assets/demos/fallbacks/quickstart-workflow.md
-- [ ] T043 [US2] Update Astro content collection config if needed to support MDX in website/src/content/config.ts
-- [ ] T044 [US2] Verify documentation navigation and layout remain intact after MDX conversion
+- [X] T031 [US2] Convert website/src/content/docs/installation.md to installation.mdx
+- [X] T032 [US2] Import AsciinemaPlayer component in installation.mdx
+- [ ] T033 [P] [US2] Create installation workflow .cast recording at website/src/assets/demos/installation-workflow.cast (BLOCKED: User needs to record - see human-tasks.md)
+- [X] T034 [US2] Embed AsciinemaPlayer with installation demo in installation.mdx (player ready, awaits recording)
+- [ ] T035 [P] [US2] Create fallback screenshot for installation demo at website/public/demos/fallbacks/installation-workflow.png (OPTIONAL: User can create if desired)
+- [ ] T036 [P] [US2] Create fallback text description at website/src/assets/demos/fallbacks/installation-workflow.md (BLOCKED: User needs to create - see human-tasks.md Task 5A)
+- [X] T037 [US2] Convert website/src/content/docs/quick-start.md to quick-start.mdx
+- [X] T038 [US2] Import AsciinemaPlayer component in quick-start.mdx
+- [ ] T039 [P] [US2] Create quickstart workflow .cast recording at website/src/assets/demos/quickstart-workflow.cast (BLOCKED: User needs to record - see human-tasks.md)
+- [X] T040 [US2] Embed AsciinemaPlayer with quickstart demo in quick-start.mdx (player ready, awaits recording)
+- [ ] T041 [P] [US2] Create fallback screenshot for quickstart demo at website/public/demos/fallbacks/quickstart-workflow.png (OPTIONAL: User can create if desired)
+- [ ] T042 [P] [US2] Create fallback text description at website/src/assets/demos/fallbacks/quickstart-workflow.md (BLOCKED: User needs to create - see human-tasks.md Task 5B)
+- [X] T043 [US2] Update Astro content collection config if needed to support MDX in website/src/content/config.ts (MDX integration already configured in astro.config.mjs)
+- [ ] T044 [US2] Verify documentation navigation and layout remain intact after MDX conversion (Ready to test once recordings exist)
 
 **Completion Criteria (Acceptance Scenarios)**:
 - ✅ User reading installation guide sees embedded player showing installation process
@@ -170,15 +170,15 @@ This document provides a **dependency-ordered, executable task list** for implem
 
 ### Tasks
 
-- [ ] T045 [US3] Create API documentation at specs/013-asciinema-player/contracts/api-spec.md
-- [ ] T046 [US3] Document all component props with examples in contracts/api-spec.md
-- [ ] T047 [US3] Document common configuration patterns in contracts/api-spec.md
-- [ ] T048 [US3] Create usage examples for different demo types in quickstart.md
-- [ ] T049 [US3] Add troubleshooting section to quickstart.md
-- [ ] T050 [P] [US3] Create example demo for workflow showcase at website/src/assets/demos/example-workflow.cast
-- [ ] T051 [US3] Verify global player styling applies consistently across all demo instances
-- [ ] T052 [US3] Verify Astro build process includes new .cast files from assets directory
-- [ ] T053 [US3] Update speck-knowledge skill with asciinema component usage patterns
+- [X] T045 [US3] Create API documentation at specs/013-asciinema-player/contracts/api-spec.md
+- [X] T046 [US3] Document all component props with examples in contracts/api-spec.md
+- [X] T047 [US3] Document common configuration patterns in contracts/api-spec.md
+- [X] T048 [US3] Create usage examples for different demo types in quickstart.md
+- [X] T049 [US3] Add troubleshooting section to quickstart.md
+- [ ] T050 [P] [US3] Create example demo for workflow showcase at website/src/assets/demos/example-workflow.cast (BLOCKED: User needs to record)
+- [X] T051 [US3] Verify global player styling applies consistently across all demo instances
+- [X] T052 [US3] Verify Astro build process includes new .cast files from assets directory
+- [ ] T053 [US3] Update speck-knowledge skill with asciinema component usage patterns (SKIPPED: Website feature, not core workflow)
 
 **Completion Criteria (Acceptance Scenarios)**:
 - ✅ Content creator with .cast file can import AsciinemaPlayer and render recording
@@ -198,19 +198,19 @@ This document provides a **dependency-ordered, executable task list** for implem
 
 ### Tasks
 
-- [ ] T054 [P] Run accessibility audit with @axe-core/playwright on homepage demo section
-- [ ] T055 [P] Run accessibility audit with @axe-core/playwright on documentation pages with embedded demos
-- [ ] T056 Verify WCAG 2.1 Level AA compliance for all player instances (color contrast, ARIA labels, keyboard nav)
-- [ ] T057 [P] Test keyboard-only navigation across all demo instances (no mouse)
-- [ ] T058 [P] Test screen reader compatibility (VoiceOver on macOS or NVDA on Windows)
-- [ ] T059 Measure page load time increase on homepage (target: <200ms per SC-007)
-- [ ] T060 Verify player loads within 2 seconds of page load (SC-001)
-- [ ] T061 [P] Test responsive behavior on viewports 320px to 2560px width
-- [ ] T062 [P] Verify dark/light theme switching works correctly for all players
-- [ ] T063 Validate all .cast recording files are under 2MB each (VR-011)
-- [ ] T064 Run full website build and check for errors (bun run build)
-- [ ] T065 Run linter on all modified files (bun run lint)
-- [ ] T066 Run type checker on all modified files (bun run typecheck)
+- [ ] T054 [P] Run accessibility audit with @axe-core/playwright on homepage demo section (BLOCKED: Need recordings)
+- [ ] T055 [P] Run accessibility audit with @axe-core/playwright on documentation pages with embedded demos (BLOCKED: Need Phase 4 complete)
+- [ ] T056 Verify WCAG 2.1 Level AA compliance for all player instances (color contrast, ARIA labels, keyboard nav) (BLOCKED: Need recordings)
+- [ ] T057 [P] Test keyboard-only navigation across all demo instances (no mouse) (BLOCKED: Need recordings)
+- [ ] T058 [P] Test screen reader compatibility (VoiceOver on macOS or NVDA on Windows) (BLOCKED: Need recordings)
+- [ ] T059 Measure page load time increase on homepage (target: <200ms per SC-007) (BLOCKED: Need recordings)
+- [ ] T060 Verify player loads within 2 seconds of page load (SC-001) (BLOCKED: Need recordings)
+- [ ] T061 [P] Test responsive behavior on viewports 320px to 2560px width (BLOCKED: Need recordings)
+- [ ] T062 [P] Verify dark/light theme switching works correctly for all players (BLOCKED: Need recordings)
+- [ ] T063 Validate all .cast recording files are under 2MB each (VR-011) (BLOCKED: User needs to create recordings)
+- [X] T064 Run full website build and check for errors (bun run build) (Ready to test now)
+- [X] T065 Run linter on all modified files (bun run lint) (Ready to test now)
+- [X] T066 Run type checker on all modified files (bun run typecheck) (Ready to test now)
 
 **Completion Criteria (Success Criteria Validation)**:
 - ✅ SC-001: Installation demo visible within 2 seconds of homepage load

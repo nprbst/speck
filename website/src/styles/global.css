@@ -11,6 +11,23 @@
 @import 'asciinema-player/dist/bundle/asciinema-player.css';
 
 /* ========================================
+   asciinema Player Theme Overrides
+   ======================================== */
+
+/* Default theme (light mode) */
+.asciinema-player {
+  --background-color: var(--color-bg-secondary);
+  --foreground-color: var(--color-text);
+  --color-border: var(--color-border);
+}
+
+/* Dark mode overrides */
+[data-theme='dark'] .asciinema-player {
+  --background-color: var(--color-code-bg);
+  --foreground-color: var(--color-code-text);
+}
+
+/* ========================================
    CSS Reset
    ======================================== */
 
