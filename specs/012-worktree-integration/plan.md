@@ -67,6 +67,9 @@ Will be validated during implementation. All code must pass `bun run typecheck` 
 ✅ **Principle X: Zero Test Regression Policy** - PENDING
 Baseline test suite status will be captured before implementation begins. Final implementation must maintain or improve pass rate.
 
+✅ **Principle XI: Website Documentation Synchronization** - PASS
+Feature adds user-facing commands, workflows, and configuration options. Website documentation updates will be required and are included in implementation planning (Phase 9 tasks).
+
 **Gate Result**: ✅ PASS - Proceed to Phase 0 research
 
 ### Post-Design Evaluation (Phase 1)
@@ -100,6 +103,9 @@ Design includes full TypeScript interfaces and Zod schemas for type safety. Impl
 
 ✅ **Principle X: Zero Test Regression Policy** - PENDING
 Test baseline will be captured before implementation. Feature completion requires zero new test failures.
+
+✅ **Principle XI: Website Documentation Synchronization** - PENDING
+This feature adds major user-facing functionality (commands, workflows, configuration). Website documentation updates are tracked in Phase 9 tasks and must be completed before release.
 
 **Gate Result**: ✅ PASS - Proceed to Phase 2 (tasks generation)
 
@@ -188,6 +194,30 @@ All constitutional principles pass pre-design and post-design evaluation. The fe
 - Separates commands from implementation (Principle VIII)
 - Will enforce code quality standards during implementation (Principle IX)
 - Will validate zero test regressions before completion (Principle X)
+- Will update website documentation for user-facing changes (Principle XI)
+
+## Documentation Impact
+
+**Website Updates Required**: ✅ YES - This feature adds major user-facing functionality
+
+**Affected Documentation Pages**:
+- `website/src/content/docs/getting-started/quickstart.md` - Add worktree setup instructions
+- `website/src/content/docs/features/worktrees.md` - NEW PAGE - Comprehensive worktree guide
+- `website/src/content/docs/configuration/speck-config.md` - NEW PAGE - Document `.speck/config.json` schema
+- `website/src/content/docs/commands/specify.md` - Add `--no-worktree`, `--no-ide`, `--no-deps` flags
+- `website/src/content/docs/commands/branch.md` - Add worktree integration flags
+- `website/src/content/docs/workflows/feature-development.md` - Update with worktree workflow
+
+**Rationale**: Worktree integration is a major user-facing feature that:
+- Adds new commands and flags (`--no-worktree`, `--reuse-worktree`, etc.)
+- Changes default workflow behavior when enabled (automatic worktree creation)
+- Introduces new configuration options (`.speck/config.json`)
+- Affects getting-started experience (worktree setup in quickstart)
+- Provides new capabilities (parallel feature development, IDE auto-launch)
+
+**Documentation Tasks**: See tasks.md Phase 9 for website synchronization tasks
+
+**Compliance**: Per Constitution Principle XI, website documentation MUST be updated before feature completion. Website updates are tracked as mandatory tasks and verified in feature completion checklist.
 
 ## Next Steps
 

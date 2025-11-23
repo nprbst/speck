@@ -198,6 +198,23 @@ Based on plan.md, this feature uses:
 
 ---
 
+## Phase 9: Website Documentation (Constitution Principle XI)
+
+**Purpose**: Update project website to document worktree integration feature per Constitution Principle XI
+
+- [ ] T089 [Constitution] Create comprehensive worktree feature guide at website/src/content/docs/features/worktrees.md covering all user stories, configuration options, and workflows
+- [ ] T090 [Constitution] [P] Create .speck/config.json schema reference at website/src/content/docs/configuration/speck-config.md documenting all worktree configuration options
+- [ ] T091 [Constitution] [P] Update quickstart guide at website/src/content/docs/getting-started/quickstart.md to include worktree setup instructions and first-time configuration
+- [ ] T092 [Constitution] [P] Update /speck:specify command documentation at website/src/content/docs/commands/specify.md to document --no-worktree, --no-ide, --no-deps, --reuse-worktree flags
+- [ ] T093 [Constitution] [P] Update /speck:branch command documentation at website/src/content/docs/commands/branch.md to document worktree integration flags
+- [ ] T094 [Constitution] [P] Update feature development workflow guide at website/src/content/docs/workflows/feature-development.md to include worktree-based parallel development workflow
+- [ ] T095 [Constitution] Verify website builds without errors: `bun run website:build`
+- [ ] T096 [Constitution] Preview website documentation locally at localhost:4321 using `bun run website:dev` and verify all links, examples, and screenshots are correct
+
+**Checkpoint**: Website documentation complete and verified - feature ready for release
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -211,6 +228,7 @@ Based on plan.md, this feature uses:
   - US3 (Phase 6): Depends on US1 AND US4 completion (needs file operations before installing deps)
 - **Manual Commands (Phase 7)**: Depends on all user stories being complete
 - **Polish (Phase 8)**: Depends on all desired user stories being complete
+- **Website Documentation (Phase 9)**: Depends on implementation completion (Phases 1-8) - BLOCKS feature release per Constitution Principle XI
 
 ### User Story Dependencies
 
@@ -236,6 +254,7 @@ Based on plan.md, this feature uses:
 - Within US3: T053-T056 can run in parallel, T060-T061 can run in parallel
 - All Manual Commands (T064-T073) can run in parallel
 - All Polish tasks marked [P] can run in parallel
+- Within Website Documentation (Phase 9): T090-T094 can run in parallel (different files)
 
 ---
 
@@ -291,12 +310,14 @@ With multiple developers:
    - Developer C: User Story 3
 5. Once all user stories are complete:
    - Team: Manual Commands + Polish in parallel
+6. Once implementation complete:
+   - Team: Website Documentation (MANDATORY - Constitution Principle XI)
 
 ---
 
 ## Task Summary
 
-**Total Tasks**: 89
+**Total Tasks**: 97
 - **Phase 1 (Setup)**: 5 tasks (includes constitution test baseline - T000)
 - **Phase 2 (Foundational)**: 12 tasks (BLOCKING)
 - **Phase 3 (US1 - P1)**: 14 tasks
@@ -305,11 +326,13 @@ With multiple developers:
 - **Phase 6 (US3 - P3)**: 11 tasks
 - **Phase 7 (Manual Commands)**: 10 tasks
 - **Phase 8 (Polish)**: 15 tasks (includes constitution validation - T087, multi-repo test - T088)
+- **Phase 9 (Website Documentation)**: 8 tasks (MANDATORY - Constitution Principle XI)
 
-**Parallel Opportunities**: 48 tasks marked [P] can run in parallel with other tasks in same phase
+**Parallel Opportunities**: 53 tasks marked [P] can run in parallel with other tasks in same phase
 
 **MVP Scope** (Phases 1-3): 31 tasks
-**Full Feature** (All phases): 89 tasks
+**Feature Complete** (Phases 1-8): 89 tasks
+**Release Ready** (All phases including docs): 97 tasks
 
 ---
 

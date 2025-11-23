@@ -1,31 +1,31 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.4.0 → 1.5.0
+Version Change: 1.5.0 → 1.6.0
 Modified Principles: None
-Added Sections: "X. Zero Test Regression Policy" (new principle)
+Added Sections: "XI. Website Documentation Synchronization" (new principle)
 Removed Sections: None
 
 Templates Requiring Updates:
-  ✅ .claude/commands/speck.implement.md - add test validation step
-  ✅ .claude/commands/speck.tasks.md - add test regression check requirement
-  ⚠ .speck/scripts/check-prerequisites.ts - add test suite validation
-  ✅ Documentation - add test regression policy to workflow
+  ⚠ .claude/commands/speck.implement.md - add website sync step
+  ⚠ .claude/commands/speck.tasks.md - add website update task requirement
+  ⚠ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/tasks-template.md - add website documentation tasks
+  ⚠ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/plan-template.md - add website impact assessment
 
 Follow-up TODOs:
-  - Add pre-implementation test baseline capture
-  - Update CI/CD to enforce zero regression policy
-  - Document test regression policy in README.md
-  - Add test suite validation to check-prerequisites.ts
-  - Consider pre-commit hooks for test validation
+  - Add website sync validation to check-prerequisites.ts
+  - Update implementation workflow to include website documentation step
+  - Create guidance for determining when website updates are required
+  - Document website synchronization process in README.md
+  - Consider automation for website content generation from specs
 
-Rationale for 1.5.0 (MINOR bump):
-  - New principle added: Zero Test Regression Policy
-  - Establishes mandatory test suite health requirement for spec completion
-  - Prevents features from introducing test failures or reducing pass rate
+Rationale for 1.6.0 (MINOR bump):
+  - New principle added: Website Documentation Synchronization
+  - Establishes mandatory website update requirement for user-facing features
+  - Ensures public documentation stays current with feature development
   - No breaking changes to existing principles
-  - Backwards compatible but raises quality bar for future features
-  - Complements existing Code Quality Standards (Principle IX)
+  - Backwards compatible but adds new quality gate for completion
+  - Complements existing quality standards and ensures user-facing visibility
 -->
 
 # Speck Constitution
@@ -306,6 +306,66 @@ indicate test isolation or parallelism issues, NOT feature regressions. These
 are infrastructure bugs to be fixed separately, not blockers for feature
 completion (but SHOULD be documented and tracked for resolution).
 
+### XI. Website Documentation Synchronization (NON-NEGOTIABLE)
+
+Features that affect user-facing functionality, workflows, or capabilities MUST
+update the project website documentation before completion. The website MUST
+accurately reflect current feature set and usage patterns.
+
+**Rationale**: Outdated documentation creates friction for new users, hides
+valuable features, and damages trust in the project. The website is the primary
+entry point for users evaluating or learning Speck. Documentation drift creates
+technical debt that compounds over time and makes the website an unreliable
+source of truth. Documentation is not optional—it is a core deliverable.
+
+**Implementation Requirements**:
+
+- MANDATORY website updates for features that:
+  - Add, modify, or remove user-facing commands (`/speck.*`)
+  - Change workflow steps or phase requirements
+  - Add new capabilities or configuration options
+  - Modify CLI behavior or output formats
+  - Update constitutional principles or governance policies
+  - Affect getting-started experience or quickstart guides
+- Website update scope determination:
+  - During planning phase, identify affected documentation pages
+  - Add website update tasks to `tasks.md` for applicable features
+  - Document website impact in `plan.md` under "Documentation Impact" section
+  - Internal-only changes (refactoring, performance optimizations without API
+    changes) MAY skip website updates if user experience is unchanged
+- Website synchronization process:
+  - Website content lives in `website/src/content/docs/` (Markdown files)
+  - Updates MUST be made before feature completion
+  - Run `bun run website:sync` to synchronize documentation from specs if
+    automated sync is available
+  - Manually update affected pages if automated sync is not applicable
+  - Verify updates by building website locally: `bun run website:build`
+  - Preview changes: `bun run website:dev` (localhost:4321)
+- Documentation quality standards:
+  - Examples MUST be tested and verified to work
+  - Screenshots MUST be current (if applicable)
+  - Links MUST be validated (no broken references)
+  - Terminology MUST match current implementation
+  - Version-specific guidance MUST note version requirements
+- Quality gate validation:
+  - Feature completion checklist MUST include: "Website docs: ✅ Updated and
+    verified"
+  - Pull request template MUST include website documentation verification
+  - `/speck.implement` workflow SHOULD prompt for website updates if user-facing
+    changes detected
+  - `check-prerequisites.ts` MAY validate that website builds without errors
+- Exceptions:
+  - Pure bug fixes that don't change documented behavior MAY skip website updates
+  - Internal refactoring with no user-visible changes MAY skip website updates
+  - Experimental features marked as unstable/beta MAY defer website updates until
+    stabilization (document deferral rationale in plan.md)
+  - Website infrastructure changes (styling, navigation) follow their own
+    workflow and don't require spec-driven updates
+
+**Documentation Principle**: Every user-facing feature change creates a
+documentation debt. This principle ensures that debt is paid before the feature
+ships, not deferred indefinitely.
+
 ## Upstream Sync Requirements
 
 ### Release-Based Synchronization
@@ -371,6 +431,8 @@ phases leads to ambiguous specs, incomplete plans, and implementation rework.
   feature completion
 - Implementation MUST pass test regression validation (zero new failures) before
   feature completion
+- Implementation MUST update website documentation (if user-facing changes)
+  before feature completion
 
 ### Testability
 
@@ -445,6 +507,7 @@ for existing artifacts.
 - All implementations MUST pass typecheck and lint with zero errors/warnings
   (Principle IX)
 - All features MUST complete with zero test regressions (Principle X)
+- All user-facing features MUST update website documentation (Principle XI)
 
 **Versioning Policy**:
 
@@ -453,4 +516,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.5.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-22
+**Version**: 1.6.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-01-22

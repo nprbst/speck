@@ -125,6 +125,7 @@ As a developer, I want to configure which files and directories should be copied
 - **FR-017**: System MUST support optional configurable branch name prefix (e.g., `specs/`) for spec branches, stored in repository configuration
 - **FR-018**: System MUST automatically detect and clean up stale worktree references when worktrees are manually deleted, notifying the user of cleanup actions (see Edge Case: Stale worktree references)
 - **FR-020**: System MUST provide a worktree removal command that prompts for user confirmation before removing: (1) the worktree filesystem directory and all contents, (2) Git worktree administrative references via `git worktree remove`, and (3) worktree metadata from `.speck/config.json` if present
+- **FR-021**: Feature MUST update project website documentation before completion to document worktree integration commands, configuration options, and workflows per Constitution Principle XI
 
 ### Non-Functional Requirements
 
