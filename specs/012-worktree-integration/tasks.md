@@ -27,11 +27,11 @@ Based on plan.md, this feature uses:
 
 **Purpose**: Project initialization, configuration schema setup, and test baseline capture
 
-- [ ] T000 [Constitution] Capture test baseline before implementation (`bun test > specs/012-worktree-integration/test-baseline.txt`) to enable zero-regression validation per Constitution Principle X
-- [ ] T001 Add Zod dependency to package.json
-- [ ] T002 [P] Create .speck/scripts/worktree/ directory structure
-- [ ] T003 [P] Copy contracts/config-schema.ts to .speck/scripts/worktree/config-schema.ts
-- [ ] T004 [P] Copy contracts/internal-api.ts to .speck/scripts/worktree/types.ts (as type definitions only)
+- [X] T000 [Constitution] Capture test baseline before implementation (`bun test > specs/012-worktree-integration/test-baseline.txt`) to enable zero-regression validation per Constitution Principle X
+- [X] T001 Add Zod dependency to package.json
+- [X] T002 [P] Create .speck/scripts/worktree/ directory structure
+- [X] T003 [P] Copy contracts/config-schema.ts to .speck/scripts/worktree/config-schema.ts
+- [X] T004 [P] Copy contracts/internal-api.ts to .speck/scripts/worktree/types.ts (as type definitions only)
 
 ---
 
@@ -41,18 +41,18 @@ Based on plan.md, this feature uses:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Implement loadConfig function in .speck/scripts/worktree/config.ts
-- [ ] T006 [P] Implement saveConfig function in .speck/scripts/worktree/config.ts
-- [ ] T007 [P] Implement migrateConfig function in .speck/scripts/worktree/config.ts
-- [ ] T008 [P] Implement hasWorktreeSupport function (Git version check) in .speck/scripts/worktree/validation.ts
-- [ ] T009 Implement isValidBranchName function in .speck/scripts/worktree/validation.ts
-- [ ] T010 [P] Implement constructBranchName function in .speck/scripts/worktree/naming.ts
-- [ ] T011 [P] Implement constructWorktreePath function in .speck/scripts/worktree/naming.ts
-- [ ] T012 Create Git worktree operations (listWorktrees, getWorktreePath, isWorktree) in .speck/scripts/worktree/git.ts
-- [ ] T013 [P] Implement pruneWorktrees function in .speck/scripts/worktree/git.ts
-- [ ] T014 [P] Implement checkWorktreePath function in .speck/scripts/worktree/validation.ts
-- [ ] T015 [P] Implement hasSufficientDiskSpace function in .speck/scripts/worktree/validation.ts
-- [ ] T016 Define error classes (WorktreeError, GitWorktreeError, etc.) in .speck/scripts/worktree/errors.ts
+- [X] T005 Implement loadConfig function in .speck/scripts/worktree/config.ts
+- [X] T006 [P] Implement saveConfig function in .speck/scripts/worktree/config.ts
+- [X] T007 [P] Implement migrateConfig function in .speck/scripts/worktree/config.ts
+- [X] T008 [P] Implement hasWorktreeSupport function (Git version check) in .speck/scripts/worktree/validation.ts
+- [X] T009 Implement isValidBranchName function in .speck/scripts/worktree/validation.ts
+- [X] T010 [P] Implement constructBranchName function in .speck/scripts/worktree/naming.ts
+- [X] T011 [P] Implement constructWorktreePath function in .speck/scripts/worktree/naming.ts
+- [X] T012 Create Git worktree operations (listWorktrees, getWorktreePath, isWorktree) in .speck/scripts/worktree/git.ts
+- [X] T013 [P] Implement pruneWorktrees function in .speck/scripts/worktree/git.ts
+- [X] T014 [P] Implement checkWorktreePath function in .speck/scripts/worktree/validation.ts
+- [X] T015 [P] Implement hasSufficientDiskSpace function in .speck/scripts/worktree/validation.ts
+- [X] T016 Define error classes (WorktreeError, GitWorktreeError, etc.) in .speck/scripts/worktree/errors.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
