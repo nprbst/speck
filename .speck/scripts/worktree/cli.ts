@@ -8,43 +8,71 @@
  */
 
 import { parseArgs } from "util";
-import { createWorktree } from "./create";
-import { removeWorktree } from "./remove";
-import { listWorktrees } from "./git";
-import { loadConfig } from "./config";
+import { executeCreateCommand } from "./cli-create";
+import { executeRemoveCommand } from "./cli-remove";
+import { executeListCommand } from "./cli-list";
+import { executePruneCommand } from "./cli-prune";
+import { executeInitCommand } from "./cli-init";
 
 const USAGE = `
 Speck Worktree CLI
 
 Usage:
-  bun .speck/scripts/worktree/cli.ts create --branch <name> --repo-path <path> [options]
-  bun .speck/scripts/worktree/cli.ts remove --branch <name> --repo-path <path>
-  bun .speck/scripts/worktree/cli.ts list --repo-path <path>
+  bun .speck/scripts/worktree/cli.ts <command> [options]
 
 Commands:
   create    Create a new worktree for a branch
   remove    Remove an existing worktree
   list      List all worktrees
+  prune     Cleanup stale worktree references
+  init      Initialize or update worktree configuration
 
-Options:
+Create Options:
   --branch <name>         Branch name for the worktree
-  --repo-path <path>      Path to repository root
+  --repo-path <path>      Path to repository root (default: .)
   --worktree-path <path>  Custom worktree path (default: .speck/worktrees/<branch>)
   --no-ide                Skip IDE auto-launch (override config)
   --no-deps               Skip dependency installation (override config)
   --reuse                 Reuse existing worktree directory if it exists
   --json                  Output results as JSON
+
+Remove Options:
+  --branch <name>         Branch name for the worktree
+  --repo-path <path>      Path to repository root (default: .)
+  --force                 Force removal even if worktree has uncommitted changes
+  --json                  Output results as JSON
+
+List Options:
+  --repo-path <path>      Path to repository root (default: .)
+  --json                  Output results as JSON
+  --verbose               Show detailed worktree information
+
+Prune Options:
+  --repo-path <path>      Path to repository root (default: .)
+  --dry-run               Show what would be pruned without removing
+  --json                  Output results as JSON
+
+Init Options:
+  --repo-path <path>      Path to repository root (default: .)
+  --defaults              Use default configuration values (non-interactive)
+  --minimal               Use minimal configuration (worktree enabled only)
+  --json                  Output results as JSON
+
+Global Options:
   --help                  Show this help message
 
 Examples:
   # Create worktree for feature branch
-  bun .speck/scripts/worktree/cli.ts create --branch 001-user-auth --repo-path .
+  bun .speck/scripts/worktree/cli.ts create --branch 001-user-auth
 
-  # Create worktree with custom path
-  bun .speck/scripts/worktree/cli.ts create --branch 002-api --repo-path . --worktree-path ./custom/path
+  # List all worktrees with details
+  bun .speck/scripts/worktree/cli.ts list --verbose
 
-  # Remove worktree
-  bun .speck/scripts/worktree/cli.ts remove --branch 001-user-auth --repo-path .
+  # Prune stale worktrees (dry-run)
+  bun .speck/scripts/worktree/cli.ts prune --dry-run
+
+  # Initialize with default configuration
+  bun .speck/scripts/worktree/cli.ts init --defaults
 `;
 
 interface CliArgs {
@@ -55,6 +83,11 @@ interface CliArgs {
   "no-ide"?: boolean;
   "no-deps"?: boolean;
   reuse?: boolean;
+  force?: boolean;
+  verbose?: boolean;
+  "dry-run"?: boolean;
+  defaults?: boolean;
+  minimal?: boolean;
   json?: boolean;
   help?: boolean;
 }
@@ -70,7 +103,7 @@ async function main(): Promise<void> {
 
   // Parse command (first positional arg)
   const command = args[0];
-  if (!command || !["create", "remove", "list"].includes(command)) {
+  if (!command || !["create", "remove", "list", "prune", "init"].includes(command)) {
     console.error(`Error: Unknown command '${command || "(none)"}'`);
     console.log(USAGE);
     process.exit(1);
@@ -86,6 +119,11 @@ async function main(): Promise<void> {
       "no-ide": { type: "boolean", default: false },
       "no-deps": { type: "boolean", default: false },
       reuse: { type: "boolean", default: false },
+      force: { type: "boolean", default: false },
+      verbose: { type: "boolean", default: false },
+      "dry-run": { type: "boolean", default: false },
+      defaults: { type: "boolean", default: false },
+      minimal: { type: "boolean", default: false },
       json: { type: "boolean", default: false },
       help: { type: "boolean", default: false },
     },
@@ -94,112 +132,77 @@ async function main(): Promise<void> {
   }) as { values: CliArgs };
 
   const repoPath = values["repo-path"] || ".";
-  const outputJson = values.json ?? false;
 
   try {
     switch (command) {
       case "create": {
-        if (!values.branch || !repoPath) {
-          throw new Error("--branch and --repo-path are required for 'create' command");
+        if (!values.branch) {
+          throw new Error("--branch is required for 'create' command");
         }
 
-        // Load configuration to check if worktree is enabled
-        const config = await loadConfig(repoPath);
-
-        if (!config.worktree?.enabled) {
-          if (outputJson) {
-            console.log(JSON.stringify({
-              success: false,
-              message: "Worktree integration is disabled in .speck/config.json",
-              skipped: true,
-            }));
-          } else {
-            console.log("⚠ Worktree integration is disabled. Set worktree.enabled = true in .speck/config.json");
-          }
-          process.exit(0);
-        }
-
-        const result = await createWorktree({
+        await executeCreateCommand({
+          branch: values.branch,
           repoPath,
-          branchName: values.branch,
           worktreePath: values["worktree-path"],
           skipIDE: values["no-ide"],
           skipDeps: values["no-deps"],
           reuseExisting: values.reuse ?? false,
+          json: values.json ?? false,
         });
-
-        if (outputJson) {
-          console.log(JSON.stringify({
-            success: result.success,
-            worktreePath: result.worktreePath,
-            branchName: result.metadata.branchName,
-            status: result.metadata.status,
-            errors: result.errors,
-          }, null, 2));
-        } else {
-          if (result.success) {
-            console.log(`✓ Created worktree at ${result.worktreePath}`);
-            if (config.worktree.ide?.autoLaunch && !values["no-ide"]) {
-              console.log(`✓ Launched ${config.worktree.ide.editor}`);
-            }
-          } else {
-            console.error(`✗ Failed to create worktree:`);
-            result.errors?.forEach((err) => console.error(`  - ${err}`));
-            process.exit(1);
-          }
-        }
         break;
       }
 
       case "remove": {
-        if (!values.branch || !repoPath) {
-          throw new Error("--branch and --repo-path are required for 'remove' command");
+        if (!values.branch) {
+          throw new Error("--branch is required for 'remove' command");
         }
 
-        await removeWorktree({
+        await executeRemoveCommand({
+          branch: values.branch,
           repoPath,
-          branchName: values.branch,
-          force: false,
+          force: values.force ?? false,
+          json: values.json ?? false,
         });
-
-        if (outputJson) {
-          console.log(JSON.stringify({ success: true, branchName: values.branch }));
-        } else {
-          console.log(`✓ Removed worktree for branch ${values.branch}`);
-        }
         break;
       }
 
       case "list": {
-        if (!repoPath) {
-          throw new Error("--repo-path is required for 'list' command");
-        }
+        await executeListCommand({
+          repoPath,
+          json: values.json ?? false,
+          verbose: values.verbose ?? false,
+        });
+        break;
+      }
 
-        const worktrees = await listWorktrees(repoPath);
+      case "prune": {
+        await executePruneCommand({
+          repoPath,
+          dryRun: values["dry-run"] ?? false,
+          json: values.json ?? false,
+        });
+        break;
+      }
 
-        if (outputJson) {
-          console.log(JSON.stringify({ worktrees }, null, 2));
-        } else {
-          if (worktrees.length === 0) {
-            console.log("No worktrees found");
-          } else {
-            console.log(`Found ${worktrees.length} worktree(s):\n`);
-            worktrees.forEach((wt) => {
-              console.log(`  ${wt.branch || "(main)"}`);
-              console.log(`    Path: ${wt.path}`);
-              console.log();
-            });
-          }
-        }
+      case "init": {
+        await executeInitCommand({
+          repoPath,
+          defaults: values.defaults ?? false,
+          minimal: values.minimal ?? false,
+          json: values.json ?? false,
+        });
         break;
       }
     }
   } catch (error) {
+    const outputJson = values.json ?? false;
     if (outputJson) {
-      console.log(JSON.stringify({
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      }));
+      console.log(
+        JSON.stringify({
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      );
     } else {
       console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
     }

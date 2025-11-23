@@ -87,6 +87,11 @@ export interface GitWorktreeInfo {
 }
 
 /**
+ * Alias for GitWorktreeInfo (for backward compatibility)
+ */
+export type Worktree = GitWorktreeInfo;
+
+/**
  * Prune result
  */
 export interface PruneWorktreesResult {
