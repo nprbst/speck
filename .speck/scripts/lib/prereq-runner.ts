@@ -205,7 +205,7 @@ export function formatPrereqContext(result: PrereqCheckResult): string {
     return "";
   }
 
-  const { FEATURE_DIR, AVAILABLE_DOCS, MODE, FILE_CONTENTS, WORKFLOW_MODE } = result.output;
+  const { FEATURE_DIR, AVAILABLE_DOCS, MODE, FILE_CONTENTS, WORKFLOW_MODE, IMPL_PLAN, TASKS, REPO_ROOT } = result.output;
 
   const contextData: Record<string, unknown> = {
     MODE,
@@ -219,6 +219,16 @@ export function formatPrereqContext(result: PrereqCheckResult): string {
   }
   if (WORKFLOW_MODE) {
     contextData.WORKFLOW_MODE = WORKFLOW_MODE;
+  }
+  // Add implementation paths for multi-repo support
+  if (IMPL_PLAN) {
+    contextData.IMPL_PLAN = IMPL_PLAN;
+  }
+  if (TASKS) {
+    contextData.TASKS = TASKS;
+  }
+  if (REPO_ROOT) {
+    contextData.REPO_ROOT = REPO_ROOT;
   }
 
   return `<!-- SPECK_PREREQ_CONTEXT
