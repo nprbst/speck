@@ -16,6 +16,7 @@
 8. [Migration Strategies](#migration-strategies)
 9. [Trade-offs and Alternatives](#trade-offs-and-alternatives)
 10. [Testing Strategy](#testing-strategy)
+11. [Implementation Notes](#implementation-notes)
 
 ---
 
@@ -401,15 +402,20 @@ export async function getFeaturePaths(): Promise<FeaturePaths> {
 
   // Use speckRoot for specs, repoRoot for git operations
   const featureDir = findFeatureDirByPrefix(config.specsDir, branchName);
+  const featureName = path.basename(featureDir);
 
   return {
     REPO_ROOT: config.repoRoot,        // For git operations
     SPECK_ROOT: config.speckRoot,      // For spec storage
     SPECS_DIR: config.specsDir,        // Full path to specs/
     MODE: config.mode,                 // 'single-repo' | 'multi-repo'
-    SPEC_FILE: path.join(featureDir, "spec.md"),
-    PLAN_FILE: path.join(featureDir, "plan.md"),
-    TASKS_FILE: path.join(featureDir, "tasks.md"),
+    FEATURE_DIR: featureDir,           // Directory containing shared artifacts
+    SPEC_FILE: path.join(featureDir, "spec.md"),  // Shared in multi-repo
+    PLAN_FILE: path.join(config.repoRoot, "specs", featureName, "plan.md"),  // Always local
+    TASKS_FILE: path.join(config.repoRoot, "specs", featureName, "tasks.md"),  // Always local
+    RESEARCH: path.join(featureDir, "research.md"),  // Shared in multi-repo
+    DATA_MODEL: path.join(featureDir, "data-model.md"),  // Shared in multi-repo
+    CONTRACTS_DIR: path.join(featureDir, "contracts"),  // Shared in multi-repo
     CONSTITUTION: path.join(config.repoRoot, '.speck', 'constitution.md'), // Always local!
     // ...
   };
@@ -1114,6 +1120,43 @@ test -f ../../specs/001-shared-components/spec.md
 test -f ../ui/specs/001-shared-components/plan.md
 test -f ../api/specs/001-shared-components/plan.md
 ```
+
+---
+
+## Implementation Notes
+
+### Bug Fix: Multi-Repo Planning Command Path Resolution (2025-11-23)
+
+**Issue**: The `/speck.plan` and `/speck.tasks` commands were writing `plan.md` and `tasks.md` to the root repo's specs directory instead of the child repo's local specs directory in multi-repo mode.
+
+**Root Cause**: Commands were receiving `FEATURE_DIR` from prerequisite context, which points to the shared root repo specs directory. The commands were instructed to write all outputs to `FEATURE_DIR`, violating the design principle that implementation artifacts (plan.md, tasks.md) should be local to each repository.
+
+**Solution**:
+1. **Enhanced prerequisite context** ([.speck/scripts/check-prerequisites.ts](../../.speck/scripts/check-prerequisites.ts)):
+   - Added `IMPL_PLAN`, `TASKS`, and `REPO_ROOT` to `ValidationOutput` interface
+   - These paths point to child repo's local specs directory in multi-repo mode
+   - Pre-loaded file contents already read from correct locations (no bug there)
+
+2. **Updated command specifications**:
+   - [.claude/commands/speck.plan.md](../../.claude/commands/speck.plan.md): Added explicit instruction to write plan.md to `IMPL_PLAN` path, not `FEATURE_DIR/plan.md`
+   - [.claude/commands/speck.tasks.md](../../.claude/commands/speck.tasks.md): Added explicit instruction to write tasks.md to `TASKS` path, with branch-specific logic
+
+3. **Integration tests** ([tests/integration/multi-repo-plan-execution.test.ts](../../tests/integration/multi-repo-plan-execution.test.ts)):
+   - T100: Verify plan.md writes to child repo
+   - T101: Verify tasks.md writes to child repo
+   - T102: Verify commands read shared artifacts from root, write implementation artifacts to child
+   - T103: Verify check-prerequisites returns correct paths in multi-repo mode
+   - T104: Verify branch-specific tasks write to correct location
+
+**Path Resolution Summary**:
+- **Shared artifacts** (read from root): `spec.md`, `research.md`, `data-model.md`, `contracts/`
+- **Local artifacts** (write to child): `plan.md`, `tasks.md`, `constitution.md`
+- **Context paths provided to commands**:
+  - `FEATURE_DIR`: Points to shared root specs (read-only)
+  - `IMPL_PLAN`: Points to child's local plan.md (read-write)
+  - `TASKS`: Points to child's local tasks.md (read-write)
+
+**Verification**: All multi-repo tests pass (18/18), path resolution tests pass (10/10), new integration tests pass (5/5).
 
 ---
 
