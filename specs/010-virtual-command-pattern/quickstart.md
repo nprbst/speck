@@ -666,7 +666,7 @@ Add this instruction at the beginning of your slash command:
    ```
    Use the FEATURE_DIR and AVAILABLE_DOCS values from this JSON. All paths are absolute.
 
-   **Fallback**: If the comment is not present (backwards compatibility), run:
+   **Fallback**: If the comment is not present (VSCode hook bug), run:
    ```bash
    speck-check-prerequisites --json [flags]
    ```
@@ -705,7 +705,7 @@ Store this value and use `$PLUGIN_ROOT` in all subsequent script paths.
 When specifying fallback commands, use virtual command names (without paths):
 
 ```markdown
-**Fallback**: If the comment is not present (backwards compatibility), run:
+**Fallback**: If the comment is not present (VSCode hook bug), run:
 \`\`\`bash
 speck-check-prerequisites --json
 \`\`\`
@@ -782,7 +782,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    \`\`\`
    Use FEATURE_DIR to locate spec.md and other artifacts.
 
-   **Fallback**: If the comment is not present (backwards compatibility), run:
+   **Fallback**: If the comment is not present (VSCode hook bug), run:
    \`\`\`bash
    speck-check-prerequisites --json
    \`\`\`
