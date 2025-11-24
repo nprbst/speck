@@ -28,8 +28,8 @@ const IDE_CONFIG: Record<
  * @param command - Command to check (e.g., "code", "cursor")
  * @returns true if command is available in PATH
  */
-export function isIDEAvailable(command: string): boolean {
-  const path = Bun.which(command);
+export async function isIDEAvailable(command: string): Promise<boolean> {
+  const path = await Bun.which(command);
   return path !== null;
 }
 
@@ -45,11 +45,11 @@ export function isIDEAvailable(command: string): boolean {
  *
  * @returns Array of available IDEs with metadata
  */
-export function detectAvailableIDEs(): IDEInfo[] {
+export async function detectAvailableIDEs(): Promise<IDEInfo[]> {
   const ides: IDEInfo[] = [];
 
   for (const config of Object.values(IDE_CONFIG)) {
-    const available = isIDEAvailable(config.command);
+    const available = await isIDEAvailable(config.command);
     if (available) {
       const args: string[] = [];
       if (config.newWindowFlag) {
@@ -119,7 +119,6 @@ export function getIDECommand(
  * @param options - IDE launch options
  * @returns Result of launch operation
  */
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function launchIDE(
   options: LaunchIDEOptions
 ): Promise<LaunchIDEResult> {
@@ -136,7 +135,7 @@ export async function launchIDE(
     };
   }
 
-  const available = isIDEAvailable(config.command);
+  const available = await isIDEAvailable(config.command);
   if (!available) {
     return {
       success: false,
