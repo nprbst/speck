@@ -205,7 +205,7 @@ export function formatPrereqContext(result: PrereqCheckResult): string {
     return "";
   }
 
-  const { FEATURE_DIR, AVAILABLE_DOCS, MODE, FILE_CONTENTS, WORKFLOW_MODE, IMPL_PLAN, TASKS, REPO_ROOT } = result.output;
+  const { FEATURE_DIR, AVAILABLE_DOCS, MODE, WORKFLOW_MODE, IMPL_PLAN, TASKS, REPO_ROOT } = result.output;
 
   const contextData: Record<string, unknown> = {
     MODE,
@@ -214,9 +214,10 @@ export function formatPrereqContext(result: PrereqCheckResult): string {
   };
 
   // Add optional fields if present
-  if (FILE_CONTENTS) {
-    contextData.FILE_CONTENTS = FILE_CONTENTS;
-  }
+  // TEMPORARILY DISABLED: FILE_CONTENTS bloats context
+  // if (FILE_CONTENTS) {
+  //   contextData.FILE_CONTENTS = FILE_CONTENTS;
+  // }
   if (WORKFLOW_MODE) {
     contextData.WORKFLOW_MODE = WORKFLOW_MODE;
   }
