@@ -29,15 +29,15 @@ Based on plan.md project structure:
 
 **Purpose**: Remove stacked PR and virtual command code, prepare for new structure
 
-- [ ] T001 Capture test baseline with `bun test > specs/015-scope-simplification/test-baseline.txt`
-- [ ] T002 [P] Delete stacked PR command `.speck/scripts/commands/branch.ts`
-- [ ] T003 [P] Delete stacked PR slash command `.claude/commands/speck.branch.md`
-- [ ] T004 [P] Delete virtual command hook utils `.speck/scripts/lib/hook-utils.ts` (if exists)
-- [ ] T005 [P] Delete virtual command mode detector `.speck/scripts/lib/mode-detector.ts` (if exists)
-- [ ] T006 [P] Delete virtual command build script `.speck/scripts/build-hook.ts` (if exists)
-- [ ] T007 Remove branch command registration from `.speck/scripts/commands/index.ts`
-- [ ] T008 Remove PreToolUse hook from `.claude-plugin/plugin.json`
-- [ ] T009 Grep verify: no remaining references to removed files in codebase
+- [X] T001 Capture test baseline with `bun test > specs/015-scope-simplification/test-baseline.txt`
+- [X] T002 [P] Delete stacked PR command `.speck/scripts/commands/branch.ts`
+- [X] T003 [P] Delete stacked PR slash command `.claude/commands/speck.branch.md`
+- [X] T004 [P] Delete virtual command hook utils `.speck/scripts/lib/hook-utils.ts` (if exists)
+- [X] T005 [P] Delete virtual command mode detector `.speck/scripts/lib/mode-detector.ts` (if exists)
+- [X] T006 [P] Delete virtual command build script `.speck/scripts/build-hook.ts` (if exists)
+- [X] T007 Remove branch command registration from `.speck/scripts/commands/index.ts`
+- [X] T008 Remove PreToolUse hook from `.claude-plugin/plugin.json`
+- [X] T009 Grep verify: no remaining references to removed files in codebase
 
 ---
 
@@ -47,14 +47,14 @@ Based on plan.md project structure:
 
 **CRITICAL**: This must complete before user stories as they depend on simplified branch mapping
 
-- [ ] T010 Write unit test for simplified BranchEntry schema in `tests/unit/branch-mapper.test.ts`
-- [ ] T011 Write unit test for schema migration (v1.x → v2.0.0) in `tests/unit/branch-mapper.test.ts`
-- [ ] T012 Refactor `BranchEntry` interface to remove baseBranch, status, pr fields in `.speck/scripts/common/branch-mapper.ts`
-- [ ] T013 Implement `migrateBranchMapping()` function for v1.x → v2.0.0 migration in `.speck/scripts/common/branch-mapper.ts`
-- [ ] T014 Implement `needsMigration()` detection in `.speck/scripts/common/branch-mapper.ts`
-- [ ] T015 Add auto-migration on load in branch-mapper.ts
-- [ ] T016 Write contract test for branches.json v2.0.0 schema in `tests/contract/branch-schema.test.ts`
-- [ ] T017 Verify migration tests pass with `bun test tests/unit/branch-mapper.test.ts`
+- [X] T010 Write unit test for simplified BranchEntry schema in `tests/unit/branch-mapper.test.ts`
+- [X] T011 Write unit test for schema migration (v1.x → v2.0.0) in `tests/unit/branch-mapper.test.ts`
+- [X] T012 Refactor `BranchEntry` interface to remove baseBranch, status, pr fields in `.speck/scripts/common/branch-mapper.ts`
+- [X] T013 Implement `migrateBranchMapping()` function for v1.x → v2.0.0 migration in `.speck/scripts/common/branch-mapper.ts`
+- [X] T014 Implement `needsMigration()` detection in `.speck/scripts/common/branch-mapper.ts`
+- [X] T015 Add auto-migration on load in branch-mapper.ts
+- [X] T016 Write contract test for branches.json v2.0.0 schema in `tests/contract/branch-schema-validation.test.ts`
+- [X] T017 Verify migration tests pass with `bun test tests/unit/branch-mapper.test.ts`
 
 **Checkpoint**: Branch mapping simplified - CLI consolidation can now begin
 

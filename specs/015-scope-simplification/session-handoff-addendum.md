@@ -248,7 +248,112 @@ If any step fails, the worktree should still be created and usable:
 
 ---
 
-## 8. References
+## 8. Auto-Submitting Initial Prompt (Limitation)
+
+### The Challenge
+
+Once the Claude Code Panel has been focused via `${command:claude-vscode.focus}`, can we programmatically submit an initial message?
+
+**Finding**: There is no `claude-vscode.sendMessage` or similar command to programmatically submit a prompt to the extension panel. The extension (still in beta) lacks this automation capability.
+
+### Alternative Approaches
+
+#### Option 1: Terminal-Based Claude (Fully Automated)
+
+Instead of the extension panel, open a terminal with Claude and an initial prompt:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Claude with Handoff",
+      "type": "shell",
+      "command": "claude",
+      "args": ["Read .claude/handoff.md and proceed with the task described there."],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
+```
+
+**Benefits**: Full IDE integration (diffs, file refs, diagnostics) since Claude auto-detects VSCode - just runs in terminal instead of the sidebar panel.
+
+#### Option 2: SessionStart + Minimal User Action
+
+Keep the extension panel approach but make the SessionStart context actionable:
+
+```bash
+# In handoff.sh, make the context self-starting
+cat << EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "# HANDOFF - AUTO-START TASK\n\n$CONTEXT\n\n---\n\n**IMPORTANT**: Begin working on this task immediately. No need to wait for additional user input - the above context is your complete task specification. Start now."
+  }
+}
+EOF
+```
+
+User just types "go" or hits enter with empty prompt - Claude has full context and instructions to proceed.
+
+#### Option 3: Hybrid - Best of Both
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Initialize Worktree Session",
+      "dependsOn": ["Open Claude Panel", "Start Claude Terminal"],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Open Claude Panel",
+      "command": "${command:claude-vscode.focus}",
+      "type": "shell",
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent" }
+    },
+    {
+      "label": "Start Claude Terminal",
+      "type": "shell",
+      "command": "claude",
+      "args": ["--resume", "$(cat .claude/session-id 2>/dev/null || echo '')"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    }
+  ]
+}
+```
+
+### Recommendation
+
+**Use Option 1** (terminal-based) for fully automated handoff. You still get:
+- IDE integration (diffs in VSCode, not terminal)
+- File reference shortcuts
+- Automatic diagnostic sharing
+- The handoff context + immediate task start
+
+The extension panel is nicer visually, but terminal Claude with an initial prompt is the only way to achieve true zero-touch handoff right now.
+
+---
+
+## 9. References
 
 - Spec: [spec.md](./spec.md) - FR-027 through FR-031
 - Contract: [contracts/handoff-document.ts](./contracts/handoff-document.ts)

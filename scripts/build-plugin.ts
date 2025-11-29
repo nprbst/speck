@@ -175,17 +175,6 @@ async function generatePluginManifest(): Promise<void> {
       'development-tools',
     ],
     hooks: {
-      PreToolUse: [
-        {
-          matcher: 'Bash',
-          hooks: [
-            {
-              type: 'command',
-              command: 'bun ${CLAUDE_PLUGIN_ROOT}/dist/speck-hook.js --hook',
-            },
-          ],
-        },
-      ],
       UserPromptSubmit: [
         {
           matcher: '.*',
@@ -701,23 +690,6 @@ async function main() {
   console.log('🚀 Building Speck Plugin Package...\n');
 
   try {
-    // Step 0: Build hook bundle first
-    console.log('🔨 Building hook bundle...');
-    const buildHookScript = join(config.scriptsSourceDir, 'build-hook.ts');
-    if (existsSync(buildHookScript)) {
-      const buildResult = Bun.spawn(['bun', 'run', buildHookScript], {
-        stdout: 'pipe',
-        stderr: 'pipe',
-      });
-      const exitCode = await buildResult.exited;
-      if (exitCode !== 0) {
-        throw new Error('Hook bundle build failed');
-      }
-      console.log('   ✓ Hook bundle built successfully\n');
-    } else {
-      console.log('   ⚠️  Hook build script not found, skipping\n');
-    }
-
     // T009: Load version from package.json
     console.log('📦 Loading version from package.json...');
     config.version = await loadVersion();

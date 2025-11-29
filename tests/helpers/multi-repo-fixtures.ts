@@ -235,42 +235,31 @@ export async function createMultiRepoTestFixture(
 }
 
 /**
- * Create a branch entry for testing
+ * Create a branch entry for testing (simplified schema v2.0.0)
  *
  * @param name - Branch name
  * @param specId - Spec ID
- * @param baseBranch - Base branch (default: "main")
- * @param status - Branch status (default: "active")
  * @param parentSpecId - Parent spec ID (optional, for multi-repo child contexts)
- * @param pr - PR number (optional)
  * @returns BranchEntry object
  *
  * @example
  * ```typescript
- * const entry = createBranchEntry(
+ * const entry = createTestBranchEntry(
  *   "nprbst/auth-db",
  *   "009-multi-repo-stacked",
- *   "main",
- *   "active",
  *   "007-multi-repo-monorepo-support"
  * );
  * ```
  */
-export function createBranchEntry(
+export function createTestBranchEntry(
   name: string,
   specId: string,
-  baseBranch: string = "main",
-  status: "active" | "submitted" | "merged" | "abandoned" = "active",
-  parentSpecId?: string,
-  pr?: number
+  parentSpecId?: string
 ): BranchEntry {
   const now = new Date().toISOString();
   return {
     name,
     specId,
-    baseBranch,
-    status,
-    pr: pr ?? null,
     createdAt: now,
     updatedAt: now,
     ...(parentSpecId && { parentSpecId })
@@ -278,44 +267,57 @@ export function createBranchEntry(
 }
 
 /**
- * Create a stacked branch chain for testing
+ * @deprecated Use createTestBranchEntry instead (stacked PR fields removed in v2.0.0)
+ * Kept for backwards compatibility during migration
+ */
+export function createBranchEntry(
+  name: string,
+  specId: string,
+  _baseBranch: string = "main",
+  _status: "active" | "submitted" | "merged" | "abandoned" = "active",
+  parentSpecId?: string,
+  _pr?: number
+): BranchEntry {
+  // Stacked PR fields are ignored in v2.0.0
+  return createTestBranchEntry(name, specId, parentSpecId);
+}
+
+/**
+ * Create multiple branch entries for testing (simplified - no longer stacked)
  *
- * @param branchNames - Array of branch names in dependency order
+ * @param branchNames - Array of branch names
  * @param specId - Spec ID for all branches
- * @param baseBranch - Base branch for the first branch (default: "main")
  * @param parentSpecId - Parent spec ID (optional, for multi-repo child contexts)
- * @returns Array of BranchEntry objects forming a dependency chain
+ * @returns Array of BranchEntry objects
  *
  * @example
  * ```typescript
- * const chain = createBranchChain(
+ * const entries = createBranchEntries(
  *   ["nprbst/db-layer", "nprbst/api-layer", "nprbst/ui-layer"],
  *   "009-multi-repo-stacked",
- *   "main",
  *   "007-multi-repo-monorepo-support"
  * );
- * // Returns 3 branches:
- * // - nprbst/db-layer (base: main)
- * // - nprbst/api-layer (base: nprbst/db-layer)
- * // - nprbst/ui-layer (base: nprbst/api-layer)
  * ```
+ */
+export function createBranchEntries(
+  branchNames: string[],
+  specId: string,
+  parentSpecId?: string
+): BranchEntry[] {
+  return branchNames.map(name => createTestBranchEntry(name, specId, parentSpecId));
+}
+
+/**
+ * @deprecated Use createBranchEntries instead (stacked PR chain concept removed in v2.0.0)
+ * Kept for backwards compatibility during migration
  */
 export function createBranchChain(
   branchNames: string[],
   specId: string,
-  baseBranch: string = "main",
+  _baseBranch: string = "main",
   parentSpecId?: string
 ): BranchEntry[] {
-  const entries: BranchEntry[] = [];
-  let currentBase = baseBranch;
-
-  for (const name of branchNames) {
-    const entry = createBranchEntry(name, specId, currentBase, "active", parentSpecId);
-    entries.push(entry);
-    currentBase = name;  // Next branch stacks on this one
-  }
-
-  return entries;
+  return createBranchEntries(branchNames, specId, parentSpecId);
 }
 
 /**

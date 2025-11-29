@@ -15,11 +15,6 @@ import { main as checkPrerequisitesMain } from "../check-prerequisites";
 
 // Heavy commands: dynamic imports (lazy-loaded on demand)
 // Using arrow functions that return dynamic imports ensures the code is only loaded when called
-const lazyBranchMain = async (): Promise<MainFunction> => {
-  const module = await import("../branch-command");
-  return module.main;
-};
-
 const lazyEnvMain = async (): Promise<MainFunction> => {
   const module = await import("../env-command");
   return module.main;
@@ -66,11 +61,6 @@ export const registry: CommandRegistry = {
     handler: envHandler,
     lazyMain: lazyEnvMain,
     description: "Show Speck environment and configuration info",
-    version: "1.0.0",
-  },
-  branch: {
-    lazyMain: lazyBranchMain,
-    description: "Manage stacked feature branches",
     version: "1.0.0",
   },
   "check-prerequisites": {
