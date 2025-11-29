@@ -44,18 +44,123 @@ Claude Code includes a built-in Plan Mode for exploring complex tasks. How does 
 
 ## Using Them Together
 
-A typical flow might combine both:
+Plan Mode and Speck work best in concert - each handling a different phase of feature development.
 
-1. **Plan Mode** → Explore the problem, understand constraints
-2. `/speck.specify` → Capture what you learned as a formal spec
-3. `/speck.plan` → Document the technical approach
-4. `/speck.tasks` → Break into trackable tasks
-5. `/speck.implement` → Execute with Claude's help
+### The Integrated Workflow
 
-**Example scenario**: You're asked to "add caching to the API."
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        EXPLORATION PHASE                        │
+│                         (Plan Mode)                             │
+├─────────────────────────────────────────────────────────────────┤
+│  "What should we build? What are the options?"                  │
+│                                                                 │
+│  • Investigate existing codebase                                │
+│  • Research technical approaches                                │
+│  • Identify constraints and trade-offs                          │
+│  • Make architectural decisions                                 │
+│                                                                 │
+│  Output: ~/.claude/plans/caching-exploration.md                 │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+                    Decision point reached
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                      DOCUMENTATION PHASE                        │
+│                          (Speck)                                │
+├─────────────────────────────────────────────────────────────────┤
+│  "Here's what we're building and how we'll track it"            │
+│                                                                 │
+│  /speck.specify → Formal requirements (spec.md)                 │
+│  /speck.plan    → Technical design (plan.md)                    │
+│  /speck.tasks   → Trackable work items (tasks.md)               │
+│  /speck.implement → Automated execution                         │
+│                                                                 │
+│  Output: specs/042-api-caching/ (committed to repo)             │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-- **Plan Mode first**: Explore options (Redis vs in-memory vs file-based), understand current architecture, identify constraints
-- **Then Speck**: Once you know what you're building, capture it in `spec.md` so it's documented and trackable
+### Concrete Example: Adding API Caching
+
+**Day 1: Exploration with Plan Mode**
+
+You're asked to "add caching to the API." This is vague - you need to explore first.
+
+```
+> Enter Plan Mode
+
+"I need to add caching to our API. Help me explore the options."
+
+Claude explores:
+- Current API architecture (finds it's Express + PostgreSQL)
+- Existing caching patterns (finds none)
+- Options: Redis, in-memory (node-cache), HTTP caching headers
+- Constraints: Single server now, but may scale to multiple
+
+Plan Mode output (~/.claude/plans/api-caching.md):
+- Recommends Redis for future scalability
+- Identifies 3 high-traffic endpoints to cache first
+- Notes: need TTL strategy, cache invalidation on writes
+```
+
+**Day 1 (continued): Capture Decision with Speck**
+
+Now you know what to build. Capture it formally:
+
+```
+> /speck.specify "Add Redis caching to high-traffic API endpoints"
+
+Speck generates specs/042-api-caching/spec.md:
+- FR-001: Cache GET /api/products (5 min TTL)
+- FR-002: Cache GET /api/categories (1 hour TTL)
+- FR-003: Invalidate cache on POST/PUT/DELETE
+- Success criteria: 50% reduction in DB queries
+```
+
+**Day 2: Continue with Speck**
+
+You return the next day. Plan Mode exploration is still in `~/.claude/plans/` for reference, but your work continues from the Speck spec:
+
+```
+> /speck.plan
+
+Generates plan.md with:
+- Tech stack: ioredis, Express middleware
+- Architecture: Cache-aside pattern
+- File changes: src/middleware/cache.ts, src/config/redis.ts
+
+> /speck.tasks
+
+Generates tasks.md:
+- [ ] T001: Install ioredis dependency
+- [ ] T002: Create Redis connection config
+- [ ] T003: Implement cache middleware
+- [ ] T004: Add caching to /api/products endpoint
+...
+
+> /speck.implement
+
+Executes tasks in order, checking off as completed
+```
+
+**The handoff**: Plan Mode helped you decide *what* to build. Speck documents *what you decided* and tracks the implementation.
+
+### Why This Works
+
+| Phase | Tool | What It Provides |
+|-------|------|------------------|
+| **Exploration** | Plan Mode | Freedom to think without commitment |
+| **Decision** | You | Choose approach based on exploration |
+| **Documentation** | Speck | Permanent record of requirements |
+| **Design** | Speck | Technical approach captured |
+| **Execution** | Speck | Trackable, automatable tasks |
+
+### Key Insight: Different Artifacts, Different Purposes
+
+- **Plan Mode plans** (`~/.claude/plans/`): Your thinking process - exploratory, maybe messy, personal
+- **Speck specs** (`specs/NNN-feature/`): Your decisions - structured, reviewable, shared
+
+You don't need to copy your Plan Mode exploration into Speck. The exploration served its purpose. Speck captures the *outcome* of that thinking in a format your team can use.
 
 ## Key Differences
 
@@ -157,9 +262,16 @@ When you won't need the documentation:
 | "My team needs visibility" | Speck |
 | "Quick one-off investigation" | Plan Mode |
 | "Feature spanning multiple days" | Speck |
-| "Exploring before committing" | Plan Mode, then Speck |
+| "Exploring before committing" | Plan Mode → Speck |
 
-They complement each other: Plan Mode for the messy thinking phase, Speck for the structured documentation phase.
+### The Best of Both Worlds
+
+Use them together for maximum effectiveness:
+
+1. **Plan Mode** handles the messy, exploratory phase where you're figuring things out
+2. **Speck** handles the structured, documentation phase where you're building and tracking
+
+Neither replaces the other. Plan Mode gives you freedom to think without commitment. Speck gives you structure to execute without forgetting anything. The handoff point is when you've made a decision and are ready to commit to building something specific.
 
 ---
 
