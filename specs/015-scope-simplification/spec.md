@@ -2,7 +2,7 @@
 
 **Feature Branch**: `015-scope-simplification`
 **Created**: 2025-11-28
-**Status**: Draft
+**Status**: Complete
 **Input**: User description: "Simplify and robustify Speck by removing stacked PR support, virtual commands, consolidating to dual-mode CLI with auto-install, auto-worktree creation on new specs, and pruning website content"
 
 ## Clarifications

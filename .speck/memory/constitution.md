@@ -1,31 +1,19 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.7.0 → 1.8.0
-Modified Principles: None
-Added Sections: "XIII. Documentation Skill Synchronization (NON-NEGOTIABLE)" (new principle)
+Version Change: 1.8.0 → 1.9.0
+Modified Sections: "Workflow Mode Configuration" - removed stacked-pr workflow mode
 Removed Sections: None
+Added Sections: None
 
 Templates Requiring Updates:
-  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/plan-template.md - add speck-help skill update task
-  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/tasks-template.md - add speck-help skill update task to final phase
-  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/spec-template.md - no changes required
-  ⚠ .claude/commands/speck.implement.md - add speck-help skill update reminder at completion
-  ⚠ .claude/commands/speck.tasks.md - add speck-help skill update task generation
+  ✅ No template updates required - stacked-pr removal is reflected in 015-scope-simplification
 
-Follow-up TODOs:
-  - Backfill speck-help skill with features 007-012 content
-  - Add speck-help skill validation to check-prerequisites.ts
-  - Update quickstart.md with speck-help skill update guidance
-  - Consider automating speck-help skill updates from spec artifacts
-
-Rationale for 1.8.0 (MINOR bump):
-  - New principle added: Documentation Skill Synchronization
-  - Establishes requirement to keep speck-help Claude Skill current with feature additions
-  - Complements Website Documentation Synchronization (Principle XI)
-  - No breaking changes to existing principles
-  - Backwards compatible but adds new quality expectation for feature completion
-  - Ensures Claude AI assistant has accurate context about Speck features
+Rationale for 1.9.0 (MINOR bump):
+  - Removed stacked-pr as valid workflow mode value (015-scope-simplification)
+  - Simplified workflow mode configuration to single-branch only
+  - Backwards compatible (single-branch was already the default)
+  - Aligns constitution with codebase after stacked PR feature removal
 -->
 
 # Speck Constitution
@@ -606,24 +594,17 @@ default to single-branch or stacked-PR workflows when no explicit flags are prov
 
 **Valid Values**:
 - `single-branch`: Traditional single branch per feature (default)
-- `stacked-pr`: Stacked PR workflow with multiple branches per feature
 
-**Override Hierarchy** (highest to lowest priority):
-1. Command-line flags (`--stacked-pr`, `--single-branch`)
-2. Feature-specific setting in plan.md (`**Workflow Mode**: stacked-pr`)
-3. Repository-wide setting in constitution.md (this setting)
-4. Hardcoded default (`single-branch`)
+*Note: The `stacked-pr` workflow mode was removed in 015-scope-simplification.*
 
-**Rationale**: Teams heavily using stacked PRs can set `stacked-pr` as default to
-reduce friction, while preserving backwards compatibility for single-branch
-workflows. Feature-level and command-level overrides ensure flexibility for
-mixed-mode projects.
+**Rationale**: Single-branch workflow provides simplicity and reliability for
+most development scenarios. Stacked PR support was removed to reduce complexity
+and maintenance burden.
 
 **Implementation Requirements**:
 - Parser MUST read markdown line: `**Default Workflow Mode**: <value>`
 - MUST default to `single-branch` if line absent or malformed
-- MUST validate against enum values (reject invalid values with clear error)
-- MUST be documented in feature 008-stacked-pr-support
+- Only `single-branch` is currently supported
 
 ---
 
@@ -665,4 +646,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.8.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-22
+**Version**: 1.9.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-29
