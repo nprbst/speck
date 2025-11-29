@@ -149,6 +149,43 @@ function formatBytes(bytes: number): string {
 }
 
 // ============================================================================
+// Hook Bundle Building
+// ============================================================================
+
+/**
+ * Rebuild hook bundles from source TypeScript files
+ *
+ * This ensures the bundled hooks are always up-to-date with source changes.
+ */
+async function rebuildHookBundles(): Promise<void> {
+  const hookSourceDir = join(config.sourceRoot, '.speck/scripts/hooks');
+  const hookDistDir = join(config.sourceRoot, '.speck/dist');
+
+  await ensureDir(hookDistDir);
+
+  // Bundle the PrePromptSubmit hook
+  const prePromptSubmitSource = join(hookSourceDir, 'pre-prompt-submit.ts');
+  const prePromptSubmitDest = join(hookDistDir, 'pre-prompt-submit-hook.js');
+
+  if (existsSync(prePromptSubmitSource)) {
+    const result = Bun.spawnSync([
+      'bun', 'build',
+      prePromptSubmitSource,
+      '--outfile', prePromptSubmitDest,
+      '--target', 'bun',
+    ], { cwd: config.sourceRoot });
+
+    if (result.exitCode !== 0) {
+      throw buildFailedError(
+        'Hook bundle build failed',
+        `Failed to bundle pre-prompt-submit hook: ${result.stderr.toString()}`,
+        'Check the hook source file for TypeScript errors'
+      );
+    }
+  }
+}
+
+// ============================================================================
 // Manifest Generation
 // ============================================================================
 
@@ -704,6 +741,11 @@ async function main() {
       );
     }
     console.log('   ✓ Version format valid\n');
+
+    // Rebuild hook bundles before packaging
+    console.log('🔨 Rebuilding hook bundles...');
+    await rebuildHookBundles();
+    console.log('   ✓ Hook bundles rebuilt\n');
 
     // T010: Clean and create output directory
     console.log('🗑️  Cleaning output directory...');
