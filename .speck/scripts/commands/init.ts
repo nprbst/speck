@@ -103,14 +103,35 @@ function createSpeckDirectory(repoRoot: string): { created: boolean; path: strin
 }
 
 /**
- * Get the path to bootstrap.sh relative to this script
+ * Get the path to bootstrap.sh
+ *
+ * When running from:
+ * - Development: .speck/scripts/commands/init.ts → src/cli/bootstrap.sh
+ * - Plugin bundle: dist/speck-cli.js → src/cli/bootstrap.sh (same relative structure)
+ * - Plugin install: ~/.claude/plugins/.../speck/dist/speck-cli.js → src/cli/bootstrap.sh
  */
 function getBootstrapPath(): string {
-  // This file is at .speck/scripts/commands/init.ts
-  // bootstrap.sh is at src/cli/bootstrap.sh
-  const scriptDir = dirname(new URL(import.meta.url).pathname);
-  // Go up 3 levels from .speck/scripts/commands to repo root, then to src/cli/bootstrap.sh
-  return resolve(scriptDir, "../../../src/cli/bootstrap.sh");
+  const scriptPath = new URL(import.meta.url).pathname;
+  const scriptDir = dirname(scriptPath);
+
+  // Check multiple possible locations
+  const candidates = [
+    // From bundled CLI at dist/speck-cli.js → ../src/cli/bootstrap.sh
+    resolve(scriptDir, "../src/cli/bootstrap.sh"),
+    // From dev at .speck/scripts/commands/init.ts → ../../../src/cli/bootstrap.sh
+    resolve(scriptDir, "../../../src/cli/bootstrap.sh"),
+    // From plugin install: look for src/cli/bootstrap.sh relative to plugin root
+    resolve(scriptDir, "../../src/cli/bootstrap.sh"),
+  ];
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  // Fall back to first candidate (will fail with helpful error)
+  return candidates[0] ?? resolve(scriptDir, "../src/cli/bootstrap.sh");
 }
 
 /**
@@ -337,7 +358,7 @@ function formatOutput(result: InitResult, options: InitOptions): string {
 /**
  * Main entry point for CLI invocation
  */
-export function main(args: string[]): number {
+export async function main(args: string[]): Promise<number> {
   // Parse arguments
   const { values } = parseArgs({
     args,
@@ -364,6 +385,7 @@ export function main(args: string[]): number {
 
 // Run if executed directly
 if (import.meta.main) {
-  const exitCode = main(process.argv.slice(2));
-  process.exit(exitCode);
+  main(process.argv.slice(2)).then((exitCode) => {
+    process.exit(exitCode);
+  });
 }

@@ -40,6 +40,11 @@ const lazyUpdateAgentContextMain = async (): Promise<MainFunction> => {
   return module.main;
 };
 
+const lazyInitMain = async (): Promise<MainFunction> => {
+  const module = await import("./init");
+  return module.main;
+};
+
 /**
  * Command registry mapping command names to handlers
  *
@@ -94,6 +99,11 @@ export const registry: CommandRegistry = {
   "update-agent-context": {
     lazyMain: lazyUpdateAgentContextMain,
     description: "Update agent-specific context files with technology stack",
+    version: "1.0.0",
+  },
+  init: {
+    lazyMain: lazyInitMain,
+    description: "Initialize Speck in current repository and install CLI globally",
     version: "1.0.0",
   },
 };

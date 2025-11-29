@@ -143,7 +143,7 @@ function createProgram(): Command {
     .action(async (options: Record<string, unknown>) => {
       const module = await lazyInitCommand();
       const args = buildSubcommandArgs([], options);
-      const exitCode = module.main(args);
+      const exitCode = await module.main(args);
       process.exit(exitCode);
     });
 

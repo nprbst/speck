@@ -41,7 +41,15 @@ while [[ -L "$SOURCE" ]]; do
 done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 
-ENTRYPOINT="${SCRIPT_DIR}/index.ts"
+# Look for bundled CLI first, fall back to TypeScript source for development
+if [[ -f "${SCRIPT_DIR}/../../.speck/dist/speck-cli.js" ]]; then
+    ENTRYPOINT="${SCRIPT_DIR}/../../.speck/dist/speck-cli.js"
+elif [[ -f "${SCRIPT_DIR}/index.ts" ]]; then
+    ENTRYPOINT="${SCRIPT_DIR}/index.ts"
+else
+    echo "Error: Could not find speck CLI entrypoint"
+    exit 1
+fi
 
 # =============================================================================
 # T058a: Platform Detection

@@ -153,36 +153,54 @@ function formatBytes(bytes: number): string {
 // ============================================================================
 
 /**
- * Rebuild hook bundles from source TypeScript files
+ * Bundle a TypeScript file to JavaScript
+ */
+function bundleScript(sourcePath: string, destPath: string, name: string): void {
+  if (!existsSync(sourcePath)) {
+    return;
+  }
+
+  const result = Bun.spawnSync([
+    'bun', 'build',
+    sourcePath,
+    '--outfile', destPath,
+    '--target', 'bun',
+  ], { cwd: config.sourceRoot });
+
+  if (result.exitCode !== 0) {
+    throw buildFailedError(
+      `${name} bundle build failed`,
+      `Failed to bundle ${name}: ${result.stderr.toString()}`,
+      'Check the source file for TypeScript errors'
+    );
+  }
+}
+
+/**
+ * Rebuild hook bundles and CLI bundle from source TypeScript files
  *
- * This ensures the bundled hooks are always up-to-date with source changes.
+ * This ensures the bundled scripts are always up-to-date with source changes.
  */
 async function rebuildHookBundles(): Promise<void> {
   const hookSourceDir = join(config.sourceRoot, '.speck/scripts/hooks');
-  const hookDistDir = join(config.sourceRoot, '.speck/dist');
+  const cliSourceDir = join(config.sourceRoot, 'src/cli');
+  const distDir = join(config.sourceRoot, '.speck/dist');
 
-  await ensureDir(hookDistDir);
+  await ensureDir(distDir);
 
   // Bundle the PrePromptSubmit hook
-  const prePromptSubmitSource = join(hookSourceDir, 'pre-prompt-submit.ts');
-  const prePromptSubmitDest = join(hookDistDir, 'pre-prompt-submit-hook.js');
+  bundleScript(
+    join(hookSourceDir, 'pre-prompt-submit.ts'),
+    join(distDir, 'pre-prompt-submit-hook.js'),
+    'pre-prompt-submit hook'
+  );
 
-  if (existsSync(prePromptSubmitSource)) {
-    const result = Bun.spawnSync([
-      'bun', 'build',
-      prePromptSubmitSource,
-      '--outfile', prePromptSubmitDest,
-      '--target', 'bun',
-    ], { cwd: config.sourceRoot });
-
-    if (result.exitCode !== 0) {
-      throw buildFailedError(
-        'Hook bundle build failed',
-        `Failed to bundle pre-prompt-submit hook: ${result.stderr.toString()}`,
-        'Check the hook source file for TypeScript errors'
-      );
-    }
-  }
+  // Bundle the main CLI (includes all commands: init, env, etc.)
+  bundleScript(
+    join(cliSourceDir, 'index.ts'),
+    join(distDir, 'speck-cli.js'),
+    'speck CLI'
+  );
 }
 
 // ============================================================================
@@ -436,11 +454,19 @@ async function copyPluginFiles(): Promise<FileCounts> {
       await copyDir(contractsPath, join(scriptsDestDir, 'contracts'));
     }
 
-    // Copy dist/ directory containing the bundled hooks
-    // (speck-hook.js and pre-prompt-submit-hook.js)
+    // Copy dist/ directory containing the bundled hooks and CLI
+    // (pre-prompt-submit-hook.js, speck-cli.js)
     const distPath = join(config.scriptsSourceDir, '../dist');
     if (existsSync(distPath)) {
       await copyDir(distPath, join(config.outputDir, 'dist'));
+    }
+
+    // Copy bootstrap.sh for CLI installation
+    const bootstrapPath = join(config.sourceRoot, 'src/cli/bootstrap.sh');
+    if (existsSync(bootstrapPath)) {
+      const srcCliDir = join(config.outputDir, 'src/cli');
+      await ensureDir(srcCliDir);
+      await copyFile(bootstrapPath, join(srcCliDir, 'bootstrap.sh'));
     }
   }
 
