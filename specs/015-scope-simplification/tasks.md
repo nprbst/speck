@@ -235,17 +235,17 @@ Based on plan.md project structure:
 
 ### Tests for User Story 6
 
-- [ ] T076 [P] [US6] Write unit test for `getSpecForBranch()` lookup in `tests/unit/branch-mapper.test.ts`
-- [ ] T077 [P] [US6] Write unit test for `addBranchEntry()` in `tests/unit/branch-mapper.test.ts`
+- [X] T076 [P] [US6] Write unit test for `getSpecForBranch()` lookup in `tests/unit/branch-mapper.test.ts`
+- [X] T077 [P] [US6] Write unit test for `addBranchEntry()` in `tests/unit/branch-mapper.test.ts`
 
 ### Implementation for User Story 6
 
-- [ ] T078 [US6] Implement `getSpecForBranch()` function in `.speck/scripts/common/branch-mapper.ts`
-- [ ] T079 [US6] Implement `addBranchEntry()` function in `.speck/scripts/common/branch-mapper.ts`
-- [ ] T080 [US6] Implement `removeBranchEntry()` function in `.speck/scripts/common/branch-mapper.ts`
-- [ ] T081 [US6] Integrate branch mapping into `create-new-feature` for non-standard names
-- [ ] T082 [US6] Integrate branch lookup into `check-prerequisites` command
-- [ ] T083 [US6] Verify non-standard branch names are correctly resolved
+- [X] T078 [US6] Implement `getSpecForBranch()` function in `.speck/scripts/common/branch-mapper.ts`
+- [X] T079 [US6] Implement `addBranchEntry()` function in `.speck/scripts/common/branch-mapper.ts`
+- [X] T080 [US6] Implement `removeBranchEntry()` function in `.speck/scripts/common/branch-mapper.ts`
+- [X] T081 [US6] Integrate branch mapping into `create-new-feature` for non-standard names
+- [X] T082 [US6] Integrate branch lookup into `check-prerequisites` command
+- [X] T083 [US6] Verify non-standard branch names are correctly resolved
 
 **Checkpoint**: User Story 6 complete - Non-standard branch names work
 

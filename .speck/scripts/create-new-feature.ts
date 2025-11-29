@@ -41,6 +41,12 @@ import { loadConfig } from "./worktree/config";
 import { constructWorktreePath } from "./worktree/naming";
 import { writeWorktreeHandoff } from "./worktree/handoff";
 import { launchIDE } from "./worktree/ide-launch";
+import {
+  readBranches,
+  writeBranches,
+  createBranchEntry,
+  addBranchEntry,
+} from "./common/branch-mapper";
 
 /**
  * CLI options for create-new-feature
@@ -50,6 +56,7 @@ interface CreateFeatureOptions {
   hook: boolean;
   shortName?: string;
   number?: number;
+  branch?: string;      // T081: Custom branch name (non-standard, recorded in branches.json)
   sharedSpec: boolean;  // T064-T066: Create spec at speckRoot with local symlinks
   localSpec: boolean;   // T067: Create spec locally in child repo
   noWorktree: boolean;  // T053: Disable worktree creation even if config enables it
@@ -82,6 +89,7 @@ function parseArgs(args: string[]): ParseResult {
   const options: CreateFeatureOptions = {
     json: false,
     hook: false,
+    branch: undefined,
     sharedSpec: false,
     localSpec: false,
     noWorktree: false,
@@ -118,6 +126,13 @@ function parseArgs(args: string[]): ParseResult {
       }
       options.number = num;
       i += 2;
+    } else if (arg === "--branch") {
+      // T081: Custom branch name (non-standard, recorded in branches.json)
+      if (i + 1 >= args.length || args[i + 1]?.startsWith("--")) {
+        return { success: false, error: "--branch requires a value" };
+      }
+      options.branch = args[i + 1]!;
+      i += 2;
     } else if (arg === "--shared-spec") {
       options.sharedSpec = true;
       i++;
@@ -148,13 +163,14 @@ function parseArgs(args: string[]): ParseResult {
  */
 function showHelp(): void {
   const scriptName = path.basename(process.argv[1]!);
-  console.log(`Usage: ${scriptName} [--json] [--hook] [--short-name <name>] [--number N] [--shared-spec | --local-spec] [--worktree | --no-worktree] <feature_description>
+  console.log(`Usage: ${scriptName} [--json] [--hook] [--short-name <name>] [--number N] [--branch <name>] [--shared-spec | --local-spec] [--worktree | --no-worktree] <feature_description>
 
 Options:
   --json              Output in JSON format (structured JSON envelope)
   --hook              Output hook-formatted response for Claude Code hooks
   --short-name <name> Provide a custom short name (2-4 words) for the branch
   --number N          Specify branch number manually (overrides auto-detection)
+  --branch <name>     Use a custom branch name (non-standard, recorded in branches.json)
   --shared-spec       Create spec at speckRoot (multi-repo shared spec with local symlinks)
   --local-spec        Create spec locally in child repo (single-repo or child-only spec)
   --worktree          Create a worktree with handoff artifacts (overrides config)
@@ -167,10 +183,15 @@ Worktree Mode:
   2. Writes session handoff artifacts to the worktree
   3. Launches IDE in the new worktree
 
+Non-Standard Branch Names:
+  When --branch is used with a name that doesn't follow the NNN-name pattern,
+  the branch-to-spec mapping is recorded in .speck/branches.json for later lookup.
+
 Examples:
   ${scriptName} 'Add user authentication system' --short-name 'user-auth'
   ${scriptName} 'Implement OAuth2 integration for API' --number 5 --shared-spec
-  ${scriptName} 'Fix login bug' --worktree`);
+  ${scriptName} 'Fix login bug' --worktree
+  ${scriptName} 'My feature' --branch 'nprbst/custom-feature'`);
 }
 
 /**
@@ -446,40 +467,95 @@ export async function main(args: string[]): Promise<number> {
   mkdirSync(specsDir, { recursive: true });
   // [SPECK-EXTENSION:END]
 
-  // Generate branch name
-  let branchSuffix: string;
-  if (options.shortName) {
-    branchSuffix = cleanBranchName(options.shortName);
+  // [SPECK-EXTENSION:START] T081: Non-standard branch name support
+  // Generate branch name with support for custom non-standard names
+  let branchName: string;
+  let specId: string; // The spec directory name (always NNN-short-name format)
+  let featureNum: string; // Numeric prefix for output (e.g., "015")
+  let isNonStandardBranch = false;
+
+  if (options.branch) {
+    // T081: Custom branch name provided - use as-is
+    branchName = options.branch;
+    isNonStandardBranch = !/^\d{3}-/.test(branchName);
+
+    // Still need to generate spec ID (directory name)
+    let branchSuffix: string;
+    if (options.shortName) {
+      branchSuffix = cleanBranchName(options.shortName);
+    } else {
+      branchSuffix = generateBranchName(options.featureDescription);
+    }
+
+    let branchNumber: number;
+    if (options.number !== undefined) {
+      branchNumber = options.number;
+    } else if (hasGit) {
+      branchNumber = await checkExistingBranches(branchSuffix, specsDir);
+    } else {
+      const highest = getHighestFromSpecs(specsDir);
+      branchNumber = highest + 1;
+    }
+
+    featureNum = branchNumber.toString().padStart(3, "0");
+    specId = `${featureNum}-${branchSuffix}`;
   } else {
-    branchSuffix = generateBranchName(options.featureDescription);
+    // Standard branch name generation
+    let branchSuffix: string;
+    if (options.shortName) {
+      branchSuffix = cleanBranchName(options.shortName);
+    } else {
+      branchSuffix = generateBranchName(options.featureDescription);
+    }
+
+    // Determine branch number
+    let branchNumber: number;
+    if (options.number !== undefined) {
+      branchNumber = options.number;
+    } else if (hasGit) {
+      branchNumber = await checkExistingBranches(branchSuffix, specsDir);
+    } else {
+      const highest = getHighestFromSpecs(specsDir);
+      branchNumber = highest + 1;
+    }
+
+    featureNum = branchNumber.toString().padStart(3, "0");
+    branchName = `${featureNum}-${branchSuffix}`;
+
+    // GitHub enforces a 244-byte limit on branch names
+    const maxBranchLength = 244;
+    if (branchName.length > maxBranchLength) {
+      const maxSuffixLength = maxBranchLength - 4; // 3 digits + hyphen
+      const truncatedSuffix = branchSuffix.substring(0, maxSuffixLength).replace(/-$/, "");
+
+      console.error(`[specify] Warning: Branch name exceeded GitHub's 244-byte limit`);
+      console.error(`[specify] Original: ${branchName} (${branchName.length} bytes)`);
+
+      branchName = `${featureNum}-${truncatedSuffix}`;
+      console.error(`[specify] Truncated to: ${branchName} (${branchName.length} bytes)`);
+    }
+
+    specId = branchName; // For standard branches, spec ID equals branch name
   }
 
-  // Determine branch number
-  let branchNumber: number;
-  if (options.number !== undefined) {
-    branchNumber = options.number;
-  } else if (hasGit) {
-    branchNumber = await checkExistingBranches(branchSuffix, specsDir);
-  } else {
-    const highest = getHighestFromSpecs(specsDir);
-    branchNumber = highest + 1;
+  // T081: Record non-standard branch name in branches.json
+  if (isNonStandardBranch && hasGit) {
+    try {
+      const branchMapping = await readBranches(repoRoot);
+      const entry = createBranchEntry(branchName, specId);
+      const updatedMapping = addBranchEntry(branchMapping, entry);
+      await writeBranches(repoRoot, updatedMapping);
+
+      if (outputMode === "human") {
+        console.log(`[speck] Recorded branch mapping: ${branchName} → ${specId}`);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Non-fatal: warn but continue
+      console.error(`[speck] Warning: Failed to record branch mapping: ${errorMessage}`);
+    }
   }
-
-  const featureNum = branchNumber.toString().padStart(3, "0");
-  let branchName = `${featureNum}-${branchSuffix}`;
-
-  // GitHub enforces a 244-byte limit on branch names
-  const maxBranchLength = 244;
-  if (branchName.length > maxBranchLength) {
-    const maxSuffixLength = maxBranchLength - 4; // 3 digits + hyphen
-    const truncatedSuffix = branchSuffix.substring(0, maxSuffixLength).replace(/-$/, "");
-
-    console.error(`[specify] Warning: Branch name exceeded GitHub's 244-byte limit`);
-    console.error(`[specify] Original: ${branchName} (${branchName.length} bytes)`);
-
-    branchName = `${featureNum}-${truncatedSuffix}`;
-    console.error(`[specify] Truncated to: ${branchName} (${branchName.length} bytes)`);
-  }
+  // [SPECK-EXTENSION:END]
 
   // [SPECK-EXTENSION:START] T048, T053, T054: Worktree + Handoff Integration
   // Determine if worktree mode should be used
@@ -524,7 +600,8 @@ export async function main(args: string[]): Promise<number> {
             options.featureDescription.slice(1);
 
           // Calculate relative spec path from worktree
-          const relativeSpecDir = path.join("specs", branchName);
+          // T081: Use specId for spec directory (always NNN-short-name format)
+          const relativeSpecDir = path.join("specs", specId);
           const relativeSpecPath = path.join(relativeSpecDir, "spec.md");
 
           await writeWorktreeHandoff(worktreePath, {
@@ -672,7 +749,8 @@ export async function main(args: string[]): Promise<number> {
 
   // [SPECK-EXTENSION:START] T064-T066: Handle shared vs local spec creation
   // Create feature directory at the determined location (shared or local)
-  const featureDir = path.join(specsDir, branchName);
+  // T081: Use specId for directory (always NNN-short-name format, even with custom branch)
+  const featureDir = path.join(specsDir, specId);
   mkdirSync(featureDir, { recursive: true });
 
   // Copy template to the spec location
@@ -688,7 +766,7 @@ export async function main(args: string[]): Promise<number> {
   // T065-T066: If shared spec in multi-repo mode, create local directory and symlink
   if (options.sharedSpec && config.mode === 'multi-repo') {
     // T065: Create local specs/NNN-feature/ directory in child repo
-    const localFeatureDir = path.join(repoRoot, "specs", branchName);
+    const localFeatureDir = path.join(repoRoot, "specs", specId);
     mkdirSync(localFeatureDir, { recursive: true });
 
     // T066: Symlink parent spec.md into child's local specs/NNN-feature/
