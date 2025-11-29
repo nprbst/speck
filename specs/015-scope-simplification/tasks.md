@@ -259,11 +259,11 @@ Based on plan.md project structure:
 
 ### Implementation for User Story 7
 
-- [ ] T084 [US7] Verify multi-repo detection in check-prerequisites is unaffected
-- [ ] T085 [US7] Verify shared spec access works in multi-repo mode
-- [ ] T086 [US7] Verify parentSpecId is retained in simplified branches.json
-- [ ] T087 [US7] Add integration test for multi-repo mode in `tests/integration/multi-repo.test.ts`
-- [ ] T088 [US7] Verify no multi-repo code was accidentally removed during cleanup
+- [X] T084 [US7] Verify multi-repo detection in check-prerequisites is unaffected
+- [X] T085 [US7] Verify shared spec access works in multi-repo mode
+- [X] T086 [US7] Verify parentSpecId is retained in simplified branches.json
+- [X] T087 [US7] Add integration test for multi-repo mode in `tests/integration/multi-repo.test.ts`
+- [X] T088 [US7] Verify no multi-repo code was accidentally removed during cleanup
 
 **Checkpoint**: User Story 7 complete - Multi-repo works correctly
 

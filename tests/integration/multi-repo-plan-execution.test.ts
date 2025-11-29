@@ -200,11 +200,12 @@ Test architecture
 
     // Verify paths in output (normalize /private/var -> /var for macOS)
     const normalizePath = (p: string) => p.replace(/^\/private/, "");
-    expect(output.MODE).toBe("multi-repo");  // MODE is "multi-repo" in child repos
-    expect(normalizePath(output.FEATURE_DIR)).toBe(normalizePath(rootSpecDir));  // Points to root (shared)
-    expect(normalizePath(output.IMPL_PLAN)).toBe(normalizePath(path.join(childDir, "specs", featureName, "plan.md")));  // Points to child
-    expect(normalizePath(output.TASKS)).toBe(normalizePath(path.join(childDir, "specs", featureName, "tasks.md")));  // Points to child
-    expect(normalizePath(output.REPO_ROOT)).toBe(normalizePath(childDir));  // Child repo root
+    expect(output.ok).toBe(true);
+    expect(output.result.MODE).toBe("multi-repo");  // MODE is "multi-repo" in child repos
+    expect(normalizePath(output.result.FEATURE_DIR)).toBe(normalizePath(rootSpecDir));  // Points to root (shared)
+    expect(normalizePath(output.result.IMPL_PLAN)).toBe(normalizePath(path.join(childDir, "specs", featureName, "plan.md")));  // Points to child
+    expect(normalizePath(output.result.TASKS)).toBe(normalizePath(path.join(childDir, "specs", featureName, "tasks.md")));  // Points to child
+    expect(normalizePath(output.result.REPO_ROOT)).toBe(normalizePath(childDir));  // Child repo root
   });
 
   test("T104: Branched tasks write to correct location in child repo", async () => {
