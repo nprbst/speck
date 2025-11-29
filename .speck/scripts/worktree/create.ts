@@ -186,7 +186,7 @@ export async function createWorktree(
     if (config.worktree.ide.autoLaunch && !skipIDE) {
       progress("Launching IDE...", 90);
       try {
-        const ideResult = await launchIDE({
+        const ideResult = launchIDE({
           worktreePath,
           editor: config.worktree.ide.editor,
           newWindow: config.worktree.ide.newWindow,

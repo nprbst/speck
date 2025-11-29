@@ -42,7 +42,6 @@ import {
   detectInputMode,
   detectOutputMode,
   type OutputMode,
-  type HookInputPayload,
 } from "./lib/output-formatter";
 
 /**
@@ -420,10 +419,9 @@ export async function main(args: string[]): Promise<number> {
   }
 
   // Read hook input if in hook mode (for future use)
-  let _hookInput: HookInputPayload | undefined;
   if (detectInputMode(options) === "hook") {
-    _hookInput = await readHookInput();
-    // Hook input can be used for context-aware behavior
+    // Hook input can be read here for context-aware behavior
+    await readHookInput();
   }
 
   // Get feature paths and validate branch

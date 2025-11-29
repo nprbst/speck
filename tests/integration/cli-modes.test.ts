@@ -8,21 +8,24 @@
  * Task: T019
  */
 
-import { describe, test, expect, beforeAll, afterAll } from "bun:test";
-import { $ } from "bun";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
+import { $ } from 'bun';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 /**
  * Helper to run CLI and capture output
  */
-async function runCli(args: string[], cwd?: string): Promise<{
+async function runCli(
+  args: string[],
+  cwd?: string
+): Promise<{
   stdout: string;
   stderr: string;
   exitCode: number;
 }> {
-  const cliPath = new URL("../../src/cli/index.ts", import.meta.url).pathname;
+  const cliPath = new URL('../../src/cli/index.ts', import.meta.url).pathname;
   const cmd = cwd
     ? $`bun run ${cliPath} ${args}`.cwd(cwd).nothrow().quiet()
     : $`bun run ${cliPath} ${args}`.nothrow().quiet();
@@ -34,46 +37,46 @@ async function runCli(args: string[], cwd?: string): Promise<{
   };
 }
 
-describe("CLI Mode Detection", () => {
-  describe("Human Mode (Default)", () => {
-    test("default output is human-readable", async () => {
-      const result = await runCli(["--help"]);
+describe('CLI Mode Detection', () => {
+  describe('Human Mode (Default)', () => {
+    test('default output is human-readable', async () => {
+      const result = await runCli(['--help']);
       expect(result.exitCode).toBe(0);
       // Human output has formatted text, not JSON
-      expect(result.stdout).toContain("Usage:");
+      expect(result.stdout).toContain('Usage:');
       expect(() => JSON.parse(result.stdout)).toThrow();
     });
 
-    test("env command outputs human-readable text by default", async () => {
-      const result = await runCli(["env"]);
+    test('env command outputs human-readable text by default', async () => {
+      const result = await runCli(['env']);
       // Even if it fails (not in git repo), it should not be JSON
       if (result.exitCode === 0) {
-        expect(result.stdout).toContain("Speck");
+        expect(result.stdout).toContain('Speck');
       }
     });
   });
 
-  describe("JSON Mode (--json)", () => {
-    test("--json flag produces valid JSON output", async () => {
-      const result = await runCli(["env", "--json"]);
+  describe('JSON Mode (--json)', () => {
+    test('--json flag produces valid JSON output', async () => {
+      const result = await runCli(['env', '--json']);
       if (result.exitCode === 0 && result.stdout.trim()) {
         const parsed = JSON.parse(result.stdout);
         expect(parsed).toBeDefined();
-        expect(typeof parsed).toBe("object");
+        expect(typeof parsed).toBe('object');
       }
     });
 
-    test("global --json flag works before subcommand", async () => {
-      const result = await runCli(["--json", "env"]);
+    test('global --json flag works before subcommand', async () => {
+      const result = await runCli(['--json', 'env']);
       if (result.exitCode === 0 && result.stdout.trim()) {
         const parsed = JSON.parse(result.stdout);
         expect(parsed).toBeDefined();
       }
     });
 
-    test("JSON error output has consistent structure", async () => {
+    test('JSON error output has consistent structure', async () => {
       // Run a command that will fail (unknown feature)
-      const result = await runCli(["check-prerequisites", "--json"]);
+      const result = await runCli(['check-prerequisites', '--json']);
       // If it fails, should still be parseable JSON
       if (result.exitCode !== 0 && result.stdout.trim()) {
         try {
@@ -87,24 +90,24 @@ describe("CLI Mode Detection", () => {
     });
   });
 
-  describe("Hook Mode (--hook)", () => {
-    test("--hook flag produces hook-formatted output", async () => {
-      const result = await runCli(["check-prerequisites", "--hook"]);
+  describe('Hook Mode (--hook)', () => {
+    test('--hook flag produces hook-formatted output', async () => {
+      const result = await runCli(['check-prerequisites', '--hook']);
       // Hook output is a specific format for Claude Code hooks
       // It should be parseable or have specific markers
       expect(result.exitCode).toBeDefined();
     });
 
-    test("--hook with check-prerequisites returns context", async () => {
-      const result = await runCli(["check-prerequisites", "--hook"]);
+    test('--hook with check-prerequisites returns context', async () => {
+      const result = await runCli(['check-prerequisites', '--hook']);
       // Hook output for check-prerequisites should include context for injection
       // Even on failure, should have some output
       expect(result.stdout || result.stderr).toBeTruthy();
     });
 
-    test("--hook mode is distinct from --json mode", async () => {
-      const jsonResult = await runCli(["env", "--json"]);
-      const hookResult = await runCli(["env", "--hook"]);
+    test('--hook mode is distinct from --json mode', async () => {
+      const jsonResult = await runCli(['env', '--json']);
+      const hookResult = await runCli(['env', '--hook']);
 
       // If both succeed, outputs should differ in format
       if (jsonResult.exitCode === 0 && hookResult.exitCode === 0) {
@@ -115,16 +118,16 @@ describe("CLI Mode Detection", () => {
     });
   });
 
-  describe("Mode Flag Precedence", () => {
-    test("--hook takes precedence over --json", async () => {
-      const result = await runCli(["--hook", "--json", "env"]);
+  describe('Mode Flag Precedence', () => {
+    test('--hook takes precedence over --json', async () => {
+      const result = await runCli(['--hook', '--json', 'env']);
       // When both flags present, --hook should take precedence
       expect(result.exitCode).toBeDefined();
     });
 
-    test("last flag wins for conflicting modes", async () => {
-      const hookLast = await runCli(["--json", "--hook", "env"]);
-      const jsonLast = await runCli(["--hook", "--json", "env"]);
+    test('last flag wins for conflicting modes', async () => {
+      const hookLast = await runCli(['--json', '--hook', 'env']);
+      const jsonLast = await runCli(['--hook', '--json', 'env']);
 
       // Both should complete without crashing
       expect(hookLast.exitCode).toBeDefined();
@@ -133,10 +136,10 @@ describe("CLI Mode Detection", () => {
   });
 });
 
-describe("CLI Environment Detection", () => {
-  test("CLI detects git repository", async () => {
+describe('CLI Environment Detection', () => {
+  test('CLI detects git repository', async () => {
     // Running from speck repo root should detect git
-    const result = await runCli(["env", "--json"]);
+    const result = await runCli(['env', '--json']);
     if (result.exitCode === 0) {
       const parsed = JSON.parse(result.stdout);
       // New JSON envelope structure: { ok, result, meta }
@@ -146,12 +149,12 @@ describe("CLI Environment Detection", () => {
     }
   });
 
-  test("CLI handles non-git directory gracefully", async () => {
+  test('CLI handles non-git directory gracefully', async () => {
     const tempDir = join(tmpdir(), `cli-test-${Date.now()}`);
     mkdirSync(tempDir, { recursive: true });
 
     try {
-      const result = await runCli(["env"], tempDir);
+      const result = await runCli(['env'], tempDir);
       // Should not crash, may show error
       expect(result.exitCode).toBeDefined();
     } finally {
@@ -160,7 +163,7 @@ describe("CLI Environment Detection", () => {
   });
 });
 
-describe("CLI Feature Detection", () => {
+describe('CLI Feature Detection', () => {
   let testDir: string;
 
   beforeAll(() => {
@@ -168,63 +171,51 @@ describe("CLI Feature Detection", () => {
     mkdirSync(testDir, { recursive: true });
 
     // Create a minimal git repo structure
-    mkdirSync(join(testDir, ".git"), { recursive: true });
-    mkdirSync(join(testDir, ".speck"), { recursive: true });
-    mkdirSync(join(testDir, "specs", "001-test-feature"), { recursive: true });
+    mkdirSync(join(testDir, '.git'), { recursive: true });
+    mkdirSync(join(testDir, '.speck'), { recursive: true });
+    mkdirSync(join(testDir, 'specs', '001-test-feature'), { recursive: true });
 
     // Create minimal spec file
-    writeFileSync(
-      join(testDir, "specs", "001-test-feature", "spec.md"),
-      "# Test Feature Spec"
-    );
+    writeFileSync(join(testDir, 'specs', '001-test-feature', 'spec.md'), '# Test Feature Spec');
   });
 
   afterAll(() => {
     rmSync(testDir, { recursive: true, force: true });
   });
 
-  test("check-prerequisites detects feature structure", async () => {
+  test('check-prerequisites detects feature structure', async () => {
     // Create plan.md to pass prerequisites
-    writeFileSync(
-      join(testDir, "specs", "001-test-feature", "plan.md"),
-      "# Test Plan"
-    );
+    writeFileSync(join(testDir, 'specs', '001-test-feature', 'plan.md'), '# Test Plan');
 
     // This test requires being on a feature branch
     // For unit test purposes, we verify the command runs
-    const result = await runCli(["check-prerequisites", "--json"], testDir);
+    const result = await runCli(['check-prerequisites', '--json'], testDir);
     expect(result.exitCode).toBeDefined();
   });
 });
 
-describe("CLI Integration with Existing Commands", () => {
-  test("create-new-feature accepts all documented flags", async () => {
+describe('CLI Integration with Existing Commands', () => {
+  test('create-new-feature accepts all documented flags', async () => {
     // Test that flags are parsed (command may fail without proper env)
-    const result = await runCli([
-      "create-new-feature",
-      "--help",
-    ]);
+    const result = await runCli(['create-new-feature', '--help']);
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain("--json");
-    expect(result.stdout).toContain("--short-name");
-    expect(result.stdout).toContain("--number");
+    expect(result.stdout).toContain('--json');
+    expect(result.stdout).toContain('--short-name');
+    expect(result.stdout).toContain('--number');
   });
 
-  test("check-prerequisites accepts all documented flags", async () => {
-    const result = await runCli([
-      "check-prerequisites",
-      "--help",
-    ]);
+  test('check-prerequisites accepts all documented flags', async () => {
+    const result = await runCli(['check-prerequisites', '--help']);
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain("--json");
-    expect(result.stdout).toContain("--require-tasks");
-    expect(result.stdout).toContain("--paths-only");
+    expect(result.stdout).toContain('--json');
+    expect(result.stdout).toContain('--require-tasks');
+    expect(result.stdout).toContain('--paths-only');
   });
 
-  test("env command accepts --json flag", async () => {
-    const result = await runCli(["env", "--help"]);
+  test('env command accepts --json flag', async () => {
+    const result = await runCli(['env', '--help']);
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain("--json");
+    expect(result.stdout).toContain('--json');
   });
 });
 
@@ -235,16 +226,16 @@ describe("CLI Integration with Existing Commands", () => {
  * - All errors MUST return structured JSON when --json flag is used
  * - Structure: { ok: false, error: { code, message, recovery? }, meta: { command, timestamp, duration_ms } }
  */
-describe("T032: Error Handling with --json", () => {
-  describe("check-prerequisites errors", () => {
-    test("missing feature returns structured JSON error", async () => {
+describe('T032: Error Handling with --json', () => {
+  describe('check-prerequisites errors', () => {
+    test('missing feature returns structured JSON error', async () => {
       // Run from non-feature directory
       const tempDir = join(tmpdir(), `cli-error-test-${Date.now()}`);
       mkdirSync(tempDir, { recursive: true });
-      mkdirSync(join(tempDir, ".git"), { recursive: true });
+      mkdirSync(join(tempDir, '.git'), { recursive: true });
 
       try {
-        const result = await runCli(["check-prerequisites", "--json"], tempDir);
+        const result = await runCli(['check-prerequisites', '--json'], tempDir);
 
         // Should return non-zero exit code
         expect(result.exitCode).not.toBe(0);
@@ -258,30 +249,30 @@ describe("T032: Error Handling with --json", () => {
 
           // Must have error object
           expect(parsed.error).toBeDefined();
-          expect(typeof parsed.error.code).toBe("string");
-          expect(typeof parsed.error.message).toBe("string");
+          expect(typeof parsed.error.code).toBe('string');
+          expect(typeof parsed.error.message).toBe('string');
 
           // Must have meta object
           expect(parsed.meta).toBeDefined();
           expect(parsed.meta.command).toBeDefined();
           expect(parsed.meta.timestamp).toBeDefined();
-          expect(typeof parsed.meta.duration_ms).toBe("number");
+          expect(typeof parsed.meta.duration_ms).toBe('number');
         }
       } finally {
         rmSync(tempDir, { recursive: true, force: true });
       }
     });
 
-    test("missing plan.md returns structured JSON error with recovery", async () => {
+    test('missing plan.md returns structured JSON error with recovery', async () => {
       const tempDir = join(tmpdir(), `cli-plan-error-${Date.now()}`);
       mkdirSync(tempDir, { recursive: true });
-      mkdirSync(join(tempDir, ".git"), { recursive: true });
-      mkdirSync(join(tempDir, "specs", "001-test"), { recursive: true });
-      writeFileSync(join(tempDir, "specs", "001-test", "spec.md"), "# Test");
+      mkdirSync(join(tempDir, '.git'), { recursive: true });
+      mkdirSync(join(tempDir, 'specs', '001-test'), { recursive: true });
+      writeFileSync(join(tempDir, 'specs', '001-test', 'spec.md'), '# Test');
 
       try {
         // Need to be on a feature branch - this will likely fail differently
-        const result = await runCli(["check-prerequisites", "--json"], tempDir);
+        const result = await runCli(['check-prerequisites', '--json'], tempDir);
 
         if (result.exitCode !== 0 && result.stdout.trim()) {
           const parsed = JSON.parse(result.stdout);
@@ -299,10 +290,10 @@ describe("T032: Error Handling with --json", () => {
     });
   });
 
-  describe("create-new-feature errors", () => {
-    test("invalid arguments return structured JSON error", async () => {
+  describe('create-new-feature errors', () => {
+    test('invalid arguments return structured JSON error', async () => {
       // Missing required description argument
-      const result = await runCli(["create-new-feature", "--json"]);
+      const result = await runCli(['create-new-feature', '--json']);
 
       // Should fail (missing required arg)
       expect(result.exitCode).not.toBe(0);
@@ -312,20 +303,20 @@ describe("T032: Error Handling with --json", () => {
     });
   });
 
-  describe("env command errors", () => {
-    test("non-git directory returns structured JSON error", async () => {
+  describe('env command errors', () => {
+    test('non-git directory returns structured JSON error', async () => {
       const tempDir = join(tmpdir(), `cli-env-error-${Date.now()}`);
       mkdirSync(tempDir, { recursive: true });
 
       try {
-        const result = await runCli(["env", "--json"], tempDir);
+        const result = await runCli(['env', '--json'], tempDir);
 
         // May succeed or fail depending on implementation
         if (result.stdout.trim()) {
           const parsed = JSON.parse(result.stdout);
 
           // Either success or structured error
-          expect(typeof parsed.ok).toBe("boolean");
+          expect(typeof parsed.ok).toBe('boolean');
           expect(parsed.meta).toBeDefined();
 
           if (!parsed.ok) {
@@ -338,24 +329,24 @@ describe("T032: Error Handling with --json", () => {
     });
   });
 
-  describe("Exit code contract", () => {
-    test("exit codes match ExitCode enum", async () => {
+  describe('Exit code contract', () => {
+    test('exit codes match ExitCode enum', async () => {
       // SUCCESS = 0
-      const helpResult = await runCli(["--help"]);
+      const helpResult = await runCli(['--help']);
       expect(helpResult.exitCode).toBe(0);
 
       // USER_ERROR = 1 (for user-fixable errors like missing files)
       // SYSTEM_ERROR = 2 (for system failures)
 
       // Unknown command should return 1
-      const unknownResult = await runCli(["nonexistent-command"]);
+      const unknownResult = await runCli(['nonexistent-command']);
       expect(unknownResult.exitCode).toBe(1);
     });
   });
 
-  describe("JSON output consistency", () => {
-    test("all commands return consistent JSON structure on success", async () => {
-      const envResult = await runCli(["env", "--json"]);
+  describe('JSON output consistency', () => {
+    test('all commands return consistent JSON structure on success', async () => {
+      const envResult = await runCli(['env', '--json']);
 
       if (envResult.exitCode === 0 && envResult.stdout.trim()) {
         const parsed = JSON.parse(envResult.stdout);
@@ -369,13 +360,13 @@ describe("T032: Error Handling with --json", () => {
       }
     });
 
-    test("error JSON includes actionable recovery when possible", async () => {
+    test('error JSON includes actionable recovery when possible', async () => {
       // Commands that fail should include recovery hints where applicable
       const tempDir = join(tmpdir(), `cli-recovery-test-${Date.now()}`);
       mkdirSync(tempDir, { recursive: true });
 
       try {
-        const result = await runCli(["check-prerequisites", "--json"], tempDir);
+        const result = await runCli(['check-prerequisites', '--json'], tempDir);
 
         if (result.exitCode !== 0 && result.stdout.trim()) {
           const parsed = JSON.parse(result.stdout);
@@ -383,7 +374,7 @@ describe("T032: Error Handling with --json", () => {
             // Recovery should be an array of actionable strings
             expect(Array.isArray(parsed.error.recovery)).toBe(true);
             parsed.error.recovery.forEach((hint: string) => {
-              expect(typeof hint).toBe("string");
+              expect(typeof hint).toBe('string');
               expect(hint.length).toBeGreaterThan(0);
             });
           }

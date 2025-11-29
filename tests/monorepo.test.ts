@@ -17,7 +17,11 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { $ } from 'bun';
-import { detectSpeckRoot, clearSpeckCache, getFeaturePaths } from '../.speck/scripts/common/paths.ts';
+import {
+  detectSpeckRoot,
+  clearSpeckCache,
+  getFeaturePaths,
+} from '../.speck/scripts/common/paths.ts';
 
 // Test helpers
 async function createTestDir(name: string): Promise<string> {
@@ -47,9 +51,7 @@ async function cleanup(dir: string): Promise<void> {
 }
 
 async function createPackageJson(dir: string, name: string, workspaces?: string[]): Promise<void> {
-  const pkg = workspaces
-    ? { name, private: true, workspaces }
-    : { name, version: '1.0.0' };
+  const pkg = workspaces ? { name, private: true, workspaces } : { name, version: '1.0.0' };
   await fs.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
 }
 
@@ -616,18 +618,22 @@ describe('Monorepo: Build Tool Compatibility', () => {
     // Create turborepo config
     await fs.writeFile(
       path.join(monorepoRoot, 'turbo.json'),
-      JSON.stringify({
-        $schema: 'https://turbo.build/schema.json',
-        pipeline: {
-          build: {
-            dependsOn: ['^build'],
-            outputs: ['dist/**']
+      JSON.stringify(
+        {
+          $schema: 'https://turbo.build/schema.json',
+          pipeline: {
+            build: {
+              dependsOn: ['^build'],
+              outputs: ['dist/**'],
+            },
+            test: {
+              cache: false,
+            },
           },
-          test: {
-            cache: false
-          }
-        }
-      }, null, 2)
+        },
+        null,
+        2
+      )
     );
 
     const packageDir = path.join(monorepoRoot, 'packages', 'core');
@@ -649,11 +655,15 @@ describe('Monorepo: Build Tool Compatibility', () => {
 
     await fs.writeFile(
       path.join(monorepoRoot, 'lerna.json'),
-      JSON.stringify({
-        version: '1.0.0',
-        packages: ['packages/*'],
-        npmClient: 'yarn'
-      }, null, 2)
+      JSON.stringify(
+        {
+          version: '1.0.0',
+          packages: ['packages/*'],
+          npmClient: 'yarn',
+        },
+        null,
+        2
+      )
     );
 
     const pkg1 = path.join(monorepoRoot, 'packages', 'pkg1');
@@ -677,9 +687,7 @@ describe('Monorepo: Build Tool Compatibility', () => {
     expect(packagesDir).toContain('pkg2');
 
     // Verify package.json files still readable
-    const pkg1Json = JSON.parse(
-      await fs.readFile(path.join(pkg1, 'package.json'), 'utf-8')
-    );
+    const pkg1Json = JSON.parse(await fs.readFile(path.join(pkg1, 'package.json'), 'utf-8'));
     expect(pkg1Json.name).toBe('@mono/pkg1');
   });
 
@@ -688,20 +696,24 @@ describe('Monorepo: Build Tool Compatibility', () => {
 
     await fs.writeFile(
       path.join(monorepoRoot, 'nx.json'),
-      JSON.stringify({
-        npmScope: 'myorg',
-        affected: {
-          defaultBase: 'main'
+      JSON.stringify(
+        {
+          npmScope: 'myorg',
+          affected: {
+            defaultBase: 'main',
+          },
+          tasksRunnerOptions: {
+            default: {
+              runner: 'nx/tasks-runners/default',
+              options: {
+                cacheableOperations: ['build', 'test'],
+              },
+            },
+          },
         },
-        tasksRunnerOptions: {
-          default: {
-            runner: 'nx/tasks-runners/default',
-            options: {
-              cacheableOperations: ['build', 'test']
-            }
-          }
-        }
-      }, null, 2)
+        null,
+        2
+      )
     );
 
     const appDir = path.join(monorepoRoot, 'apps', 'web');
@@ -710,9 +722,7 @@ describe('Monorepo: Build Tool Compatibility', () => {
     await createSpeckSymlink(appDir, monorepoRoot);
 
     // Verify nx.json still valid
-    const nxConfig = JSON.parse(
-      await fs.readFile(path.join(monorepoRoot, 'nx.json'), 'utf-8')
-    );
+    const nxConfig = JSON.parse(await fs.readFile(path.join(monorepoRoot, 'nx.json'), 'utf-8'));
 
     expect(nxConfig.npmScope).toBe('myorg');
     expect(nxConfig.tasksRunnerOptions.default).toBeDefined();
@@ -785,6 +795,6 @@ describe('Monorepo: Performance at Scale', () => {
     const cachedTime = end2 - start2;
 
     expect(uncachedTime).toBeLessThan(10); // Initial <10ms
-    expect(cachedTime).toBeLessThan(1);    // Cached <1ms
+    expect(cachedTime).toBeLessThan(1); // Cached <1ms
   });
 });

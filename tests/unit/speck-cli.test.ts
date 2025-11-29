@@ -3,64 +3,64 @@
  * Tests CLI mode and hook mode with identical business logic
  */
 
-import { describe, test, expect } from "bun:test";
-import { echoHandler } from "../../.speck/scripts/commands/echo";
-import { envHandler } from "../../.speck/scripts/commands/env";
-import type { CommandContext } from "../../.speck/scripts/lib/types";
+import { describe, test, expect } from 'bun:test';
+import { echoHandler } from '../../.speck/scripts/commands/echo';
+import { envHandler } from '../../.speck/scripts/commands/env';
+import type { CommandContext } from '../../.speck/scripts/lib/types';
 
-describe("Dual-Mode CLI Operation", () => {
-  describe("Echo Command", () => {
-    test("should return message in CLI mode", async () => {
+describe('Dual-Mode CLI Operation', () => {
+  describe('Echo Command', () => {
+    test('should return message in CLI mode', async () => {
       const context: CommandContext = {
-        mode: "cli",
-        rawCommand: "echo test message",
+        mode: 'cli',
+        rawCommand: 'echo test message',
         workingDirectory: process.cwd(),
         isInteractive: true,
       };
 
-      const result = await echoHandler({ message: "test message" }, context);
+      const result = await echoHandler({ message: 'test message' }, context);
 
       expect(result.success).toBe(true);
-      expect(result.output).toBe("test message");
+      expect(result.output).toBe('test message');
       expect(result.errorOutput).toBe(null);
       expect(result.exitCode).toBe(0);
-      expect(result.metadata).toEqual({ message: "test message" });
+      expect(result.metadata).toEqual({ message: 'test message' });
     });
 
-    test("should return message in hook mode", async () => {
+    test('should return message in hook mode', async () => {
       const context: CommandContext = {
-        mode: "hook",
-        rawCommand: "echo test message",
+        mode: 'hook',
+        rawCommand: 'echo test message',
         workingDirectory: process.cwd(),
         isInteractive: false,
       };
 
-      const result = await echoHandler({ message: "test message" }, context);
+      const result = await echoHandler({ message: 'test message' }, context);
 
       expect(result.success).toBe(true);
-      expect(result.output).toBe("test message");
+      expect(result.output).toBe('test message');
       expect(result.errorOutput).toBe(null);
       expect(result.exitCode).toBe(0);
-      expect(result.metadata).toEqual({ message: "test message" });
+      expect(result.metadata).toEqual({ message: 'test message' });
     });
 
-    test("should produce identical results in both modes", async () => {
+    test('should produce identical results in both modes', async () => {
       const cliContext: CommandContext = {
-        mode: "cli",
-        rawCommand: "echo identical test",
+        mode: 'cli',
+        rawCommand: 'echo identical test',
         workingDirectory: process.cwd(),
         isInteractive: true,
       };
 
       const hookContext: CommandContext = {
-        mode: "hook",
-        rawCommand: "echo identical test",
+        mode: 'hook',
+        rawCommand: 'echo identical test',
         workingDirectory: process.cwd(),
         isInteractive: false,
       };
 
-      const cliResult = await echoHandler({ message: "identical test" }, cliContext);
-      const hookResult = await echoHandler({ message: "identical test" }, hookContext);
+      const cliResult = await echoHandler({ message: 'identical test' }, cliContext);
+      const hookResult = await echoHandler({ message: 'identical test' }, hookContext);
 
       // Business logic should be identical
       expect(cliResult.success).toBe(hookResult.success);
@@ -70,25 +70,25 @@ describe("Dual-Mode CLI Operation", () => {
       expect(cliResult.metadata).toEqual(hookResult.metadata);
     });
 
-    test("should fail with missing required argument", async () => {
+    test('should fail with missing required argument', async () => {
       const context: CommandContext = {
-        mode: "cli",
-        rawCommand: "echo",
+        mode: 'cli',
+        rawCommand: 'echo',
         workingDirectory: process.cwd(),
         isInteractive: true,
       };
 
-      const result = await echoHandler({ message: "" }, context);
+      const result = await echoHandler({ message: '' }, context);
 
       expect(result.success).toBe(false);
       expect(result.exitCode).toBe(1);
-      expect(result.errorOutput).toContain("Missing required argument: message");
+      expect(result.errorOutput).toContain('Missing required argument: message');
     });
 
-    test("should handle special characters correctly", async () => {
+    test('should handle special characters correctly', async () => {
       const context: CommandContext = {
-        mode: "cli",
-        rawCommand: "echo test's \"quoted\" message",
+        mode: 'cli',
+        rawCommand: 'echo test\'s "quoted" message',
         workingDirectory: process.cwd(),
         isInteractive: true,
       };
@@ -101,11 +101,11 @@ describe("Dual-Mode CLI Operation", () => {
     });
   });
 
-  describe("Env Command", () => {
-    test("should return environment info in CLI mode", async () => {
+  describe('Env Command', () => {
+    test('should return environment info in CLI mode', async () => {
       const context: CommandContext = {
-        mode: "cli",
-        rawCommand: "env",
+        mode: 'cli',
+        rawCommand: 'env',
         workingDirectory: process.cwd(),
         isInteractive: true,
       };
@@ -113,18 +113,18 @@ describe("Dual-Mode CLI Operation", () => {
       const result = await envHandler({}, context);
 
       expect(result.success).toBe(true);
-      expect(result.output).toContain("Speck Environment");
-      expect(result.output).toContain("Speck Root:");
-      expect(result.output).toContain("Repo Root:");
-      expect(result.output).toContain("Execution Mode: cli");
+      expect(result.output).toContain('Speck Environment');
+      expect(result.output).toContain('Speck Root:');
+      expect(result.output).toContain('Repo Root:');
+      expect(result.output).toContain('Execution Mode: cli');
       expect(result.errorOutput).toBe(null);
       expect(result.exitCode).toBe(0);
     });
 
-    test("should return environment info in hook mode", async () => {
+    test('should return environment info in hook mode', async () => {
       const context: CommandContext = {
-        mode: "hook",
-        rawCommand: "env",
+        mode: 'hook',
+        rawCommand: 'env',
         workingDirectory: process.cwd(),
         isInteractive: false,
       };
@@ -132,16 +132,16 @@ describe("Dual-Mode CLI Operation", () => {
       const result = await envHandler({}, context);
 
       expect(result.success).toBe(true);
-      expect(result.output).toContain("Speck Environment");
-      expect(result.output).toContain("Execution Mode: hook");
+      expect(result.output).toContain('Speck Environment');
+      expect(result.output).toContain('Execution Mode: hook');
       expect(result.errorOutput).toBe(null);
       expect(result.exitCode).toBe(0);
     });
 
-    test("should include metadata in result", async () => {
+    test('should include metadata in result', async () => {
       const context: CommandContext = {
-        mode: "cli",
-        rawCommand: "env",
+        mode: 'cli',
+        rawCommand: 'env',
         workingDirectory: process.cwd(),
         isInteractive: true,
       };
@@ -149,23 +149,23 @@ describe("Dual-Mode CLI Operation", () => {
       const result = await envHandler({}, context);
 
       expect(result.metadata).toBeDefined();
-      expect(result.metadata).toHaveProperty("speckRoot");
-      expect(result.metadata).toHaveProperty("repoRoot");
-      expect(result.metadata).toHaveProperty("executionMode");
-      expect(result.metadata?.executionMode).toBe("cli");
+      expect(result.metadata).toHaveProperty('speckRoot');
+      expect(result.metadata).toHaveProperty('repoRoot');
+      expect(result.metadata).toHaveProperty('executionMode');
+      expect(result.metadata?.executionMode).toBe('cli');
     });
 
-    test("should reflect context.mode in both output and metadata", async () => {
+    test('should reflect context.mode in both output and metadata', async () => {
       const cliContext: CommandContext = {
-        mode: "cli",
-        rawCommand: "env",
+        mode: 'cli',
+        rawCommand: 'env',
         workingDirectory: process.cwd(),
         isInteractive: true,
       };
 
       const hookContext: CommandContext = {
-        mode: "hook",
-        rawCommand: "env",
+        mode: 'hook',
+        rawCommand: 'env',
         workingDirectory: process.cwd(),
         isInteractive: false,
       };
@@ -173,61 +173,61 @@ describe("Dual-Mode CLI Operation", () => {
       const cliResult = await envHandler({}, cliContext);
       const hookResult = await envHandler({}, hookContext);
 
-      expect(cliResult.metadata?.executionMode).toBe("cli");
-      expect(hookResult.metadata?.executionMode).toBe("hook");
+      expect(cliResult.metadata?.executionMode).toBe('cli');
+      expect(hookResult.metadata?.executionMode).toBe('hook');
     });
   });
 
-  describe("Error Handling", () => {
-    test("should format errors consistently in CLI mode", async () => {
+  describe('Error Handling', () => {
+    test('should format errors consistently in CLI mode', async () => {
       const context: CommandContext = {
-        mode: "cli",
-        rawCommand: "echo",
+        mode: 'cli',
+        rawCommand: 'echo',
         workingDirectory: process.cwd(),
         isInteractive: true,
       };
 
-      const result = await echoHandler({ message: "" }, context);
+      const result = await echoHandler({ message: '' }, context);
 
       expect(result.success).toBe(false);
       expect(result.errorOutput).toBeDefined();
-      expect(typeof result.errorOutput).toBe("string");
+      expect(typeof result.errorOutput).toBe('string');
       expect(result.exitCode).toBeGreaterThan(0);
     });
 
-    test("should format errors consistently in hook mode", async () => {
+    test('should format errors consistently in hook mode', async () => {
       const context: CommandContext = {
-        mode: "hook",
-        rawCommand: "echo",
+        mode: 'hook',
+        rawCommand: 'echo',
         workingDirectory: process.cwd(),
         isInteractive: false,
       };
 
-      const result = await echoHandler({ message: "" }, context);
+      const result = await echoHandler({ message: '' }, context);
 
       expect(result.success).toBe(false);
       expect(result.errorOutput).toBeDefined();
-      expect(typeof result.errorOutput).toBe("string");
+      expect(typeof result.errorOutput).toBe('string');
       expect(result.exitCode).toBeGreaterThan(0);
     });
 
-    test("should produce identical error results in both modes", async () => {
+    test('should produce identical error results in both modes', async () => {
       const cliContext: CommandContext = {
-        mode: "cli",
-        rawCommand: "echo",
+        mode: 'cli',
+        rawCommand: 'echo',
         workingDirectory: process.cwd(),
         isInteractive: true,
       };
 
       const hookContext: CommandContext = {
-        mode: "hook",
-        rawCommand: "echo",
+        mode: 'hook',
+        rawCommand: 'echo',
         workingDirectory: process.cwd(),
         isInteractive: false,
       };
 
-      const cliResult = await echoHandler({ message: "" }, cliContext);
-      const hookResult = await echoHandler({ message: "" }, hookContext);
+      const cliResult = await echoHandler({ message: '' }, cliContext);
+      const hookResult = await echoHandler({ message: '' }, hookContext);
 
       // Error handling should be identical
       expect(cliResult.success).toBe(hookResult.success);
@@ -236,25 +236,25 @@ describe("Dual-Mode CLI Operation", () => {
     });
   });
 
-  describe("Output Consistency", () => {
-    test("should maintain output format across modes", async () => {
+  describe('Output Consistency', () => {
+    test('should maintain output format across modes', async () => {
       const testCases = [
-        { message: "simple" },
-        { message: "with spaces" },
-        { message: "with\nnewlines" },
-        { message: "with\ttabs" },
+        { message: 'simple' },
+        { message: 'with spaces' },
+        { message: 'with\nnewlines' },
+        { message: 'with\ttabs' },
       ];
 
       for (const testCase of testCases) {
         const cliContext: CommandContext = {
-          mode: "cli",
+          mode: 'cli',
           rawCommand: `echo ${testCase.message}`,
           workingDirectory: process.cwd(),
           isInteractive: true,
         };
 
         const hookContext: CommandContext = {
-          mode: "hook",
+          mode: 'hook',
           rawCommand: `echo ${testCase.message}`,
           workingDirectory: process.cwd(),
           isInteractive: false,

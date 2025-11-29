@@ -101,17 +101,6 @@ function isValidSymlink(symlinkPath: string, expectedTarget: string): boolean {
 }
 
 /**
- * Check if path exists and is a symlink (regardless of target)
- */
-function isSymlink(path: string): boolean {
-  try {
-    return existsSync(path) && lstatSync(path).isSymbolicLink();
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Check if path exists and is a regular file
  */
 function isRegularFile(path: string): boolean {
@@ -129,7 +118,7 @@ function isRegularFile(path: string): boolean {
 /**
  * Execute the init command
  */
-async function runInit(options: InitOptions): Promise<InitResult> {
+function runInit(options: InitOptions): InitResult {
   const bootstrapPath = getBootstrapPath();
   const inPath = isInPath();
   const pathInstructions = inPath ? undefined : getPathInstructions();
@@ -249,7 +238,7 @@ function formatOutput(result: InitResult, options: InitOptions): string {
 /**
  * Main entry point for CLI invocation
  */
-export async function main(args: string[]): Promise<number> {
+export function main(args: string[]): number {
   // Parse arguments
   const { values } = parseArgs({
     args,
@@ -266,7 +255,7 @@ export async function main(args: string[]): Promise<number> {
   };
 
   // Run init
-  const result = await runInit(options);
+  const result = runInit(options);
 
   // Output result
   console.log(formatOutput(result, options));
@@ -276,6 +265,6 @@ export async function main(args: string[]): Promise<number> {
 
 // Run if executed directly
 if (import.meta.main) {
-  const exitCode = await main(process.argv.slice(2));
+  const exitCode = main(process.argv.slice(2));
   process.exit(exitCode);
 }

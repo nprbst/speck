@@ -37,7 +37,9 @@ test.describe.skip('Homepage Accessibility', () => {
     await page.keyboard.press('Tab');
 
     // First focusable should be skip link
-    const focused = await page.evaluate(() => (globalThis as any).document.activeElement?.className);
+    const focused = await page.evaluate(
+      () => (globalThis as any).document.activeElement?.className
+    );
     expect(focused).toContain('skip-link');
 
     // Continue tabbing through navigation
@@ -102,7 +104,7 @@ test.describe('Documentation Pages Accessibility', () => {
 
     // Active link should have aria-current
     const activeLink = page.locator('.sidebar-link.active');
-    if (await activeLink.count() > 0) {
+    if ((await activeLink.count()) > 0) {
       await expect(activeLink.first()).toHaveAttribute('aria-current', 'page');
     }
   });

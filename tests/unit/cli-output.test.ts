@@ -8,16 +8,10 @@
  * Tasks: T030, T031, T031a
  */
 
-import { describe, test, expect, beforeEach, afterEach, mock, spyOn } from "bun:test";
+import { describe, test, expect } from 'bun:test';
 
 // Types from the contracts (will be implemented)
-import type {
-  JsonOutput,
-  HookOutput,
-  HookInputPayload,
-  InputMode,
-  OutputMode,
-} from "../../specs/015-scope-simplification/contracts/cli-interface";
+import type { HookInputPayload } from '../../specs/015-scope-simplification/contracts/cli-interface';
 
 // Import the output formatter module (TDD: will fail until implemented)
 import {
@@ -26,62 +20,62 @@ import {
   readHookInput,
   detectInputMode,
   detectOutputMode,
-} from "../../.speck/scripts/lib/output-formatter";
+} from '../../.speck/scripts/lib/output-formatter';
 
-describe("T030: JSON Output Format", () => {
-  describe("formatJsonOutput()", () => {
-    test("returns JsonOutput structure with ok: true on success", () => {
+describe('T030: JSON Output Format', () => {
+  describe('formatJsonOutput()', () => {
+    test('returns JsonOutput structure with ok: true on success', () => {
       const result = formatJsonOutput({
         success: true,
-        data: { foo: "bar" },
-        command: "test-command",
+        data: { foo: 'bar' },
+        command: 'test-command',
       });
 
       expect(result.ok).toBe(true);
-      expect(result.result).toEqual({ foo: "bar" });
+      expect(result.result).toEqual({ foo: 'bar' });
       expect(result.error).toBeUndefined();
-      expect(result.meta.command).toBe("test-command");
+      expect(result.meta.command).toBe('test-command');
       expect(result.meta.timestamp).toBeDefined();
       expect(result.meta.duration_ms).toBeGreaterThanOrEqual(0);
     });
 
-    test("returns JsonOutput structure with ok: false on failure", () => {
+    test('returns JsonOutput structure with ok: false on failure', () => {
       const result = formatJsonOutput({
         success: false,
         error: {
-          code: "NOT_FOUND",
-          message: "Feature directory not found",
-          recovery: ["Run /speck.specify first"],
+          code: 'NOT_FOUND',
+          message: 'Feature directory not found',
+          recovery: ['Run /speck.specify first'],
         },
-        command: "check-prerequisites",
+        command: 'check-prerequisites',
       });
 
       expect(result.ok).toBe(false);
       expect(result.result).toBeUndefined();
       expect(result.error).toBeDefined();
-      expect(result.error?.code).toBe("NOT_FOUND");
-      expect(result.error?.message).toBe("Feature directory not found");
-      expect(result.error?.recovery).toContain("Run /speck.specify first");
+      expect(result.error?.code).toBe('NOT_FOUND');
+      expect(result.error?.message).toBe('Feature directory not found');
+      expect(result.error?.recovery).toContain('Run /speck.specify first');
     });
 
-    test("includes duration_ms in meta", () => {
+    test('includes duration_ms in meta', () => {
       const startTime = Date.now();
       const result = formatJsonOutput({
         success: true,
         data: {},
-        command: "env",
+        command: 'env',
         startTime,
       });
 
       expect(result.meta.duration_ms).toBeGreaterThanOrEqual(0);
-      expect(typeof result.meta.duration_ms).toBe("number");
+      expect(typeof result.meta.duration_ms).toBe('number');
     });
 
-    test("includes ISO timestamp in meta", () => {
+    test('includes ISO timestamp in meta', () => {
       const result = formatJsonOutput({
         success: true,
         data: {},
-        command: "env",
+        command: 'env',
       });
 
       // Should be valid ISO timestamp
@@ -89,11 +83,11 @@ describe("T030: JSON Output Format", () => {
       expect(timestamp.toISOString()).toBe(result.meta.timestamp);
     });
 
-    test("serializes to valid JSON string", () => {
+    test('serializes to valid JSON string', () => {
       const output = formatJsonOutput({
         success: true,
         data: { nested: { value: 123 } },
-        command: "test",
+        command: 'test',
       });
 
       const jsonString = JSON.stringify(output);
@@ -104,52 +98,52 @@ describe("T030: JSON Output Format", () => {
   });
 });
 
-describe("T031: Hook Output Format", () => {
-  describe("formatHookOutput()", () => {
-    test("returns HookOutput with context for UserPromptSubmit hooks", () => {
+describe('T031: Hook Output Format', () => {
+  describe('formatHookOutput()', () => {
+    test('returns HookOutput with context for UserPromptSubmit hooks', () => {
       const result = formatHookOutput({
-        hookType: "UserPromptSubmit",
-        context: "<!-- SPECK_CONTEXT -->\nFeature dir: /path/to/feature",
+        hookType: 'UserPromptSubmit',
+        context: '<!-- SPECK_CONTEXT -->\nFeature dir: /path/to/feature',
       });
 
-      expect(result.context).toContain("SPECK_CONTEXT");
+      expect(result.context).toContain('SPECK_CONTEXT');
       expect(result.message).toBeUndefined();
     });
 
-    test("returns HookOutput with hookSpecificOutput.additionalContext for SessionStart", () => {
+    test('returns HookOutput with hookSpecificOutput.additionalContext for SessionStart', () => {
       const result = formatHookOutput({
-        hookType: "SessionStart",
-        additionalContext: "Session handoff content here",
+        hookType: 'SessionStart',
+        additionalContext: 'Session handoff content here',
       });
 
       expect(result.hookSpecificOutput).toBeDefined();
-      expect(result.hookSpecificOutput?.additionalContext).toBe("Session handoff content here");
+      expect(result.hookSpecificOutput?.additionalContext).toBe('Session handoff content here');
     });
 
-    test("returns HookOutput with allow for PreToolUse hooks", () => {
+    test('returns HookOutput with allow for PreToolUse hooks', () => {
       const result = formatHookOutput({
-        hookType: "PreToolUse",
+        hookType: 'PreToolUse',
         allow: true,
-        message: "Command allowed",
+        message: 'Command allowed',
       });
 
       expect(result.allow).toBe(true);
-      expect(result.message).toBe("Command allowed");
+      expect(result.message).toBe('Command allowed');
     });
 
-    test("returns empty object for passthrough", () => {
+    test('returns empty object for passthrough', () => {
       const result = formatHookOutput({
-        hookType: "PreToolUse",
+        hookType: 'PreToolUse',
         passthrough: true,
       });
 
       expect(Object.keys(result)).toHaveLength(0);
     });
 
-    test("serializes to valid JSON", () => {
+    test('serializes to valid JSON', () => {
       const output = formatHookOutput({
-        hookType: "UserPromptSubmit",
-        context: "Test context",
+        hookType: 'UserPromptSubmit',
+        context: 'Test context',
       });
 
       const jsonString = JSON.stringify(output);
@@ -158,15 +152,15 @@ describe("T031: Hook Output Format", () => {
   });
 });
 
-describe("T031a: Hook Input Mode (stdin JSON parsing)", () => {
-  describe("readHookInput()", () => {
-    test("parses valid HookInputPayload from stdin", async () => {
+describe('T031a: Hook Input Mode (stdin JSON parsing)', () => {
+  describe('readHookInput()', () => {
+    test('parses valid HookInputPayload from stdin', async () => {
       const mockInput: HookInputPayload = {
-        hookType: "UserPromptSubmit",
-        userPrompt: "Run the tests",
+        hookType: 'UserPromptSubmit',
+        userPrompt: 'Run the tests',
         sessionContext: {
-          workingDirectory: "/path/to/repo",
-          conversationId: "test-123",
+          workingDirectory: '/path/to/repo',
+          conversationId: 'test-123',
           isInteractive: true,
         },
       };
@@ -175,107 +169,107 @@ describe("T031a: Hook Input Mode (stdin JSON parsing)", () => {
       const input = await readHookInput(JSON.stringify(mockInput));
 
       expect(input).toBeDefined();
-      expect(input?.hookType).toBe("UserPromptSubmit");
-      expect(input?.userPrompt).toBe("Run the tests");
-      expect(input?.sessionContext?.workingDirectory).toBe("/path/to/repo");
+      expect(input?.hookType).toBe('UserPromptSubmit');
+      expect(input?.userPrompt).toBe('Run the tests');
+      expect(input?.sessionContext?.workingDirectory).toBe('/path/to/repo');
     });
 
-    test("parses PreToolUse payload with tool details", async () => {
+    test('parses PreToolUse payload with tool details', async () => {
       const mockInput: HookInputPayload = {
-        hookType: "PreToolUse",
-        toolName: "Bash",
+        hookType: 'PreToolUse',
+        toolName: 'Bash',
         toolInput: {
-          command: "npm test",
-          description: "Run tests",
+          command: 'npm test',
+          description: 'Run tests',
         },
       };
 
       const input = await readHookInput(JSON.stringify(mockInput));
 
-      expect(input?.hookType).toBe("PreToolUse");
-      expect(input?.toolName).toBe("Bash");
-      expect(input?.toolInput?.command).toBe("npm test");
+      expect(input?.hookType).toBe('PreToolUse');
+      expect(input?.toolName).toBe('Bash');
+      expect(input?.toolInput?.command).toBe('npm test');
     });
 
-    test("returns undefined for empty stdin", async () => {
-      const input = await readHookInput("");
+    test('returns undefined for empty stdin', async () => {
+      const input = await readHookInput('');
       expect(input).toBeUndefined();
     });
 
-    test("returns undefined for invalid JSON", async () => {
-      const input = await readHookInput("not valid json {");
+    test('returns undefined for invalid JSON', async () => {
+      const input = await readHookInput('not valid json {');
       expect(input).toBeUndefined();
     });
 
-    test("handles SessionStart hook payload", async () => {
+    test('handles SessionStart hook payload', async () => {
       const mockInput: HookInputPayload = {
-        hookType: "SessionStart",
+        hookType: 'SessionStart',
         sessionContext: {
-          workingDirectory: "/path/to/worktree",
+          workingDirectory: '/path/to/worktree',
         },
       };
 
       const input = await readHookInput(JSON.stringify(mockInput));
 
-      expect(input?.hookType).toBe("SessionStart");
-      expect(input?.sessionContext?.workingDirectory).toBe("/path/to/worktree");
+      expect(input?.hookType).toBe('SessionStart');
+      expect(input?.sessionContext?.workingDirectory).toBe('/path/to/worktree');
     });
   });
 
-  describe("detectInputMode()", () => {
+  describe('detectInputMode()', () => {
     test("returns 'hook' when --hook flag is present", () => {
       const mode = detectInputMode({ hook: true });
-      expect(mode).toBe("hook");
+      expect(mode).toBe('hook');
     });
 
     test("returns 'default' when --hook flag is absent", () => {
       const mode = detectInputMode({ hook: false });
-      expect(mode).toBe("default");
+      expect(mode).toBe('default');
     });
 
     test("returns 'default' when options object is empty", () => {
       const mode = detectInputMode({});
-      expect(mode).toBe("default");
+      expect(mode).toBe('default');
     });
   });
 
-  describe("detectOutputMode()", () => {
+  describe('detectOutputMode()', () => {
     test("returns 'hook' when --hook flag is present (highest precedence)", () => {
       const mode = detectOutputMode({ hook: true, json: true });
-      expect(mode).toBe("hook");
+      expect(mode).toBe('hook');
     });
 
     test("returns 'json' when only --json flag is present", () => {
       const mode = detectOutputMode({ json: true });
-      expect(mode).toBe("json");
+      expect(mode).toBe('json');
     });
 
     test("returns 'human' when no flags present", () => {
       const mode = detectOutputMode({});
-      expect(mode).toBe("human");
+      expect(mode).toBe('human');
     });
 
-    test("--hook overrides --json", () => {
+    test('--hook overrides --json', () => {
       const mode = detectOutputMode({ json: true, hook: true });
-      expect(mode).toBe("hook");
+      expect(mode).toBe('hook');
     });
   });
 });
 
-describe("Output Contract Conformance", () => {
-  test("JsonOutput matches specs/015-scope-simplification/contracts/cli-interface.ts", () => {
+describe('Output Contract Conformance', () => {
+  test('JsonOutput matches specs/015-scope-simplification/contracts/cli-interface.ts', () => {
     const output = formatJsonOutput({
       success: true,
       data: { test: true },
-      command: "test",
+      command: 'test',
     });
 
     // Verify all required fields from JsonOutput interface
-    expect(typeof output.ok).toBe("boolean");
+    expect(typeof output.ok).toBe('boolean');
     expect(output.meta).toBeDefined();
-    expect(typeof output.meta.command).toBe("string");
-    expect(typeof output.meta.timestamp).toBe("string");
-    expect(typeof output.meta.duration_ms).toBe("number");
+    expect(typeof output.meta.command).toBe('string');
+    expect(typeof output.meta.timestamp).toBe('string');
+    expect(typeof output.meta.duration_ms).toBe('number');
 
     // result or error should be present (not both)
     if (output.ok) {
@@ -285,24 +279,24 @@ describe("Output Contract Conformance", () => {
     }
   });
 
-  test("HookOutput matches specs/015-scope-simplification/contracts/cli-interface.ts", () => {
+  test('HookOutput matches specs/015-scope-simplification/contracts/cli-interface.ts', () => {
     // UserPromptSubmit format
     const userPromptOutput = formatHookOutput({
-      hookType: "UserPromptSubmit",
-      context: "test context",
+      hookType: 'UserPromptSubmit',
+      context: 'test context',
     });
     expect(userPromptOutput.context).toBeDefined();
 
     // SessionStart format
     const sessionOutput = formatHookOutput({
-      hookType: "SessionStart",
-      additionalContext: "session context",
+      hookType: 'SessionStart',
+      additionalContext: 'session context',
     });
     expect(sessionOutput.hookSpecificOutput?.additionalContext).toBeDefined();
 
     // PreToolUse format
     const preToolOutput = formatHookOutput({
-      hookType: "PreToolUse",
+      hookType: 'PreToolUse',
       allow: true,
     });
     expect(preToolOutput.allow).toBeDefined();

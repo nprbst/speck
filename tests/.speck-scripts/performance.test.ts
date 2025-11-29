@@ -8,11 +8,11 @@
  * - T081: SC-006 - Bun script startup time <100ms
  */
 
-import { describe, test, expect } from "bun:test";
-import { $ } from "bun";
+import { describe, test, expect } from 'bun:test';
+import { $ } from 'bun';
 
-describe("T078: SC-001 - check-upstream performance", () => {
-  test("/speck.check-upstream completes in under 10 seconds", async () => {
+describe('T078: SC-001 - check-upstream performance', () => {
+  test('/speck.check-upstream completes in under 10 seconds', async () => {
     const start = performance.now();
 
     const result = await $`bun .speck/scripts/check-upstream.ts --json`.quiet();
@@ -25,8 +25,8 @@ describe("T078: SC-001 - check-upstream performance", () => {
   });
 });
 
-describe("T079: SC-002 - pull-upstream performance", () => {
-  test.skip("/speck.pull-upstream completes in under 2 minutes", async () => {
+describe('T079: SC-002 - pull-upstream performance', () => {
+  test.skip('/speck.pull-upstream completes in under 2 minutes', async () => {
     // Skip by default to avoid repeatedly pulling releases
     // To run: Remove skip and ensure a non-pulled version exists
 
@@ -39,8 +39,8 @@ describe("T079: SC-002 - pull-upstream performance", () => {
   });
 });
 
-describe("T080: SC-003 - transform-upstream performance", () => {
-  test.skip("/speck.transform-upstream completes in under 5 minutes", async () => {
+describe('T080: SC-003 - transform-upstream performance', () => {
+  test.skip('/speck.transform-upstream completes in under 5 minutes', async () => {
     // Skip by default - requires pulled upstream release
     // To run: Remove skip and ensure upstream/latest exists
 
@@ -53,8 +53,8 @@ describe("T080: SC-003 - transform-upstream performance", () => {
   });
 });
 
-describe("T081: SC-006 - Bun script startup performance", () => {
-  test("check-upstream starts in under 100ms", async () => {
+describe('T081: SC-006 - Bun script startup performance', () => {
+  test('check-upstream starts in under 100ms', async () => {
     const start = performance.now();
 
     await $`bun .speck/scripts/check-upstream.ts --help`.quiet();
@@ -65,7 +65,7 @@ describe("T081: SC-006 - Bun script startup performance", () => {
     expect(duration).toBeLessThan(100);
   });
 
-  test("pull-upstream starts in under 100ms", async () => {
+  test('pull-upstream starts in under 100ms', async () => {
     const start = performance.now();
 
     // Use --help to test startup without actual pull operation
@@ -78,7 +78,7 @@ describe("T081: SC-006 - Bun script startup performance", () => {
     expect(duration).toBeLessThan(100);
   });
 
-  test("Bun runtime startup overhead is minimal", async () => {
+  test('Bun runtime startup overhead is minimal', async () => {
     const start = performance.now();
 
     // Simple Bun script execution
@@ -92,8 +92,8 @@ describe("T081: SC-006 - Bun script startup performance", () => {
   });
 });
 
-describe("Performance benchmarks (informational)", () => {
-  test("measure common utility performance", async () => {
+describe('Performance benchmarks (informational)', () => {
+  test('measure common utility performance', async () => {
     // Test GitHub API client performance
     const start1 = performance.now();
     await $`bun .speck/scripts/check-upstream.ts --json`.quiet();

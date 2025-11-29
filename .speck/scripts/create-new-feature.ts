@@ -604,7 +604,7 @@ export async function main(args: string[]): Promise<number> {
           const relativeSpecDir = path.join("specs", specId);
           const relativeSpecPath = path.join(relativeSpecDir, "spec.md");
 
-          await writeWorktreeHandoff(worktreePath, {
+          writeWorktreeHandoff(worktreePath, {
             featureName: featureTitle,
             branchName,
             specPath: relativeSpecPath,
@@ -627,7 +627,7 @@ export async function main(args: string[]): Promise<number> {
         // Launch IDE in worktree if configured
         if (worktreeConfig.worktree.ide.autoLaunch) {
           try {
-            const ideResult = await launchIDE({
+            const ideResult = launchIDE({
               worktreePath,
               editor: worktreeConfig.worktree.ide.editor,
               newWindow: worktreeConfig.worktree.ide.newWindow,

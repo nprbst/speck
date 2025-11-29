@@ -366,7 +366,7 @@ export function generateHookOutput(handoffContent: string): string {
  *
  * @param worktreePath - Path to the worktree
  */
-export async function archiveHandoff(worktreePath: string): Promise<void> {
+export function archiveHandoff(worktreePath: string): void {
   const handoffPath = path.join(worktreePath, HANDOFF_FILE_PATH);
   const archivedPath = path.join(worktreePath, HANDOFF_DONE_PATH);
 
@@ -386,7 +386,7 @@ export async function archiveHandoff(worktreePath: string): Promise<void> {
  *
  * @param worktreePath - Path to the worktree
  */
-export async function removeSessionStartHook(worktreePath: string): Promise<void> {
+export function removeSessionStartHook(worktreePath: string): void {
   const settingsPath = path.join(worktreePath, CLAUDE_SETTINGS_PATH);
 
   if (!existsSync(settingsPath)) {
@@ -395,13 +395,14 @@ export async function removeSessionStartHook(worktreePath: string): Promise<void
 
   try {
     const content = readFileSync(settingsPath, "utf-8");
-    const settings = JSON.parse(content);
+    const settings = JSON.parse(content) as Record<string, unknown>;
 
-    if (settings.hooks?.SessionStart) {
-      delete settings.hooks.SessionStart;
+    const hooks = settings.hooks as Record<string, unknown> | undefined;
+    if (hooks?.SessionStart) {
+      delete hooks.SessionStart;
 
       // Remove empty hooks object
-      if (Object.keys(settings.hooks).length === 0) {
+      if (Object.keys(hooks).length === 0) {
         delete settings.hooks;
       }
 
@@ -438,10 +439,10 @@ export interface WriteWorktreeHandoffOptions {
  * @param worktreePath - Path to the worktree
  * @param options - Handoff options
  */
-export async function writeWorktreeHandoff(
+export function writeWorktreeHandoff(
   worktreePath: string,
   options: WriteWorktreeHandoffOptions
-): Promise<void> {
+): void {
   // T048a: Write .speck/handoff.md
   const doc = createHandoffDocument(options);
   const markdown = generateHandoffMarkdown(doc);
@@ -565,7 +566,7 @@ export async function createWorktreeWithHandoff(
 
     // T054: Graceful degradation - try to write handoff, but don't fail if it errors
     try {
-      await writeWorktreeHandoff(worktreePath, {
+      writeWorktreeHandoff(worktreePath, {
         featureName,
         branchName,
         specPath,

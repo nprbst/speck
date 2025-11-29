@@ -13,7 +13,11 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { $ } from 'bun';
-import { detectSpeckRoot, clearSpeckCache, getFeaturePaths } from '../.speck/scripts/common/paths.ts';
+import {
+  detectSpeckRoot,
+  clearSpeckCache,
+  getFeaturePaths,
+} from '../.speck/scripts/common/paths.ts';
 
 // Test helper to create directory structure
 async function createTestDir(name: string): Promise<string> {
@@ -111,7 +115,7 @@ describe('Phase 3: User Story 1 - Single-Repo Backward Compatibility', () => {
     const cached = end2 - start2;
 
     expect(uncached).toBeLessThan(10); // <10ms for uncached
-    expect(cached).toBeLessThan(1);    // <1ms for cached
+    expect(cached).toBeLessThan(1); // <1ms for cached
   });
 
   test('T021: No new configuration files appear in single-repo mode', async () => {
@@ -210,7 +214,10 @@ describe('Phase 4: User Story 2 - Multi-Repo Support', () => {
     // Create shared spec
     const specDir = path.join(speckRoot, 'specs', '001-test');
     await fs.mkdir(specDir, { recursive: true });
-    await fs.writeFile(path.join(specDir, 'spec.md'), '# Shared Test Spec\n\nThis is a shared specification.');
+    await fs.writeFile(
+      path.join(specDir, 'spec.md'),
+      '# Shared Test Spec\n\nThis is a shared specification.'
+    );
 
     process.env.SPECIFY_FEATURE = '001-test';
 
@@ -467,7 +474,7 @@ describe('Edge Cases and Error Handling', () => {
     console.warn = originalWarn;
 
     expect(config.mode).toBe('single-repo');
-    expect(warnings.some(w => w.includes('not a symlink'))).toBe(true);
+    expect(warnings.some((w) => w.includes('not a symlink'))).toBe(true);
   });
 
   test('Self-referencing symlink resolves to .speck directory', async () => {

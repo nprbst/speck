@@ -8,11 +8,11 @@
  * - Error handling for IDE launch failures
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { rmSync } from "fs";
-import { createTempGitRepo } from "../fixtures/test-utils";
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { rmSync } from 'fs';
+import { createTempGitRepo } from '../fixtures/test-utils';
 
-describe("IDE Launch Integration", () => {
+describe('IDE Launch Integration', () => {
   let testRepoPath: string;
   let originalWhich: typeof Bun.which;
   let originalSpawn: typeof Bun.spawn;
@@ -31,7 +31,7 @@ describe("IDE Launch Integration", () => {
     originalWhich = Bun.which;
     originalSpawn = Bun.spawn;
 
-    Bun.which = (async (command: string) => {
+    Bun.which = ((command: string) => {
       return mockedIDEs.has(command) ? `/usr/bin/${command}` : null;
     }) as typeof Bun.which;
 
@@ -55,20 +55,20 @@ describe("IDE Launch Integration", () => {
     Bun.spawn = originalSpawn;
   });
 
-  it("should launch IDE when worktree is created with autoLaunch=true", async () => {
+  it('should launch IDE when worktree is created with autoLaunch=true', async () => {
     // Arrange
-    mockedIDEs.add("code");
+    mockedIDEs.add('code');
 
     // Create config with IDE auto-launch enabled
-    const { saveConfig } = await import("../../.speck/scripts/worktree/config");
+    const { saveConfig } = await import('../../.speck/scripts/worktree/config');
     await saveConfig(testRepoPath, {
-      version: "1.0.0",
+      version: '1.0.0',
       worktree: {
         enabled: true,
-        worktreePath: ".speck/worktrees",
+        worktreePath: '.speck/worktrees',
         ide: {
           autoLaunch: true,
-          editor: "vscode",
+          editor: 'vscode',
           newWindow: true,
         },
         files: {
@@ -77,7 +77,7 @@ describe("IDE Launch Integration", () => {
         },
         dependencies: {
           autoInstall: false,
-          packageManager: "bun",
+          packageManager: 'bun',
         },
       },
     });
@@ -86,34 +86,34 @@ describe("IDE Launch Integration", () => {
     await Bun.$`cd ${testRepoPath} && git branch test-feature`.quiet();
 
     // Act
-    const { createWorktree } = await import("../../.speck/scripts/worktree/create");
+    const { createWorktree } = await import('../../.speck/scripts/worktree/create');
     const result = await createWorktree({
       repoPath: testRepoPath,
-      branchName: "test-feature",
+      branchName: 'test-feature',
     });
 
     // Assert
     expect(result.success).toBe(true);
     expect(spawnedCommands.length).toBeGreaterThan(0);
-    const ideCommand = spawnedCommands.find((cmd) => cmd[0] === "code");
+    const ideCommand = spawnedCommands.find((cmd) => cmd[0] === 'code');
     expect(ideCommand).toBeDefined();
-    expect(ideCommand).toContain("-n"); // new window flag
+    expect(ideCommand).toContain('-n'); // new window flag
   });
 
-  it("should skip IDE launch when --no-ide flag is passed", async () => {
+  it('should skip IDE launch when --no-ide flag is passed', async () => {
     // Arrange
-    mockedIDEs.add("code");
+    mockedIDEs.add('code');
 
     // Create config with IDE auto-launch enabled
-    const { saveConfig } = await import("../../.speck/scripts/worktree/config");
+    const { saveConfig } = await import('../../.speck/scripts/worktree/config');
     await saveConfig(testRepoPath, {
-      version: "1.0.0",
+      version: '1.0.0',
       worktree: {
         enabled: true,
-        worktreePath: ".speck/worktrees",
+        worktreePath: '.speck/worktrees',
         ide: {
           autoLaunch: true,
-          editor: "vscode",
+          editor: 'vscode',
           newWindow: true,
         },
         files: {
@@ -122,7 +122,7 @@ describe("IDE Launch Integration", () => {
         },
         dependencies: {
           autoInstall: false,
-          packageManager: "bun",
+          packageManager: 'bun',
         },
       },
     });
@@ -131,33 +131,33 @@ describe("IDE Launch Integration", () => {
     await Bun.$`cd ${testRepoPath} && git branch test-feature`.quiet();
 
     // Act
-    const { createWorktree } = await import("../../.speck/scripts/worktree/create");
+    const { createWorktree } = await import('../../.speck/scripts/worktree/create');
     const result = await createWorktree({
       repoPath: testRepoPath,
-      branchName: "test-feature",
+      branchName: 'test-feature',
       skipIDE: true, // --no-ide flag
     });
 
     // Assert
     expect(result.success).toBe(true);
-    const ideCommand = spawnedCommands.find((cmd) => cmd[0] === "code");
+    const ideCommand = spawnedCommands.find((cmd) => cmd[0] === 'code');
     expect(ideCommand).toBeUndefined(); // IDE should NOT be launched
   });
 
-  it("should continue worktree creation when IDE launch fails", async () => {
+  it('should continue worktree creation when IDE launch fails', async () => {
     // Arrange - IDE not available
     // Don't add to mockedIDEs, so isIDEAvailable returns false
 
     // Create config with IDE auto-launch enabled
-    const { saveConfig } = await import("../../.speck/scripts/worktree/config");
+    const { saveConfig } = await import('../../.speck/scripts/worktree/config');
     await saveConfig(testRepoPath, {
-      version: "1.0.0",
+      version: '1.0.0',
       worktree: {
         enabled: true,
-        worktreePath: ".speck/worktrees",
+        worktreePath: '.speck/worktrees',
         ide: {
           autoLaunch: true,
-          editor: "vscode",
+          editor: 'vscode',
           newWindow: true,
         },
         files: {
@@ -166,7 +166,7 @@ describe("IDE Launch Integration", () => {
         },
         dependencies: {
           autoInstall: false,
-          packageManager: "bun",
+          packageManager: 'bun',
         },
       },
     });
@@ -175,32 +175,32 @@ describe("IDE Launch Integration", () => {
     await Bun.$`cd ${testRepoPath} && git branch test-feature`.quiet();
 
     // Act
-    const { createWorktree } = await import("../../.speck/scripts/worktree/create");
+    const { createWorktree } = await import('../../.speck/scripts/worktree/create');
     const result = await createWorktree({
       repoPath: testRepoPath,
-      branchName: "test-feature",
+      branchName: 'test-feature',
     });
 
     // Assert
     expect(result.success).toBe(true); // Worktree creation should succeed
     expect(result.errors).toBeDefined();
-    expect(result.errors?.some((err) => err.includes("IDE launch failed"))).toBe(true);
+    expect(result.errors?.some((err) => err.includes('IDE launch failed'))).toBe(true);
   });
 
-  it("should respect IDE configuration (editor and newWindow settings)", async () => {
+  it('should respect IDE configuration (editor and newWindow settings)', async () => {
     // Arrange
-    mockedIDEs.add("cursor");
+    mockedIDEs.add('cursor');
 
     // Create config with Cursor and no new window
-    const { saveConfig } = await import("../../.speck/scripts/worktree/config");
+    const { saveConfig } = await import('../../.speck/scripts/worktree/config');
     await saveConfig(testRepoPath, {
-      version: "1.0.0",
+      version: '1.0.0',
       worktree: {
         enabled: true,
-        worktreePath: ".speck/worktrees",
+        worktreePath: '.speck/worktrees',
         ide: {
           autoLaunch: true,
-          editor: "cursor",
+          editor: 'cursor',
           newWindow: false, // No new window
         },
         files: {
@@ -209,7 +209,7 @@ describe("IDE Launch Integration", () => {
         },
         dependencies: {
           autoInstall: false,
-          packageManager: "bun",
+          packageManager: 'bun',
         },
       },
     });
@@ -218,33 +218,33 @@ describe("IDE Launch Integration", () => {
     await Bun.$`cd ${testRepoPath} && git branch test-feature`.quiet();
 
     // Act
-    const { createWorktree } = await import("../../.speck/scripts/worktree/create");
+    const { createWorktree } = await import('../../.speck/scripts/worktree/create');
     const result = await createWorktree({
       repoPath: testRepoPath,
-      branchName: "test-feature",
+      branchName: 'test-feature',
     });
 
     // Assert
     expect(result.success).toBe(true);
-    const ideCommand = spawnedCommands.find((cmd) => cmd[0] === "cursor");
+    const ideCommand = spawnedCommands.find((cmd) => cmd[0] === 'cursor');
     expect(ideCommand).toBeDefined();
-    expect(ideCommand).not.toContain("-n"); // Should NOT have new window flag
+    expect(ideCommand).not.toContain('-n'); // Should NOT have new window flag
   });
 
-  it("should not launch IDE when autoLaunch is false", async () => {
+  it('should not launch IDE when autoLaunch is false', async () => {
     // Arrange
-    mockedIDEs.add("code");
+    mockedIDEs.add('code');
 
     // Create config with IDE auto-launch disabled
-    const { saveConfig } = await import("../../.speck/scripts/worktree/config");
+    const { saveConfig } = await import('../../.speck/scripts/worktree/config');
     await saveConfig(testRepoPath, {
-      version: "1.0.0",
+      version: '1.0.0',
       worktree: {
         enabled: true,
-        worktreePath: ".speck/worktrees",
+        worktreePath: '.speck/worktrees',
         ide: {
           autoLaunch: false, // Disabled
-          editor: "vscode",
+          editor: 'vscode',
           newWindow: true,
         },
         files: {
@@ -253,7 +253,7 @@ describe("IDE Launch Integration", () => {
         },
         dependencies: {
           autoInstall: false,
-          packageManager: "bun",
+          packageManager: 'bun',
         },
       },
     });
@@ -262,15 +262,15 @@ describe("IDE Launch Integration", () => {
     await Bun.$`cd ${testRepoPath} && git branch test-feature`.quiet();
 
     // Act
-    const { createWorktree } = await import("../../.speck/scripts/worktree/create");
+    const { createWorktree } = await import('../../.speck/scripts/worktree/create');
     const result = await createWorktree({
       repoPath: testRepoPath,
-      branchName: "test-feature",
+      branchName: 'test-feature',
     });
 
     // Assert
     expect(result.success).toBe(true);
-    const ideCommand = spawnedCommands.find((cmd) => cmd[0] === "code");
+    const ideCommand = spawnedCommands.find((cmd) => cmd[0] === 'code');
     expect(ideCommand).toBeUndefined(); // IDE should NOT be launched
   });
 });

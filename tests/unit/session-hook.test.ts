@@ -7,61 +7,58 @@
  * @tasks T043a, T043b
  */
 
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, rmSync, existsSync, readFileSync, mkdirSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
-import { $ } from "bun";
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import { mkdtempSync, rmSync, existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 
 // Import the module we're testing (will be created later)
 const getHandoffModule = async () => {
   try {
-    return await import("../../.speck/scripts/worktree/handoff");
+    return await import('../../.speck/scripts/worktree/handoff');
   } catch {
     return null;
   }
 };
 
-describe("SessionStart Hook JSON Output Format (T043a)", () => {
-  describe("generateHookOutput", () => {
-    test("generates valid JSON with hookSpecificOutput structure", async () => {
+describe('SessionStart Hook JSON Output Format (T043a)', () => {
+  describe('generateHookOutput', () => {
+    test('generates valid JSON with hookSpecificOutput structure', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
         return;
       }
 
-      const handoffContent = "# Feature Handoff\n\nTest content here.";
+      const handoffContent = '# Feature Handoff\n\nTest content here.';
       const output = handoff.generateHookOutput(handoffContent);
 
       // Parse as JSON
       const parsed = JSON.parse(output);
 
       expect(parsed.hookSpecificOutput).toBeDefined();
-      expect(parsed.hookSpecificOutput.hookEventName).toBe("SessionStart");
+      expect(parsed.hookSpecificOutput.hookEventName).toBe('SessionStart');
       expect(parsed.hookSpecificOutput.additionalContext).toBeDefined();
     });
 
-    test("includes handoff content in additionalContext", async () => {
+    test('includes handoff content in additionalContext', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
         return;
       }
 
-      const handoffContent = "# Feature Handoff: Test Feature\n\nThis is the context.";
+      const handoffContent = '# Feature Handoff: Test Feature\n\nThis is the context.';
       const output = handoff.generateHookOutput(handoffContent);
       const parsed = JSON.parse(output);
 
       expect(parsed.hookSpecificOutput.additionalContext).toContain(
-        "Feature Handoff: Test Feature"
+        'Feature Handoff: Test Feature'
       );
-      expect(parsed.hookSpecificOutput.additionalContext).toContain(
-        "This is the context"
-      );
+      expect(parsed.hookSpecificOutput.additionalContext).toContain('This is the context');
     });
 
-    test("properly escapes special JSON characters in content", async () => {
+    test('properly escapes special JSON characters in content', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -76,42 +73,42 @@ describe("SessionStart Hook JSON Output Format (T043a)", () => {
 
       const parsed = JSON.parse(output);
       // Content should be preserved when parsed
-      expect(parsed.hookSpecificOutput.additionalContext).toContain("quotes");
-      expect(parsed.hookSpecificOutput.additionalContext).toContain("newlines");
+      expect(parsed.hookSpecificOutput.additionalContext).toContain('quotes');
+      expect(parsed.hookSpecificOutput.additionalContext).toContain('newlines');
     });
 
-    test("handles empty content gracefully", async () => {
+    test('handles empty content gracefully', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
         return;
       }
 
-      const output = handoff.generateHookOutput("");
+      const output = handoff.generateHookOutput('');
       const parsed = JSON.parse(output);
 
-      expect(parsed.hookSpecificOutput.additionalContext).toBe("");
+      expect(parsed.hookSpecificOutput.additionalContext).toBe('');
     });
 
-    test("handles content with unicode characters", async () => {
+    test('handles content with unicode characters', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
         return;
       }
 
-      const handoffContent = "Unicode: \u2713 \u2717 \u2022 \u00e9\u00e8\u00ea";
+      const handoffContent = 'Unicode: \u2713 \u2717 \u2022 \u00e9\u00e8\u00ea';
       const output = handoff.generateHookOutput(handoffContent);
 
       expect(() => JSON.parse(output)).not.toThrow();
 
       const parsed = JSON.parse(output);
-      expect(parsed.hookSpecificOutput.additionalContext).toContain("\u2713");
+      expect(parsed.hookSpecificOutput.additionalContext).toContain('\u2713');
     });
   });
 
-  describe("Hook script shell template", () => {
-    test("generates valid bash script", async () => {
+  describe('Hook script shell template', () => {
+    test('generates valid bash script', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -120,13 +117,13 @@ describe("SessionStart Hook JSON Output Format (T043a)", () => {
 
       const script = handoff.HANDOFF_HOOK_SCRIPT;
 
-      expect(script).toContain("#!/bin/bash");
-      expect(script).toContain("HANDOFF_FILE");
-      expect(script).toContain("hookSpecificOutput");
-      expect(script).toContain("additionalContext");
+      expect(script).toContain('#!/bin/bash');
+      expect(script).toContain('HANDOFF_FILE');
+      expect(script).toContain('hookSpecificOutput');
+      expect(script).toContain('additionalContext');
     });
 
-    test("uses jq -Rs for JSON encoding", async () => {
+    test('uses jq -Rs for JSON encoding', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -136,10 +133,10 @@ describe("SessionStart Hook JSON Output Format (T043a)", () => {
       const script = handoff.HANDOFF_HOOK_SCRIPT;
 
       // Should use jq -Rs for safe JSON encoding
-      expect(script).toContain("jq -Rs");
+      expect(script).toContain('jq -Rs');
     });
 
-    test("exits silently when no handoff file exists", async () => {
+    test('exits silently when no handoff file exists', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -154,13 +151,13 @@ describe("SessionStart Hook JSON Output Format (T043a)", () => {
   });
 });
 
-describe("Hook Self-Cleanup Logic (T043b)", () => {
+describe('Hook Self-Cleanup Logic (T043b)', () => {
   let testDir: string;
   let worktreePath: string;
 
   beforeEach(() => {
-    testDir = mkdtempSync(path.join(tmpdir(), "speck-hook-cleanup-test-"));
-    worktreePath = path.join(testDir, "worktree");
+    testDir = mkdtempSync(path.join(tmpdir(), 'speck-hook-cleanup-test-'));
+    worktreePath = path.join(testDir, 'worktree');
     mkdirSync(worktreePath, { recursive: true });
   });
 
@@ -170,8 +167,8 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
     }
   });
 
-  describe("archiveHandoff", () => {
-    test("renames handoff.md to handoff.done.md", async () => {
+  describe('archiveHandoff', () => {
+    test('renames handoff.md to handoff.done.md', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -179,10 +176,10 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       }
 
       // Create handoff file
-      const speckDir = path.join(worktreePath, ".speck");
+      const speckDir = path.join(worktreePath, '.speck');
       mkdirSync(speckDir, { recursive: true });
-      const handoffPath = path.join(speckDir, "handoff.md");
-      writeFileSync(handoffPath, "# Handoff Content");
+      const handoffPath = path.join(speckDir, 'handoff.md');
+      writeFileSync(handoffPath, '# Handoff Content');
 
       // Archive the handoff
       await handoff.archiveHandoff(worktreePath);
@@ -191,15 +188,15 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       expect(existsSync(handoffPath)).toBe(false);
 
       // Archived file should exist
-      const archivedPath = path.join(speckDir, "handoff.done.md");
+      const archivedPath = path.join(speckDir, 'handoff.done.md');
       expect(existsSync(archivedPath)).toBe(true);
 
       // Content should be preserved
-      const content = readFileSync(archivedPath, "utf-8");
-      expect(content).toBe("# Handoff Content");
+      const content = readFileSync(archivedPath, 'utf-8');
+      expect(content).toBe('# Handoff Content');
     });
 
-    test("does nothing if handoff.md does not exist", async () => {
+    test('does nothing if handoff.md does not exist', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -216,35 +213,35 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       expect(threw).toBe(false);
     });
 
-    test("overwrites existing handoff.done.md", async () => {
+    test('overwrites existing handoff.done.md', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
         return;
       }
 
-      const speckDir = path.join(worktreePath, ".speck");
+      const speckDir = path.join(worktreePath, '.speck');
       mkdirSync(speckDir, { recursive: true });
 
       // Create existing archived file
-      const archivedPath = path.join(speckDir, "handoff.done.md");
-      writeFileSync(archivedPath, "# Old Content");
+      const archivedPath = path.join(speckDir, 'handoff.done.md');
+      writeFileSync(archivedPath, '# Old Content');
 
       // Create new handoff file
-      const handoffPath = path.join(speckDir, "handoff.md");
-      writeFileSync(handoffPath, "# New Content");
+      const handoffPath = path.join(speckDir, 'handoff.md');
+      writeFileSync(handoffPath, '# New Content');
 
       // Archive
       await handoff.archiveHandoff(worktreePath);
 
       // Archived file should have new content
-      const content = readFileSync(archivedPath, "utf-8");
-      expect(content).toBe("# New Content");
+      const content = readFileSync(archivedPath, 'utf-8');
+      expect(content).toBe('# New Content');
     });
   });
 
-  describe("removeSessionStartHook", () => {
-    test("removes SessionStart hook from settings.json", async () => {
+  describe('removeSessionStartHook', () => {
+    test('removes SessionStart hook from settings.json', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -252,31 +249,31 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       }
 
       // Create settings.json with SessionStart hook
-      const claudeDir = path.join(worktreePath, ".claude");
+      const claudeDir = path.join(worktreePath, '.claude');
       mkdirSync(claudeDir, { recursive: true });
-      const settingsPath = path.join(claudeDir, "settings.json");
+      const settingsPath = path.join(claudeDir, 'settings.json');
 
       const settings = {
         hooks: {
           SessionStart: [
             {
-              matcher: "",
+              matcher: '',
               hooks: [
                 {
-                  type: "command",
-                  command: "$CLAUDE_PROJECT_DIR/.claude/scripts/handoff.sh",
+                  type: 'command',
+                  command: '$CLAUDE_PROJECT_DIR/.claude/scripts/handoff.sh',
                 },
               ],
             },
           ],
           PreToolUse: [
             {
-              matcher: ".*",
-              hooks: [{ type: "command", command: "some-other-hook" }],
+              matcher: '.*',
+              hooks: [{ type: 'command', command: 'some-other-hook' }],
             },
           ],
         },
-        otherSetting: "value",
+        otherSetting: 'value',
       };
       writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 
@@ -284,7 +281,7 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       await handoff.removeSessionStartHook(worktreePath);
 
       // Read updated settings
-      const updatedSettings = JSON.parse(readFileSync(settingsPath, "utf-8"));
+      const updatedSettings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
 
       // SessionStart should be removed
       expect(updatedSettings.hooks.SessionStart).toBeUndefined();
@@ -293,10 +290,10 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       expect(updatedSettings.hooks.PreToolUse).toBeDefined();
 
       // Other settings should remain
-      expect(updatedSettings.otherSetting).toBe("value");
+      expect(updatedSettings.otherSetting).toBe('value');
     });
 
-    test("does nothing if settings.json does not exist", async () => {
+    test('does nothing if settings.json does not exist', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -313,20 +310,20 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       expect(threw).toBe(false);
     });
 
-    test("does nothing if SessionStart hook not present", async () => {
+    test('does nothing if SessionStart hook not present', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
         return;
       }
 
-      const claudeDir = path.join(worktreePath, ".claude");
+      const claudeDir = path.join(worktreePath, '.claude');
       mkdirSync(claudeDir, { recursive: true });
-      const settingsPath = path.join(claudeDir, "settings.json");
+      const settingsPath = path.join(claudeDir, 'settings.json');
 
       const settings = {
         hooks: {
-          PreToolUse: [{ matcher: ".*", hooks: [] }],
+          PreToolUse: [{ matcher: '.*', hooks: [] }],
         },
       };
       writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
@@ -335,44 +332,44 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       await handoff.removeSessionStartHook(worktreePath);
 
       // Settings should be unchanged
-      const updatedSettings = JSON.parse(readFileSync(settingsPath, "utf-8"));
+      const updatedSettings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
       expect(updatedSettings.hooks.PreToolUse).toBeDefined();
     });
 
-    test("removes hooks key if empty after SessionStart removal", async () => {
+    test('removes hooks key if empty after SessionStart removal', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
         return;
       }
 
-      const claudeDir = path.join(worktreePath, ".claude");
+      const claudeDir = path.join(worktreePath, '.claude');
       mkdirSync(claudeDir, { recursive: true });
-      const settingsPath = path.join(claudeDir, "settings.json");
+      const settingsPath = path.join(claudeDir, 'settings.json');
 
       const settings = {
         hooks: {
-          SessionStart: [{ matcher: "", hooks: [] }],
+          SessionStart: [{ matcher: '', hooks: [] }],
         },
-        otherSetting: "value",
+        otherSetting: 'value',
       };
       writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 
       await handoff.removeSessionStartHook(worktreePath);
 
-      const updatedSettings = JSON.parse(readFileSync(settingsPath, "utf-8"));
+      const updatedSettings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
 
       // Empty hooks object can optionally be removed
       // This test accepts either empty hooks or no hooks key
       if (updatedSettings.hooks) {
         expect(Object.keys(updatedSettings.hooks)).toHaveLength(0);
       }
-      expect(updatedSettings.otherSetting).toBe("value");
+      expect(updatedSettings.otherSetting).toBe('value');
     });
   });
 
-  describe("Hook script self-cleanup behavior", () => {
-    test("hook script includes handoff archival", async () => {
+  describe('Hook script self-cleanup behavior', () => {
+    test('hook script includes handoff archival', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -382,12 +379,12 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       const script = handoff.HANDOFF_HOOK_SCRIPT;
 
       // Should rename handoff file
-      expect(script).toContain("mv");
+      expect(script).toContain('mv');
       // Uses bash parameter expansion to change .md to .done.md
-      expect(script).toContain(".done.md");
+      expect(script).toContain('.done.md');
     });
 
-    test("hook script includes settings.json cleanup", async () => {
+    test('hook script includes settings.json cleanup', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -397,12 +394,12 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       const script = handoff.HANDOFF_HOOK_SCRIPT;
 
       // Should modify settings.json to remove hook
-      expect(script).toContain("jq");
-      expect(script).toContain("del(");
-      expect(script).toContain("SessionStart");
+      expect(script).toContain('jq');
+      expect(script).toContain('del(');
+      expect(script).toContain('SessionStart');
     });
 
-    test("hook script handles missing jq gracefully", async () => {
+    test('hook script handles missing jq gracefully', async () => {
       const handoff = await getHandoffModule();
       if (!handoff) {
         expect(handoff).not.toBeNull();
@@ -412,7 +409,7 @@ describe("Hook Self-Cleanup Logic (T043b)", () => {
       const script = handoff.HANDOFF_HOOK_SCRIPT;
 
       // Should check if jq is available before using it for cleanup
-      expect(script).toContain("command -v jq");
+      expect(script).toContain('command -v jq');
     });
   });
 });

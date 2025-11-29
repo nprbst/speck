@@ -13,11 +13,11 @@
  * Updated: 2025-11-29
  */
 
-import { mkdtemp, mkdir, writeFile, symlink, rm, cp } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
-import { $ } from "bun";
-import type { BranchMapping, BranchEntry } from "../../.speck/scripts/common/branch-mapper.ts";
+import { mkdtemp, mkdir, writeFile, symlink, rm, cp } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { $ } from 'bun';
+import type { BranchMapping, BranchEntry } from '../../.speck/scripts/common/branch-mapper.ts';
 
 /**
  * Copy Speck scripts into test fixture for isolation
@@ -25,8 +25,8 @@ import type { BranchMapping, BranchEntry } from "../../.speck/scripts/common/bra
  * @param targetDir - Directory to copy scripts into (test root)
  */
 async function copySpeckScripts(targetDir: string): Promise<void> {
-  const sourceScriptsDir = path.join(process.cwd(), ".speck/scripts");
-  const targetScriptsDir = path.join(targetDir, ".speck/scripts");
+  const sourceScriptsDir = path.join(process.cwd(), '.speck/scripts');
+  const targetScriptsDir = path.join(targetDir, '.speck/scripts');
 
   // Copy entire scripts directory recursively
   await cp(sourceScriptsDir, targetScriptsDir, { recursive: true });
@@ -36,20 +36,20 @@ async function copySpeckScripts(targetDir: string): Promise<void> {
  * Multi-repo test environment structure
  */
 export interface MultiRepoTestFixture {
-  rootDir: string;           // Root repository path
-  specsDir: string;          // Root specs directory
-  scriptsDir: string;        // Root scripts directory (isolated copy)
-  childRepos: Map<string, string>;  // Child repo name → repo path
-  cleanup: () => Promise<void>;     // Cleanup function
+  rootDir: string; // Root repository path
+  specsDir: string; // Root specs directory
+  scriptsDir: string; // Root scripts directory (isolated copy)
+  childRepos: Map<string, string>; // Child repo name → repo path
+  cleanup: () => Promise<void>; // Cleanup function
 }
 
 /**
  * Child repository configuration
  */
 export interface ChildRepoConfig {
-  name: string;              // Child repo name (e.g., "backend-service")
-  branches?: BranchEntry[];  // Pre-populated branches (optional)
-  remoteUrl?: string;        // Git remote URL (optional)
+  name: string; // Child repo name (e.g., "backend-service")
+  branches?: BranchEntry[]; // Pre-populated branches (optional)
+  remoteUrl?: string; // Git remote URL (optional)
 }
 
 /**
@@ -73,10 +73,10 @@ export interface ChildRepoConfig {
  */
 export async function createMultiRepoTestFixture(
   childConfigs: ChildRepoConfig[],
-  parentSpecId: string = "009-multi-repo-stacked"
+  parentSpecId: string = '009-multi-repo-stacked'
 ): Promise<MultiRepoTestFixture> {
   // Create temporary root directory
-  const rootDir = await mkdtemp(path.join(tmpdir(), "speck-test-root-"));
+  const rootDir = await mkdtemp(path.join(tmpdir(), 'speck-test-root-'));
 
   // Initialize root as git repository
   await $`git -C ${rootDir} init -q`.quiet();
@@ -84,38 +84,38 @@ export async function createMultiRepoTestFixture(
   await $`git -C ${rootDir} config user.email "test@example.com"`.quiet();
 
   // Create specs directory in root
-  const specsDir = path.join(rootDir, "specs");
+  const specsDir = path.join(rootDir, 'specs');
   await mkdir(specsDir, { recursive: true });
 
   // Create parent spec directory structure
   const parentSpecDir = path.join(specsDir, parentSpecId);
   await mkdir(parentSpecDir, { recursive: true });
   await writeFile(
-    path.join(parentSpecDir, "spec.md"),
+    path.join(parentSpecDir, 'spec.md'),
     `# Spec: ${parentSpecId}\n\nTest specification for multi-repo testing.\n`
   );
 
   // Also create common spec directories used by tests
-  const spec009Dir = path.join(specsDir, "009-multi-repo-stacked");
+  const spec009Dir = path.join(specsDir, '009-multi-repo-stacked');
   await mkdir(spec009Dir, { recursive: true });
   await writeFile(
-    path.join(spec009Dir, "spec.md"),
+    path.join(spec009Dir, 'spec.md'),
     `# Spec: 009-multi-repo-stacked\n\nChild spec for multi-repo testing.\n`
   );
 
-  const spec008Dir = path.join(specsDir, "008-stacked-pr-support");
+  const spec008Dir = path.join(specsDir, '008-stacked-pr-support');
   await mkdir(spec008Dir, { recursive: true });
   await writeFile(
-    path.join(spec008Dir, "spec.md"),
+    path.join(spec008Dir, 'spec.md'),
     `# Spec: 008-stacked-pr-support\n\nStacked PR spec for multi-repo testing.\n`
   );
 
   // Create .speck directory in root
-  await mkdir(path.join(rootDir, ".speck"), { recursive: true });
+  await mkdir(path.join(rootDir, '.speck'), { recursive: true });
 
   // Copy Speck scripts into test root for isolation
   await copySpeckScripts(rootDir);
-  const scriptsDir = path.join(rootDir, ".speck/scripts");
+  const scriptsDir = path.join(rootDir, '.speck/scripts');
 
   // Create initial commit in root
   await $`git -C ${rootDir} add .`.quiet();
@@ -143,18 +143,18 @@ export async function createMultiRepoTestFixture(
     await $`git -C ${childDir} config user.email "test@example.com"`.quiet();
 
     // Create .speck directory in child
-    const speckDir = path.join(childDir, ".speck");
+    const speckDir = path.join(childDir, '.speck');
     await mkdir(speckDir, { recursive: true });
 
     // Create symlink from child to root (.speck/root)
-    const symlinkPath = path.join(speckDir, "root");
-    await symlink(rootDir, symlinkPath, "dir");
+    const symlinkPath = path.join(speckDir, 'root');
+    await symlink(rootDir, symlinkPath, 'dir');
 
     // [Feature 009] Create reverse symlink from root to child (.speck-link-{name})
     // This allows detectSpeckRoot() to identify the root as multi-repo mode
     const rootLinkPath = path.join(rootDir, `.speck-link-${config.name}`);
     try {
-      await symlink(childDir, rootLinkPath, "dir");
+      await symlink(childDir, rootLinkPath, 'dir');
     } catch (error: any) {
       if (error.code !== 'EEXIST') {
         throw error;
@@ -174,9 +174,9 @@ export async function createMultiRepoTestFixture(
     // Populate branches.json if provided
     if (config.branches && config.branches.length > 0) {
       const branchMapping: BranchMapping = {
-        version: "2.0.0",
+        version: '2.0.0',
         branches: config.branches,
-        specIndex: {}
+        specIndex: {},
       };
 
       // Build specIndex from branches
@@ -188,7 +188,7 @@ export async function createMultiRepoTestFixture(
       }
 
       // Write branches.json
-      const branchesPath = path.join(speckDir, "branches.json");
+      const branchesPath = path.join(speckDir, 'branches.json');
       await writeFile(branchesPath, JSON.stringify(branchMapping, null, 2));
 
       // Create git branches for each entry
@@ -232,7 +232,7 @@ export async function createMultiRepoTestFixture(
     specsDir,
     scriptsDir,
     childRepos,
-    cleanup
+    cleanup,
   };
 }
 
@@ -264,7 +264,7 @@ export function createTestBranchEntry(
     specId,
     createdAt: now,
     updatedAt: now,
-    ...(parentSpecId && { parentSpecId })
+    ...(parentSpecId && { parentSpecId }),
   };
 }
 
@@ -290,7 +290,7 @@ export function createBranchEntries(
   specId: string,
   parentSpecId?: string
 ): BranchEntry[] {
-  return branchNames.map(name => createTestBranchEntry(name, specId, parentSpecId));
+  return branchNames.map((name) => createTestBranchEntry(name, specId, parentSpecId));
 }
 
 /**
@@ -319,17 +319,17 @@ export async function assertSymlinkTarget(
   expectedTarget: string
 ): Promise<void> {
   try {
-    const { readlink } = await import("node:fs/promises");
+    const { readlink } = await import('node:fs/promises');
     const actualTarget = await readlink(symlinkPath);
     if (actualTarget !== expectedTarget) {
       throw new Error(
         `Symlink target mismatch:\n` +
-        `  Expected: ${expectedTarget}\n` +
-        `  Actual: ${actualTarget}`
+          `  Expected: ${expectedTarget}\n` +
+          `  Actual: ${actualTarget}`
       );
     }
   } catch (error) {
-    if (error instanceof Error && error.message.includes("target mismatch")) {
+    if (error instanceof Error && error.message.includes('target mismatch')) {
       throw error;
     }
     throw new Error(`Symlink does not exist: ${symlinkPath}`);
@@ -392,11 +392,11 @@ export async function executeScript(
 ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
   try {
     const proc = Bun.spawn({
-      cmd: ["bun", "run", scriptPath, ...args],
+      cmd: ['bun', 'run', scriptPath, ...args],
       cwd: options.cwd || process.cwd(),
       env: { ...process.env, ...options.env },
-      stdout: "pipe",
-      stderr: "pipe"
+      stdout: 'pipe',
+      stderr: 'pipe',
     });
 
     const stdout = await new Response(proc.stdout).text();
@@ -407,8 +407,8 @@ export async function executeScript(
   } catch (error) {
     return {
       exitCode: 1,
-      stdout: "",
-      stderr: error instanceof Error ? error.message : String(error)
+      stdout: '',
+      stderr: error instanceof Error ? error.message : String(error),
     };
   }
 }

@@ -8,10 +8,19 @@
  * Tasks: T055, T056, T057
  */
 
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, rmSync, existsSync, mkdirSync, lstatSync, readlinkSync, symlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import {
+  mkdtempSync,
+  rmSync,
+  existsSync,
+  mkdirSync,
+  lstatSync,
+  readlinkSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 // Test fixtures directory
 let testDir: string;
@@ -19,8 +28,8 @@ let localBinDir: string;
 
 beforeEach(() => {
   // Create isolated temp directory for each test
-  testDir = mkdtempSync(join(tmpdir(), "speck-install-test-"));
-  localBinDir = join(testDir, ".local", "bin");
+  testDir = mkdtempSync(join(tmpdir(), 'speck-install-test-'));
+  localBinDir = join(testDir, '.local', 'bin');
 });
 
 afterEach(() => {
@@ -30,18 +39,18 @@ afterEach(() => {
   }
 });
 
-describe("Init Command - Symlink Creation", () => {
-  describe("T055: Symlink Creation", () => {
-    test("creates symlink in target directory", () => {
+describe('Init Command - Symlink Creation', () => {
+  describe('T055: Symlink Creation', () => {
+    test('creates symlink in target directory', () => {
       // Setup: Create target directory structure
       mkdirSync(localBinDir, { recursive: true });
 
       // Create a source file to symlink to
-      const sourcePath = join(testDir, "bootstrap.sh");
+      const sourcePath = join(testDir, 'bootstrap.sh');
       writeFileSync(sourcePath, "#!/bin/bash\necho 'bootstrap'", { mode: 0o755 });
 
       // Create symlink
-      const symlinkPath = join(localBinDir, "speck");
+      const symlinkPath = join(localBinDir, 'speck');
       symlinkSync(sourcePath, symlinkPath);
 
       // Verify symlink was created
@@ -49,13 +58,13 @@ describe("Init Command - Symlink Creation", () => {
       expect(lstatSync(symlinkPath).isSymbolicLink()).toBe(true);
     });
 
-    test("symlink points to correct target", () => {
+    test('symlink points to correct target', () => {
       mkdirSync(localBinDir, { recursive: true });
 
-      const sourcePath = join(testDir, "bootstrap.sh");
+      const sourcePath = join(testDir, 'bootstrap.sh');
       writeFileSync(sourcePath, "#!/bin/bash\necho 'bootstrap'", { mode: 0o755 });
 
-      const symlinkPath = join(localBinDir, "speck");
+      const symlinkPath = join(localBinDir, 'speck');
       symlinkSync(sourcePath, symlinkPath);
 
       // Verify symlink target
@@ -63,7 +72,7 @@ describe("Init Command - Symlink Creation", () => {
       expect(target).toBe(sourcePath);
     });
 
-    test("creates parent directories if missing", () => {
+    test('creates parent directories if missing', () => {
       // Parent directories don't exist yet
       expect(existsSync(localBinDir)).toBe(false);
 
@@ -74,13 +83,13 @@ describe("Init Command - Symlink Creation", () => {
       expect(existsSync(localBinDir)).toBe(true);
     });
 
-    test("handles existing symlink gracefully", () => {
+    test('handles existing symlink gracefully', () => {
       mkdirSync(localBinDir, { recursive: true });
 
-      const sourcePath = join(testDir, "bootstrap.sh");
+      const sourcePath = join(testDir, 'bootstrap.sh');
       writeFileSync(sourcePath, "#!/bin/bash\necho 'bootstrap'", { mode: 0o755 });
 
-      const symlinkPath = join(localBinDir, "speck");
+      const symlinkPath = join(localBinDir, 'speck');
 
       // Create initial symlink
       symlinkSync(sourcePath, symlinkPath);
@@ -94,13 +103,13 @@ describe("Init Command - Symlink Creation", () => {
       expect(readlinkSync(symlinkPath)).toBe(sourcePath);
     });
 
-    test("symlink is executable when source is executable", () => {
+    test('symlink is executable when source is executable', () => {
       mkdirSync(localBinDir, { recursive: true });
 
-      const sourcePath = join(testDir, "bootstrap.sh");
+      const sourcePath = join(testDir, 'bootstrap.sh');
       writeFileSync(sourcePath, "#!/bin/bash\necho 'test'", { mode: 0o755 });
 
-      const symlinkPath = join(localBinDir, "speck");
+      const symlinkPath = join(localBinDir, 'speck');
       symlinkSync(sourcePath, symlinkPath);
 
       // Symlink inherits permissions from target - use lstat to check link existence
@@ -109,65 +118,67 @@ describe("Init Command - Symlink Creation", () => {
   });
 });
 
-describe("Init Command - PATH Detection", () => {
-  describe("T056: PATH Detection", () => {
-    test("detects when directory is in PATH", () => {
-      const currentPath = process.env.PATH || "";
-      const pathDirs = currentPath.split(":");
+describe('Init Command - PATH Detection', () => {
+  describe('T056: PATH Detection', () => {
+    test('detects when directory is in PATH', () => {
+      const currentPath = process.env.PATH || '';
+      const pathDirs = currentPath.split(':');
 
       // Check if a common directory is in PATH
-      const hasUsrBin = pathDirs.some((dir) => dir === "/usr/bin");
-      expect(typeof hasUsrBin).toBe("boolean");
+      const hasUsrBin = pathDirs.some((dir) => dir === '/usr/bin');
+      expect(typeof hasUsrBin).toBe('boolean');
     });
 
-    test("detects when directory is NOT in PATH", () => {
-      const currentPath = process.env.PATH || "";
-      const pathDirs = currentPath.split(":");
+    test('detects when directory is NOT in PATH', () => {
+      const currentPath = process.env.PATH || '';
+      const pathDirs = currentPath.split(':');
 
       // Check for a directory that shouldn't be in PATH
-      const hasNonexistent = pathDirs.some((dir) => dir === "/nonexistent/path/that/should/not/exist");
+      const hasNonexistent = pathDirs.some(
+        (dir) => dir === '/nonexistent/path/that/should/not/exist'
+      );
       expect(hasNonexistent).toBe(false);
     });
 
-    test("handles empty PATH gracefully", () => {
-      const emptyPath = "";
-      const pathDirs = emptyPath.split(":").filter(Boolean);
+    test('handles empty PATH gracefully', () => {
+      const emptyPath = '';
+      const pathDirs = emptyPath.split(':').filter(Boolean);
 
       expect(pathDirs.length).toBe(0);
     });
 
-    test("handles PATH with trailing colon", () => {
-      const pathWithTrailing = "/usr/bin:/usr/local/bin:";
-      const pathDirs = pathWithTrailing.split(":").filter(Boolean);
+    test('handles PATH with trailing colon', () => {
+      const pathWithTrailing = '/usr/bin:/usr/local/bin:';
+      const pathDirs = pathWithTrailing.split(':').filter(Boolean);
 
-      expect(pathDirs).toContain("/usr/bin");
-      expect(pathDirs).toContain("/usr/local/bin");
+      expect(pathDirs).toContain('/usr/bin');
+      expect(pathDirs).toContain('/usr/local/bin');
       expect(pathDirs.length).toBe(2);
     });
 
-    test("detects ~/.local/bin in PATH when present", () => {
+    test('detects ~/.local/bin in PATH when present', () => {
       // Get the actual home directory
-      const home = process.env.HOME || "";
-      const localBin = join(home, ".local", "bin");
+      const home = process.env.HOME || '';
+      const localBin = join(home, '.local', 'bin');
 
-      const currentPath = process.env.PATH || "";
-      const isInPath = currentPath.split(":").includes(localBin);
+      const currentPath = process.env.PATH || '';
+      const isInPath = currentPath.split(':').includes(localBin);
 
       // This test verifies detection works - actual value depends on user's PATH
-      expect(typeof isInPath).toBe("boolean");
+      expect(typeof isInPath).toBe('boolean');
     });
   });
 });
 
-describe("Init Command - Idempotent Init", () => {
-  describe("T057: Idempotent Behavior", () => {
-    test("running install twice succeeds", () => {
+describe('Init Command - Idempotent Init', () => {
+  describe('T057: Idempotent Behavior', () => {
+    test('running install twice succeeds', () => {
       mkdirSync(localBinDir, { recursive: true });
 
-      const sourcePath = join(testDir, "bootstrap.sh");
+      const sourcePath = join(testDir, 'bootstrap.sh');
       writeFileSync(sourcePath, "#!/bin/bash\necho 'bootstrap'", { mode: 0o755 });
 
-      const symlinkPath = join(localBinDir, "speck");
+      const symlinkPath = join(localBinDir, 'speck');
 
       // First install
       symlinkSync(sourcePath, symlinkPath);
@@ -179,13 +190,13 @@ describe("Init Command - Idempotent Init", () => {
       expect(existsSync(symlinkPath)).toBe(true);
     });
 
-    test("detects existing valid symlink", () => {
+    test('detects existing valid symlink', () => {
       mkdirSync(localBinDir, { recursive: true });
 
-      const sourcePath = join(testDir, "bootstrap.sh");
+      const sourcePath = join(testDir, 'bootstrap.sh');
       writeFileSync(sourcePath, "#!/bin/bash\necho 'bootstrap'", { mode: 0o755 });
 
-      const symlinkPath = join(localBinDir, "speck");
+      const symlinkPath = join(localBinDir, 'speck');
       symlinkSync(sourcePath, symlinkPath);
 
       // Check if it's a valid symlink pointing to our target
@@ -196,28 +207,28 @@ describe("Init Command - Idempotent Init", () => {
       expect(target).toBe(sourcePath);
     });
 
-    test("detects existing symlink pointing elsewhere", () => {
+    test('detects existing symlink pointing elsewhere', () => {
       mkdirSync(localBinDir, { recursive: true });
 
       // Create symlink pointing to a different file
-      const otherPath = join(testDir, "other.sh");
+      const otherPath = join(testDir, 'other.sh');
       writeFileSync(otherPath, "#!/bin/bash\necho 'other'", { mode: 0o755 });
 
-      const symlinkPath = join(localBinDir, "speck");
+      const symlinkPath = join(localBinDir, 'speck');
       symlinkSync(otherPath, symlinkPath);
 
       // Verify it points elsewhere
       const target = readlinkSync(symlinkPath);
       expect(target).toBe(otherPath);
-      expect(target).not.toContain("bootstrap.sh");
+      expect(target).not.toContain('bootstrap.sh');
     });
 
-    test("handles broken symlink", () => {
+    test('handles broken symlink', () => {
       mkdirSync(localBinDir, { recursive: true });
 
       // Create symlink to non-existent target
-      const brokenTarget = join(testDir, "nonexistent.sh");
-      const symlinkPath = join(localBinDir, "speck");
+      const brokenTarget = join(testDir, 'nonexistent.sh');
+      const symlinkPath = join(localBinDir, 'speck');
       symlinkSync(brokenTarget, symlinkPath);
 
       // Verify symlink exists but target doesn't
@@ -227,11 +238,11 @@ describe("Init Command - Idempotent Init", () => {
   });
 });
 
-describe("Init Command - Error Handling", () => {
-  test("fails gracefully when parent directory cannot be created", () => {
+describe('Init Command - Error Handling', () => {
+  test('fails gracefully when parent directory cannot be created', () => {
     // Try to create directory in a location without permissions
     // This is a mock test - actual behavior depends on filesystem permissions
-    const restrictedPath = "/root/cannot/create/here";
+    const restrictedPath = '/root/cannot/create/here';
 
     // Should throw when trying to create without permissions
     expect(() => {
@@ -239,13 +250,13 @@ describe("Init Command - Error Handling", () => {
     }).toThrow();
   });
 
-  test("handles regular file at symlink path", () => {
+  test('handles regular file at symlink path', () => {
     mkdirSync(localBinDir, { recursive: true });
 
-    const symlinkPath = join(localBinDir, "speck");
+    const symlinkPath = join(localBinDir, 'speck');
 
     // Create regular file instead of symlink
-    writeFileSync(symlinkPath, "not a symlink", { mode: 0o755 });
+    writeFileSync(symlinkPath, 'not a symlink', { mode: 0o755 });
 
     // Verify it's a regular file, not a symlink
     expect(lstatSync(symlinkPath).isSymbolicLink()).toBe(false);

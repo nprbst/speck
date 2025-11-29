@@ -3,23 +3,29 @@
  * Tests User Story 1: Seamless Virtual Command Invocation
  */
 
-import { describe, test, expect } from "bun:test";
-import { $ } from "bun";
-import path from "node:path";
+import { describe, test, expect } from 'bun:test';
+import { $ } from 'bun';
+import path from 'node:path';
 
-const CLI_PATH = path.join(import.meta.dir, "../../.speck/scripts/speck.ts");
+const CLI_PATH = path.join(import.meta.dir, '../../.speck/scripts/speck.ts');
 
-describe("Virtual Command Invocation", () => {
-  test("speck-env command works via CLI", async () => {
+describe('Virtual Command Invocation', () => {
+  test('speck-env command works via CLI', async () => {
     const result = await $`bun run ${CLI_PATH} env`.nothrow();
 
     expect(result.exitCode).toBe(0);
-    expect(result.stdout.toString()).toContain("Speck Environment");
-    expect(result.stdout.toString()).toContain("Speck Root:");
+    expect(result.stdout.toString()).toContain('Speck Environment');
+    expect(result.stdout.toString()).toContain('Speck Root:');
   });
 
-  test("all registered commands are accessible", async () => {
-    const commands = ["env", "check-prerequisites", "create-new-feature", "setup-plan", "link-repo"];
+  test('all registered commands are accessible', async () => {
+    const commands = [
+      'env',
+      'check-prerequisites',
+      'create-new-feature',
+      'setup-plan',
+      'link-repo',
+    ];
 
     for (const cmd of commands) {
       const result = await $`bun run ${CLI_PATH} ${cmd} --help`.nothrow();

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/cli/index.ts"
+  ],
+  "project": [
+    "src/**/*.ts",
+    ".speck/**/*.ts"
+  ],
+  "ignore": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "dist/**/*",
+    "website/**/*"
+  ],
+  "ignoreDependencies": [],
+  "ignoreExportsUsedInFile": true,
+  "includeEntryExports": false
+}
