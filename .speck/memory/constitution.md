@@ -7,21 +7,21 @@ Added Sections: "XIII. Documentation Skill Synchronization (NON-NEGOTIABLE)" (ne
 Removed Sections: None
 
 Templates Requiring Updates:
-  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/plan-template.md - add speck-knowledge skill update task
-  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/tasks-template.md - add speck-knowledge skill update task to final phase
+  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/plan-template.md - add speck-help skill update task
+  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/tasks-template.md - add speck-help skill update task to final phase
   ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/spec-template.md - no changes required
-  ⚠ .claude/commands/speck.implement.md - add speck-knowledge skill update reminder at completion
-  ⚠ .claude/commands/speck.tasks.md - add speck-knowledge skill update task generation
+  ⚠ .claude/commands/speck.implement.md - add speck-help skill update reminder at completion
+  ⚠ .claude/commands/speck.tasks.md - add speck-help skill update task generation
 
 Follow-up TODOs:
-  - Backfill speck-knowledge skill with features 007-012 content
-  - Add speck-knowledge skill validation to check-prerequisites.ts
-  - Update quickstart.md with speck-knowledge skill update guidance
-  - Consider automating speck-knowledge skill updates from spec artifacts
+  - Backfill speck-help skill with features 007-012 content
+  - Add speck-help skill validation to check-prerequisites.ts
+  - Update quickstart.md with speck-help skill update guidance
+  - Consider automating speck-help skill updates from spec artifacts
 
 Rationale for 1.8.0 (MINOR bump):
   - New principle added: Documentation Skill Synchronization
-  - Establishes requirement to keep speck-knowledge Claude Skill current with feature additions
+  - Establishes requirement to keep speck-help Claude Skill current with feature additions
   - Complements Website Documentation Synchronization (Principle XI)
   - No breaking changes to existing principles
   - Backwards compatible but adds new quality expectation for feature completion
@@ -576,7 +576,7 @@ phases leads to ambiguous specs, incomplete plans, and implementation rework.
   feature completion
 - Implementation MUST update website documentation (if user-facing changes)
   before feature completion
-- Implementation MUST update speck-knowledge skill (if workflow/artifact
+- Implementation MUST update speck-help skill (if workflow/artifact
   changes) before feature completion
 
 ### Testability
@@ -655,7 +655,7 @@ for existing artifacts.
 - All user-facing features MUST update website documentation (Principle XI)
 - All features MUST follow TDD workflow unless explicitly exempted (Principle
   XII)
-- All workflow/artifact changes MUST update speck-knowledge skill (Principle
+- All workflow/artifact changes MUST update speck-help skill (Principle
   XIII)
 
 **Versioning Policy**:

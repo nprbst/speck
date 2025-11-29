@@ -214,14 +214,14 @@ Based on plan.md project structure:
 
 ### Implementation for User Story 5
 
-- [ ] T068 [US5] Rename skill directory: `.claude/skills/speck-knowledge/` → `.claude/skills/speck-help/`
-- [ ] T069 [US5] Update skill name in `.claude/skills/speck-help/SKILL.md` frontmatter
-- [ ] T070 [US5] Remove stacked PR section from speck-help skill content
-- [ ] T071 [US5] Remove virtual command section from speck-help skill content
-- [ ] T072 [US5] Update slash command table (remove /speck.branch, add /speck.init, /speck.help)
-- [ ] T073 [US5] Add session handoff documentation to speck-help skill
-- [ ] T074 [US5] Create `/speck.help` slash command at `.claude/commands/speck.help.md`
-- [ ] T075 [US5] Update any references to speck-knowledge → speck-help
+- [X] T068 [US5] Rename skill directory: `.claude/skills/speck-knowledge/` → `.claude/skills/speck-help/`
+- [X] T069 [US5] Update skill name in `.claude/skills/speck-help/SKILL.md` frontmatter
+- [X] T070 [US5] Remove stacked PR section from speck-help skill content
+- [X] T071 [US5] Remove virtual command section from speck-help skill content
+- [X] T072 [US5] Update slash command table (remove /speck.branch, add /speck.init, /speck.help)
+- [X] T073 [US5] Add session handoff documentation to speck-help skill
+- [X] T074 [US5] Create `/speck.help` slash command at `.claude/commands/speck.help.md`
+- [X] T075 [US5] Update any references to speck-knowledge → speck-help
 
 **Checkpoint**: User Story 5 complete - Help skill is available
 
