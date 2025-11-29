@@ -196,24 +196,40 @@ function runInit(options: InitOptions): InitResult {
   const inPath = isInPath();
   const pathInstructions = inPath ? undefined : getPathInstructions();
 
-  // Step 1: Create .speck/ directory structure
+  // Step 1: Verify git repository exists
   const gitRoot = findGitRoot();
+  if (!gitRoot) {
+    return {
+      success: false,
+      symlinkPath: SYMLINK_PATH,
+      targetPath: bootstrapPath,
+      inPath,
+      message: `Error: Not in a git repository.
+
+Speck requires a git repository to function. Please either:
+  1. Initialize a git repository: git init
+  2. Navigate to an existing git repository
+
+Then run 'speck init' again.`,
+      pathInstructions,
+    };
+  }
+
+  // Step 2: Create .speck/ directory structure
   let speckDirCreated = false;
   let speckDirPath: string | undefined;
   let needsConstitution = false;
 
-  if (gitRoot) {
-    const speckResult = createSpeckDirectory(gitRoot);
-    if (speckResult) {
-      speckDirCreated = speckResult.created;
-      speckDirPath = speckResult.path;
-      // Check if constitution.md exists
-      const constitutionPath = join(speckResult.path, "memory", "constitution.md");
-      needsConstitution = !existsSync(constitutionPath);
-    }
+  const speckResult = createSpeckDirectory(gitRoot);
+  if (speckResult) {
+    speckDirCreated = speckResult.created;
+    speckDirPath = speckResult.path;
+    // Check if constitution.md exists
+    const constitutionPath = join(speckResult.path, "memory", "constitution.md");
+    needsConstitution = !existsSync(constitutionPath);
   }
 
-  // Step 2: Verify bootstrap.sh exists
+  // Step 3: Verify bootstrap.sh exists
   if (!existsSync(bootstrapPath)) {
     return {
       success: false,
@@ -227,7 +243,7 @@ function runInit(options: InitOptions): InitResult {
     };
   }
 
-  // Step 3: Check if CLI already installed correctly
+  // Step 4: Check if CLI already installed correctly
   if (isValidSymlink(SYMLINK_PATH, bootstrapPath)) {
     if (!options.force) {
       return {
