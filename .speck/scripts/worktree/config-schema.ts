@@ -57,7 +57,7 @@ export const IDEConfigSchema = z.object({
  * Worktree configuration: all worktree integration settings
  */
 export const WorktreeConfigSchema = z.object({
-  enabled: z.boolean().default(false),
+  enabled: z.boolean().default(true),
   worktreePath: z.string().default(".speck/worktrees"),
   branchPrefix: z.string().optional(),
   ide: IDEConfigSchema,
@@ -137,10 +137,10 @@ export const DEFAULT_FILE_RULES: FileRule[] = [
 ];
 
 /**
- * Default worktree configuration (all features disabled)
+ * Default worktree configuration (worktree enabled by default)
  */
 export const DEFAULT_WORKTREE_CONFIG: WorktreeConfig = {
-  enabled: false,
+  enabled: true,
   worktreePath: ".speck/worktrees",
   ide: {
     autoLaunch: false,
@@ -267,7 +267,7 @@ export function mergeWithDefaults(userConfig: Partial<SpeckConfig>): SpeckConfig
  * @returns true if worktree.enabled is true
  */
 export function isWorktreeEnabled(config: SpeckConfig): boolean {
-  return config.worktree?.enabled ?? false;
+  return config.worktree?.enabled ?? true;
 }
 
 /**

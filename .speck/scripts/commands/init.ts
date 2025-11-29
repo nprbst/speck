@@ -21,6 +21,8 @@ import { existsSync, mkdirSync, lstatSync, readlinkSync, unlinkSync, symlinkSync
 import { join, dirname, resolve } from "node:path";
 import { homedir } from "node:os";
 import { parseArgs } from "util";
+import { createInterface } from "readline";
+import { DEFAULT_SPECK_CONFIG, type SpeckConfig, type IDEEditor } from "../worktree/config-schema";
 
 // =============================================================================
 // Types
@@ -41,6 +43,7 @@ interface InitResult {
   pathInstructions?: string;
   speckDirCreated?: boolean;
   speckDirPath?: string;
+  configCreated?: boolean;
   nextStep?: string;
   permissionsConfigured?: number;  // Number of permissions added (0 = none added)
 }
@@ -60,6 +63,9 @@ interface ClaudeSettings {
 
 const LOCAL_BIN_DIR = join(homedir(), ".local", "bin");
 const SYMLINK_PATH = join(LOCAL_BIN_DIR, "speck");
+
+// Supported IDE editors for prompting
+const IDE_EDITORS: IDEEditor[] = ["vscode", "cursor", "webstorm", "idea", "pycharm"];
 
 // .speck/ directory structure to create
 const SPECK_SUBDIRS = [
@@ -210,6 +216,95 @@ function isRegularFile(path: string): boolean {
 }
 
 /**
+ * Prompt user for a yes/no question with a default
+ */
+async function promptYesNo(question: string, defaultYes: boolean): Promise<boolean> {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  const hint = defaultYes ? "(Y/n)" : "(y/N)";
+
+  return new Promise((resolve) => {
+    rl.question(`${question} ${hint} `, (answer) => {
+      rl.close();
+      const normalized = answer.trim().toLowerCase();
+      if (normalized === "") {
+        resolve(defaultYes);
+      } else {
+        resolve(normalized === "y" || normalized === "yes");
+      }
+    });
+  });
+}
+
+/**
+ * Prompt user to select an IDE from the list
+ */
+async function promptIDE(defaultEditor: IDEEditor): Promise<IDEEditor> {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  const options = IDE_EDITORS.join("/");
+
+  return new Promise((resolve) => {
+    rl.question(`Which IDE editor? (${options}) [${defaultEditor}] `, (answer) => {
+      rl.close();
+      const normalized = answer.trim().toLowerCase();
+      if (normalized === "" || !IDE_EDITORS.includes(normalized as IDEEditor)) {
+        resolve(defaultEditor);
+      } else {
+        resolve(normalized as IDEEditor);
+      }
+    });
+  });
+}
+
+/**
+ * Prompt user for config preferences and create .speck/config.json
+ * Returns true if config was created, false if skipped or on error
+ */
+async function createSpeckConfig(speckDir: string, isInteractive: boolean): Promise<boolean> {
+  const configPath = join(speckDir, "config.json");
+
+  // Skip if config already exists
+  if (existsSync(configPath)) {
+    return false;
+  }
+
+  // Start with defaults (worktree enabled = true)
+  const config: SpeckConfig = { ...DEFAULT_SPECK_CONFIG };
+
+  if (isInteractive) {
+    console.log("\n📋 Configure Speck preferences:\n");
+
+    // Prompt for worktree mode
+    config.worktree.enabled = await promptYesNo("Enable worktree mode? (creates isolated directories for each feature)", true);
+
+    // Prompt for IDE auto-launch
+    config.worktree.ide.autoLaunch = await promptYesNo("Auto-launch IDE when creating features?", false);
+
+    // If IDE auto-launch enabled, ask which IDE
+    if (config.worktree.ide.autoLaunch) {
+      config.worktree.ide.editor = await promptIDE("vscode");
+    }
+
+    console.log(""); // Empty line after prompts
+  }
+
+  // Write config
+  try {
+    writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Configure .claude/settings.local.json with default allowed permissions
  * Uses settings.local.json because:
  * 1. The plugin install path is machine-specific
@@ -271,7 +366,7 @@ function configurePluginPermissions(repoRoot: string): number {
 /**
  * Execute the init command
  */
-function runInit(options: InitOptions): InitResult {
+async function runInit(options: InitOptions): Promise<InitResult> {
   const bootstrapPath = getBootstrapPath();
   const inPath = isInPath();
   const pathInstructions = inPath ? undefined : getPathInstructions();
@@ -299,6 +394,7 @@ Then run 'speck init' again.`,
   let speckDirCreated = false;
   let speckDirPath: string | undefined;
   let needsConstitution = false;
+  let configCreated = false;
 
   const speckResult = createSpeckDirectory(gitRoot);
   if (speckResult) {
@@ -307,6 +403,10 @@ Then run 'speck init' again.`,
     // Check if constitution.md exists
     const constitutionPath = join(speckResult.path, "memory", "constitution.md");
     needsConstitution = !existsSync(constitutionPath);
+
+    // Step 2a: Create config.json with user preferences (interactive if not JSON mode)
+    const isInteractive = !options.json && process.stdin.isTTY;
+    configCreated = await createSpeckConfig(speckResult.path, isInteractive);
   }
 
   // Step 2b: Configure plugin permissions in .claude/settings.local.json
@@ -333,6 +433,9 @@ Then run 'speck init' again.`,
       if (speckDirCreated) {
         alreadyInstalledMessages.push(`✓ Created .speck/ directory`);
       }
+      if (configCreated) {
+        alreadyInstalledMessages.push(`✓ Created .speck/config.json with your preferences`);
+      }
       alreadyInstalledMessages.push(`✓ Speck CLI already installed at ${SYMLINK_PATH}`);
       if (permissionsConfigured > 0) {
         alreadyInstalledMessages.push(`✓ Added ${permissionsConfigured} permission(s) to .claude/settings.local.json`);
@@ -347,6 +450,7 @@ Then run 'speck init' again.`,
         pathInstructions,
         speckDirCreated,
         speckDirPath,
+        configCreated,
         permissionsConfigured,
         nextStep: needsConstitution ? "Run /speck:constitution to set up your project principles." : undefined,
       };
@@ -404,6 +508,9 @@ Then run 'speck init' again.`,
   } else if (speckDirPath) {
     messages.push(`✓ .speck/ directory exists at ${speckDirPath}`);
   }
+  if (configCreated) {
+    messages.push(`✓ Created .speck/config.json with your preferences`);
+  }
   messages.push(`✓ Speck CLI installed to ${SYMLINK_PATH}`);
   if (permissionsConfigured > 0) {
     messages.push(`✓ Added ${permissionsConfigured} permission(s) to .claude/settings.local.json`);
@@ -418,6 +525,7 @@ Then run 'speck init' again.`,
     pathInstructions,
     speckDirCreated,
     speckDirPath,
+    configCreated,
     permissionsConfigured,
     nextStep: needsConstitution ? "Run /speck:constitution to set up your project principles." : undefined,
   };
@@ -438,6 +546,7 @@ function formatOutput(result: InitResult, options: InitOptions): string {
           alreadyInstalled: result.alreadyInstalled,
           speckDirCreated: result.speckDirCreated,
           speckDirPath: result.speckDirPath,
+          configCreated: result.configCreated,
           permissionsConfigured: result.permissionsConfigured,
         },
         message: result.message,
@@ -486,7 +595,7 @@ export async function main(args: string[]): Promise<number> {
   };
 
   // Run init
-  const result = runInit(options);
+  const result = await runInit(options);
 
   // Output result
   console.log(formatOutput(result, options));
