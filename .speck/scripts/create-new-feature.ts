@@ -31,12 +31,19 @@ import path from "node:path";
 import { $ } from "bun";
 import { ExitCode } from "./contracts/cli-interface";
 import { getTemplatesDir, detectSpeckRoot } from "./common/paths";
+import {
+  formatJsonOutput,
+  formatHookOutput,
+  detectOutputMode,
+  type OutputMode,
+} from "./lib/output-formatter";
 
 /**
  * CLI options for create-new-feature
  */
 interface CreateFeatureOptions {
   json: boolean;
+  hook: boolean;
   shortName?: string;
   number?: number;
   sharedSpec: boolean;  // T064-T066: Create spec at speckRoot with local symlinks
@@ -55,11 +62,19 @@ interface CreateFeatureOutput {
 }
 
 /**
+ * Parse result type for command line arguments
+ */
+type ParseResult =
+  | { success: true; options: CreateFeatureOptions }
+  | { success: false; error: string };
+
+/**
  * Parse command line arguments
  */
-function parseArgs(args: string[]): CreateFeatureOptions {
+function parseArgs(args: string[]): ParseResult {
   const options: CreateFeatureOptions = {
     json: false,
+    hook: false,
     sharedSpec: false,
     localSpec: false,
     help: false,
@@ -75,22 +90,22 @@ function parseArgs(args: string[]): CreateFeatureOptions {
     if (arg === "--json") {
       options.json = true;
       i++;
+    } else if (arg === "--hook") {
+      options.hook = true;
+      i++;
     } else if (arg === "--short-name") {
       if (i + 1 >= args.length || args[i + 1]?.startsWith("--")) {
-        console.error("Error: --short-name requires a value");
-        process.exit(ExitCode.USER_ERROR);
+        return { success: false, error: "--short-name requires a value" };
       }
       options.shortName = args[i + 1]!;
       i += 2;
     } else if (arg === "--number") {
       if (i + 1 >= args.length || args[i + 1]?.startsWith("--")) {
-        console.error("Error: --number requires a value");
-        process.exit(ExitCode.USER_ERROR);
+        return { success: false, error: "--number requires a value" };
       }
       const num = parseInt(args[i + 1]!, 10);
       if (isNaN(num)) {
-        console.error("Error: --number requires a numeric value");
-        process.exit(ExitCode.USER_ERROR);
+        return { success: false, error: "--number requires a numeric value" };
       }
       options.number = num;
       i += 2;
@@ -110,7 +125,7 @@ function parseArgs(args: string[]): CreateFeatureOptions {
   }
 
   options.featureDescription = positionalArgs.join(" ");
-  return options;
+  return { success: true, options };
 }
 
 /**
@@ -118,10 +133,11 @@ function parseArgs(args: string[]): CreateFeatureOptions {
  */
 function showHelp(): void {
   const scriptName = path.basename(process.argv[1]!);
-  console.log(`Usage: ${scriptName} [--json] [--short-name <name>] [--number N] [--shared-spec | --local-spec] <feature_description>
+  console.log(`Usage: ${scriptName} [--json] [--hook] [--short-name <name>] [--number N] [--shared-spec | --local-spec] <feature_description>
 
 Options:
-  --json              Output in JSON format
+  --json              Output in JSON format (structured JSON envelope)
+  --hook              Output hook-formatted response for Claude Code hooks
   --short-name <name> Provide a custom short name (2-4 words) for the branch
   --number N          Specify branch number manually (overrides auto-detection)
   --shared-spec       Create spec at speckRoot (multi-repo shared spec with local symlinks)
@@ -131,6 +147,31 @@ Options:
 Examples:
   ${scriptName} 'Add user authentication system' --short-name 'user-auth'
   ${scriptName} 'Implement OAuth2 integration for API' --number 5 --shared-spec`);
+}
+
+/**
+ * Output error in the appropriate format
+ */
+function outputError(
+  code: string,
+  message: string,
+  outputMode: OutputMode,
+  startTime: number,
+  recovery?: string[]
+): void {
+  if (outputMode === "json") {
+    const output = formatJsonOutput({
+      success: false,
+      error: { code, message, recovery },
+      command: "create-new-feature",
+      startTime,
+    });
+    console.log(JSON.stringify(output));
+  } else if (outputMode === "hook") {
+    console.error(`ERROR: ${message}`);
+  } else {
+    console.error(`Error: ${message}`);
+  }
 }
 
 /**
@@ -304,7 +345,25 @@ function generateBranchName(description: string): string {
  * Main function
  */
 export async function main(args: string[]): Promise<number> {
-  const options = parseArgs(args);
+  const startTime = Date.now();
+  const parseResult = parseArgs(args);
+
+  // Handle parse errors (need to detect outputMode first from raw args)
+  if (!parseResult.success) {
+    const hasJsonFlag = args.includes("--json");
+    const hasHookFlag = args.includes("--hook");
+    const outputMode = detectOutputMode({ json: hasJsonFlag, hook: hasHookFlag });
+    outputError(
+      "INVALID_ARGS",
+      parseResult.error,
+      outputMode,
+      startTime
+    );
+    return ExitCode.USER_ERROR;
+  }
+
+  const options = parseResult.options;
+  const outputMode = detectOutputMode(options);
 
   if (options.help) {
     showHelp();
@@ -312,7 +371,13 @@ export async function main(args: string[]): Promise<number> {
   }
 
   if (!options.featureDescription) {
-    console.error("Usage: create-new-feature [--json] [--short-name <name>] [--number N] <feature_description>");
+    outputError(
+      "MISSING_DESCRIPTION",
+      "Feature description is required",
+      outputMode,
+      startTime,
+      ["Provide a description: create-new-feature '<feature description>'"]
+    );
     return ExitCode.USER_ERROR;
   }
 
@@ -328,7 +393,12 @@ export async function main(args: string[]): Promise<number> {
     const scriptDir = import.meta.dir;
     const foundRoot = findRepoRoot(scriptDir);
     if (!foundRoot) {
-      console.error("Error: Could not determine repository root. Please run this script from within the repository.");
+      outputError(
+        "REPO_NOT_FOUND",
+        "Could not determine repository root. Please run this script from within the repository.",
+        outputMode,
+        startTime
+      );
       return ExitCode.USER_ERROR;
     }
     repoRoot = foundRoot;
@@ -392,10 +462,15 @@ export async function main(args: string[]): Promise<number> {
     try {
       await $`git checkout -b ${branchName}`;
     } catch (error) {
-      console.error(`Error: Failed to create git branch: ${String(error)}`);
+      outputError(
+        "GIT_BRANCH_FAILED",
+        `Failed to create git branch: ${String(error)}`,
+        outputMode,
+        startTime
+      );
       return ExitCode.USER_ERROR;
     }
-  } else {
+  } else if (outputMode === "human") {
     console.error(`[specify] Warning: Git repository not detected; skipped branch creation for ${branchName}`);
   }
 
@@ -512,14 +587,28 @@ export async function main(args: string[]): Promise<number> {
   // Set SPECIFY_FEATURE environment variable (note: this only affects this process)
   process.env.SPECIFY_FEATURE = branchName;
 
-  // Output results
-  if (options.json) {
-    const output: CreateFeatureOutput = {
-      BRANCH_NAME: branchName,
-      SPEC_FILE: specFile,
-      FEATURE_NUM: featureNum,
-    };
+  // Build output data
+  const outputData: CreateFeatureOutput = {
+    BRANCH_NAME: branchName,
+    SPEC_FILE: specFile,
+    FEATURE_NUM: featureNum,
+  };
+
+  // Output results based on mode
+  if (outputMode === "json") {
+    const output = formatJsonOutput({
+      success: true,
+      data: outputData,
+      command: "create-new-feature",
+      startTime,
+    });
     console.log(JSON.stringify(output));
+  } else if (outputMode === "hook") {
+    const hookOutput = formatHookOutput({
+      hookType: "UserPromptSubmit",
+      context: `<!-- SPECK_FEATURE_CREATED\n${JSON.stringify(outputData)}\n-->`,
+    });
+    console.log(JSON.stringify(hookOutput));
   } else {
     console.log(`BRANCH_NAME: ${branchName}`);
     console.log(`SPEC_FILE: ${specFile}`);

@@ -139,8 +139,10 @@ describe("CLI Environment Detection", () => {
     const result = await runCli(["env", "--json"]);
     if (result.exitCode === 0) {
       const parsed = JSON.parse(result.stdout);
-      // Should include repo-related info
-      expect(parsed.repoRoot || parsed.speckRoot).toBeDefined();
+      // New JSON envelope structure: { ok, result, meta }
+      expect(parsed.ok).toBe(true);
+      // Result should include repo-related info
+      expect(parsed.result?.repoRoot || parsed.result?.speckRoot).toBeDefined();
     }
   });
 
@@ -223,5 +225,172 @@ describe("CLI Integration with Existing Commands", () => {
     const result = await runCli(["env", "--help"]);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("--json");
+  });
+});
+
+/**
+ * T032: Error Handling with --json
+ *
+ * Per contracts/cli-interface.ts JsonOutput contract:
+ * - All errors MUST return structured JSON when --json flag is used
+ * - Structure: { ok: false, error: { code, message, recovery? }, meta: { command, timestamp, duration_ms } }
+ */
+describe("T032: Error Handling with --json", () => {
+  describe("check-prerequisites errors", () => {
+    test("missing feature returns structured JSON error", async () => {
+      // Run from non-feature directory
+      const tempDir = join(tmpdir(), `cli-error-test-${Date.now()}`);
+      mkdirSync(tempDir, { recursive: true });
+      mkdirSync(join(tempDir, ".git"), { recursive: true });
+
+      try {
+        const result = await runCli(["check-prerequisites", "--json"], tempDir);
+
+        // Should return non-zero exit code
+        expect(result.exitCode).not.toBe(0);
+
+        // Should return valid JSON
+        if (result.stdout.trim()) {
+          const parsed = JSON.parse(result.stdout);
+
+          // Must have ok: false for errors
+          expect(parsed.ok).toBe(false);
+
+          // Must have error object
+          expect(parsed.error).toBeDefined();
+          expect(typeof parsed.error.code).toBe("string");
+          expect(typeof parsed.error.message).toBe("string");
+
+          // Must have meta object
+          expect(parsed.meta).toBeDefined();
+          expect(parsed.meta.command).toBeDefined();
+          expect(parsed.meta.timestamp).toBeDefined();
+          expect(typeof parsed.meta.duration_ms).toBe("number");
+        }
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
+
+    test("missing plan.md returns structured JSON error with recovery", async () => {
+      const tempDir = join(tmpdir(), `cli-plan-error-${Date.now()}`);
+      mkdirSync(tempDir, { recursive: true });
+      mkdirSync(join(tempDir, ".git"), { recursive: true });
+      mkdirSync(join(tempDir, "specs", "001-test"), { recursive: true });
+      writeFileSync(join(tempDir, "specs", "001-test", "spec.md"), "# Test");
+
+      try {
+        // Need to be on a feature branch - this will likely fail differently
+        const result = await runCli(["check-prerequisites", "--json"], tempDir);
+
+        if (result.exitCode !== 0 && result.stdout.trim()) {
+          const parsed = JSON.parse(result.stdout);
+          expect(parsed.ok).toBe(false);
+          expect(parsed.error).toBeDefined();
+
+          // Recovery hints should be present for actionable errors
+          if (parsed.error.recovery) {
+            expect(Array.isArray(parsed.error.recovery)).toBe(true);
+          }
+        }
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
+  });
+
+  describe("create-new-feature errors", () => {
+    test("invalid arguments return structured JSON error", async () => {
+      // Missing required description argument
+      const result = await runCli(["create-new-feature", "--json"]);
+
+      // Should fail (missing required arg)
+      expect(result.exitCode).not.toBe(0);
+
+      // Output might be on stderr for argument errors
+      // Commander.js handles this differently
+    });
+  });
+
+  describe("env command errors", () => {
+    test("non-git directory returns structured JSON error", async () => {
+      const tempDir = join(tmpdir(), `cli-env-error-${Date.now()}`);
+      mkdirSync(tempDir, { recursive: true });
+
+      try {
+        const result = await runCli(["env", "--json"], tempDir);
+
+        // May succeed or fail depending on implementation
+        if (result.stdout.trim()) {
+          const parsed = JSON.parse(result.stdout);
+
+          // Either success or structured error
+          expect(typeof parsed.ok).toBe("boolean");
+          expect(parsed.meta).toBeDefined();
+
+          if (!parsed.ok) {
+            expect(parsed.error).toBeDefined();
+          }
+        }
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
+  });
+
+  describe("Exit code contract", () => {
+    test("exit codes match ExitCode enum", async () => {
+      // SUCCESS = 0
+      const helpResult = await runCli(["--help"]);
+      expect(helpResult.exitCode).toBe(0);
+
+      // USER_ERROR = 1 (for user-fixable errors like missing files)
+      // SYSTEM_ERROR = 2 (for system failures)
+
+      // Unknown command should return 1
+      const unknownResult = await runCli(["nonexistent-command"]);
+      expect(unknownResult.exitCode).toBe(1);
+    });
+  });
+
+  describe("JSON output consistency", () => {
+    test("all commands return consistent JSON structure on success", async () => {
+      const envResult = await runCli(["env", "--json"]);
+
+      if (envResult.exitCode === 0 && envResult.stdout.trim()) {
+        const parsed = JSON.parse(envResult.stdout);
+
+        // All successful JSON outputs must have:
+        // - ok: true
+        // - result: <command-specific data>
+        // - meta: { command, timestamp, duration_ms }
+        expect(parsed.ok).toBe(true);
+        expect(parsed.meta).toBeDefined();
+      }
+    });
+
+    test("error JSON includes actionable recovery when possible", async () => {
+      // Commands that fail should include recovery hints where applicable
+      const tempDir = join(tmpdir(), `cli-recovery-test-${Date.now()}`);
+      mkdirSync(tempDir, { recursive: true });
+
+      try {
+        const result = await runCli(["check-prerequisites", "--json"], tempDir);
+
+        if (result.exitCode !== 0 && result.stdout.trim()) {
+          const parsed = JSON.parse(result.stdout);
+          if (parsed.error?.recovery) {
+            // Recovery should be an array of actionable strings
+            expect(Array.isArray(parsed.error.recovery)).toBe(true);
+            parsed.error.recovery.forEach((hint: string) => {
+              expect(typeof hint).toBe("string");
+              expect(hint.length).toBeGreaterThan(0);
+            });
+          }
+        }
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
   });
 });

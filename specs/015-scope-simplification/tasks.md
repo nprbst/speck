@@ -100,23 +100,23 @@ Based on plan.md project structure:
 
 ### Tests for User Story 2
 
-- [ ] T030 [P] [US2] Write unit test for JSON output format in `tests/unit/cli-output.test.ts`
-- [ ] T031 [P] [US2] Write unit test for hook output format in `tests/unit/cli-output.test.ts`
-- [ ] T031a [P] [US2] Write unit test for hook input mode (stdin JSON parsing) in `tests/unit/cli-output.test.ts`
-- [ ] T032 [P] [US2] Write integration test for error handling with `--json` in `tests/integration/cli-modes.test.ts`
+- [X] T030 [P] [US2] Write unit test for JSON output format in `tests/unit/cli-output.test.ts`
+- [X] T031 [P] [US2] Write unit test for hook output format in `tests/unit/cli-output.test.ts`
+- [X] T031a [P] [US2] Write unit test for hook input mode (stdin JSON parsing) in `tests/unit/cli-output.test.ts`
+- [X] T032 [P] [US2] Write integration test for error handling with `--json` in `tests/integration/cli-modes.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T033 [US2] Create output formatter module at `.speck/scripts/lib/output-formatter.ts`
-- [ ] T033a [US2] Implement `readHookInput()` for stdin JSON parsing matching `HookInputPayload` contract in output-formatter.ts
-- [ ] T033b [US2] Implement `detectInputMode()` helper to determine input mode from --hook flag in output-formatter.ts
-- [ ] T034 [US2] Implement `formatJsonOutput()` matching `JsonOutput` contract in output-formatter.ts
-- [ ] T035 [US2] Implement `formatHookOutput()` matching `HookOutput` contract in output-formatter.ts
-- [ ] T036 [US2] Integrate output formatter into `check-prerequisites` command (including hook input mode)
-- [ ] T037 [US2] Integrate output formatter into `create-new-feature` command
-- [ ] T038 [US2] Integrate output formatter into `env` command
-- [ ] T039 [US2] Ensure all errors return structured JSON when `--json` flag is used
-- [ ] T040 [US2] Verify exit codes match `ExitCode` contract for all error cases
+- [X] T033 [US2] Create output formatter module at `.speck/scripts/lib/output-formatter.ts`
+- [X] T033a [US2] Implement `readHookInput()` for stdin JSON parsing matching `HookInputPayload` contract in output-formatter.ts
+- [X] T033b [US2] Implement `detectInputMode()` helper to determine input mode from --hook flag in output-formatter.ts
+- [X] T034 [US2] Implement `formatJsonOutput()` matching `JsonOutput` contract in output-formatter.ts
+- [X] T035 [US2] Implement `formatHookOutput()` matching `HookOutput` contract in output-formatter.ts
+- [X] T036 [US2] Integrate output formatter into `check-prerequisites` command (including hook input mode)
+- [X] T037 [US2] Integrate output formatter into `create-new-feature` command
+- [X] T038 [US2] Integrate output formatter into `env` command
+- [X] T039 [US2] Ensure all errors return structured JSON when `--json` flag is used
+- [X] T040 [US2] Verify exit codes match `ExitCode` contract for all error cases
 
 **Checkpoint**: User Story 2 complete - CLI works for both humans and hooks
 

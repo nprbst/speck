@@ -17,6 +17,12 @@
 import { readBranches, getAggregatedBranchStatus, type RepoBranchSummary } from "./common/branch-mapper.ts";
 import { getCurrentBranch } from "./common/git-operations.ts";
 import { detectSpeckRoot, getMultiRepoContext, findChildReposWithNames, type SpeckConfig, type MultiRepoContextMetadata } from "./common/paths.ts";
+import {
+  formatJsonOutput,
+  formatHookOutput,
+  detectOutputMode,
+  type OutputMode,
+} from "./lib/output-formatter";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -25,23 +31,50 @@ import path from "node:path";
 // ===========================
 
 export async function main(args: string[] = process.argv.slice(2)): Promise<number> {
-  if (args.includes("--help")) {
+  const startTime = Date.now();
+  const options = {
+    json: args.includes("--json"),
+    hook: args.includes("--hook"),
+    help: args.includes("--help"),
+  };
+  const outputMode = detectOutputMode(options);
+
+  if (options.help) {
     showHelp();
     return 0;
   }
 
-  const jsonOutput = args.includes("--json");
-
   try {
-    await displayEnvironmentStatus(jsonOutput);
+    await displayEnvironmentStatus(outputMode, startTime);
     return 0;
   } catch (error) {
-    if (jsonOutput) {
-      console.error(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
-    } else {
-      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    outputError("ENV_ERROR", errorMessage, outputMode, startTime);
     return 1;
+  }
+}
+
+/**
+ * Output error in the appropriate format
+ */
+function outputError(
+  code: string,
+  message: string,
+  outputMode: OutputMode,
+  startTime: number
+): void {
+  if (outputMode === "json") {
+    const output = formatJsonOutput({
+      success: false,
+      error: { code, message },
+      command: "env",
+      startTime,
+    });
+    console.log(JSON.stringify(output));
+  } else if (outputMode === "hook") {
+    console.error(`ERROR: ${message}`);
+  } else {
+    console.error(`Error: ${message}`);
   }
 }
 
@@ -58,7 +91,8 @@ Usage:
 
 Options:
   --help     Show this help message
-  --json     Output as JSON (for programmatic use)
+  --json     Output as JSON (structured JSON envelope)
+  --hook     Output hook-formatted response for Claude Code hooks
 
 Description:
   Displays comprehensive environment information including:
@@ -73,12 +107,14 @@ Description:
 // Main Display Logic
 // ===========================
 
-async function displayEnvironmentStatus(jsonOutput: boolean): Promise<void> {
+async function displayEnvironmentStatus(outputMode: OutputMode, startTime: number): Promise<void> {
   const config = await detectSpeckRoot();
   const context = await getMultiRepoContext();
 
-  if (jsonOutput) {
-    await displayJsonOutput(config, context);
+  if (outputMode === "json") {
+    await displayJsonOutput(config, context, startTime);
+  } else if (outputMode === "hook") {
+    await displayHookOutput(config, context);
   } else {
     await displayTextOutput(config, context);
   }
@@ -244,7 +280,7 @@ async function displayLocalStatus(repoRoot: string): Promise<void> {
 // JSON Output (Programmatic)
 // ===========================
 
-interface JsonOutput {
+interface EnvOutputData {
   mode: string;
   context: string;
   speckRoot: string;
@@ -261,8 +297,8 @@ interface JsonOutput {
   };
 }
 
-async function displayJsonOutput(_config: SpeckConfig, context: MultiRepoContextMetadata): Promise<void> {
-  const output: JsonOutput = {
+async function buildEnvOutputData(_config: SpeckConfig, context: MultiRepoContextMetadata): Promise<EnvOutputData> {
+  const output: EnvOutputData = {
     mode: context.mode,
     context: context.context,
     speckRoot: context.speckRoot,
@@ -296,7 +332,27 @@ async function displayJsonOutput(_config: SpeckConfig, context: MultiRepoContext
     }
   }
 
-  console.log(JSON.stringify(output, null, 2));
+  return output;
+}
+
+async function displayJsonOutput(config: SpeckConfig, context: MultiRepoContextMetadata, startTime: number): Promise<void> {
+  const data = await buildEnvOutputData(config, context);
+  const output = formatJsonOutput({
+    success: true,
+    data,
+    command: "env",
+    startTime,
+  });
+  console.log(JSON.stringify(output));
+}
+
+async function displayHookOutput(config: SpeckConfig, context: MultiRepoContextMetadata): Promise<void> {
+  const data = await buildEnvOutputData(config, context);
+  const hookOutput = formatHookOutput({
+    hookType: "UserPromptSubmit",
+    context: `<!-- SPECK_ENV_CONTEXT\n${JSON.stringify(data)}\n-->`,
+  });
+  console.log(JSON.stringify(hookOutput));
 }
 
 // ===========================
