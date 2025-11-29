@@ -72,19 +72,19 @@ When a developer creates a new feature spec, Speck automatically creates a Git w
 
 ### User Story 4 - Developer Installs Speck CLI via /speck.init (Priority: P2)
 
-A developer cloning a Speck-enabled repository for the first time runs the `/speck.init` slash command in Claude Code, which triggers the `speck install` CLI command to set up the `speck` command in their PATH.
+A developer cloning a Speck-enabled repository for the first time runs the `/speck.init` slash command in Claude Code, which triggers the `speck init` CLI command to set up the `speck` command in their PATH.
 
 **Why this priority**: One-time setup that enables all P1 functionality. Must be simple and reliable.
 
-**Independent Test**: Can be fully tested by running `/speck.init` in Claude Code or `speck install` directly, then invoking `speck` from a different directory.
+**Independent Test**: Can be fully tested by running `/speck.init` in Claude Code or `speck init` directly, then invoking `speck` from a different directory.
 
 **Acceptance Scenarios**:
 
-1. **Given** user runs `/speck.init` in Claude Code, **When** the command executes, **Then** `speck install` is invoked and a symlink is created at `~/.local/bin/speck`
-2. **Given** user runs `speck install` directly, **When** the command executes, **Then** a symlink is created at `~/.local/bin/speck` pointing to the repo's CLI entry point
+1. **Given** user runs `/speck.init` in Claude Code, **When** the command executes, **Then** `speck init` is invoked and a symlink is created at `~/.local/bin/speck`
+2. **Given** user runs `speck init` directly, **When** the command executes, **Then** a symlink is created at `~/.local/bin/speck` pointing to the repo's CLI entry point
 3. **Given** `~/.local/bin` is in user's PATH, **When** they open a new terminal, **Then** `speck` command is available globally
-4. **Given** symlink already exists, **When** user runs install again, **Then** they see a message that Speck is already installed (idempotent)
-5. **Given** `~/.local/bin` does not exist, **When** user runs install, **Then** the directory is created before symlinking
+4. **Given** symlink already exists, **When** user runs init again, **Then** they see a message that Speck is already installed (idempotent)
+5. **Given** `~/.local/bin` does not exist, **When** user runs init, **Then** the directory is created before symlinking
 
 ---
 
@@ -184,7 +184,7 @@ A new user visits the Speck website to understand what Speck does and how to use
 #### CLI Requirements (Consolidation)
 
 - **FR-006**: System MUST provide a single `speck` entry point executable via `#!/usr/bin/env bun`
-- **FR-007**: CLI MUST support subcommands: `install`, `create-new-feature`, `check-prerequisites`, `env`, `help`
+- **FR-007**: CLI MUST support subcommands: `init`, `create-new-feature`, `check-prerequisites`, `env`, `help`
 - **FR-008**: CLI MUST accept `--json` flag on all commands to output structured JSON for LLM parsing
 - **FR-009**: CLI MUST accept `--hook` flag on all commands for hook IO mode (reads JSON from stdin, outputs hook-formatted response)
 - **FR-009a**: When `--hook` flag is present, CLI MUST read JSON payload from stdin containing hook context before processing
@@ -204,10 +204,10 @@ A new user visits the Speck website to understand what Speck does and how to use
 
 #### Auto-Install Requirements
 
-- **FR-017**: `speck install` MUST create a symlink at `~/.local/bin/speck` pointing to the repository's bootstrap script
-- **FR-018**: `speck install` MUST create `~/.local/bin/` directory if it doesn't exist
-- **FR-019**: `speck install` MUST be idempotent (running twice produces no errors)
-- **FR-020**: `speck install` MUST report if `~/.local/bin` is not in the user's PATH with instructions to add it
+- **FR-017**: `speck init` MUST create a symlink at `~/.local/bin/speck` pointing to the repository's bootstrap script
+- **FR-018**: `speck init` MUST create `~/.local/bin/` directory if it doesn't exist
+- **FR-019**: `speck init` MUST be idempotent (running twice produces no errors)
+- **FR-020**: `speck init` MUST report if `~/.local/bin` is not in the user's PATH with instructions to add it
 
 #### Bun Bootstrap Requirements
 

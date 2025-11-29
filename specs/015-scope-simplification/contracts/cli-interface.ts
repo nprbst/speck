@@ -85,11 +85,11 @@ export type ExitCode = (typeof ExitCode)[keyof typeof ExitCode];
 /**
  * Available CLI subcommands
  *
- * @see FR-007: CLI MUST support subcommands: install, create-new-feature,
+ * @see FR-007: CLI MUST support subcommands: init, create-new-feature,
  *             check-prerequisites, env, help
  */
 export const Commands = {
-  INSTALL: "install",
+  INIT: "init",
   CREATE_NEW_FEATURE: "create-new-feature",
   CHECK_PREREQUISITES: "check-prerequisites",
   ENV: "env",
@@ -128,11 +128,11 @@ export interface GlobalOptions {
 // =============================================================================
 
 /**
- * Options for `speck install`
+ * Options for `speck init`
  *
  * @see FR-017 through FR-020
  */
-export interface InstallOptions extends GlobalOptions {
+export interface InitOptions extends GlobalOptions {
   /** Force reinstall even if symlink exists */
   force?: boolean;
 }
@@ -226,9 +226,9 @@ export interface CommandError {
 // =============================================================================
 
 /**
- * Result for `speck install`
+ * Result for `speck init`
  */
-export interface InstallResult {
+export interface InitResult {
   /** Path to created symlink */
   symlinkPath: string;
 

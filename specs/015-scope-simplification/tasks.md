@@ -166,42 +166,42 @@ Based on plan.md project structure:
 
 **Goal**: One-time installation to make `speck` globally available
 
-**Independent Test**: Run `/speck.init` or `speck install`, then `speck` from different directory
+**Independent Test**: Run `/speck.init` or `speck init`, then `speck` from different directory
 
 **Reference**: See [bootstrap-addendum.md](./bootstrap-addendum.md) for Bun bootstrap implementation details
 
 ### Tests for User Story 4
 
-- [ ] T055 [P] [US4] Write unit test for symlink creation in `tests/unit/install.test.ts`
-- [ ] T056 [P] [US4] Write unit test for PATH detection in `tests/unit/install.test.ts`
-- [ ] T057 [P] [US4] Write integration test for idempotent install in `tests/integration/install.test.ts`
-- [ ] T057a [P] [US4] Write unit test for `detect_platform()` in `tests/unit/bootstrap.test.ts`
-- [ ] T057b [P] [US4] Write unit test for `find_bun()` in `tests/unit/bootstrap.test.ts`
-- [ ] T057c [P] [US4] Write integration test for bootstrap self-removal flow in `tests/integration/bootstrap.test.ts`
+- [X] T055 [P] [US4] Write unit test for symlink creation in `tests/unit/init.test.ts`
+- [X] T056 [P] [US4] Write unit test for PATH detection in `tests/unit/init.test.ts`
+- [X] T057 [P] [US4] Write integration test for idempotent init in `tests/integration/init.test.ts`
+- [X] T057a [P] [US4] Write unit test for `detect_platform()` in `tests/unit/bootstrap.test.ts`
+- [X] T057b [P] [US4] Write unit test for `find_bun()` in `tests/unit/bootstrap.test.ts`
+- [X] T057c [P] [US4] Write integration test for bootstrap self-removal flow in `tests/integration/init.test.ts`
 
 ### Implementation for User Story 4
 
 #### Bootstrap Script (Bun Detection)
 
-- [ ] T058 [US4] Create `src/cli/bootstrap.sh` with Bun detection logic (see addendum §3)
-- [ ] T058a [US4] Implement `detect_platform()` for macOS/Linux/WSL detection in bootstrap.sh
-- [ ] T058b [US4] Implement `find_bun()` to check PATH and common install locations in bootstrap.sh
-- [ ] T058c [US4] Implement `install_instructions()` with platform-specific Bun install commands
-- [ ] T058d [US4] Implement `create_runner_script()` to generate `.runner.sh` wrapper
-- [ ] T058e [US4] Implement `update_symlink()` to rewire symlink from bootstrap.sh to .runner.sh
-- [ ] T058f [US4] Make bootstrap.sh executable with `chmod +x`
+- [X] T058 [US4] Create `src/cli/bootstrap.sh` with Bun detection logic (see addendum §3)
+- [X] T058a [US4] Implement `detect_platform()` for macOS/Linux/WSL detection in bootstrap.sh
+- [X] T058b [US4] Implement `find_bun()` to check PATH and common install locations in bootstrap.sh
+- [X] T058c [US4] Implement `install_instructions()` with platform-specific Bun install commands
+- [X] T058d [US4] Implement `create_runner_script()` to generate `.runner.sh` wrapper
+- [X] T058e [US4] Implement `update_symlink()` to rewire symlink from bootstrap.sh to .runner.sh
+- [X] T058f [US4] Make bootstrap.sh executable with `chmod +x`
 
-#### Install Command
+#### Init Command
 
-- [ ] T059 [US4] Create install command handler at `.speck/scripts/commands/install.ts`
-- [ ] T060 [US4] Implement `~/.local/bin` directory creation if missing
-- [ ] T061 [US4] Implement symlink creation at `~/.local/bin/speck` → `src/cli/bootstrap.sh`
-- [ ] T062 [US4] Implement PATH detection and warning
-- [ ] T063 [US4] Implement idempotent behavior (detect existing symlink)
-- [ ] T064 [US4] Add `--force` flag for reinstall
-- [ ] T065 [US4] Wire install command to CLI in `src/cli/index.ts`
-- [ ] T066 [US4] Create `/speck.init` slash command at `.claude/commands/speck.init.md`
-- [ ] T067 [US4] Verify install command works end-to-end (including bootstrap flow)
+- [X] T059 [US4] Create init command handler at `.speck/scripts/commands/init.ts`
+- [X] T060 [US4] Implement `~/.local/bin` directory creation if missing
+- [X] T061 [US4] Implement symlink creation at `~/.local/bin/speck` → `src/cli/bootstrap.sh`
+- [X] T062 [US4] Implement PATH detection and warning
+- [X] T063 [US4] Implement idempotent behavior (detect existing symlink)
+- [X] T064 [US4] Add `--force` flag for reinstall
+- [X] T065 [US4] Wire init command to CLI in `src/cli/index.ts`
+- [X] T066 [US4] Create `/speck.init` slash command at `.claude/commands/speck.init.md`
+- [X] T067 [US4] Verify init command works end-to-end (including bootstrap flow)
 
 **Checkpoint**: User Story 4 complete - Speck can be installed globally with Bun bootstrap
 

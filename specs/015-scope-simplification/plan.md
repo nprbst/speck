@@ -87,7 +87,7 @@ src/
 │   ├── speck.ts         # REFACTOR: Remove hook mode
 │   ├── commands/
 │   │   ├── index.ts     # REFACTOR: Remove branch command
-│   │   ├── install.ts   # NEW: Install command handler
+│   │   ├── init.ts      # NEW: Init command handler
 │   │   └── help.ts      # NEW: Help command handler
 │   ├── common/
 │   │   └── branch-mapper.ts  # REFACTOR: Simplified schema
@@ -120,7 +120,7 @@ src/
 
 tests/
 ├── unit/
-│   ├── install.test.ts      # NEW
+│   ├── init.test.ts         # NEW (renamed from install.test.ts)
 │   ├── handoff.test.ts      # NEW
 │   └── branch-mapper.test.ts # REFACTOR
 ├── integration/
@@ -198,7 +198,7 @@ Each implementation task has a corresponding test task that runs first:
 ### Phase 2: CLI Consolidation
 - Create `src/cli/index.ts` entry point
 - Create `src/cli/bootstrap.sh` with Bun detection and self-removal pattern
-- Implement install command (symlink to bootstrap.sh)
+- Implement init command (symlink to bootstrap.sh)
 - Add --json and --hook output modes
 - Update package.json scripts
 - See [bootstrap-addendum.md](./bootstrap-addendum.md) for bootstrap implementation details
@@ -237,7 +237,7 @@ Each implementation task has a corresponding test task that runs first:
 
 | Criteria | Implementation |
 |----------|---------------|
-| SC-001: Install in <2 min | Single `speck install` command |
+| SC-001: Install in <2 min | Single `speck init` command |
 | SC-002: CLI response <500ms | Direct command execution, no hook overhead |
 | SC-003: Feature creation <10s | Worktree + handoff in single operation |
 | SC-004: Same behavior human/AI | --json and --hook flags on all commands |

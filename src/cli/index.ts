@@ -30,6 +30,8 @@ const lazyCreateNewFeature = (): Promise<typeof import("../../.speck/scripts/cre
   import("../../.speck/scripts/create-new-feature.ts");
 const lazyEnvCommand = (): Promise<typeof import("../../.speck/scripts/env-command.ts")> =>
   import("../../.speck/scripts/env-command.ts");
+const lazyInitCommand = (): Promise<typeof import("../../.speck/scripts/commands/init.ts")> =>
+  import("../../.speck/scripts/commands/init.ts");
 
 /**
  * Output mode for CLI commands
@@ -126,6 +128,21 @@ function createProgram(): Command {
     .hook("preAction", (thisCommand) => {
       const opts = thisCommand.opts();
       processGlobalOptions(opts);
+    });
+
+  // ==========================================================================
+  // init command
+  // ==========================================================================
+  program
+    .command("init")
+    .description("Install Speck CLI globally via symlink to ~/.local/bin/speck")
+    .option("--json", "Output in JSON format")
+    .option("--force", "Force reinstall even if symlink exists")
+    .action(async (options) => {
+      const module = await lazyInitCommand();
+      const args = buildSubcommandArgs([], options);
+      const exitCode = await module.main(args);
+      process.exit(exitCode);
     });
 
   // ==========================================================================
