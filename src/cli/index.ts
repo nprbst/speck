@@ -94,7 +94,7 @@ function processGlobalOptions(options: { json?: boolean; hook?: boolean }): void
 /**
  * Build argument array for subcommand, including global flags
  */
-function buildSubcommandArgs(args: string[], options: Record<string, unknown>): string[] {
+function buildSubcommandArgs(args: string[], options: Record<string, unknown>, rawArgs?: string[]): string[] {
   const result = [...args];
 
   // Propagate global flags to subcommand
@@ -105,6 +105,23 @@ function buildSubcommandArgs(args: string[], options: Record<string, unknown>): 
   // Add other subcommand-specific options
   for (const [key, value] of Object.entries(options)) {
     if (key === 'json' || key === 'hook') continue; // Already handled
+
+    // Special handling for negatable boolean options (--worktree / --no-worktree)
+    // Only pass the flag if it was explicitly provided by user, not default
+    if (key === 'worktree') {
+      // Check if user explicitly passed --worktree or --no-worktree
+      const hasWorktreeFlag = rawArgs?.some(arg => arg === '--worktree' || arg === '--no-worktree');
+      if (hasWorktreeFlag) {
+        if (value === true) {
+          result.push('--worktree');
+        } else if (value === false) {
+          result.push('--no-worktree');
+        }
+      }
+      // If not explicitly passed, don't add any flag - let script use config default
+      continue;
+    }
+
     if (value === true) {
       result.push(`--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
     } else if (value !== false && value !== undefined) {
@@ -159,11 +176,14 @@ function createProgram(): Command {
     .option('--number <n>', 'Specify branch number manually', parseInt)
     .option('--shared-spec', 'Create spec at speckRoot (multi-repo shared spec)')
     .option('--local-spec', 'Create spec locally in child repo')
-    .option('--no-worktree', 'Skip worktree creation')
+    .option('--worktree', 'Create a worktree for the feature branch (overrides config)')
+    .option('--no-worktree', 'Skip worktree creation (overrides config)')
     .option('--no-ide', 'Skip IDE auto-launch')
-    .action(async (description: string, options: Record<string, unknown>) => {
+    .action(async (description: string, options: Record<string, unknown>, command) => {
       const module = await lazyCreateNewFeature();
-      const args = [description, ...buildSubcommandArgs([], options)];
+      // Pass raw args to detect explicit --worktree / --no-worktree flags
+      const rawArgs = command.args.concat(process.argv.slice(3));
+      const args = [description, ...buildSubcommandArgs([], options, rawArgs)];
       const exitCode = await module.main(args);
       process.exit(exitCode);
     });

@@ -42,7 +42,7 @@ interface InitResult {
   speckDirCreated?: boolean;
   speckDirPath?: string;
   nextStep?: string;
-  permissionsConfigured?: boolean;
+  permissionsConfigured?: number;  // Number of permissions added (0 = none added)
 }
 
 interface ClaudeSettings {
@@ -66,6 +66,21 @@ const SPECK_SUBDIRS = [
   "memory",     // For constitution.md and other memory files
   "scripts",    // For custom scripts
 ];
+
+// Default permissions to add to .claude/settings.local.json
+// These are commands that are commonly needed and safe to auto-approve
+const DEFAULT_ALLOWED_PERMISSIONS = [
+  // Plugin template access
+  "Read(~/.claude/plugins/marketplaces/speck-market/speck/templates/**)",
+
+  // Git read-only commands (safe for status/diff/log inspection)
+  "Bash(git diff:*)",
+  "Bash(git fetch:*)",
+  "Bash(git log:*)",
+  "Bash(git ls-remote:*)",
+  "Bash(git ls:*)",
+  "Bash(git status)",
+] as const;
 
 // =============================================================================
 // Helper Functions
@@ -195,20 +210,17 @@ function isRegularFile(path: string): boolean {
 }
 
 /**
- * Configure .claude/settings.local.json to allow reading from plugin templates
+ * Configure .claude/settings.local.json with default allowed permissions
  * Uses settings.local.json because:
  * 1. The plugin install path is machine-specific
  * 2. settings.local.json is gitignored by Claude Code
  * 3. Uses ~ for home directory which Claude Code expands
  *
- * Returns true if permissions were added, false if already configured or on error
+ * Returns the number of permissions added, 0 if all already configured or on error
  */
-function configurePluginPermissions(repoRoot: string): boolean {
+function configurePluginPermissions(repoRoot: string): number {
   // Use settings.local.json for machine-specific config (gitignored by Claude Code)
   const settingsPath = join(repoRoot, ".claude", "settings.local.json");
-
-  // Use tilde path for portability - Claude Code expands ~ to home directory
-  const readPermission = "Read(~/.claude/plugins/marketplaces/speck-market/speck/templates/**)";
 
   try {
     // Ensure .claude directory exists
@@ -232,19 +244,23 @@ function configurePluginPermissions(repoRoot: string): boolean {
       settings.permissions.allow = [];
     }
 
-    // Check if permission already exists
-    if (settings.permissions.allow.includes(readPermission)) {
-      return false; // Already configured
+    // Add any missing permissions from the default list
+    let addedCount = 0;
+    for (const permission of DEFAULT_ALLOWED_PERMISSIONS) {
+      if (!settings.permissions.allow.includes(permission)) {
+        settings.permissions.allow.push(permission);
+        addedCount++;
+      }
     }
 
-    // Add the permission
-    settings.permissions.allow.push(readPermission);
+    // Only write if we added something
+    if (addedCount > 0) {
+      writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
+    }
 
-    // Write back
-    writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
-    return true;
+    return addedCount;
   } catch {
-    return false;
+    return 0;
   }
 }
 
@@ -318,8 +334,8 @@ Then run 'speck init' again.`,
         alreadyInstalledMessages.push(`✓ Created .speck/ directory`);
       }
       alreadyInstalledMessages.push(`✓ Speck CLI already installed at ${SYMLINK_PATH}`);
-      if (permissionsConfigured) {
-        alreadyInstalledMessages.push(`✓ Configured plugin template permissions in .claude/settings.local.json`);
+      if (permissionsConfigured > 0) {
+        alreadyInstalledMessages.push(`✓ Added ${permissionsConfigured} permission(s) to .claude/settings.local.json`);
       }
       return {
         success: true,
@@ -389,8 +405,8 @@ Then run 'speck init' again.`,
     messages.push(`✓ .speck/ directory exists at ${speckDirPath}`);
   }
   messages.push(`✓ Speck CLI installed to ${SYMLINK_PATH}`);
-  if (permissionsConfigured) {
-    messages.push(`✓ Configured plugin template permissions in .claude/settings.local.json`);
+  if (permissionsConfigured > 0) {
+    messages.push(`✓ Added ${permissionsConfigured} permission(s) to .claude/settings.local.json`);
   }
 
   return {
