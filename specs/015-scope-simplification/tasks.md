@@ -132,31 +132,31 @@ Based on plan.md project structure:
 
 ### Tests for User Story 3
 
-- [ ] T041 [P] [US3] Write unit test for handoff document generation in `tests/unit/handoff.test.ts`
-- [ ] T042 [P] [US3] Write unit test for handoff document parsing in `tests/unit/handoff.test.ts`
-- [ ] T043 [P] [US3] Write integration test for worktree + handoff creation in `tests/integration/worktree-handoff.test.ts`
-- [ ] T043a [P] [US3] Write unit test for SessionStart hook JSON output format in `tests/unit/session-hook.test.ts`
-- [ ] T043b [P] [US3] Write unit test for hook self-cleanup logic in `tests/unit/session-hook.test.ts`
+- [X] T041 [P] [US3] Write unit test for handoff document generation in `tests/unit/handoff.test.ts`
+- [X] T042 [P] [US3] Write unit test for handoff document parsing in `tests/unit/handoff.test.ts`
+- [X] T043 [P] [US3] Write integration test for worktree + handoff creation in `tests/integration/worktree-handoff.test.ts`
+- [X] T043a [P] [US3] Write unit test for SessionStart hook JSON output format in `tests/unit/session-hook.test.ts`
+- [X] T043b [P] [US3] Write unit test for hook self-cleanup logic in `tests/unit/session-hook.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T044 [US3] Create handoff module at `.speck/scripts/worktree/handoff.ts`
-- [ ] T045 [US3] Implement `createHandoffDocument()` per contract in handoff.ts
-- [ ] T046 [US3] Implement `generateHandoffMarkdown()` per contract in handoff.ts
-- [ ] T047 [US3] Implement `parseHandoffMarkdown()` per contract in handoff.ts
-- [ ] T048 [US3] Update `create-new-feature` to use atomic `git worktree add -b <branch> <path> HEAD` (no checkout switching)
-- [ ] T048a [US3] Write `.speck/handoff.md` to worktree during creation
-- [ ] T048b [US3] Write `.claude/scripts/handoff.sh` shell script to worktree (see addendum §3)
-- [ ] T048c [US3] Write `.claude/settings.json` with SessionStart hook config to worktree (see addendum §2)
-- [ ] T048d [US3] Write `.vscode/tasks.json` with auto-open Claude panel config to worktree (see addendum §4)
-- [ ] T049 [US3] Implement session start hook script at `.speck/scripts/worktree/handoff-hook.sh`
-- [ ] T050 [US3] Implement hook JSON output with `hookSpecificOutput.additionalContext` format
-- [ ] T050a [US3] Use `jq -Rs` for safe JSON encoding of handoff content in hook script
-- [ ] T051 [US3] Implement handoff archival after loading (rename to `.speck/handoff.done.md`)
-- [ ] T051a [US3] Implement hook self-cleanup: remove SessionStart hook from `.claude/settings.json` after firing
-- [ ] T052 [US3] Create template constants for settings.json and tasks.json in handoff module
-- [ ] T053 [US3] Add `--no-worktree` flag handling in create-new-feature
-- [ ] T054 [US3] Ensure non-fatal behavior when handoff creation fails (graceful degradation per addendum §7)
+- [X] T044 [US3] Create handoff module at `.speck/scripts/worktree/handoff.ts`
+- [X] T045 [US3] Implement `createHandoffDocument()` per contract in handoff.ts
+- [X] T046 [US3] Implement `generateHandoffMarkdown()` per contract in handoff.ts
+- [X] T047 [US3] Implement `parseHandoffMarkdown()` per contract in handoff.ts
+- [X] T048 [US3] Update `create-new-feature` to use atomic `git worktree add -b <branch> <path> HEAD` (no checkout switching)
+- [X] T048a [US3] Write `.speck/handoff.md` to worktree during creation
+- [X] T048b [US3] Write `.claude/scripts/handoff.sh` shell script to worktree (see addendum §3)
+- [X] T048c [US3] Write `.claude/settings.json` with SessionStart hook config to worktree (see addendum §2)
+- [X] T048d [US3] Write `.vscode/tasks.json` with auto-open Claude panel config to worktree (see addendum §4)
+- [X] T049 [US3] Implement session start hook script at `.speck/scripts/worktree/handoff-hook.sh`
+- [X] T050 [US3] Implement hook JSON output with `hookSpecificOutput.additionalContext` format
+- [X] T050a [US3] Use `jq -Rs` for safe JSON encoding of handoff content in hook script
+- [X] T051 [US3] Implement handoff archival after loading (rename to `.speck/handoff.done.md`)
+- [X] T051a [US3] Implement hook self-cleanup: remove SessionStart hook from `.claude/settings.json` after firing
+- [X] T052 [US3] Create template constants for settings.json and tasks.json in handoff module
+- [X] T053 [US3] Add `--no-worktree` flag handling in create-new-feature
+- [X] T054 [US3] Ensure non-fatal behavior when handoff creation fails (graceful degradation per addendum §7)
 
 **Checkpoint**: User Story 3 complete - Worktrees have handoff documents with auto-loading Claude sessions
 

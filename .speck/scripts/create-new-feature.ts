@@ -37,6 +37,10 @@ import {
   detectOutputMode,
   type OutputMode,
 } from "./lib/output-formatter";
+import { loadConfig } from "./worktree/config";
+import { constructWorktreePath } from "./worktree/naming";
+import { writeWorktreeHandoff } from "./worktree/handoff";
+import { launchIDE } from "./worktree/ide-launch";
 
 /**
  * CLI options for create-new-feature
@@ -48,6 +52,8 @@ interface CreateFeatureOptions {
   number?: number;
   sharedSpec: boolean;  // T064-T066: Create spec at speckRoot with local symlinks
   localSpec: boolean;   // T067: Create spec locally in child repo
+  noWorktree: boolean;  // T053: Disable worktree creation even if config enables it
+  worktree: boolean;    // Force worktree creation even if config disables it
   help: boolean;
   featureDescription: string;
 }
@@ -59,6 +65,7 @@ interface CreateFeatureOutput {
   BRANCH_NAME: string;
   SPEC_FILE: string;
   FEATURE_NUM: string;
+  WORKTREE_PATH?: string;
 }
 
 /**
@@ -77,6 +84,8 @@ function parseArgs(args: string[]): ParseResult {
     hook: false,
     sharedSpec: false,
     localSpec: false,
+    noWorktree: false,
+    worktree: false,
     help: false,
     featureDescription: "",
   };
@@ -115,6 +124,12 @@ function parseArgs(args: string[]): ParseResult {
     } else if (arg === "--local-spec") {
       options.localSpec = true;
       i++;
+    } else if (arg === "--no-worktree") {
+      options.noWorktree = true;
+      i++;
+    } else if (arg === "--worktree") {
+      options.worktree = true;
+      i++;
     } else if (arg === "--help" || arg === "-h") {
       options.help = true;
       i++;
@@ -133,7 +148,7 @@ function parseArgs(args: string[]): ParseResult {
  */
 function showHelp(): void {
   const scriptName = path.basename(process.argv[1]!);
-  console.log(`Usage: ${scriptName} [--json] [--hook] [--short-name <name>] [--number N] [--shared-spec | --local-spec] <feature_description>
+  console.log(`Usage: ${scriptName} [--json] [--hook] [--short-name <name>] [--number N] [--shared-spec | --local-spec] [--worktree | --no-worktree] <feature_description>
 
 Options:
   --json              Output in JSON format (structured JSON envelope)
@@ -142,11 +157,20 @@ Options:
   --number N          Specify branch number manually (overrides auto-detection)
   --shared-spec       Create spec at speckRoot (multi-repo shared spec with local symlinks)
   --local-spec        Create spec locally in child repo (single-repo or child-only spec)
+  --worktree          Create a worktree with handoff artifacts (overrides config)
+  --no-worktree       Disable worktree creation (overrides config)
   --help, -h          Show this help message
+
+Worktree Mode:
+  When worktree mode is enabled (via config or --worktree), this command:
+  1. Creates a branch and worktree atomically (no checkout switching)
+  2. Writes session handoff artifacts to the worktree
+  3. Launches IDE in the new worktree
 
 Examples:
   ${scriptName} 'Add user authentication system' --short-name 'user-auth'
-  ${scriptName} 'Implement OAuth2 integration for API' --number 5 --shared-spec`);
+  ${scriptName} 'Implement OAuth2 integration for API' --number 5 --shared-spec
+  ${scriptName} 'Fix login bug' --worktree`);
 }
 
 /**
@@ -457,22 +481,133 @@ export async function main(args: string[]): Promise<number> {
     console.error(`[specify] Truncated to: ${branchName} (${branchName.length} bytes)`);
   }
 
-  // Create git branch if we have git
+  // [SPECK-EXTENSION:START] T048, T053, T054: Worktree + Handoff Integration
+  // Determine if worktree mode should be used
+  let worktreePath: string | undefined;
+  let useWorktree = false;
+  const warnings: string[] = [];
+
   if (hasGit) {
-    try {
-      await $`git checkout -b ${branchName}`;
-    } catch (error) {
-      outputError(
-        "GIT_BRANCH_FAILED",
-        `Failed to create git branch: ${String(error)}`,
-        outputMode,
-        startTime
-      );
-      return ExitCode.USER_ERROR;
+    // Load worktree config to check if worktree mode is enabled
+    const worktreeConfig = await loadConfig(repoRoot);
+    const configEnablesWorktree = worktreeConfig.worktree.enabled;
+
+    // T053: --no-worktree and --worktree flags override config
+    if (options.noWorktree) {
+      useWorktree = false;
+    } else if (options.worktree) {
+      useWorktree = true;
+    } else {
+      useWorktree = configEnablesWorktree;
+    }
+
+    if (useWorktree) {
+      // T048: Use atomic `git worktree add -b` for worktree mode
+      // This creates branch + worktree without changing current checkout
+      try {
+        worktreePath = await constructWorktreePath(repoRoot, worktreeConfig.worktree, branchName);
+
+        // Create branch and worktree atomically
+        const result = await $`git worktree add -b ${branchName} ${worktreePath} HEAD`.nothrow();
+        if (result.exitCode !== 0) {
+          throw new Error(`git worktree add failed: ${result.stderr.toString()}`);
+        }
+
+        if (outputMode === "human") {
+          console.log(`[speck] Created worktree at: ${worktreePath}`);
+        }
+
+        // T048a-d, T054: Write handoff artifacts (graceful degradation)
+        try {
+          // Extract feature title from description
+          const featureTitle = options.featureDescription.charAt(0).toUpperCase() +
+            options.featureDescription.slice(1);
+
+          // Calculate relative spec path from worktree
+          const relativeSpecDir = path.join("specs", branchName);
+          const relativeSpecPath = path.join(relativeSpecDir, "spec.md");
+
+          await writeWorktreeHandoff(worktreePath, {
+            featureName: featureTitle,
+            branchName,
+            specPath: relativeSpecPath,
+            context: options.featureDescription,
+            status: "not-started",
+          });
+
+          if (outputMode === "human") {
+            console.log(`[speck] Written handoff artifacts to worktree`);
+          }
+        } catch (error) {
+          // T054: Non-fatal - worktree still works without handoff
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          warnings.push(`Failed to write handoff artifacts: ${errorMessage}`);
+          if (outputMode === "human") {
+            console.error(`[speck] Warning: Failed to write handoff artifacts: ${errorMessage}`);
+          }
+        }
+
+        // Launch IDE in worktree if configured
+        if (worktreeConfig.worktree.ide.autoLaunch) {
+          try {
+            const ideResult = await launchIDE({
+              worktreePath,
+              editor: worktreeConfig.worktree.ide.editor,
+              newWindow: worktreeConfig.worktree.ide.newWindow,
+            });
+
+            if (!ideResult.success) {
+              warnings.push(`IDE launch failed: ${ideResult.error}`);
+              if (outputMode === "human") {
+                console.error(`[speck] Warning: IDE launch failed: ${ideResult.error}`);
+              }
+            }
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            warnings.push(`IDE launch error: ${errorMessage}`);
+          }
+        }
+      } catch (error) {
+        // Worktree creation failed - fall back to regular checkout
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (outputMode === "human") {
+          console.error(`[speck] Warning: Worktree creation failed, falling back to branch checkout: ${errorMessage}`);
+        }
+        warnings.push(`Worktree creation failed: ${errorMessage}`);
+        worktreePath = undefined;
+        useWorktree = false;
+
+        // Try regular branch checkout
+        try {
+          await $`git checkout -b ${branchName}`;
+        } catch (checkoutError) {
+          outputError(
+            "GIT_BRANCH_FAILED",
+            `Failed to create git branch: ${String(checkoutError)}`,
+            outputMode,
+            startTime
+          );
+          return ExitCode.USER_ERROR;
+        }
+      }
+    } else {
+      // Regular branch checkout (non-worktree mode)
+      try {
+        await $`git checkout -b ${branchName}`;
+      } catch (error) {
+        outputError(
+          "GIT_BRANCH_FAILED",
+          `Failed to create git branch: ${String(error)}`,
+          outputMode,
+          startTime
+        );
+        return ExitCode.USER_ERROR;
+      }
     }
   } else if (outputMode === "human") {
     console.error(`[specify] Warning: Git repository not detected; skipped branch creation for ${branchName}`);
   }
+  // [SPECK-EXTENSION:END]
 
   // [SPECK-EXTENSION:START] T073-T075: Phase 9 - Branch Management (Multi-Repo)
   // T073: Create spec-named branch in parent repo when creating shared spec
@@ -592,6 +727,7 @@ export async function main(args: string[]): Promise<number> {
     BRANCH_NAME: branchName,
     SPEC_FILE: specFile,
     FEATURE_NUM: featureNum,
+    WORKTREE_PATH: worktreePath,
   };
 
   // Output results based on mode
@@ -613,6 +749,9 @@ export async function main(args: string[]): Promise<number> {
     console.log(`BRANCH_NAME: ${branchName}`);
     console.log(`SPEC_FILE: ${specFile}`);
     console.log(`FEATURE_NUM: ${featureNum}`);
+    if (worktreePath) {
+      console.log(`WORKTREE_PATH: ${worktreePath}`);
+    }
     console.log(`SPECIFY_FEATURE environment variable set to: ${branchName}`);
   }
 

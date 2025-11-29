@@ -117,7 +117,7 @@ ${doc.nextStep}
 export function parseHandoffMarkdown(markdown: string): HandoffDocument {
   // Extract YAML frontmatter
   const frontmatterMatch = markdown.match(/^---\n([\s\S]*?)\n---/);
-  if (!frontmatterMatch) {
+  if (!frontmatterMatch || !frontmatterMatch[1]) {
     throw new Error("Invalid handoff document: missing YAML frontmatter");
   }
 
@@ -127,20 +127,19 @@ export function parseHandoffMarkdown(markdown: string): HandoffDocument {
   // Simple YAML parsing (key: "value" format)
   for (const line of yamlContent.split("\n")) {
     const match = line.match(/^(\w+):\s*"?([^"]*)"?$/);
-    if (match) {
-      const [, key, value] = match;
-      frontmatter[key] = value;
+    if (match && match[1] !== undefined && match[2] !== undefined) {
+      frontmatter[match[1]] = match[2];
     }
   }
 
   // Extract context from markdown body
   const body = markdown.slice(frontmatterMatch[0].length);
   const contextMatch = body.match(/## Context\n\n([\s\S]*?)\n\n## Getting Started/);
-  const context = contextMatch ? contextMatch[1].trim() : "";
+  const context = contextMatch && contextMatch[1] ? contextMatch[1].trim() : "";
 
   // Extract next step from markdown body
   const nextStepMatch = body.match(/## Next Step\n\n([\s\S]*?)\n\n---/);
-  const nextStep = nextStepMatch ? nextStepMatch[1].trim() : "";
+  const nextStep = nextStepMatch && nextStepMatch[1] ? nextStepMatch[1].trim() : "";
 
   // Build and validate document
   const doc = {
