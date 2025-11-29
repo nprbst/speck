@@ -24,8 +24,7 @@ describe("Command Registry", () => {
     });
 
     test("registry has production commands", () => {
-      // Production commands from User Story 1
-      expect(registry.branch).toBeDefined();
+      // Production commands (branch was removed in 015-scope-simplification Phase 1)
       expect(registry["check-prerequisites"]).toBeDefined();
       expect(registry["create-new-feature"]).toBeDefined();
       expect(registry["setup-plan"]).toBeDefined();
@@ -97,8 +96,8 @@ describe("Command Registry", () => {
     test("returns true for existing commands", () => {
       expect(hasCommand("echo")).toBe(true);
       expect(hasCommand("env")).toBe(true);
-      expect(hasCommand("branch")).toBe(true);
       expect(hasCommand("check-prerequisites")).toBe(true);
+      // Note: branch was removed in 015-scope-simplification Phase 1
     });
 
     test("returns false for non-existent commands", () => {
@@ -128,8 +127,7 @@ describe("Command Registry", () => {
       expect(commands).toContain("echo");
       expect(commands).toContain("env");
 
-      // Production commands
-      expect(commands).toContain("branch");
+      // Production commands (branch was removed in 015-scope-simplification Phase 1)
       expect(commands).toContain("check-prerequisites");
     });
 
@@ -177,11 +175,12 @@ describe("Command Registry", () => {
 
     test("production commands use main or lazyMain pattern", () => {
       // Production commands should delegate to existing scripts
-      const branchEntry = getCommand("branch");
-      expect(branchEntry?.lazyMain || branchEntry?.main).toBeDefined();
-
+      // Note: branch was removed in 015-scope-simplification Phase 1
       const checkPrereqEntry = getCommand("check-prerequisites");
       expect(checkPrereqEntry?.main || checkPrereqEntry?.lazyMain).toBeDefined();
+
+      const createFeatureEntry = getCommand("create-new-feature");
+      expect(createFeatureEntry?.main || createFeatureEntry?.lazyMain).toBeDefined();
     });
 
     test("lightweight commands use static main", () => {
@@ -191,12 +190,13 @@ describe("Command Registry", () => {
     });
 
     test("heavy commands use lazyMain for code splitting", () => {
-      // branch, create-new-feature, etc. are heavy, should use lazy loading
-      const branchEntry = getCommand("branch");
-      expect(branchEntry?.lazyMain).toBeDefined();
-
+      // create-new-feature, etc. are heavy, should use lazy loading
+      // Note: branch was removed in 015-scope-simplification Phase 1
       const createFeatureEntry = getCommand("create-new-feature");
       expect(createFeatureEntry?.lazyMain).toBeDefined();
+
+      const setupPlanEntry = getCommand("setup-plan");
+      expect(setupPlanEntry?.lazyMain).toBeDefined();
     });
   });
 

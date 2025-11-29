@@ -21,6 +21,49 @@
 export type OutputMode = "human" | "json" | "hook";
 
 /**
+ * Input mode for CLI commands
+ * - "default": Standard CLI invocation (args from command line only)
+ * - "hook": Hook invocation (JSON payload from stdin + command line args)
+ *
+ * When --hook flag is present, the CLI reads JSON from stdin containing
+ * hook context (tool name, tool input, user prompt, session context).
+ * This is used by check-prerequisites when invoked via Claude Code hooks.
+ *
+ * @see FR-009: CLI MUST accept --hook flag for hook IO mode
+ */
+export type InputMode = "default" | "hook";
+
+/**
+ * Hook input payload structure (read from stdin when --hook flag present)
+ *
+ * This payload is provided by Claude Code when invoking commands via hooks.
+ * The structure varies by hook type (UserPromptSubmit, PreToolUse, etc.).
+ */
+export interface HookInputPayload {
+  /** Hook type that triggered the invocation */
+  hookType?: "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "SessionStart";
+
+  /** The tool name being intercepted (for PreToolUse/PostToolUse) */
+  toolName?: string;
+
+  /** The tool input parameters (for PreToolUse/PostToolUse) */
+  toolInput?: Record<string, unknown>;
+
+  /** The user prompt text (for UserPromptSubmit) */
+  userPrompt?: string;
+
+  /** Session context from Claude Code */
+  sessionContext?: {
+    /** Current working directory */
+    workingDirectory: string;
+    /** Conversation/session ID */
+    conversationId?: string;
+    /** Whether this is an interactive session */
+    isInteractive?: boolean;
+  };
+}
+
+/**
  * Exit codes for CLI commands
  */
 export const ExitCode = {
@@ -344,7 +387,31 @@ export interface HookOutput {
 
   /** Message to display */
   message?: string;
+
+  /** Additional context for hookSpecificOutput (SessionStart) */
+  hookSpecificOutput?: {
+    additionalContext?: string;
+  };
 }
+
+/**
+ * Utility function signature for reading hook input from stdin
+ *
+ * When --hook flag is present, commands should call this to read
+ * the JSON payload from stdin before processing.
+ *
+ * @example
+ * ```typescript
+ * const inputMode: InputMode = options.hook ? "hook" : "default";
+ * let hookPayload: HookInputPayload | undefined;
+ *
+ * if (inputMode === "hook") {
+ *   hookPayload = await readHookInput();
+ *   // Use hookPayload.sessionContext, hookPayload.userPrompt, etc.
+ * }
+ * ```
+ */
+export type ReadHookInputFn = () => Promise<HookInputPayload | undefined>;
 
 // =============================================================================
 // JSON Output Contracts

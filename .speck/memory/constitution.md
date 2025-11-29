@@ -438,11 +438,12 @@ not what we accidentally implemented.
 
 ### XIII. Documentation Skill Synchronization (NON-NEGOTIABLE)
 
-The `speck-knowledge` Claude Skill MUST be kept current with all Speck features,
-workflows, commands, and capabilities. Every feature that adds or modifies
-user-facing functionality MUST update the skill documentation before completion.
+The `speck-help` Claude Skill (formerly `speck-knowledge`) MUST be kept current
+with all Speck features, workflows, commands, and capabilities. Every feature
+that adds or modifies user-facing functionality MUST update the skill
+documentation before completion.
 
-**Rationale**: The `speck-knowledge` skill is the primary interface for Claude AI
+**Rationale**: The `speck-help` skill is the primary interface for Claude AI
 to understand and assist with Speck workflows. Outdated skill documentation leads
 to incorrect guidance, missing feature awareness, and degraded user experience
 when working with Claude on Speck projects. Just as the website serves human
@@ -466,7 +467,7 @@ with the evolving feature set.
   - Internal-only changes (refactoring, performance optimizations) MAY skip
     skill updates if AI-visible behavior is unchanged
 - Skill file location and structure:
-  - Skill file: `.claude/skills/speck-knowledge/SKILL.md`
+  - Skill file: `.claude/skills/speck-help/SKILL.md`
   - Contains YAML frontmatter with activation triggers
   - Organized by capability: Feature Discovery, Template References, File
     Interpretation, etc.
@@ -484,7 +485,7 @@ with the evolving feature set.
   - File interpretation logic MUST align with actual artifact formats
   - Error messages and recovery guidance MUST be current
 - Quality gate validation:
-  - Feature completion checklist MUST include: "Skill docs: ✅ speck-knowledge
+  - Feature completion checklist MUST include: "Skill docs: ✅ speck-help
     updated and verified"
   - Pull request template MUST include skill documentation verification
   - `/speck.implement` workflow SHOULD prompt for skill updates if workflow or

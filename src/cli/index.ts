@@ -1,0 +1,238 @@
+#!/usr/bin/env bun
+
+/**
+ * Speck CLI - Main Entry Point
+ *
+ * Single entry point for the Speck CLI with Commander.js-based argument parsing.
+ * Supports both human-readable output and JSON/hook modes for programmatic use.
+ *
+ * Feature: 015-scope-simplification
+ * Tasks: T020-T027
+ *
+ * Usage:
+ *   speck [options] [command] [command-options]
+ *
+ * Global Options:
+ *   --json    Output structured JSON for LLM parsing
+ *   --hook    Output hook-formatted response for Claude Code hooks
+ *   --help    Show help for command
+ *   --version Show version number
+ */
+
+import { Command } from "commander";
+import { readFileSync, existsSync } from "node:fs";
+import { join, dirname } from "node:path";
+
+// Import command handlers (lazy-loaded for performance)
+const lazyCheckPrerequisites = (): Promise<typeof import("../../.speck/scripts/check-prerequisites.ts")> =>
+  import("../../.speck/scripts/check-prerequisites.ts");
+const lazyCreateNewFeature = (): Promise<typeof import("../../.speck/scripts/create-new-feature.ts")> =>
+  import("../../.speck/scripts/create-new-feature.ts");
+const lazyEnvCommand = (): Promise<typeof import("../../.speck/scripts/env-command.ts")> =>
+  import("../../.speck/scripts/env-command.ts");
+
+/**
+ * Output mode for CLI commands
+ */
+type OutputMode = "human" | "json" | "hook";
+
+/**
+ * Global CLI state
+ */
+interface GlobalState {
+  outputMode: OutputMode;
+}
+
+const globalState: GlobalState = {
+  outputMode: "human",
+};
+
+/**
+ * Get package version from package.json
+ */
+function getVersion(): string {
+  try {
+    // Try multiple possible locations for package.json
+    const possiblePaths = [
+      join(dirname(import.meta.path), "../../package.json"),
+      join(dirname(import.meta.path), "../../../package.json"),
+      join(process.cwd(), "package.json"),
+    ];
+
+    for (const pkgPath of possiblePaths) {
+      if (existsSync(pkgPath)) {
+        const pkg = JSON.parse(readFileSync(pkgPath, "utf-8")) as { version?: string };
+        if (pkg.version) {
+          return pkg.version;
+        }
+      }
+    }
+    return "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
+
+/**
+ * Process global options and set output mode
+ */
+function processGlobalOptions(options: { json?: boolean; hook?: boolean }): void {
+  // --hook takes precedence over --json
+  if (options.hook) {
+    globalState.outputMode = "hook";
+  } else if (options.json) {
+    globalState.outputMode = "json";
+  } else {
+    globalState.outputMode = "human";
+  }
+}
+
+/**
+ * Build argument array for subcommand, including global flags
+ */
+function buildSubcommandArgs(args: string[], options: Record<string, unknown>): string[] {
+  const result = [...args];
+
+  // Propagate global flags to subcommand
+  if (options.json || globalState.outputMode === "json") {
+    result.push("--json");
+  }
+
+  // Add other subcommand-specific options
+  for (const [key, value] of Object.entries(options)) {
+    if (key === "json" || key === "hook") continue; // Already handled
+    if (value === true) {
+      result.push(`--${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`);
+    } else if (value !== false && value !== undefined) {
+      result.push(`--${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`, String(value));
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Create the main CLI program
+ */
+function createProgram(): Command {
+  const program = new Command();
+
+  program
+    .name("speck")
+    .description("Speck CLI - Claude Code-Optimized Specification Framework")
+    .version(getVersion(), "-V, --version", "Show version number")
+    .option("--json", "Output structured JSON for LLM parsing")
+    .option("--hook", "Output hook-formatted response for Claude Code hooks")
+    .hook("preAction", (thisCommand) => {
+      const opts = thisCommand.opts();
+      processGlobalOptions(opts);
+    });
+
+  // ==========================================================================
+  // create-new-feature command
+  // ==========================================================================
+  program
+    .command("create-new-feature")
+    .description("Create a new feature specification directory")
+    .argument("<description>", "Feature description")
+    .option("--json", "Output in JSON format")
+    .option("--short-name <name>", "Custom short name for the branch")
+    .option("--number <n>", "Specify branch number manually", parseInt)
+    .option("--shared-spec", "Create spec at speckRoot (multi-repo shared spec)")
+    .option("--local-spec", "Create spec locally in child repo")
+    .option("--no-worktree", "Skip worktree creation")
+    .option("--no-ide", "Skip IDE auto-launch")
+    .action(async (description: string, options) => {
+      const module = await lazyCreateNewFeature();
+      const args = [description, ...buildSubcommandArgs([], options)];
+      const exitCode = await module.main(args);
+      process.exit(exitCode);
+    });
+
+  // ==========================================================================
+  // check-prerequisites command
+  // ==========================================================================
+  program
+    .command("check-prerequisites")
+    .description("Validate feature directory structure and prerequisites")
+    .option("--json", "Output in JSON format")
+    .option("--hook", "Output hook-formatted response")
+    .option("--require-tasks", "Require tasks.md to exist")
+    .option("--include-tasks", "Include tasks.md in available docs list")
+    .option("--paths-only", "Only output path variables")
+    .option("--skip-feature-check", "Skip feature directory validation")
+    .option("--skip-plan-check", "Skip plan.md validation")
+    .option("--include-file-contents", "Include file contents in output")
+    .option("--include-workflow-mode", "Include workflow mode in output")
+    .option("--validate-code-quality", "Validate TypeScript typecheck and ESLint")
+    .action(async (options) => {
+      const module = await lazyCheckPrerequisites();
+      const args = buildSubcommandArgs([], options);
+      const exitCode = await module.main(args);
+      process.exit(exitCode);
+    });
+
+  // ==========================================================================
+  // env command
+  // ==========================================================================
+  program
+    .command("env")
+    .description("Show Speck environment and configuration info")
+    .option("--json", "Output as JSON")
+    .option("--hook", "Output hook-formatted response")
+    .action(async (options) => {
+      const module = await lazyEnvCommand();
+      const args = buildSubcommandArgs([], options);
+      const exitCode = await module.main(args);
+      process.exit(exitCode);
+    });
+
+  // ==========================================================================
+  // help command (alias for --help)
+  // ==========================================================================
+  program
+    .command("help [command]")
+    .description("Display help for command")
+    .action((cmdName?: string) => {
+      if (cmdName) {
+        const cmd = program.commands.find((c) => c.name() === cmdName);
+        if (cmd) {
+          cmd.help();
+        } else {
+          console.error(`Unknown command: ${cmdName}`);
+          process.exit(1);
+        }
+      } else {
+        program.help();
+      }
+    });
+
+  // Handle unknown commands
+  program.on("command:*", (operands) => {
+    console.error(`error: unknown command '${operands[0]}'`);
+    console.error("Run 'speck --help' to see available commands.");
+    process.exit(1);
+  });
+
+  return program;
+}
+
+/**
+ * Main entry point
+ */
+async function main(): Promise<void> {
+  const program = createProgram();
+
+  // Show help if no arguments provided
+  if (process.argv.length === 2) {
+    program.help();
+  }
+
+  await program.parseAsync(process.argv);
+}
+
+// Run CLI
+main().catch((error) => {
+  console.error("Fatal error:", error.message);
+  process.exit(1);
+});

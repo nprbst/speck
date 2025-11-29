@@ -186,7 +186,8 @@ A new user visits the Speck website to understand what Speck does and how to use
 - **FR-006**: System MUST provide a single `speck` entry point executable via `#!/usr/bin/env bun`
 - **FR-007**: CLI MUST support subcommands: `install`, `create-new-feature`, `check-prerequisites`, `env`, `help`
 - **FR-008**: CLI MUST accept `--json` flag on all commands to output structured JSON for LLM parsing
-- **FR-009**: CLI MUST accept `--hook` flag on all commands to output hook-formatted response for Claude Code hooks
+- **FR-009**: CLI MUST accept `--hook` flag on all commands for hook IO mode (reads JSON from stdin, outputs hook-formatted response)
+- **FR-009a**: When `--hook` flag is present, CLI MUST read JSON payload from stdin containing hook context before processing
 - **FR-010**: CLI MUST accept `--help` flag on all commands and subcommands showing usage and options
 - **FR-011**: CLI MUST return non-zero exit codes on errors with descriptive error messages
 - **FR-012**: CLI MUST work equally well for human interactive use and programmatic invocation

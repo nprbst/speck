@@ -11,7 +11,7 @@
   },
   "scripts": {
     "dev": "bun run src/cli/index.ts",
-    "build": "bun build src/cli/index.ts --outdir dist --target bun",
+    "build": "bun build src/cli/index.ts --outdir dist/cli --target bun",
     "build:standalone": "bun build src/cli/index.ts --compile --outfile speck",
     "build:hook": "bun run .speck/scripts/build-hook.ts",
     "build-plugin": "bun run scripts/build-plugin.ts",
@@ -27,7 +27,7 @@
     "test:all": "bun test && bun run test:visual && bun run test:a11y",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
-    "lint": "eslint '.speck/**/*.ts'",
+    "lint": "eslint '.speck/**/*.ts' 'src/**/*.ts'",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "website:sync": "bun website/scripts/sync-docs.ts",
     "website:dev": "cd website && bun run dev",

@@ -68,21 +68,21 @@ Based on plan.md project structure:
 
 ### Tests for User Story 1
 
-- [ ] T018 [P] [US1] Write unit test for CLI argument parsing in `tests/unit/cli.test.ts`
-- [ ] T019 [P] [US1] Write integration test for CLI mode detection in `tests/integration/cli-modes.test.ts`
+- [X] T018 [P] [US1] Write unit test for CLI argument parsing in `tests/unit/cli.test.ts`
+- [X] T019 [P] [US1] Write integration test for CLI mode detection in `tests/integration/cli-modes.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T020 [US1] Create CLI entry point with Commander.js in `src/cli/index.ts`
-- [ ] T021 [US1] Add shebang `#!/usr/bin/env bun` and make executable
-- [ ] T022 [US1] Implement global `--json` flag for JSON output in `src/cli/index.ts`
-- [ ] T023 [US1] Implement global `--hook` flag for hook output in `src/cli/index.ts`
-- [ ] T024 [US1] Wire existing `create-new-feature` command to CLI in `src/cli/index.ts`
-- [ ] T025 [US1] Wire existing `check-prerequisites` command to CLI in `src/cli/index.ts`
-- [ ] T026 [US1] Wire existing `env` command to CLI in `src/cli/index.ts`
-- [ ] T027 [US1] Add `help` subcommand (alias to --help) in `src/cli/index.ts`
-- [ ] T028 [US1] Update package.json with `bin` entry for `speck`
-- [ ] T029 [US1] Verify `bun run src/cli/index.ts --help` shows all commands
+- [X] T020 [US1] Create CLI entry point with Commander.js in `src/cli/index.ts`
+- [X] T021 [US1] Add shebang `#!/usr/bin/env bun` and make executable
+- [X] T022 [US1] Implement global `--json` flag for JSON output in `src/cli/index.ts`
+- [X] T023 [US1] Implement global `--hook` flag for hook output in `src/cli/index.ts`
+- [X] T024 [US1] Wire existing `create-new-feature` command to CLI in `src/cli/index.ts`
+- [X] T025 [US1] Wire existing `check-prerequisites` command to CLI in `src/cli/index.ts`
+- [X] T026 [US1] Wire existing `env` command to CLI in `src/cli/index.ts`
+- [X] T027 [US1] Add `help` subcommand (alias to --help) in `src/cli/index.ts`
+- [X] T028 [US1] Update package.json with `bin` entry for `speck`
+- [X] T029 [US1] Verify `bun run src/cli/index.ts --help` shows all commands
 
 **Checkpoint**: User Story 1 complete - CLI is callable from terminal
 
@@ -92,20 +92,27 @@ Based on plan.md project structure:
 
 **Goal**: CLI works equally well for human interactive use and programmatic hook invocation
 
-**Independent Test**: Invoke CLI with `--hook` and `--json` flags, verify correct output formats
+**Key Concept**: The `--hook` flag sets both InputMode and OutputMode:
+- **InputMode**: When `--hook` is present, CLI reads JSON payload from stdin (HookInputPayload)
+- **OutputMode**: When `--hook` is present, CLI outputs hook-formatted response (HookOutput)
+
+**Independent Test**: Invoke CLI with `--hook` and `--json` flags, verify correct input parsing and output formats
 
 ### Tests for User Story 2
 
 - [ ] T030 [P] [US2] Write unit test for JSON output format in `tests/unit/cli-output.test.ts`
 - [ ] T031 [P] [US2] Write unit test for hook output format in `tests/unit/cli-output.test.ts`
+- [ ] T031a [P] [US2] Write unit test for hook input mode (stdin JSON parsing) in `tests/unit/cli-output.test.ts`
 - [ ] T032 [P] [US2] Write integration test for error handling with `--json` in `tests/integration/cli-modes.test.ts`
 
 ### Implementation for User Story 2
 
 - [ ] T033 [US2] Create output formatter module at `.speck/scripts/lib/output-formatter.ts`
+- [ ] T033a [US2] Implement `readHookInput()` for stdin JSON parsing matching `HookInputPayload` contract in output-formatter.ts
+- [ ] T033b [US2] Implement `detectInputMode()` helper to determine input mode from --hook flag in output-formatter.ts
 - [ ] T034 [US2] Implement `formatJsonOutput()` matching `JsonOutput` contract in output-formatter.ts
 - [ ] T035 [US2] Implement `formatHookOutput()` matching `HookOutput` contract in output-formatter.ts
-- [ ] T036 [US2] Integrate output formatter into `check-prerequisites` command
+- [ ] T036 [US2] Integrate output formatter into `check-prerequisites` command (including hook input mode)
 - [ ] T037 [US2] Integrate output formatter into `create-new-feature` command
 - [ ] T038 [US2] Integrate output formatter into `env` command
 - [ ] T039 [US2] Ensure all errors return structured JSON when `--json` flag is used
