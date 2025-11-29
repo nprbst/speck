@@ -17,7 +17,7 @@
  *   --json   Output in JSON format
  */
 
-import { existsSync, mkdirSync, lstatSync, readlinkSync, unlinkSync, symlinkSync } from "node:fs";
+import { existsSync, mkdirSync, lstatSync, readlinkSync, unlinkSync, symlinkSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { homedir } from "node:os";
 import { parseArgs } from "util";
@@ -42,6 +42,16 @@ interface InitResult {
   speckDirCreated?: boolean;
   speckDirPath?: string;
   nextStep?: string;
+  permissionsConfigured?: boolean;
+}
+
+interface ClaudeSettings {
+  permissions?: {
+    allow?: string[];
+    deny?: string[];
+    ask?: string[];
+  };
+  [key: string]: unknown;
 }
 
 // =============================================================================
@@ -184,6 +194,60 @@ function isRegularFile(path: string): boolean {
   }
 }
 
+/**
+ * Configure .claude/settings.local.json to allow reading from plugin templates
+ * Uses settings.local.json because:
+ * 1. The plugin install path is machine-specific
+ * 2. settings.local.json is gitignored by Claude Code
+ * 3. Uses ~ for home directory which Claude Code expands
+ *
+ * Returns true if permissions were added, false if already configured or on error
+ */
+function configurePluginPermissions(repoRoot: string): boolean {
+  // Use settings.local.json for machine-specific config (gitignored by Claude Code)
+  const settingsPath = join(repoRoot, ".claude", "settings.local.json");
+
+  // Use tilde path for portability - Claude Code expands ~ to home directory
+  const readPermission = "Read(~/.claude/plugins/marketplaces/speck-market/speck/templates/**)";
+
+  try {
+    // Ensure .claude directory exists
+    const claudeDir = join(repoRoot, ".claude");
+    if (!existsSync(claudeDir)) {
+      mkdirSync(claudeDir, { recursive: true });
+    }
+
+    // Load existing settings or create new
+    let settings: ClaudeSettings = {};
+    if (existsSync(settingsPath)) {
+      const content = readFileSync(settingsPath, "utf-8");
+      settings = JSON.parse(content) as ClaudeSettings;
+    }
+
+    // Ensure permissions.allow array exists
+    if (!settings.permissions) {
+      settings.permissions = {};
+    }
+    if (!settings.permissions.allow) {
+      settings.permissions.allow = [];
+    }
+
+    // Check if permission already exists
+    if (settings.permissions.allow.includes(readPermission)) {
+      return false; // Already configured
+    }
+
+    // Add the permission
+    settings.permissions.allow.push(readPermission);
+
+    // Write back
+    writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // =============================================================================
 // Main Implementation
 // =============================================================================
@@ -229,6 +293,9 @@ Then run 'speck init' again.`,
     needsConstitution = !existsSync(constitutionPath);
   }
 
+  // Step 2b: Configure plugin permissions in .claude/settings.local.json
+  const permissionsConfigured = configurePluginPermissions(gitRoot);
+
   // Step 3: Verify bootstrap.sh exists
   if (!existsSync(bootstrapPath)) {
     return {
@@ -246,18 +313,25 @@ Then run 'speck init' again.`,
   // Step 4: Check if CLI already installed correctly
   if (isValidSymlink(SYMLINK_PATH, bootstrapPath)) {
     if (!options.force) {
+      const alreadyInstalledMessages: string[] = [];
+      if (speckDirCreated) {
+        alreadyInstalledMessages.push(`✓ Created .speck/ directory`);
+      }
+      alreadyInstalledMessages.push(`✓ Speck CLI already installed at ${SYMLINK_PATH}`);
+      if (permissionsConfigured) {
+        alreadyInstalledMessages.push(`✓ Configured plugin template permissions in .claude/settings.local.json`);
+      }
       return {
         success: true,
         symlinkPath: SYMLINK_PATH,
         targetPath: bootstrapPath,
         inPath,
         alreadyInstalled: true,
-        message: speckDirCreated
-          ? `✓ Created .speck/ directory\n✓ Speck CLI already installed at ${SYMLINK_PATH}`
-          : `Speck is already installed at ${SYMLINK_PATH}`,
+        message: alreadyInstalledMessages.join("\n"),
         pathInstructions,
         speckDirCreated,
         speckDirPath,
+        permissionsConfigured,
         nextStep: needsConstitution ? "Run /speck:constitution to set up your project principles." : undefined,
       };
     }
@@ -315,6 +389,9 @@ Then run 'speck init' again.`,
     messages.push(`✓ .speck/ directory exists at ${speckDirPath}`);
   }
   messages.push(`✓ Speck CLI installed to ${SYMLINK_PATH}`);
+  if (permissionsConfigured) {
+    messages.push(`✓ Configured plugin template permissions in .claude/settings.local.json`);
+  }
 
   return {
     success: true,
@@ -325,6 +402,7 @@ Then run 'speck init' again.`,
     pathInstructions,
     speckDirCreated,
     speckDirPath,
+    permissionsConfigured,
     nextStep: needsConstitution ? "Run /speck:constitution to set up your project principles." : undefined,
   };
 }
@@ -344,6 +422,7 @@ function formatOutput(result: InitResult, options: InitOptions): string {
           alreadyInstalled: result.alreadyInstalled,
           speckDirCreated: result.speckDirCreated,
           speckDirPath: result.speckDirPath,
+          permissionsConfigured: result.permissionsConfigured,
         },
         message: result.message,
         pathInstructions: result.pathInstructions,
