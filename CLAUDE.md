@@ -5,6 +5,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 ## Active Technologies
 - TypeScript 5.3+ with Bun 1.0+ runtime + Zod (schema validation), Git 2.5+ CLI (worktree support), Bun Shell API (012-worktree-integration)
 - File-based configuration (`.speck/config.json`), Git worktrees as peer directories of main repository (naming based on repository layout) (012-worktree-integration)
+- TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees) (015-scope-simplification)
+- File-based (`.speck/config.json`, `.speck/branches.json`, `.speck/handoff.md`) (015-scope-simplification)
 
 ### Core Runtime & Languages
 - TypeScript 5.3+ with strict type checking
@@ -121,9 +123,9 @@ bun test                  # Run all tests (unit, visual, a11y)
 - **Parent spec**: The root specification directory referenced by `parentSpecId` field
 
 ## Recent Changes
+- 015-scope-simplification: Added TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees)
 - 012-worktree-integration: Added TypeScript 5.3+ with Bun 1.0+ runtime + Zod (schema validation), Git 2.5+ CLI (worktree support), Bun Shell API
 - 012-worktree-integration: Added TypeScript 5.3+ with Bun 1.0+ runtime + Zod (schema validation), Git 2.30+ CLI, Bun Shell API
-- 011-website-feature-update: Website content planning for multi-repo, stacked PRs, and performance features
 
 
 <!-- MANUAL ADDITIONS START -->
