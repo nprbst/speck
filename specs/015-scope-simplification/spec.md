@@ -155,6 +155,7 @@ A new user visits the Speck website to understand what Speck does and how to use
 
 ### Edge Cases
 
+- What happens when Bun is not installed? Bootstrap displays platform-specific install instructions (curl for all, Homebrew for macOS, WSL note for WSL), exits with informative message. After user installs Bun and re-runs, bootstrap creates `.runner.sh` and rewires symlink for zero-overhead subsequent runs.
 - What happens when Git is not installed or version is too old? CLI reports clear error with minimum version requirement.
 - What happens when user runs `speck` outside a Git repository? CLI reports "Not a git repository" error.
 - What happens when worktree directory already exists? Skip creation, report existing path, continue with IDE launch.
@@ -202,14 +203,23 @@ A new user visits the Speck website to understand what Speck does and how to use
 
 #### Auto-Install Requirements
 
-- **FR-017**: `speck install` MUST create a symlink at `~/.local/bin/speck` pointing to the repository's CLI entry point
+- **FR-017**: `speck install` MUST create a symlink at `~/.local/bin/speck` pointing to the repository's bootstrap script
 - **FR-018**: `speck install` MUST create `~/.local/bin/` directory if it doesn't exist
 - **FR-019**: `speck install` MUST be idempotent (running twice produces no errors)
 - **FR-020**: `speck install` MUST report if `~/.local/bin` is not in the user's PATH with instructions to add it
 
+#### Bun Bootstrap Requirements
+
+- **FR-020a**: System MUST provide a `bootstrap.sh` script that detects Bun installation before executing CLI
+- **FR-020b**: If Bun is not found, bootstrap MUST display platform-specific installation instructions (macOS/Linux/WSL)
+- **FR-020c**: Bootstrap MUST check common Bun locations: PATH, `$HOME/.bun/bin/bun`, `/usr/local/bin/bun`, `/opt/homebrew/bin/bun`
+- **FR-020d**: After Bun is detected, bootstrap MUST create a `.runner.sh` script and rewire the `speck` symlink to bypass bootstrap overhead on subsequent runs
+- **FR-020e**: Bootstrap self-removal pattern MUST result in zero overhead for subsequent CLI invocations (direct exec via `.runner.sh`)
+
 #### Worktree Integration Requirements
 
 - **FR-021**: When creating a new feature with worktree enabled, system MUST create a Git worktree at a predictable path
+- **FR-021a**: System MUST use atomic `git worktree add -b <branch> <path> HEAD` to create branch and worktree without switching the current checkout
 - **FR-022**: Worktree path MUST follow the pattern `../<repo-name>-worktrees/<branch-name>/`
 - **FR-023**: After worktree creation, system MUST launch configured IDE at the worktree path
 - **FR-024**: IDE launch MUST pass arguments to auto-open Claude Code extension
@@ -218,11 +228,20 @@ A new user visits the Speck website to understand what Speck does and how to use
 
 #### Session Handoff Requirements
 
-- **FR-027**: When creating a worktree, system MUST write a handoff document to the worktree
+- **FR-027**: When creating a worktree, system MUST write a handoff document to `.speck/handoff.md` in the worktree
 - **FR-028**: Handoff document MUST contain: feature name, spec path, branch name, and initial context for Claude
-- **FR-029**: Claude Code session start hook MUST detect and load handoff document when present
-- **FR-030**: After handoff document is loaded, system SHOULD delete or archive it to prevent re-loading
-- **FR-031**: Handoff document creation failures MUST be non-fatal warnings
+- **FR-029**: System MUST write `.claude/settings.json` to worktree with SessionStart hook configuration pointing to handoff script
+- **FR-029a**: SessionStart hook script MUST output JSON with `hookSpecificOutput.additionalContext` to inject handoff content into Claude session
+- **FR-029b**: Hook script MUST use proper JSON escaping (e.g., `jq -Rs`) for handoff content
+- **FR-030**: After handoff document is loaded, system MUST archive it (rename to `handoff.done.md`) AND remove SessionStart hook from settings.json
+- **FR-030a**: Hook self-cleanup prevents repeated context injection on subsequent session starts
+- **FR-031**: Handoff document and hook setup failures MUST be non-fatal warnings (graceful degradation)
+
+#### VSCode Integration Requirements
+
+- **FR-031a**: When creating a worktree, system MUST write `.vscode/tasks.json` with auto-open Claude panel configuration
+- **FR-031b**: VSCode task MUST use `runOn: folderOpen` to trigger on workspace open
+- **FR-031c**: VSCode task MUST use `${command:claude-vscode.focus}` to focus existing Claude panel
 
 #### Branch Tracking Requirements
 

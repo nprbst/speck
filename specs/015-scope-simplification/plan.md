@@ -11,8 +11,8 @@ Simplify and robustify Speck by removing stacked PR support and virtual commands
 ## Technical Context
 
 **Language/Version**: TypeScript 5.3+ with Bun 1.0+ runtime
-**Primary Dependencies**: Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees)
-**Storage**: File-based (`.speck/config.json`, `.speck/branches.json`, `.speck/handoff.md`)
+**Primary Dependencies**: Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees), jq (JSON processing in hooks)
+**Storage**: File-based (`.speck/config.json`, `.speck/branches.json`, `.speck/handoff.md`, `.claude/settings.json`)
 **Testing**: Bun test runner with TDD approach per Constitution Principle XII
 **Target Platform**: macOS, Linux (Unix-like systems)
 **Project Type**: Single (CLI tool with plugin components)
@@ -62,13 +62,15 @@ specs/015-scope-simplification/
 ├── research.md          # Phase 0 output ✅
 ├── data-model.md        # Phase 1 output ✅
 ├── quickstart.md        # Phase 1 output ✅
+├── session-handoff-addendum.md  # Implementation details for session handoff ✅
+├── bootstrap-addendum.md        # Implementation details for Bun bootstrap ✅
 ├── contracts/           # Phase 1 output ✅
 │   ├── cli-interface.ts
 │   ├── handoff-document.ts
 │   └── branch-mapping.ts
 ├── checklists/
 │   └── requirements.md  # Quality checklist ✅
-└── tasks.md             # Phase 2 output (next step)
+└── tasks.md             # Phase 2 output ✅
 ```
 
 ### Source Code (repository root)
@@ -76,7 +78,9 @@ specs/015-scope-simplification/
 ```text
 src/
 └── cli/
-    └── index.ts         # NEW: Main CLI entry point
+    ├── index.ts         # NEW: Main CLI entry point (TypeScript)
+    ├── bootstrap.sh     # NEW: Bun detection and self-removing wrapper
+    └── .runner.sh       # GENERATED: Direct bun exec wrapper (after bootstrap)
 
 .speck/
 ├── scripts/
@@ -87,12 +91,17 @@ src/
 │   │   └── help.ts      # NEW: Help command handler
 │   ├── common/
 │   │   └── branch-mapper.ts  # REFACTOR: Simplified schema
-│   ├── worktree/
-│   │   └── handoff.ts   # NEW: Handoff document generation
-│   └── hooks/
-│       └── session-start.ts  # NEW: Session handoff loader
+│   └── worktree/
+│       ├── handoff.ts        # NEW: Handoff document generation
+│       └── handoff-hook.sh   # NEW: SessionStart hook script template
 ├── config.json          # Existing: Speck configuration
 └── branches.json        # Existing: Branch mappings
+
+# Files written to NEW WORKTREES (not in main repo):
+# <worktree>/.speck/handoff.md           # Handoff document
+# <worktree>/.claude/settings.json       # SessionStart hook config
+# <worktree>/.claude/scripts/handoff.sh  # Hook script (copied from template)
+# <worktree>/.vscode/tasks.json          # Auto-open Claude panel
 
 .claude/
 ├── commands/
@@ -188,14 +197,20 @@ Each implementation task has a corresponding test task that runs first:
 
 ### Phase 2: CLI Consolidation
 - Create `src/cli/index.ts` entry point
-- Implement install command
+- Create `src/cli/bootstrap.sh` with Bun detection and self-removal pattern
+- Implement install command (symlink to bootstrap.sh)
 - Add --json and --hook output modes
 - Update package.json scripts
+- See [bootstrap-addendum.md](./bootstrap-addendum.md) for bootstrap implementation details
 
 ### Phase 3: Worktree + Handoff Integration
-- Implement handoff document generation
-- Integrate with create-new-feature
-- Implement session start hook
+- Use atomic `git worktree add -b` for branch+worktree creation (no checkout switching)
+- Implement handoff document generation (`.speck/handoff.md`)
+- Write `.claude/settings.json` with SessionStart hook to worktree
+- Write `.claude/scripts/handoff.sh` hook script to worktree
+- Write `.vscode/tasks.json` for auto-open Claude panel
+- Implement hook self-cleanup (archive handoff, remove hook from settings)
+- See [session-handoff-addendum.md](./session-handoff-addendum.md) for implementation details
 
 ### Phase 4: Skill & Documentation
 - Rename and update speck-help skill
@@ -232,7 +247,7 @@ Each implementation task has a corresponding test task that runs first:
 | SC-008: 5-minute getting started | Streamlined documentation |
 | SC-009: Multi-repo works | No changes to multi-repo code |
 | SC-010: branches.json resolution | getSpecForBranch() in simplified schema |
-| SC-011: Session handoff works | Integration test for handoff loading |
+| SC-011: Session handoff works | Integration test for handoff loading via SessionStart hook with `hookSpecificOutput.additionalContext` |
 | SC-012: /speck.help works | Skill activation test |
 
 ## Next Step

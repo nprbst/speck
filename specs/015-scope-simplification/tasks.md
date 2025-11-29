@@ -121,11 +121,15 @@ Based on plan.md project structure:
 
 **Independent Test**: Run `speck create-new-feature "Test"`, verify worktree + handoff exist, IDE launches
 
+**Reference**: See [session-handoff-addendum.md](./session-handoff-addendum.md) for detailed implementation patterns
+
 ### Tests for User Story 3
 
 - [ ] T041 [P] [US3] Write unit test for handoff document generation in `tests/unit/handoff.test.ts`
 - [ ] T042 [P] [US3] Write unit test for handoff document parsing in `tests/unit/handoff.test.ts`
 - [ ] T043 [P] [US3] Write integration test for worktree + handoff creation in `tests/integration/worktree-handoff.test.ts`
+- [ ] T043a [P] [US3] Write unit test for SessionStart hook JSON output format in `tests/unit/session-hook.test.ts`
+- [ ] T043b [P] [US3] Write unit test for hook self-cleanup logic in `tests/unit/session-hook.test.ts`
 
 ### Implementation for User Story 3
 
@@ -133,15 +137,21 @@ Based on plan.md project structure:
 - [ ] T045 [US3] Implement `createHandoffDocument()` per contract in handoff.ts
 - [ ] T046 [US3] Implement `generateHandoffMarkdown()` per contract in handoff.ts
 - [ ] T047 [US3] Implement `parseHandoffMarkdown()` per contract in handoff.ts
-- [ ] T048 [US3] Integrate handoff creation into `create-new-feature` worktree flow
-- [ ] T049 [US3] Implement session start hook at `.speck/scripts/hooks/session-start.ts`
-- [ ] T050 [US3] Add handoff detection and loading in session-start hook
-- [ ] T051 [US3] Implement handoff archival after loading (rename to handoff-loaded.md)
-- [ ] T052 [US3] Register SessionStart hook in `.claude-plugin/plugin.json`
+- [ ] T048 [US3] Update `create-new-feature` to use atomic `git worktree add -b <branch> <path> HEAD` (no checkout switching)
+- [ ] T048a [US3] Write `.speck/handoff.md` to worktree during creation
+- [ ] T048b [US3] Write `.claude/scripts/handoff.sh` shell script to worktree (see addendum §3)
+- [ ] T048c [US3] Write `.claude/settings.json` with SessionStart hook config to worktree (see addendum §2)
+- [ ] T048d [US3] Write `.vscode/tasks.json` with auto-open Claude panel config to worktree (see addendum §4)
+- [ ] T049 [US3] Implement session start hook script at `.speck/scripts/worktree/handoff-hook.sh`
+- [ ] T050 [US3] Implement hook JSON output with `hookSpecificOutput.additionalContext` format
+- [ ] T050a [US3] Use `jq -Rs` for safe JSON encoding of handoff content in hook script
+- [ ] T051 [US3] Implement handoff archival after loading (rename to `.speck/handoff.done.md`)
+- [ ] T051a [US3] Implement hook self-cleanup: remove SessionStart hook from `.claude/settings.json` after firing
+- [ ] T052 [US3] Create template constants for settings.json and tasks.json in handoff module
 - [ ] T053 [US3] Add `--no-worktree` flag handling in create-new-feature
-- [ ] T054 [US3] Ensure non-fatal behavior when handoff creation fails
+- [ ] T054 [US3] Ensure non-fatal behavior when handoff creation fails (graceful degradation per addendum §7)
 
-**Checkpoint**: User Story 3 complete - Worktrees have handoff documents
+**Checkpoint**: User Story 3 complete - Worktrees have handoff documents with auto-loading Claude sessions
 
 ---
 
@@ -151,25 +161,42 @@ Based on plan.md project structure:
 
 **Independent Test**: Run `/speck.init` or `speck install`, then `speck` from different directory
 
+**Reference**: See [bootstrap-addendum.md](./bootstrap-addendum.md) for Bun bootstrap implementation details
+
 ### Tests for User Story 4
 
 - [ ] T055 [P] [US4] Write unit test for symlink creation in `tests/unit/install.test.ts`
 - [ ] T056 [P] [US4] Write unit test for PATH detection in `tests/unit/install.test.ts`
 - [ ] T057 [P] [US4] Write integration test for idempotent install in `tests/integration/install.test.ts`
+- [ ] T057a [P] [US4] Write unit test for `detect_platform()` in `tests/unit/bootstrap.test.ts`
+- [ ] T057b [P] [US4] Write unit test for `find_bun()` in `tests/unit/bootstrap.test.ts`
+- [ ] T057c [P] [US4] Write integration test for bootstrap self-removal flow in `tests/integration/bootstrap.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T058 [US4] Create install command handler at `.speck/scripts/commands/install.ts`
-- [ ] T059 [US4] Implement `~/.local/bin` directory creation if missing
-- [ ] T060 [US4] Implement symlink creation at `~/.local/bin/speck`
-- [ ] T061 [US4] Implement PATH detection and warning
-- [ ] T062 [US4] Implement idempotent behavior (detect existing symlink)
-- [ ] T063 [US4] Add `--force` flag for reinstall
-- [ ] T064 [US4] Wire install command to CLI in `src/cli/index.ts`
-- [ ] T065 [US4] Create `/speck.init` slash command at `.claude/commands/speck.init.md`
-- [ ] T066 [US4] Verify install command works end-to-end
+#### Bootstrap Script (Bun Detection)
 
-**Checkpoint**: User Story 4 complete - Speck can be installed globally
+- [ ] T058 [US4] Create `src/cli/bootstrap.sh` with Bun detection logic (see addendum §3)
+- [ ] T058a [US4] Implement `detect_platform()` for macOS/Linux/WSL detection in bootstrap.sh
+- [ ] T058b [US4] Implement `find_bun()` to check PATH and common install locations in bootstrap.sh
+- [ ] T058c [US4] Implement `install_instructions()` with platform-specific Bun install commands
+- [ ] T058d [US4] Implement `create_runner_script()` to generate `.runner.sh` wrapper
+- [ ] T058e [US4] Implement `update_symlink()` to rewire symlink from bootstrap.sh to .runner.sh
+- [ ] T058f [US4] Make bootstrap.sh executable with `chmod +x`
+
+#### Install Command
+
+- [ ] T059 [US4] Create install command handler at `.speck/scripts/commands/install.ts`
+- [ ] T060 [US4] Implement `~/.local/bin` directory creation if missing
+- [ ] T061 [US4] Implement symlink creation at `~/.local/bin/speck` → `src/cli/bootstrap.sh`
+- [ ] T062 [US4] Implement PATH detection and warning
+- [ ] T063 [US4] Implement idempotent behavior (detect existing symlink)
+- [ ] T064 [US4] Add `--force` flag for reinstall
+- [ ] T065 [US4] Wire install command to CLI in `src/cli/index.ts`
+- [ ] T066 [US4] Create `/speck.init` slash command at `.claude/commands/speck.init.md`
+- [ ] T067 [US4] Verify install command works end-to-end (including bootstrap flow)
+
+**Checkpoint**: User Story 4 complete - Speck can be installed globally with Bun bootstrap
 
 ---
 
@@ -181,14 +208,14 @@ Based on plan.md project structure:
 
 ### Implementation for User Story 5
 
-- [ ] T067 [US5] Rename skill directory: `.claude/skills/speck-knowledge/` → `.claude/skills/speck-help/`
-- [ ] T068 [US5] Update skill name in `.claude/skills/speck-help/SKILL.md` frontmatter
-- [ ] T069 [US5] Remove stacked PR section from speck-help skill content
-- [ ] T070 [US5] Remove virtual command section from speck-help skill content
-- [ ] T071 [US5] Update slash command table (remove /speck.branch, add /speck.init, /speck.help)
-- [ ] T072 [US5] Add session handoff documentation to speck-help skill
-- [ ] T073 [US5] Create `/speck.help` slash command at `.claude/commands/speck.help.md`
-- [ ] T074 [US5] Update any references to speck-knowledge → speck-help
+- [ ] T068 [US5] Rename skill directory: `.claude/skills/speck-knowledge/` → `.claude/skills/speck-help/`
+- [ ] T069 [US5] Update skill name in `.claude/skills/speck-help/SKILL.md` frontmatter
+- [ ] T070 [US5] Remove stacked PR section from speck-help skill content
+- [ ] T071 [US5] Remove virtual command section from speck-help skill content
+- [ ] T072 [US5] Update slash command table (remove /speck.branch, add /speck.init, /speck.help)
+- [ ] T073 [US5] Add session handoff documentation to speck-help skill
+- [ ] T074 [US5] Create `/speck.help` slash command at `.claude/commands/speck.help.md`
+- [ ] T075 [US5] Update any references to speck-knowledge → speck-help
 
 **Checkpoint**: User Story 5 complete - Help skill is available
 
@@ -202,17 +229,17 @@ Based on plan.md project structure:
 
 ### Tests for User Story 6
 
-- [ ] T075 [P] [US6] Write unit test for `getSpecForBranch()` lookup in `tests/unit/branch-mapper.test.ts`
-- [ ] T076 [P] [US6] Write unit test for `addBranchEntry()` in `tests/unit/branch-mapper.test.ts`
+- [ ] T076 [P] [US6] Write unit test for `getSpecForBranch()` lookup in `tests/unit/branch-mapper.test.ts`
+- [ ] T077 [P] [US6] Write unit test for `addBranchEntry()` in `tests/unit/branch-mapper.test.ts`
 
 ### Implementation for User Story 6
 
-- [ ] T077 [US6] Implement `getSpecForBranch()` function in `.speck/scripts/common/branch-mapper.ts`
-- [ ] T078 [US6] Implement `addBranchEntry()` function in `.speck/scripts/common/branch-mapper.ts`
-- [ ] T079 [US6] Implement `removeBranchEntry()` function in `.speck/scripts/common/branch-mapper.ts`
-- [ ] T080 [US6] Integrate branch mapping into `create-new-feature` for non-standard names
-- [ ] T081 [US6] Integrate branch lookup into `check-prerequisites` command
-- [ ] T082 [US6] Verify non-standard branch names are correctly resolved
+- [ ] T078 [US6] Implement `getSpecForBranch()` function in `.speck/scripts/common/branch-mapper.ts`
+- [ ] T079 [US6] Implement `addBranchEntry()` function in `.speck/scripts/common/branch-mapper.ts`
+- [ ] T080 [US6] Implement `removeBranchEntry()` function in `.speck/scripts/common/branch-mapper.ts`
+- [ ] T081 [US6] Integrate branch mapping into `create-new-feature` for non-standard names
+- [ ] T082 [US6] Integrate branch lookup into `check-prerequisites` command
+- [ ] T083 [US6] Verify non-standard branch names are correctly resolved
 
 **Checkpoint**: User Story 6 complete - Non-standard branch names work
 
@@ -226,11 +253,11 @@ Based on plan.md project structure:
 
 ### Implementation for User Story 7
 
-- [ ] T083 [US7] Verify multi-repo detection in check-prerequisites is unaffected
-- [ ] T084 [US7] Verify shared spec access works in multi-repo mode
-- [ ] T085 [US7] Verify parentSpecId is retained in simplified branches.json
-- [ ] T086 [US7] Add integration test for multi-repo mode in `tests/integration/multi-repo.test.ts`
-- [ ] T087 [US7] Verify no multi-repo code was accidentally removed during cleanup
+- [ ] T084 [US7] Verify multi-repo detection in check-prerequisites is unaffected
+- [ ] T085 [US7] Verify shared spec access works in multi-repo mode
+- [ ] T086 [US7] Verify parentSpecId is retained in simplified branches.json
+- [ ] T087 [US7] Add integration test for multi-repo mode in `tests/integration/multi-repo.test.ts`
+- [ ] T088 [US7] Verify no multi-repo code was accidentally removed during cleanup
 
 **Checkpoint**: User Story 7 complete - Multi-repo works correctly
 
@@ -244,19 +271,19 @@ Based on plan.md project structure:
 
 ### Implementation for User Story 8
 
-- [ ] T088 [US8] Search website content for "stacked PR" references in `website/src/content/docs/`
-- [ ] T089 [US8] Remove all stacked PR documentation from website
-- [ ] T090 [US8] Search website content for "virtual command" references
-- [ ] T091 [US8] Remove all virtual command documentation from website
-- [ ] T092 [US8] Search website for "/speck.branch" references
-- [ ] T093 [US8] Remove /speck.branch documentation from website
-- [ ] T094 [US8] Add /speck.init command documentation to website
-- [ ] T095 [US8] Add /speck.help command documentation to website
-- [ ] T096 [US8] Add session handoff documentation to website
-- [ ] T097 [US8] Update getting-started guide for under 5-minute completion
-- [ ] T098 [US8] Verify multi-repo documentation is retained
-- [ ] T099 [US8] Update CLI command reference with new structure
-- [ ] T100 [US8] Verify website builds without errors with `bun run website:build`
+- [ ] T089 [US8] Search website content for "stacked PR" references in `website/src/content/docs/`
+- [ ] T090 [US8] Remove all stacked PR documentation from website
+- [ ] T091 [US8] Search website content for "virtual command" references
+- [ ] T092 [US8] Remove all virtual command documentation from website
+- [ ] T093 [US8] Search website for "/speck.branch" references
+- [ ] T094 [US8] Remove /speck.branch documentation from website
+- [ ] T095 [US8] Add /speck.init command documentation to website
+- [ ] T096 [US8] Add /speck.help command documentation to website
+- [ ] T097 [US8] Add session handoff documentation to website
+- [ ] T098 [US8] Update getting-started guide for under 5-minute completion
+- [ ] T099 [US8] Verify multi-repo documentation is retained
+- [ ] T100 [US8] Update CLI command reference with new structure
+- [ ] T101 [US8] Verify website builds without errors with `bun run website:build`
 
 **Checkpoint**: User Story 8 complete - Website is streamlined
 
@@ -266,22 +293,22 @@ Based on plan.md project structure:
 
 **Purpose**: Final verification and cleanup
 
-- [ ] T101 Run full test suite: `bun test`
-- [ ] T102 Compare test results to baseline: verify pass count equals (baseline - intentionally deleted tests)
-- [ ] T103 [P] Run typecheck: `bun run typecheck`
-- [ ] T104 [P] Run lint: `bun run lint`
-- [ ] T105 Grep verify SC-006: zero mentions of "stacked PR" in codebase (except this spec)
-- [ ] T106 Grep verify SC-006: zero mentions of "virtual command" in codebase (except this spec)
-- [ ] T107 Verify SC-001: Install completes in <2 minutes
-- [ ] T108 Verify SC-002: CLI commands respond in <500ms
-- [ ] T109 Verify SC-003: Feature creation with worktree completes in <10 seconds
-- [ ] T110 Verify SC-004: All commands work identically for humans and hooks
-- [ ] T111 Verify SC-009: Multi-repo workflows function correctly
-- [ ] T112 Verify SC-010: Non-standard branch names are resolved via branches.json
-- [ ] T113 Verify SC-011: New Claude sessions load handoff context
-- [ ] T114 Verify SC-012: /speck.help answers common questions
-- [ ] T115 Run quickstart.md validation scenarios
-- [ ] T116 Final cleanup: remove any TODO comments, dead code
+- [ ] T102 Run full test suite: `bun test`
+- [ ] T103 Compare test results to baseline: verify pass count equals (baseline - intentionally deleted tests)
+- [ ] T104 [P] Run typecheck: `bun run typecheck`
+- [ ] T105 [P] Run lint: `bun run lint`
+- [ ] T106 Grep verify SC-006: zero mentions of "stacked PR" in codebase (except this spec)
+- [ ] T107 Grep verify SC-006: zero mentions of "virtual command" in codebase (except this spec)
+- [ ] T108 Verify SC-001: Install completes in <2 minutes (including bootstrap flow)
+- [ ] T109 Verify SC-002: CLI commands respond in <500ms (after bootstrap rewiring)
+- [ ] T110 Verify SC-003: Feature creation with worktree completes in <10 seconds
+- [ ] T111 Verify SC-004: All commands work identically for humans and hooks
+- [ ] T112 Verify SC-009: Multi-repo workflows function correctly
+- [ ] T113 Verify SC-010: Non-standard branch names are resolved via branches.json
+- [ ] T114 Verify SC-011: New Claude sessions load handoff context
+- [ ] T115 Verify SC-012: /speck.help answers common questions
+- [ ] T116 Run quickstart.md validation scenarios
+- [ ] T117 Final cleanup: remove any TODO comments, dead code
 
 ---
 
