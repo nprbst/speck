@@ -85,24 +85,24 @@ Speck detects multi-repo contexts using **symlink-based detection** and enables:
 
 This is a Speck-specific extension not present in spec-kit. [Learn more about multi-repo support →](/docs/advanced-features/multi-repo-support)
 
-### Stacked PR Workflows
+### Worktree Integration with Session Handoff
 
-Speck provides **branch dependency tracking** and **PR automation** for breaking large features into reviewable chunks:
-- `/speck.branch create` for stacked branch management
-- **Multi-repo stacked PR support** with independent stacks per repository
-- **Tool compatibility** with Graphite, GitHub Stack, or manual git workflows
+Speck provides **worktree-based parallel development** with automatic context passing:
+- **Automatic worktree creation** for each new feature
+- **Session handoff** to pass context to new Claude sessions
+- **IDE auto-launch** opens VSCode, Cursor, or other editors
+- **Dependency auto-install** prepares the workspace
 
-This capability is unique to Speck. [Learn more about stacked PRs →](/docs/advanced-features/stacked-prs)
+This capability is unique to Speck. [Learn more about worktrees →](/docs/advanced-features/worktrees)
 
-### Virtual Command Pattern with Hook Integration
+### Hook-Based Architecture
 
 Speck uses a **hook-based architecture** for slash command execution:
-- **PrePromptSubmit hook** injects prerequisite context before commands run
+- **UserPromptSubmit hook** injects prerequisite context before commands run
 - **Sub-100ms hook latency** for real-time validation
-- **Virtual commands** avoid path dependencies and cold-start delays
-- **30% faster execution** compared to traditional bash-based approaches
+- **Dual-mode CLI** works identically in terminal and Claude Code
 
-This architecture leverages Claude Code's native capabilities unavailable to spec-kit. [Learn more about virtual commands →](/docs/architecture/virtual-commands)
+This architecture leverages Claude Code's native capabilities unavailable to spec-kit.
 
 ### Performance Optimizations
 
@@ -164,7 +164,7 @@ This constitutional commitment ensures Speck remains a **compatible derivative**
 Choose Speck if you are:
 - **Using Claude Code** for AI-assisted development
 - **Need multi-repo support** for microservices or monorepos
-- **Want stacked PR workflows** for faster code review
+- **Want worktree integration** with session handoff
 - **Value performance** (sub-100ms command execution)
 - **Prefer one-command installation** via Claude Code marketplace
 
@@ -186,7 +186,7 @@ Choose [spec-kit](https://github.com/github/spec-kit) if you are:
 
 ### Both Tools Serve Different Use Cases
 
-Speck and spec-kit are complementary tools, not competitors. spec-kit is the **easier, more universal** choice for most developers. Speck trades simplicity for **Claude-native power** (multi-repo, stacked PRs, sub-100ms performance) when you're specifically using Claude Code.
+Speck and spec-kit are complementary tools, not competitors. spec-kit is the **easier, more universal** choice for most developers. Speck trades simplicity for **Claude-native power** (multi-repo, worktrees, sub-100ms performance) when you're specifically using Claude Code.
 
 The spec-kit project remains the **canonical upstream** for the specification-driven development methodology. Speck is simply a Claude Code-optimized derivative that inherits spec-kit's methodology while adding features that require tight Claude integration.
 
@@ -197,8 +197,7 @@ The spec-kit project remains the **canonical upstream** for the specification-dr
 - [spec-kit on GitHub](https://github.com/github/spec-kit) - The upstream project
 - [Speck Quick Start Guide](/docs/getting-started/quick-start) - Get started with Speck
 - [Multi-Repo Support](/docs/advanced-features/multi-repo-support) - Speck's multi-repo capabilities
-- [Stacked PR Workflows](/docs/advanced-features/stacked-prs) - Branch dependency tracking
-- [Virtual Commands](/docs/architecture/virtual-commands) - Hook-based architecture
+- [Worktree Integration](/docs/advanced-features/worktrees) - Parallel development with session handoff
 
 ---
 

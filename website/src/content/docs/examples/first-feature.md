@@ -565,7 +565,7 @@ Now that you've built your first feature with Speck:
 Ready to scale beyond single-repo projects?
 
 - **Multi-Repo Projects**: Coordinate features across frontend/backend repositories - [Multi-Repo Workflow Tutorial](/docs/examples/multi-repo-workflow)
-- **Stacked PR Workflows**: Break large features into reviewable chunks - [Stacked PR Tutorial](/docs/examples/stacked-pr-workflow)
+- **Worktree Integration**: Work on multiple features in parallel with session handoff - [Learn more](/docs/advanced-features/worktrees)
 - **Monorepo Support**: Manage multiple workspace projects - [Learn more](/docs/advanced-features/monorepos)
 
 ---

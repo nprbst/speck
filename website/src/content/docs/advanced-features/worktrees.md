@@ -27,6 +27,7 @@ Git worktrees allow you to have multiple branches checked out at the same time. 
 - 🔄 **Parallel development** - Work on multiple features simultaneously
 - 🎯 **Clean isolation** - Each feature has its own working directory
 - ⚡ **Zero setup time** - IDE opens with dependencies already installed
+- 📋 **Session handoff** - New Claude sessions automatically receive feature context
 
 ## Prerequisites
 
@@ -240,6 +241,95 @@ Speck automatically calculates worktree directory names based on your repository
 
 Worktrees are always created as **peer directories** of the main repository (one level up).
 
+## Session Handoff
+
+When you open a new Claude Code session in a worktree directory, Speck automatically provides context about the feature you're working on. This is called **session handoff**.
+
+### How It Works
+
+1. When a worktree is created, Speck writes a **handoff document** (`.speck/handoff.md`) to the worktree
+2. The handoff document contains:
+   - Feature directory path
+   - Available spec documents (spec.md, plan.md, tasks.md)
+   - Current task progress
+   - Context needed to continue work
+3. When you open Claude Code in the worktree, the UserPromptSubmit hook reads the handoff document
+4. Your new session immediately has context about the feature
+
+### Handoff Document Contents
+
+The handoff document (`.speck/handoff.md`) contains:
+
+```markdown
+# Session Handoff
+
+## Feature Context
+- **Feature Directory**: specs/002-user-auth
+- **Branch**: 002-user-auth
+- **Created**: 2025-11-29
+
+## Available Documents
+- spec.md - Feature specification
+- plan.md - Implementation plan
+- tasks.md - Task breakdown (15/20 completed)
+
+## Current Status
+Phase 3 of 5 in progress. Last task: T015 (Add login API endpoint)
+
+## Next Steps
+1. Complete T016: Add password hashing
+2. Run tests for authentication module
+3. Update API documentation
+```
+
+### Benefits
+
+**Without session handoff** (traditional workflow):
+```
+1. Open IDE in worktree
+2. Start Claude Code
+3. "What feature am I working on?" → Read spec.md
+4. "What's the plan?" → Read plan.md
+5. "Where did I leave off?" → Read tasks.md
+6. Finally start working
+```
+
+**With session handoff**:
+```
+1. Open IDE in worktree
+2. Start Claude Code
+3. Claude immediately knows the feature, plan, and current progress
+4. Start working right away
+```
+
+### Configuration
+
+Session handoff is **enabled by default** when worktree integration is enabled. To disable:
+
+```json
+{
+  "worktree": {
+    "enabled": true,
+    "handoff": {
+      "enabled": false  // Disable session handoff
+    }
+  }
+}
+```
+
+### Updating Handoff Documents
+
+The handoff document is automatically updated when:
+- Tasks are marked complete in tasks.md
+- Plan or spec changes are made
+- You run `/speck.implement` and progress is made
+
+You can manually regenerate the handoff document:
+
+```bash
+bun .speck/scripts/worktree/cli.ts update-handoff
+```
+
 ## User Stories
 
 ### User Story 1: Isolated Feature Development (P1)
@@ -396,16 +486,6 @@ Create a new feature specification with worktree:
 - `--no-ide` - Skip IDE launch
 - `--no-deps` - Skip dependency installation
 - `--reuse-worktree` - Reuse existing worktree if it exists
-
-### `/speck:branch` with Worktrees
-
-Create a stacked branch with worktree:
-
-```bash
-/speck:branch create 003-notification-ui --base 002-user-auth
-```
-
-**Flags**: Same as `/speck:specify`
 
 ## Edge Cases and Troubleshooting
 
@@ -657,6 +737,5 @@ Minimal disk usage by symlinking all large directories.
 ## See Also
 
 - [Configuration Reference](/docs/configuration/speck-config) - Full `.speck/config.json` schema
-- [/speck:specify Command](/docs/commands/specify) - Create feature specifications
-- [/speck:branch Command](/docs/commands/branch) - Create stacked branches
+- [Commands Reference](/docs/commands/reference) - All Speck commands
 - [Feature Development Workflow](/docs/workflows/feature-development) - End-to-end workflow with worktrees

@@ -199,7 +199,7 @@ Ready to scale beyond single-repo projects? Speck supports:
 
 - **Multi-Repo Projects**: Share specifications across microservices with `/speck.link` - [Learn more](/docs/advanced-features/multi-repo-support)
 - **Monorepo Workspaces**: Manage multiple features within a monorepo - [Learn more](/docs/advanced-features/monorepos)
-- **Stacked PR Workflows**: Break large features into reviewable chunks with `/speck.branch` - [Learn more](/docs/advanced-features/stacked-prs)
+- **Worktree Integration**: Work on multiple features in parallel with session handoff - [Learn more](/docs/advanced-features/worktrees)
 
 ## Getting Help
 

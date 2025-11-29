@@ -33,7 +33,7 @@ const comparisonData = {
     },
     {
       feature: "Learning Curve",
-      speck: "Moderate (more concepts: multi-repo, stacked PRs, hooks)",
+      speck: "Moderate (more concepts: multi-repo, worktrees, hooks)",
       specKit: "Gentler (simpler, focused on core workflow)",
     },
     {
@@ -42,9 +42,9 @@ const comparisonData = {
       specKit: "Manual coordination",
     },
     {
-      feature: "Stacked PR Workflows",
-      speck: "Built-in (/speck.branch commands)",
-      specKit: "Manual git workflows",
+      feature: "Worktree Integration",
+      speck: "Built-in (session handoff, auto-IDE launch)",
+      specKit: "Manual git worktrees",
     },
     {
       feature: "Performance",
@@ -60,7 +60,7 @@ const comparisonData = {
   whenToUseSpeck: [
     "You use Claude Code daily and want tight integration",
     "You need multi-repo support for microservices or monorepos",
-    "You want stacked PR workflows for faster code review",
+    "You want worktree integration with session handoff",
     "You value sub-100ms command execution performance",
     "You prefer one-command installation via marketplace over cloning repos",
     "You want automatic prerequisite checking via hook-based architecture",

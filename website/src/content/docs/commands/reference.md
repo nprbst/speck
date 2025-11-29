@@ -11,19 +11,20 @@ tags: ["commands", "reference", "cli", "skill"]
 
 Speck provides slash commands and a natural language skill for Claude Code. Use commands for actions, and the skill for questions and understanding.
 
-## Virtual Command Pattern
+## Dual-Mode CLI
 
-Speck uses a **virtual command pattern** that eliminates PATH configuration and enables automatic prerequisite checking via hooks. Commands work identically whether invoked in Claude Code or terminal:
+Speck provides a unified CLI that works identically whether invoked as slash commands in Claude Code or as terminal commands:
 
 **Claude Code**: `/speck.specify "Add login feature"`
-**Terminal**: `speck-specify "Add login feature"`
+**Terminal**: `speck create-new-feature "Add login feature"`
 
 **Key Benefits**:
-- **Zero Configuration**: No need to add Speck to your PATH or configure shell aliases
+- **Global CLI Access**: Install once with `/speck.init`, use `speck` from anywhere
 - **Automatic Prerequisites**: Hook system validates context and pre-loads files before commands run (see [Hook System](/docs/architecture/hooks))
-- **Sub-100ms Latency**: Virtual commands add minimal overhead (~18ms average)
+- **Sub-100ms Latency**: Commands execute with minimal overhead (~18ms average)
+- **Output Modes**: Use `--json` for structured output, `--hook` for Claude Code hook integration
 
-See [Virtual Commands](/docs/architecture/virtual-commands) for architecture details and [Performance](/docs/architecture/performance) for benchmarks.
+See [Performance](/docs/architecture/performance) for benchmarks.
 
 ---
 
@@ -318,96 +319,73 @@ child-repo-2/         # Backend
 
 ---
 
-## Stacked PR Commands
+## Setup Commands
 
-### `/speck.branch create`
+### `/speck.init`
 
-Create a new stacked branch with dependency tracking.
+Install the Speck CLI globally for terminal access.
 
 **Usage:**
 ```
-/speck.branch create <branch-name> [flags]
+/speck.init
 ```
 
-**Arguments:**
-- `<branch-name>`: Name for the new branch
-
-**Flags:**
-- `--base <parent-branch>`: Parent branch for dependency tracking (optional, defaults to current branch)
-- `--no-worktree` - Create branch without worktree (override config, requires [worktree integration](/docs/advanced-features/worktrees))
-- `--no-ide` - Skip IDE auto-launch (override config)
-- `--no-deps` - Skip dependency installation (override config)
-- `--reuse-worktree` - Reuse existing worktree if it exists
-
 **What it does:**
-- Creates a new git branch
-- Records branch dependency in `.speck/branches.json`
-- Tracks PR metadata (base, title, description, status)
-- Optionally creates a worktree for the branch (if worktree integration is enabled)
-- Optionally launches your IDE and pre-installs dependencies
-- Enables stacked PR workflows for large features
+- Creates a symlink from `~/.local/bin/speck` to the Speck CLI
+- Verifies Bun is installed (required dependency)
+- Enables using `speck` command from any terminal
+- Makes Speck commands available outside Claude Code
+
+**Requirements:**
+- Bun 1.0+ must be installed
+- `~/.local/bin` should be in your PATH
 
 **Example:**
+```bash
+# Install globally
+/speck.init
+
+# Now you can use speck from terminal
+speck check-prerequisites
+speck env
 ```
-# Start feature
-git checkout -b username/auth-feature
 
-# Create first stack (with worktree if enabled)
-/speck.branch create username/auth-models --base username/auth-feature
-
-# Create second stack (depends on first)
-/speck.branch create username/auth-routes --base username/auth-models
-
-# Create stack without worktree (override config)
-/speck.branch create username/auth-tests --base username/auth-routes --no-worktree
-```
+**See Also:**
+- [Quick Start Guide](/docs/getting-started/quick-start)
 
 ---
 
-### `/speck.branch list`
+### `/speck.help`
 
-List all stacked branches with dependency information.
-
-**Usage:**
-```
-/speck.branch list [--all]
-```
-
-**Flags:**
-- `--all`: Show all branches including merged/closed
-
-**What it does:**
-- Displays branch dependency tree
-- Shows PR status for each branch
-- Highlights current branch
-- Indicates merge state
-
-**Example Output:**
-```
-username/auth-feature (base: main)
-├── username/auth-models (PR #123, merged)
-└── username/auth-routes (PR #124, open)
-```
-
----
-
-### `/speck.branch status`
-
-Show status of all stacked branches.
+Load the speck-help skill for answering questions about Speck features.
 
 **Usage:**
 ```
-/speck.branch status [--all]
+/speck.help
 ```
 
-**Flags:**
-- `--all`: Include all repositories in multi-repo mode
-
 **What it does:**
-- Checks PR status for each branch
-- Validates branch dependencies
-- Shows merge conflicts
-- Reports CI/check status
+- Loads the speck-help skill into the conversation
+- Enables natural language questions about specs, plans, and tasks
+- Provides guidance on Speck workflows and commands
+
+**When to Use:**
+- Understanding your current specification
+- Checking task status and progress
+- Learning about Speck features and commands
+- Getting workflow guidance
+
+**Example Questions** (after loading the skill):
+```
+What user stories are in this spec?
+What tasks are pending?
+What's the technical approach in the plan?
+What should I do next?
+```
+
+**See Also:**
+- [Speck Skill](#speck-skill)
+- [Three-Phase Workflow](/docs/core-concepts/workflow)
 
 ---
 

@@ -360,6 +360,6 @@ You can choose which files to share:
 ## Next Steps
 
 - [Multi-Repo Workflow Example](/docs/examples/multi-repo-workflow) - Complete frontend/backend tutorial
-- [Stacked PRs](/docs/advanced-features/stacked-prs) - Combine multi-repo with stacked PR workflows
+- [Worktree Integration](/docs/advanced-features/worktrees) - Combine multi-repo with worktree workflows
 - [Capability Matrix](/docs/reference/capability-matrix) - Feature compatibility reference
 - [Monorepos](/docs/advanced-features/monorepos) - Monorepo workspace management

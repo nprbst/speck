@@ -455,7 +455,7 @@ For each feature, define tests first:
 Ready to scale beyond single-repo projects or handle large features?
 
 - **Multi-Repo Projects**: Share specifications across multiple repositories with `/speck.link` - [Learn more](/docs/advanced-features/multi-repo-support)
-- **Stacked PR Workflows**: Break large features into reviewable chunks with `/speck.branch` - [Learn more](/docs/advanced-features/stacked-prs)
+- **Worktree Integration**: Work on multiple features in parallel with session handoff - [Learn more](/docs/advanced-features/worktrees)
 - **Monorepo Support**: Manage workspace projects with shared specs - [Learn more](/docs/advanced-features/monorepos)
 
 ## See Also
