@@ -214,8 +214,8 @@ A new user visits the Speck website to understand what Speck does and how to use
 - **FR-020a**: System MUST provide a `bootstrap.sh` script that detects Bun installation before executing CLI
 - **FR-020b**: If Bun is not found, bootstrap MUST display platform-specific installation instructions (macOS/Linux/WSL)
 - **FR-020c**: Bootstrap MUST check common Bun locations: PATH, `$HOME/.bun/bin/bun`, `/usr/local/bin/bun`, `/opt/homebrew/bin/bun`
-- **FR-020d**: After Bun is detected, bootstrap MUST create a `.runner.sh` script and rewire the `speck` symlink to bypass bootstrap overhead on subsequent runs
-- **FR-020e**: Bootstrap self-removal pattern MUST result in zero overhead for subsequent CLI invocations (direct exec via `.runner.sh`)
+- **FR-020d**: After Bun is detected, bootstrap MUST rewire the `speck` symlink to point directly to `index.ts`
+- **FR-020e**: Bootstrap self-removal pattern MUST result in zero overhead for subsequent CLI invocations (direct exec via shebang)
 
 #### Worktree Integration Requirements
 

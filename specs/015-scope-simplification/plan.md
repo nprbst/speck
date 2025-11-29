@@ -79,8 +79,7 @@ specs/015-scope-simplification/
 src/
 └── cli/
     ├── index.ts         # NEW: Main CLI entry point (TypeScript)
-    ├── bootstrap.sh     # NEW: Bun detection and self-removing wrapper
-    └── .runner.sh       # GENERATED: Direct bun exec wrapper (after bootstrap)
+    └── bootstrap.sh     # NEW: Bun detection and self-removing wrapper
 
 .speck/
 ├── scripts/

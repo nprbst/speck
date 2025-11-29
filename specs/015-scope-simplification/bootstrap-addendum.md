@@ -12,9 +12,9 @@ This addendum captures the self-removing Bun bootstrap pattern for the Speck CLI
 ## 1. Design Goals
 
 A cross-platform bash script for Mac/Linux/WSL that:
-1. Wraps execution of the CLI entrypoint with Bun when installed
-2. Provides helpful instructions if Bun is not installed
-3. **Self-removes from the execution path** once Bun is found, eliminating overhead on subsequent runs
+1. Provides helpful instructions if Bun is not installed
+2. **Self-removes from the execution path** once Bun is found, eliminating overhead on subsequent runs
+3. Leverages `#!/usr/bin/env bun` shebang in `index.ts` for direct execution
 
 ---
 
@@ -30,19 +30,17 @@ User runs `speck` (symlink → bootstrap.sh)
   Found    Not Found
     │         │
     ↓         ↓
-Create      Show platform-specific
-.runner.sh  install instructions
-    │         │
-    ↓         ↓
-Rewire      Exit with
-symlink     helpful message
-    │
-    ↓
-Exec entrypoint
+Rewire      Show platform-specific
+symlink     install instructions
+to index.ts     │
+    │         ↓
+    ↓      Exit with
+Exec       helpful message
+entrypoint
 (this time and forever after)
 ```
 
-After setup, the `speck` symlink points to `.runner.sh`, bypassing `bootstrap.sh` entirely.
+After setup, the `speck` symlink points directly to `index.ts`, bypassing `bootstrap.sh` entirely. The shebang `#!/usr/bin/env bun` handles execution.
 
 ---
 
@@ -55,13 +53,20 @@ After setup, the `speck` symlink points to `.runner.sh`, bypassing `bootstrap.sh
 
 # bootstrap.sh - Cross-platform Bun bootstrap wrapper
 # On first run: checks for bun, guides installation, then rewires itself out
-# After setup: symlink points directly to runner, zero overhead
+# After setup: symlink points directly to index.ts, zero overhead
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve the actual script path (follow symlinks)
+SOURCE="${BASH_SOURCE[0]}"
+while [[ -L "$SOURCE" ]]; do
+    DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+
 ENTRYPOINT="${SCRIPT_DIR}/index.ts"
-RUNNER_SCRIPT="${SCRIPT_DIR}/.runner.sh"
 
 # Detect OS for install instructions
 detect_platform() {
@@ -134,16 +139,6 @@ find_bun() {
     return 1
 }
 
-create_runner_script() {
-    local bun_path="$1"
-
-    cat > "$RUNNER_SCRIPT" << EOF
-#!/bin/bash
-exec "$bun_path" "$ENTRYPOINT" "\$@"
-EOF
-    chmod +x "$RUNNER_SCRIPT"
-}
-
 update_symlink() {
     local symlink_path="$1"
 
@@ -152,7 +147,8 @@ update_symlink() {
         local current_target=$(readlink "$symlink_path")
         if [[ "$current_target" == *"bootstrap.sh" ]]; then
             rm "$symlink_path"
-            ln -s "$RUNNER_SCRIPT" "$symlink_path"
+            # Point directly to index.ts - shebang handles execution
+            ln -s "$ENTRYPOINT" "$symlink_path"
             return 0
         fi
     fi
@@ -169,10 +165,7 @@ main() {
 
     echo "Found Bun at: $bun_path"
 
-    # Create the direct runner script
-    create_runner_script "$bun_path"
-
-    # Try to update the symlink if we can find it
+    # Try to update the symlink to point directly to index.ts
     local symlink_candidates=(
         "$HOME/.local/bin/speck"
         "/usr/local/bin/speck"
@@ -180,8 +173,8 @@ main() {
 
     for symlink in "${symlink_candidates[@]}"; do
         if update_symlink "$symlink"; then
-            echo "Updated symlink: $symlink → .runner.sh"
-            echo "Future runs will execute directly via Bun (zero bootstrap overhead)."
+            echo "Updated symlink: $symlink → index.ts"
+            echo "Future runs will execute directly (zero bootstrap overhead)."
             break
         fi
     done
@@ -195,38 +188,18 @@ main() {
 main "$@"
 ```
 
-### File: `src/cli/.runner.sh` (Generated)
-
-After bootstrap runs successfully, it creates this minimal wrapper:
-
-```bash
-#!/bin/bash
-exec "/path/to/bun" "/path/to/src/cli/index.ts" "$@"
-```
-
-This is what the symlink points to after setup - pure exec, no detection overhead.
-
 ---
 
-## 4. Install Flow Update
-
-### Before (Current Plan)
+## 4. Install Flow
 
 ```
-speck install → symlink ~/.local/bin/speck → src/cli/index.ts
-```
-
-### After (With Bootstrap)
-
-```
-speck install → symlink ~/.local/bin/speck → src/cli/bootstrap.sh
-                                                    ↓ (first run)
-                                              find_bun()
-                                                    ↓ found
-                                              create .runner.sh
-                                              update symlink → .runner.sh
-                                                    ↓ (subsequent runs)
-                                              exec bun index.ts "$@"
+speck init → symlink ~/.local/bin/speck → src/cli/bootstrap.sh
+                                                ↓ (first run)
+                                          find_bun()
+                                                ↓ found
+                                          update symlink → index.ts
+                                                ↓ (subsequent runs)
+                                          direct exec via shebang
 ```
 
 ---
@@ -241,11 +214,11 @@ speck install → symlink ~/.local/bin/speck → src/cli/bootstrap.sh
    - `/usr/local/bin/bun` (manual install)
    - `/opt/homebrew/bin/bun` (Homebrew on Apple Silicon)
 
-3. **Self-Removal Pattern**: The bootstrap rewires the symlink to point to `.runner.sh`, which is a minimal exec wrapper with no detection logic
+3. **Self-Removal Pattern**: The bootstrap rewires the symlink to point directly to `index.ts`, which has `#!/usr/bin/env bun` shebang for direct execution
 
-4. **Idempotency**: Running bootstrap multiple times is safe - it will recreate `.runner.sh` and update the symlink
+4. **Idempotency**: Running bootstrap multiple times is safe - it will update the symlink each time
 
-5. **Entrypoint**: Uses `index.ts` directly (Bun can execute TypeScript natively, no compilation needed)
+5. **Entrypoint**: Uses `index.ts` directly (Bun can execute TypeScript natively via shebang)
 
 ---
 
@@ -256,7 +229,6 @@ speck install → symlink ~/.local/bin/speck → src/cli/bootstrap.sh
 | Bun not installed | Show platform-specific instructions, exit 1 |
 | Bun installed but not in PATH | Find in common locations, proceed |
 | Symlink not found/not writable | Bootstrap works, symlink not updated (still overhead) |
-| `.runner.sh` creation fails | Bootstrap still execs bun directly this time |
 
 ---
 
@@ -266,11 +238,10 @@ speck install → symlink ~/.local/bin/speck → src/cli/bootstrap.sh
 
 1. **Platform detection**: Mock `/proc/version` for WSL detection
 2. **Bun finding**: Test each search location
-3. **Runner script generation**: Verify correct paths embedded
 
-### Integration Tests (`tests/integration/bootstrap.test.ts`)
+### Integration Tests (`tests/integration/init.test.ts`)
 
-1. **Full flow**: Simulate first run → verify `.runner.sh` created
+1. **Full flow**: Simulate first run → verify symlink updated
 2. **Symlink update**: Verify symlink rewiring works
 3. **Subsequent runs**: Verify bootstrap.sh is bypassed
 
@@ -278,6 +249,6 @@ speck install → symlink ~/.local/bin/speck → src/cli/bootstrap.sh
 
 ## 8. References
 
-- Spec: [spec.md](./spec.md) - FR-019a through FR-019e
+- Spec: [spec.md](./spec.md) - FR-020a through FR-020e
 - Plan: [plan.md](./plan.md) - Phase 6 install flow
-- Tasks: [tasks.md](./tasks.md) - T058a through T058h
+- Tasks: [tasks.md](./tasks.md) - T058 through T058f

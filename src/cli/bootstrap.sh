@@ -42,7 +42,6 @@ done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 
 ENTRYPOINT="${SCRIPT_DIR}/index.ts"
-RUNNER_SCRIPT="${SCRIPT_DIR}/.runner.sh"
 
 # =============================================================================
 # T058a: Platform Detection
@@ -128,20 +127,6 @@ find_bun() {
 }
 
 # =============================================================================
-# T058d: Create Runner Script
-# =============================================================================
-
-create_runner_script() {
-    local bun_path="$1"
-
-    cat > "$RUNNER_SCRIPT" << EOF
-#!/bin/bash
-exec "$bun_path" "$ENTRYPOINT" "\$@"
-EOF
-    chmod +x "$RUNNER_SCRIPT"
-}
-
-# =============================================================================
 # T058e: Update Symlink
 # =============================================================================
 
@@ -154,7 +139,8 @@ update_symlink() {
         current_target=$(readlink "$symlink_path")
         if [[ "$current_target" == *"bootstrap.sh" ]]; then
             rm "$symlink_path"
-            ln -s "$RUNNER_SCRIPT" "$symlink_path"
+            # Point directly to index.ts - shebang handles execution
+            ln -s "$ENTRYPOINT" "$symlink_path"
             return 0
         fi
     fi
@@ -175,10 +161,7 @@ main() {
 
     echo "Found Bun at: $bun_path"
 
-    # Create the direct runner script
-    create_runner_script "$bun_path"
-
-    # Try to update the symlink if we can find it
+    # Try to update the symlink to point directly to index.ts
     local symlink_candidates=(
         "$HOME/.local/bin/speck"
         "/usr/local/bin/speck"
@@ -186,8 +169,8 @@ main() {
 
     for symlink in "${symlink_candidates[@]}"; do
         if update_symlink "$symlink"; then
-            echo "Updated symlink: $symlink → .runner.sh"
-            echo "Future runs will execute directly via Bun (zero bootstrap overhead)."
+            echo "Updated symlink: $symlink → index.ts"
+            echo "Future runs will execute directly (zero bootstrap overhead)."
             break
         fi
     done

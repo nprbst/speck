@@ -187,8 +187,7 @@ Based on plan.md project structure:
 - [X] T058a [US4] Implement `detect_platform()` for macOS/Linux/WSL detection in bootstrap.sh
 - [X] T058b [US4] Implement `find_bun()` to check PATH and common install locations in bootstrap.sh
 - [X] T058c [US4] Implement `install_instructions()` with platform-specific Bun install commands
-- [X] T058d [US4] Implement `create_runner_script()` to generate `.runner.sh` wrapper
-- [X] T058e [US4] Implement `update_symlink()` to rewire symlink from bootstrap.sh to .runner.sh
+- [X] T058d [US4] Implement `update_symlink()` to rewire symlink from bootstrap.sh to index.ts
 - [X] T058f [US4] Make bootstrap.sh executable with `chmod +x`
 
 #### Init Command
