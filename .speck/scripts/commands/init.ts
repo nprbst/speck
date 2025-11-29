@@ -1,8 +1,10 @@
 /**
  * Init Command Handler
  *
- * Creates a symlink at ~/.local/bin/speck pointing to the bootstrap script,
- * making the `speck` CLI globally available.
+ * Initializes Speck in the current repository:
+ * 1. Creates the .speck/ directory structure
+ * 2. Creates a symlink at ~/.local/bin/speck pointing to the bootstrap script,
+ *    making the `speck` CLI globally available.
  *
  * Feature: 015-scope-simplification
  * Tasks: T059-T064
@@ -37,6 +39,9 @@ interface InitResult {
   message: string;
   alreadyInstalled?: boolean;
   pathInstructions?: string;
+  speckDirCreated?: boolean;
+  speckDirPath?: string;
+  nextStep?: string;
 }
 
 // =============================================================================
@@ -46,9 +51,56 @@ interface InitResult {
 const LOCAL_BIN_DIR = join(homedir(), ".local", "bin");
 const SYMLINK_PATH = join(LOCAL_BIN_DIR, "speck");
 
+// .speck/ directory structure to create
+const SPECK_SUBDIRS = [
+  "memory",     // For constitution.md and other memory files
+  "scripts",    // For custom scripts
+];
+
 // =============================================================================
 // Helper Functions
 // =============================================================================
+
+/**
+ * Find the git repository root from the current working directory
+ */
+function findGitRoot(): string | null {
+  try {
+    const result = Bun.spawnSync(["git", "rev-parse", "--show-toplevel"], {
+      cwd: process.cwd(),
+    });
+    if (result.exitCode === 0) {
+      return result.stdout.toString().trim();
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Create the .speck/ directory structure in the repository
+ * Returns the path to .speck/ if created or already exists, null on error
+ */
+function createSpeckDirectory(repoRoot: string): { created: boolean; path: string } | null {
+  const speckDir = join(repoRoot, ".speck");
+
+  try {
+    const alreadyExists = existsSync(speckDir);
+
+    // Create .speck/ and subdirectories
+    for (const subdir of SPECK_SUBDIRS) {
+      const subdirPath = join(speckDir, subdir);
+      if (!existsSync(subdirPath)) {
+        mkdirSync(subdirPath, { recursive: true });
+      }
+    }
+
+    return { created: !alreadyExists, path: speckDir };
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Get the path to bootstrap.sh relative to this script
@@ -123,7 +175,24 @@ function runInit(options: InitOptions): InitResult {
   const inPath = isInPath();
   const pathInstructions = inPath ? undefined : getPathInstructions();
 
-  // Verify bootstrap.sh exists
+  // Step 1: Create .speck/ directory structure
+  const gitRoot = findGitRoot();
+  let speckDirCreated = false;
+  let speckDirPath: string | undefined;
+  let needsConstitution = false;
+
+  if (gitRoot) {
+    const speckResult = createSpeckDirectory(gitRoot);
+    if (speckResult) {
+      speckDirCreated = speckResult.created;
+      speckDirPath = speckResult.path;
+      // Check if constitution.md exists
+      const constitutionPath = join(speckResult.path, "memory", "constitution.md");
+      needsConstitution = !existsSync(constitutionPath);
+    }
+  }
+
+  // Step 2: Verify bootstrap.sh exists
   if (!existsSync(bootstrapPath)) {
     return {
       success: false,
@@ -132,10 +201,12 @@ function runInit(options: InitOptions): InitResult {
       inPath,
       message: `Error: Bootstrap script not found at ${bootstrapPath}`,
       pathInstructions,
+      speckDirCreated,
+      speckDirPath,
     };
   }
 
-  // Check if already installed correctly
+  // Step 3: Check if CLI already installed correctly
   if (isValidSymlink(SYMLINK_PATH, bootstrapPath)) {
     if (!options.force) {
       return {
@@ -144,8 +215,13 @@ function runInit(options: InitOptions): InitResult {
         targetPath: bootstrapPath,
         inPath,
         alreadyInstalled: true,
-        message: `Speck is already installed at ${SYMLINK_PATH}`,
+        message: speckDirCreated
+          ? `✓ Created .speck/ directory\n✓ Speck CLI already installed at ${SYMLINK_PATH}`
+          : `Speck is already installed at ${SYMLINK_PATH}`,
         pathInstructions,
+        speckDirCreated,
+        speckDirPath,
+        nextStep: needsConstitution ? "Run /speck:constitution to set up your project principles." : undefined,
       };
     }
     // Force flag: remove and recreate
@@ -163,6 +239,8 @@ function runInit(options: InitOptions): InitResult {
           inPath,
           message: `Error: Regular file exists at ${SYMLINK_PATH}. Use --force to replace.`,
           pathInstructions,
+          speckDirCreated,
+          speckDirPath,
         };
       }
     }
@@ -187,16 +265,30 @@ function runInit(options: InitOptions): InitResult {
       inPath,
       message: `Error creating symlink: ${errMsg}`,
       pathInstructions,
+      speckDirCreated,
+      speckDirPath,
     };
   }
+
+  // Build success message
+  const messages: string[] = [];
+  if (speckDirCreated) {
+    messages.push(`✓ Created .speck/ directory at ${speckDirPath}`);
+  } else if (speckDirPath) {
+    messages.push(`✓ .speck/ directory exists at ${speckDirPath}`);
+  }
+  messages.push(`✓ Speck CLI installed to ${SYMLINK_PATH}`);
 
   return {
     success: true,
     symlinkPath: SYMLINK_PATH,
     targetPath: bootstrapPath,
     inPath,
-    message: `✓ Speck installed to ${SYMLINK_PATH}`,
+    message: messages.join("\n"),
     pathInstructions,
+    speckDirCreated,
+    speckDirPath,
+    nextStep: needsConstitution ? "Run /speck:constitution to set up your project principles." : undefined,
   };
 }
 
@@ -213,9 +305,12 @@ function formatOutput(result: InitResult, options: InitOptions): string {
           targetPath: result.targetPath,
           inPath: result.inPath,
           alreadyInstalled: result.alreadyInstalled,
+          speckDirCreated: result.speckDirCreated,
+          speckDirPath: result.speckDirPath,
         },
         message: result.message,
         pathInstructions: result.pathInstructions,
+        nextStep: result.nextStep,
       },
       null,
       2
@@ -226,6 +321,10 @@ function formatOutput(result: InitResult, options: InitOptions): string {
 
   if (result.success && !result.inPath && result.pathInstructions) {
     output += `\n\n⚠️  Warning: ~/.local/bin is not in your PATH\n\n${result.pathInstructions}`;
+  }
+
+  if (result.success && result.nextStep) {
+    output += `\n\n📋 Next step: ${result.nextStep}`;
   }
 
   return output;
