@@ -102,27 +102,6 @@ describe("Migration Validation: env command", () => {
   });
 });
 
-describe("Migration Validation: branch command", () => {
-  it("should work via unified CLI", async () => {
-    const unified = await runUnifiedCli("branch", ["list"]);
-
-    // Command should execute (may succeed or fail based on git state)
-    // We just verify that the CLI routes to the command handler correctly
-    expect(unified.stderr).not.toContain("unknown command");
-  });
-
-  it("should produce similar error for 'branch delete' without args", async () => {
-    const legacyPath = join(projectRoot, ".speck/scripts/branch-command.ts");
-
-    const legacy = await runLegacyCommand(legacyPath, ["delete"]);
-    const unified = await runUnifiedCli("branch", ["delete"]);
-
-    // Both should fail with similar error messages
-    expect(unified.exitCode).toBeGreaterThan(0);
-    expect(legacy.exitCode).toBeGreaterThan(0);
-  });
-});
-
 describe("Migration Validation: check-prerequisites command", () => {
   it("should work via unified CLI", async () => {
     const unified = await runUnifiedCli("check-prerequisites", ["--json"]);
@@ -138,13 +117,6 @@ describe("Migration Validation: error handling", () => {
     const unified = await runUnifiedCli("nonexistent-command");
 
     // Should fail
-    expect(unified.exitCode).toBeGreaterThan(0);
-  });
-
-  it("should handle missing arguments for branch create", async () => {
-    const unified = await runUnifiedCli("branch", ["create"]);
-
-    // Should fail with error about missing branch name
     expect(unified.exitCode).toBeGreaterThan(0);
   });
 });

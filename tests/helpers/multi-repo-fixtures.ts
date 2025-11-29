@@ -7,8 +7,10 @@
  * - Git initialization and branch setup
  * - Branch metadata (.speck/branches.json) population
  *
- * Feature: 009-multi-repo-stacked
+ * Feature: 015-scope-simplification (refactored from 009-multi-repo-stacked)
+ * Schema: v2.0.0 (simplified - no stacked PR fields)
  * Created: 2025-11-19
+ * Updated: 2025-11-29
  */
 
 import { mkdtemp, mkdir, writeFile, symlink, rm, cp } from "node:fs/promises";
@@ -172,7 +174,7 @@ export async function createMultiRepoTestFixture(
     // Populate branches.json if provided
     if (config.branches && config.branches.length > 0) {
       const branchMapping: BranchMapping = {
-        version: "1.1.0",
+        version: "2.0.0",
         branches: config.branches,
         specIndex: {}
       };
@@ -267,22 +269,6 @@ export function createTestBranchEntry(
 }
 
 /**
- * @deprecated Use createTestBranchEntry instead (stacked PR fields removed in v2.0.0)
- * Kept for backwards compatibility during migration
- */
-export function createBranchEntry(
-  name: string,
-  specId: string,
-  _baseBranch: string = "main",
-  _status: "active" | "submitted" | "merged" | "abandoned" = "active",
-  parentSpecId?: string,
-  _pr?: number
-): BranchEntry {
-  // Stacked PR fields are ignored in v2.0.0
-  return createTestBranchEntry(name, specId, parentSpecId);
-}
-
-/**
  * Create multiple branch entries for testing (simplified - no longer stacked)
  *
  * @param branchNames - Array of branch names
@@ -305,19 +291,6 @@ export function createBranchEntries(
   parentSpecId?: string
 ): BranchEntry[] {
   return branchNames.map(name => createTestBranchEntry(name, specId, parentSpecId));
-}
-
-/**
- * @deprecated Use createBranchEntries instead (stacked PR chain concept removed in v2.0.0)
- * Kept for backwards compatibility during migration
- */
-export function createBranchChain(
-  branchNames: string[],
-  specId: string,
-  _baseBranch: string = "main",
-  parentSpecId?: string
-): BranchEntry[] {
-  return createBranchEntries(branchNames, specId, parentSpecId);
 }
 
 /**
@@ -438,113 +411,4 @@ export async function executeScript(
       stderr: error instanceof Error ? error.message : String(error)
     };
   }
-}
-
-/**
- * Simplified multi-repo test setup configuration
- */
-export interface MultiRepoSetupConfig {
-  childRepos?: string[];                            // Child repo names
-  rootBranches?: Array<{                           // Root repo branches
-    name: string;
-    specId: string;
-    baseBranch: string;
-    status: "active" | "submitted" | "merged" | "abandoned";
-    pr?: number;
-  }>;
-  childBranches?: Record<string, Array<{           // Child repo branches
-    name: string;
-    specId: string;
-    baseBranch: string;
-    status: "active" | "submitted" | "merged" | "abandoned";
-    pr?: number;
-    parentSpecId?: string;
-  }>>;
-}
-
-/**
- * Simplified test setup result
- */
-export interface MultiRepoTestSetup {
-  speckRoot: string;
-  rootDir: string;
-  specsDir: string;
-  scriptsDir: string;
-  childRepos: Map<string, string>;
-  cleanup: () => Promise<void>;
-}
-
-/**
- * Create multi-repo test setup with simplified configuration
- *
- * @param config - Setup configuration
- * @returns Test setup with cleanup function
- */
-export async function createMultiRepoTestSetup(
-  config: MultiRepoSetupConfig
-): Promise<MultiRepoTestSetup> {
-  const childConfigs: ChildRepoConfig[] = (config.childRepos || []).map(name => ({
-    name,
-    branches: config.childBranches?.[name]?.map(b => ({
-      ...b,
-      pr: b.pr ?? null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }))
-  }));
-
-  const fixture = await createMultiRepoTestFixture(childConfigs);
-
-  // Add root branches if provided
-  if (config.rootBranches && config.rootBranches.length > 0) {
-    const branchMapping: BranchMapping = {
-      version: "1.1.0",
-      branches: config.rootBranches.map(b => ({
-        ...b,
-        pr: b.pr ?? null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      })),
-      specIndex: {}
-    };
-
-    // Build specIndex
-    for (const branch of branchMapping.branches) {
-      if (!branchMapping.specIndex[branch.specId]) {
-        branchMapping.specIndex[branch.specId] = [];
-      }
-      branchMapping.specIndex[branch.specId]!.push(branch.name);
-    }
-
-    // Write branches.json to root
-    const branchesPath = path.join(fixture.rootDir, ".speck", "branches.json");
-    await writeFile(branchesPath, JSON.stringify(branchMapping, null, 2));
-
-    // Create git branches
-    for (const branch of branchMapping.branches) {
-      try {
-        await $`git -C ${fixture.rootDir} branch ${branch.name}`.quiet();
-      } catch (error) {
-        // Ignore if branch already exists
-      }
-    }
-  }
-
-  return {
-    speckRoot: fixture.rootDir,
-    rootDir: fixture.rootDir,
-    specsDir: fixture.specsDir,
-    scriptsDir: fixture.scriptsDir,
-    childRepos: fixture.childRepos,
-    cleanup: fixture.cleanup
-  };
-}
-
-/**
- * Cleanup multi-repo test setup
- *
- * @param setup - Test setup to cleanup
- */
-export async function cleanupMultiRepoTest(setup: MultiRepoTestSetup): Promise<void> {
-  await setup.cleanup();
 }
