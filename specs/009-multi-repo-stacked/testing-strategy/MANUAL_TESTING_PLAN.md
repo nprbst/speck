@@ -28,6 +28,43 @@ Before starting any session:
 
 ---
 
+## Worktree Mode (Default Behavior)
+
+**Important**: Worktree mode is enabled by default. When you create a feature with `/speck:specify`:
+
+1. **Main worktree** stays on `main` branch - unchanged, no spec files written here
+2. **Feature worktree** is created as a sibling directory: `<repo>-NNN-feature-name/`
+   - Checked out to feature branch `NNN-feature-name`
+   - Contains `specs/NNN-feature/spec.md` (created on feature branch)
+   - Contains `.speck/handoff.md` with context for the feature
+3. **All artifacts** (spec, plan, tasks) are written to the **feature worktree**
+
+### Directory Structure with Worktrees
+
+```
+/tmp/test-area/
+├── my-repo/                          # Main worktree (main branch)
+│   └── .speck/                       # Config only, no specs
+└── my-repo-001-feature/              # Feature worktree (001-feature branch)
+    ├── specs/001-feature/spec.md     # Spec (created by /speck:specify)
+    ├── specs/001-feature/plan.md     # Plan (after /speck:plan)
+    ├── specs/001-feature/tasks.md    # Tasks (after /speck:tasks)
+    └── .speck/handoff.md             # Feature context
+```
+
+### Disabling Worktree Mode
+
+To test without worktrees, add to `.speck/config.json`:
+```json
+{
+  "worktree": {
+    "enabled": false
+  }
+}
+```
+
+---
+
 ## Session 1: Single-Repo (Baseline)
 
 **Objective**: Verify that single-repo workflows remain completely unchanged (backward compatibility)
@@ -47,16 +84,25 @@ git add . && git commit -m "Initial commit"
 ### Test 1.1: Traditional Spec Creation (Positive)
 
 **Steps**:
-1. Run `/speck.specify "Add user authentication feature"`
+1. Run `/speck:specify "Add user authentication feature"`
 2. Observe spec creation location
-3. Check git branch created
+3. Check git branch and worktree created
 4. Verify no `.speck/root` symlink appears
 
-**Expected Results**:
-- ✅ Spec created at `specs/001-user-auth/spec.md` (local to repo)
+**Expected Results** (with worktree mode enabled - default):
+- ✅ Spec created at `<repo>-001-user-auth/specs/001-user-auth/spec.md` (in feature worktree)
 - ✅ Feature branch created: `001-user-auth`
-- ✅ No symlink artifacts
-- ✅ `git status` shows only spec.md changes
+- ✅ Feature worktree created: `<repo>-001-user-auth/` (sibling directory)
+- ✅ Feature worktree has `.speck/handoff.md` with context
+- ✅ Main repo has NO `specs/001-user-auth/` directory (spec is only in worktree)
+- ✅ No `.speck/root` symlink (single-repo mode)
+- ✅ `git worktree list` shows both worktrees
+
+**Expected Results** (with worktree mode disabled):
+- ✅ Spec created at `specs/001-user-auth/spec.md`
+- ✅ Feature branch created and checked out: `001-user-auth`
+- ✅ No worktree created
+- ✅ `git status` shows spec.md changes
 
 **Failure Indicators**:
 - ❌ Multi-repo mode mentioned in output
@@ -65,38 +111,47 @@ git add . && git commit -m "Initial commit"
 ### Test 1.2: Plan Generation (Positive)
 
 **Steps**:
-1. From feature branch `001-user-auth`
-2. Run `/speck.plan`
+1. `cd` to feature worktree: `<repo>-001-user-auth/`
+2. Run `/speck:plan`
 3. Check plan.md location and content
 4. Verify constitution usage
 
-**Expected Results**:
-- ✅ plan.md created at `specs/001-user-auth/plan.md`
-- ✅ Uses local `.speck/constitution.md` (if exists)
+**Expected Results** (with worktree mode):
+- ✅ plan.md created at `<repo>-001-user-auth/specs/001-user-auth/plan.md`
+- ✅ Uses `.speck/memory/constitution.md` from main repo (if exists)
 - ✅ No workflow mode metadata unless explicitly set
+
+**Expected Results** (without worktree mode):
+- ✅ plan.md created at `specs/001-user-auth/plan.md`
+- ✅ Uses local `.speck/memory/constitution.md` (if exists)
 
 ### Test 1.3: Environment Check (Positive)
 
 **Steps**:
-1. Run `/speck.env`
+1. From feature worktree, run `/speck:env`
 2. Review output sections
 
 **Expected Results**:
 - ✅ Shows "Single-repo mode" OR no mode mentioned
 - ✅ No "Multi-repo" terminology
 - ✅ Shows current branch: `001-user-auth`
+- ✅ If worktree mode, shows worktree info
 
 ### Test 1.4: Task Generation (Positive)
 
 **Steps**:
-1. Run `/speck.tasks`
+1. From feature worktree, run `/speck:tasks`
 2. Check tasks.md content
 
-**Expected Results**:
+**Expected Results** (with worktree mode):
+- ✅ tasks.md created at `<repo>-001-user-auth/specs/001-user-auth/tasks.md`
+- ✅ All tasks included (no filtering)
+
+**Expected Results** (without worktree mode):
 - ✅ tasks.md created at `specs/001-user-auth/tasks.md`
 - ✅ All tasks included (no filtering)
 
-**Session 1 Success Criteria**: All existing workflows work identically with zero mentions of multi-repo features
+**Session 1 Success Criteria**: All existing workflows work correctly with worktree mode, with zero mentions of multi-repo features
 
 ---
 
@@ -134,21 +189,21 @@ cd ..
 
 **Steps**:
 1. `cd backend`
-2. Run `/speck.link ..`
+2. Run `/speck:link ..`
 3. Verify symlink created
-4. Run `/speck.env`
+4. Run `/speck:env`
 
 **Expected Results**:
 - ✅ `.speck/root` symlink created pointing to `..`
 - ✅ Symlink is relative (not absolute path)
-- ✅ `/speck.env` shows "Multi-repo mode: enabled"
+- ✅ `/speck:env` shows "Multi-repo mode: enabled"
 - ✅ Displays speck root path: `[parent]/specs/`
 
 ### Test 2.2: Link Frontend to Shared Specs (Positive)
 
 **Steps**:
 1. `cd ../frontend`
-2. Run `/speck.link ..`
+2. Run `/speck:link ..`
 3. Verify symlink created
 
 **Expected Results**:
@@ -159,7 +214,7 @@ cd ..
 
 **Steps**:
 1. `cd backend`
-2. Run `/speck.specify "Cross-repo authentication system"`
+2. Run `/speck:specify "Cross-repo authentication system"`
 3. Choose "parent (shared)" when prompted
 4. Verify spec location
 
@@ -174,7 +229,7 @@ cd ..
 
 **Steps**:
 1. `cd backend`
-2. Run `/speck.plan`
+2. Run `/speck:plan`
 3. Check plan.md location and constitution usage
 
 **Expected Results**:
@@ -186,7 +241,7 @@ cd ..
 
 **Steps**:
 1. `cd ../frontend`
-2. Run `/speck.plan`
+2. Run `/speck:plan`
 3. Compare with backend plan.md
 
 **Expected Results**:
@@ -212,7 +267,7 @@ cd ..
 
 **Steps**:
 1. `cd backend`
-2. Run `/speck.specify "Backend-only database optimization"`
+2. Run `/speck:specify "Backend-only database optimization"`
 3. Choose "local (child-only)" when prompted
 
 **Expected Results**:
@@ -226,11 +281,11 @@ cd ..
 **Steps**:
 1. `cd backend`
 2. Manually break symlink: `rm .speck/root && ln -s /nonexistent .speck/root`
-3. Run `/speck.env`
+3. Run `/speck:env`
 
 **Expected Results**:
 - ✅ Clear error: "Multi-repo configuration broken: .speck/root points to [missing-path]"
-- ✅ Suggests: "Run /speck.link [new-path] to fix"
+- ✅ Suggests: "Run /speck:link [new-path] to fix"
 - ✅ Command exits with error code
 
 ### Test 2.9: Conflicting Local specs/ Directory (Negative)
@@ -238,7 +293,7 @@ cd ..
 **Steps**:
 1. `cd backend` (already linked to parent)
 2. Manually create `backend/specs/` directory
-3. Run `/speck.env`
+3. Run `/speck:env`
 
 **Expected Results**:
 - ✅ Warning: "Local specs/ directory detected but multi-repo mode active"
@@ -268,13 +323,13 @@ git add . && git commit -m "Initial monorepo"
 
 # Link packages to root specs
 cd packages/api
-# Run /speck.link ../..
+# Run /speck:link ../..
 
 cd ../ui
-# Run /speck.link ../..
+# Run /speck:link ../..
 
 cd ../shared
-# Run /speck.link ../..
+# Run /speck:link ../..
 
 cd ../..
 ```
@@ -283,7 +338,7 @@ cd ../..
 
 **Steps**:
 1. `cd packages/api`
-2. Run `/speck.link ../..`
+2. Run `/speck:link ../..`
 3. Verify symlink path calculation
 
 **Expected Results**:
@@ -295,8 +350,8 @@ cd ../..
 
 **Steps**:
 1. Create shared spec at root: `specs/005-shared-ui/`
-2. From `packages/ui`, run `/speck.plan`
-3. From `packages/shared`, run `/speck.plan`
+2. From `packages/ui`, run `/speck:plan`
+3. From `packages/shared`, run `/speck:plan`
 
 **Expected Results**:
 - ✅ Both packages read same spec.md via symlink
@@ -340,7 +395,7 @@ cd ../..
 **Steps**:
 1. Create feature with non-standard branch name (valid branches.json)
 2. Manually corrupt JSON: add invalid syntax
-3. Run `/speck.env`
+3. Run `/speck:env`
 
 **Expected Results**:
 - ✅ Error: "Malformed .speck/branches.json detected"
@@ -364,7 +419,7 @@ cd ../..
 
 **Steps**:
 1. Create multi-repo structure with non-git parent
-2. Run `/speck.specify` from child, choose "parent (shared)"
+2. Run `/speck:specify` from child, choose "parent (shared)"
 
 **Expected Results**:
 - ✅ Prompt: "Parent is not a git repo. Initialize now? [y/n]"
@@ -375,7 +430,7 @@ cd ../..
 
 **Steps**:
 1. Create circular symlink: `.speck/root` → `.`
-2. Run `/speck.env`
+2. Run `/speck:env`
 
 **Expected Results**:
 - ✅ Error: "Circular symlink detected at .speck/root"
@@ -386,7 +441,7 @@ cd ../..
 
 **Steps**:
 1. Make `.speck/` directory read-only
-2. Run `/speck.link ..`
+2. Run `/speck:link ..`
 
 **Expected Results**:
 - ✅ Error: "Permission denied creating symlink"
@@ -396,8 +451,8 @@ cd ../..
 ### Test 4.6: Multi-Repo Detection Performance (Positive)
 
 **Steps**:
-1. Benchmark single-repo mode: `time /speck.env` (repeat 100x)
-2. Create symlink, benchmark multi-repo mode: `time /speck.env` (repeat 100x)
+1. Benchmark single-repo mode: `time /speck:env` (repeat 100x)
+2. Create symlink, benchmark multi-repo mode: `time /speck:env` (repeat 100x)
 3. Compare median times
 
 **Expected Results**:
@@ -410,7 +465,7 @@ cd ../..
 **Steps**:
 1. `cd backend`
 2. Remove symlink: `rm .speck/root`
-3. Run `/speck.env`
+3. Run `/speck:env`
 
 **Expected Results**:
 - ✅ Falls back to single-repo mode
@@ -487,10 +542,10 @@ cd ../frontend && git init
 mkdir monorepo packages/api packages/ui && cd monorepo && git init
 
 # Link child to parent
-/speck.link ..
+/speck:link ..
 
 # Check environment
-/speck.env
+/speck:env
 
 # Check prerequisites
 speck check-prerequisites

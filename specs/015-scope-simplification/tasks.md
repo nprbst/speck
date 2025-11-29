@@ -392,6 +392,27 @@ US3 + US4 + US5 + US6 + US7 (all P2, after US1/US2 complete)
 
 ---
 
+## Phase 12: Bug Fixes (Post-Implementation)
+
+**Purpose**: Address bugs discovered during manual testing
+
+### Bug: Spec written to main branch instead of feature worktree
+
+**Problem**: In worktree mode, `/speck:specify` currently:
+1. Creates branch + worktree atomically (correct)
+2. Writes spec.md to main repo's specs/ directory (WRONG)
+3. Writes handoff.md to worktree (correct)
+4. Launches IDE (correct)
+
+**Expected**: Spec should be written to the **worktree's** specs/ directory, not main repo.
+
+- [ ] T118 [US3] Write integration test for spec location in worktree mode in `tests/integration/worktree-handoff.test.ts`
+- [X] T119 [US3] Fix `create-new-feature.ts` to write spec.md into worktree's specs/ directory when worktree mode is enabled
+- [ ] T120 [US3] Verify spec.md is on feature branch (not main) after worktree creation
+- [ ] T121 [US3] Update handoff.md to reference correct spec path within worktree
+
+---
+
 ## Notes
 
 - [P] tasks = different files, no dependencies
