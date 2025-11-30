@@ -98,6 +98,7 @@ The Speck maintainer reviews a new inquiry and wants to respond directly via ema
 3. **Given** the admin approves a response, **When** the send action is executed, **Then** the email is sent via Resend API
 4. **Given** an email is sent, **When** the operation completes, **Then** the response is stored in the database with subject, body, and timestamp
 5. **Given** an email is sent, **When** the operation completes, **Then** the inquiry status is updated to "contacted"
+6. **Given** a visitor replies to an email, **When** the reply is received at `inquiries@speck.codes`, **Then** the email is forwarded to the admin's personal inbox via Cloudflare Email Routing
 
 ---
 
@@ -137,6 +138,9 @@ The Speck maintainer reviews a new inquiry and wants to respond directly via ema
 - **FR-023**: System MUST store sent responses in a `responses` table with inquiry_id, subject, body_markdown, body_html, sent_at
 - **FR-024**: System MUST update inquiry status to "contacted" after successful email send
 - **FR-025**: Emails MUST be sent from `inquiries@speck.codes` with the same reply-to address
+- **FR-026**: System MUST configure Cloudflare Email Routing to forward inbound emails from `inquiries@speck.codes` to admin inbox
+- **FR-027**: Forwarding destination email MUST NOT be checked into version control (use environment variable or Cloudflare dashboard)
+- **FR-028**: Domain MUST have SPF and DKIM records configured for Resend to ensure deliverability
 
 ### Key Entities
 

@@ -142,6 +142,22 @@ No Constitution violations requiring justification. Feature uses standard patter
 - Markdown to HTML conversion via `marked`
 - `responses` table for email audit trail
 - Environment variable: `RESEND_API_KEY`
+- Cloudflare Email Routing: `inquiries@speck.codes` → admin Gmail (configured via dashboard, not code)
+- DNS records: SPF + DKIM for Resend deliverability
+
+**Email Architecture:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     inquiries@speck.codes                        │
+├─────────────────────────────────────────────────────────────────┤
+│  INBOUND (replies)              OUTBOUND (responses)            │
+│  ─────────────────              ──────────────────              │
+│  Cloudflare Email Routing       Resend API                      │
+│  → forwards to Gmail            ← sends from custom domain      │
+│                                                                 │
+│  DNS: MX → Cloudflare           DNS: SPF/DKIM → Resend          │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ## Risk Assessment
 

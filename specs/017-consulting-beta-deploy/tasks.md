@@ -158,6 +158,16 @@
 - [ ] T070 [US5] Update /speck.inquiries slash command with respond/send documentation in .claude/commands/speck.inquiries.md
 - [ ] T071 [US5] Test email workflow against local D1 database with test Resend API key
 
+### Email Routing Setup for User Story 5
+
+- [ ] T072 [US5] Configure Cloudflare Email Routing for speck.codes domain in Cloudflare dashboard
+- [ ] T073 [US5] Create email routing rule: `inquiries@speck.codes` → admin Gmail (via dashboard, not code)
+- [ ] T074 [US5] Add Resend domain verification in Resend dashboard
+- [ ] T075 [US5] Add SPF record for Resend in Cloudflare DNS: `v=spf1 include:_spf.resend.com ~all`
+- [ ] T076 [US5] Add DKIM records for Resend in Cloudflare DNS (3 CNAME records from Resend dashboard)
+- [ ] T077 [US5] Verify email routing: send test email TO `inquiries@speck.codes`, confirm forwarding
+- [ ] T078 [US5] Verify email sending: send test email FROM `inquiries@speck.codes` via Resend, check SPF/DKIM pass
+
 **Checkpoint**: Email response workflow works end-to-end with Claude drafting and Resend delivery
 
 ---
@@ -303,4 +313,4 @@ With multiple developers:
 - Verify tests fail before implementing (TDD per Constitution XI)
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
-- Total tasks: 71
+- Total tasks: 78
