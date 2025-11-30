@@ -44,6 +44,8 @@ const lazySetupPlan = (): Promise<typeof import('../../.speck/scripts/setup-plan
 const lazyUpdateAgentContext = (): Promise<
   typeof import('../../.speck/scripts/update-agent-context.ts')
 > => import('../../.speck/scripts/update-agent-context.ts');
+const lazyNextFeature = (): Promise<typeof import('../../.speck/scripts/next-feature.ts')> =>
+  import('../../.speck/scripts/next-feature.ts');
 
 /**
  * Output mode for CLI commands
@@ -303,6 +305,21 @@ function createProgram(): Command {
     .option('--json', 'Output in JSON format')
     .action(async (options: Record<string, unknown>) => {
       const module = await lazyUpdateAgentContext();
+      const args = buildSubcommandArgs([], options);
+      const exitCode = await module.main(args);
+      process.exit(exitCode);
+    });
+
+  // ==========================================================================
+  // next-feature command
+  // ==========================================================================
+  program
+    .command('next-feature')
+    .description('Get next feature number and detect multi-repo mode')
+    .option('--json', 'Output in JSON format')
+    .option('--short-name <name>', 'Short name to check for existing branches')
+    .action(async (options: Record<string, unknown>) => {
+      const module = await lazyNextFeature();
       const args = buildSubcommandArgs([], options);
       const exitCode = await module.main(args);
       process.exit(exitCode);
