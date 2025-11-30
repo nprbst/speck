@@ -4,12 +4,36 @@ description: "Recent feature additions and improvements to Speck for Claude Code
 category: "reference"
 order: 2
 tags: ["changelog", "updates", "features", "releases"]
-lastUpdated: 2025-11-29
+lastUpdated: 2025-11-30
 ---
 
 # What's New in Speck
 
 Track the latest features, improvements, and capabilities added to Speck.
+
+---
+
+## November 2025: Atomic Transform Rollback (Spec 016)
+
+### Safe Upstream Transformations
+**Released**: November 2025
+
+Staged transformation with atomic commit/rollback semantics protects production directories during upstream integration.
+
+**Key Capabilities**:
+- **Staged transformations**: All transforms write to `.speck/.transform-staging/<version>/` first
+- **Atomic commit**: Files move to production only after all agents succeed
+- **Automatic rollback**: Any agent failure triggers complete staging cleanup
+- **Crash recovery**: Orphaned staging detection with commit/rollback/inspect options
+
+**Benefits**:
+- No broken state from partial transformations
+- Production directories unchanged until success
+- Recovery from unexpected interruptions
+- Transformation history tracking with failure details
+
+**Learn More**:
+- [Commands Reference](/docs/commands/reference) - Updated transform-upstream documentation
 
 ---
 

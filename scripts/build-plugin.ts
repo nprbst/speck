@@ -339,9 +339,10 @@ async function copyPluginFiles(): Promise<FileCounts> {
     const mdFiles = sourceFiles.filter(f => f.endsWith('.md'));
 
     for (const file of mdFiles) {
-      // Exclude speckit.* aliases and upstream management commands
+      // Exclude speckit.* aliases, upstream management commands, and project-local commands
       if (file.startsWith('speckit.') ||
-        file.includes('-upstream')) {
+        file.includes('-upstream') ||
+        file.includes('refresh-website')) {
         continue;
       }
 
