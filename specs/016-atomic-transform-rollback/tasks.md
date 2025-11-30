@@ -25,10 +25,10 @@
 
 **Purpose**: Project initialization and test infrastructure
 
-- [ ] T001 Create test fixtures directory structure at tests/fixtures/staging/
-- [ ] T002 [P] Create mock upstream release fixture at tests/fixtures/upstream/v2.1.0/
-- [ ] T003 [P] Create test utilities for temp directory management in tests/helpers/staging-helpers.ts
-- [ ] T004 Capture test baseline: `bun test > specs/016-atomic-transform-rollback/test-baseline.txt`
+- [X] T001 Create test fixtures directory structure at tests/fixtures/staging/
+- [X] T002 [P] Create mock upstream release fixture at tests/fixtures/upstream/v2.1.0/
+- [X] T003 [P] Create test utilities for temp directory management in tests/helpers/staging-helpers.ts
+- [X] T004 Capture test baseline: `bun test > specs/016-atomic-transform-rollback/test-baseline.txt`
 
 ---
 
@@ -40,28 +40,28 @@
 
 ### Tests for Foundational Types
 
-- [ ] T005 [P] [TEST] Write Zod schema tests for StagingContext in tests/unit/staging-types.test.ts
-- [ ] T006 [P] [TEST] Write Zod schema tests for StagingMetadata in tests/unit/staging-types.test.ts
-- [ ] T007 [P] [TEST] Write Zod schema tests for StagedFile in tests/unit/staging-types.test.ts
+- [X] T005 [P] [TEST] Write Zod schema tests for StagingContext in tests/unit/staging-types.test.ts
+- [X] T006 [P] [TEST] Write Zod schema tests for StagingMetadata in tests/unit/staging-types.test.ts
+- [X] T007 [P] [TEST] Write Zod schema tests for StagedFile in tests/unit/staging-types.test.ts
 
 ### Implementation for Foundational Types
 
-- [ ] T008 Create StagingContext, StagingMetadata, StagedFile types with Zod schemas in .speck/scripts/common/staging-types.ts
-- [ ] T009 Export types from .speck/scripts/common/index.ts
+- [X] T008 Create StagingContext, StagingMetadata, StagedFile types with Zod schemas in .speck/scripts/common/staging-types.ts
+- [X] T009 ~~Export types from .speck/scripts/common/index.ts~~ (skipped - direct imports preferred)
 
 ### Tests for Core Staging Functions
 
-- [ ] T010 [P] [TEST] Write tests for createStagingDirectory() in tests/unit/staging-manager.test.ts
-- [ ] T011 [P] [TEST] Write tests for listStagedFiles() in tests/unit/staging-manager.test.ts
-- [ ] T012 [P] [TEST] Write tests for updateStagingStatus() in tests/unit/staging-manager.test.ts
-- [ ] T013 [P] [TEST] Write tests for captureProductionBaseline() in tests/unit/staging-manager.test.ts
+- [X] T010 [P] [TEST] Write tests for createStagingDirectory() in tests/unit/staging-manager.test.ts
+- [X] T011 [P] [TEST] Write tests for listStagedFiles() in tests/unit/staging-manager.test.ts
+- [X] T012 [P] [TEST] Write tests for updateStagingStatus() in tests/unit/staging-manager.test.ts
+- [X] T013 [P] [TEST] Write tests for captureProductionBaseline() in tests/unit/staging-manager.test.ts
 
 ### Implementation for Core Staging Functions
 
-- [ ] T014 Implement createStagingDirectory(version) in .speck/scripts/common/staging-manager.ts (red-green-refactor)
-- [ ] T015 Implement listStagedFiles(context) in .speck/scripts/common/staging-manager.ts (red-green-refactor)
-- [ ] T016 Implement updateStagingStatus(context, status) in .speck/scripts/common/staging-manager.ts (red-green-refactor)
-- [ ] T017 Implement captureProductionBaseline(context) in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T014 Implement createStagingDirectory(version) in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T015 Implement listStagedFiles(context) in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T016 Implement updateStagingStatus(context, status) in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T017 Implement captureProductionBaseline(context) in .speck/scripts/common/staging-manager.ts (red-green-refactor)
 
 **Checkpoint**: Foundation ready - staging directory creation and status tracking work
 
@@ -75,18 +75,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T018 [P] [US1] [TEST] Write tests for commitStaging() success path in tests/unit/staging-manager.test.ts
+- [X] T018 [P] [US1] [TEST] Write tests for commitStaging() success path in tests/unit/staging-manager.test.ts
 - [ ] T019 [P] [US1] [TEST] Write integration test for full successful transformation in tests/integration/transform-success.test.ts
 
 ### Implementation for User Story 1
 
-- [ ] T020 [US1] Implement commitStaging(context) with atomic moves in .speck/scripts/common/staging-manager.ts (red-green-refactor)
-- [ ] T021 [US1] Add staging cleanup after successful commit in commitStaging() in .speck/scripts/common/staging-manager.ts
-- [ ] T022 [US1] Create transform orchestration script at .speck/scripts/transform-upstream/index.ts
-- [ ] T023 [US1] Implement staging context creation in orchestration script
-- [ ] T024 [US1] Update Agent 1 OUTPUT_DIR to staging scripts directory in orchestration
-- [ ] T025 [US1] Update Agent 2 OUTPUT_DIR to staging commands directory in orchestration
-- [ ] T026 [US1] Add commit trigger after both agents succeed in orchestration
+- [X] T020 [US1] Implement commitStaging(context) with atomic moves in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T021 [US1] Add staging cleanup after successful commit in commitStaging() in .speck/scripts/common/staging-manager.ts
+- [X] T022 [US1] Create transform orchestration script at .speck/scripts/transform-upstream/index.ts
+- [X] T023 [US1] Implement staging context creation in orchestration script
+- [X] T024 [US1] Update Agent 1 OUTPUT_DIR to staging scripts directory in orchestration
+- [X] T025 [US1] Update Agent 2 OUTPUT_DIR to staging commands directory in orchestration
+- [X] T026 [US1] Add commit trigger after both agents succeed in orchestration
 - [ ] T027 [US1] Modify transform-upstream command to use new orchestration in .claude/commands/speck.transform-upstream.md
 
 **Checkpoint**: User Story 1 complete - successful transformations use staging and atomic commit
@@ -101,12 +101,12 @@
 
 ### Tests for User Story 2
 
-- [ ] T028 [P] [US2] [TEST] Write tests for rollbackStaging() in tests/unit/staging-manager.test.ts
+- [X] T028 [P] [US2] [TEST] Write tests for rollbackStaging() in tests/unit/staging-manager.test.ts
 - [ ] T029 [P] [US2] [TEST] Write integration test for rollback on Agent 2 failure in tests/integration/transform-rollback.test.ts
 
 ### Implementation for User Story 2
 
-- [ ] T030 [US2] Implement rollbackStaging(context) with directory cleanup in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T030 [US2] Implement rollbackStaging(context) with directory cleanup in .speck/scripts/common/staging-manager.ts (red-green-refactor)
 - [ ] T031 [US2] Add rollback trigger on Agent 2 failure in orchestration script .speck/scripts/transform-upstream/index.ts
 - [ ] T032 [US2] Update transformation status to 'failed' with error message on rollback in orchestration
 - [ ] T033 [US2] Verify production files unchanged after rollback (assertion in test)
