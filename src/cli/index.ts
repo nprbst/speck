@@ -39,6 +39,9 @@ const lazyLaunchIDECommand = (): Promise<
 > => import('../../.speck/scripts/worktree/cli-launch-ide.ts');
 const lazySetupPlan = (): Promise<typeof import('../../.speck/scripts/setup-plan.ts')> =>
   import('../../.speck/scripts/setup-plan.ts');
+const lazyUpdateAgentContext = (): Promise<
+  typeof import('../../.speck/scripts/update-agent-context.ts')
+> => import('../../.speck/scripts/update-agent-context.ts');
 
 /**
  * Output mode for CLI commands
@@ -262,6 +265,21 @@ function createProgram(): Command {
     .action(async (options: Record<string, unknown>) => {
       const module = await lazySetupPlan();
       const args = buildSubcommandArgs([], options);
+      const exitCode = await module.main(args);
+      process.exit(exitCode);
+    });
+
+  // ==========================================================================
+  // update-agent-context command
+  // ==========================================================================
+  program
+    .command('update-agent-context')
+    .description('Update agent-specific context files with technology stack')
+    .argument('[agent]', 'Agent type (claude, gemini, copilot, cursor-agent, qwen, opencode, codex, windsurf, kilocode, auggie, roo, codebuddy, amp, shai, q)')
+    .option('--json', 'Output in JSON format')
+    .action(async (agent: string | undefined, options: Record<string, unknown>) => {
+      const module = await lazyUpdateAgentContext();
+      const args = agent ? [agent, ...buildSubcommandArgs([], options)] : buildSubcommandArgs([], options);
       const exitCode = await module.main(args);
       process.exit(exitCode);
     });
