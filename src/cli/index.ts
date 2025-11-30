@@ -130,6 +130,14 @@ function buildSubcommandArgs(args: string[], options: Record<string, unknown>, r
       continue;
     }
 
+    // Special handling for --no-ide flag (Commander stores as ide: false)
+    if (key === 'ide') {
+      if (value === false) {
+        result.push('--no-ide');
+      }
+      continue;
+    }
+
     if (value === true) {
       result.push(`--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
     } else if (value !== false && value !== undefined) {

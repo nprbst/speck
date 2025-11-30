@@ -53,6 +53,12 @@ echo "# Test Project" > README.md
 git add . && git commit -m "Initial commit"
 ```
 
+### Test 1.0: Initialize Speck
+**User action**: Run `/speck:init` in `test-single-repo/`
+**I verify**:
+- [ ] `.speck/` directory created
+- [ ] Speck CLI symlink configured
+
 ### Test 1.1: Feature Branch & Worktree Creation
 **User action**: Run `/speck:specify "Add user authentication feature"` in Claude terminal (in main repo)
 **I verify**:
@@ -91,10 +97,17 @@ git add . && git commit -m "Initial commit"
 ```bash
 mkdir -p /tmp/speck-manual-tests/session-2
 cd /tmp/speck-manual-tests/session-2
-mkdir -p multi-repo-test/specs
 
-# Backend repo
-cd multi-repo-test
+# Root repo (multi-repo parent) - MUST be a git repo
+mkdir multi-repo-test && cd multi-repo-test
+git init
+git config user.name "Test User"
+git config user.email "test@example.com"
+mkdir specs
+echo "# Multi-Repo Root" > README.md
+git add . && git commit -m "Initial multi-repo root"
+
+# Backend repo (child)
 mkdir backend && cd backend
 git init
 git config user.name "Test User"
@@ -102,7 +115,7 @@ git config user.email "test@example.com"
 echo "# Backend" > README.md
 git add . && git commit -m "Initial backend"
 
-# Frontend repo
+# Frontend repo (child)
 cd ..
 mkdir frontend && cd frontend
 git init
@@ -113,6 +126,22 @@ git add . && git commit -m "Initial frontend"
 
 cd ..
 ```
+
+### Test 2.0: Initialize Speck in Root
+**User action**: Run `/speck:init` in `multi-repo-test/`
+**I verify**:
+- [ ] `.speck/` directory created in root
+- [ ] Speck CLI symlink configured
+
+### Test 2.0a: Initialize Speck in Backend
+**User action**: Run `/speck:init` in `backend/`
+**I verify**:
+- [ ] `.speck/` directory created in backend
+
+### Test 2.0b: Initialize Speck in Frontend
+**User action**: Run `/speck:init` in `frontend/`
+**I verify**:
+- [ ] `.speck/` directory created in frontend
 
 ### Test 2.1: Link Backend
 **User action**: In `backend/`, run `/speck.link ..`
@@ -183,6 +212,12 @@ mkdir -p specs packages/api packages/ui packages/shared
 echo "# Monorepo" > README.md
 git add . && git commit -m "Initial monorepo"
 ```
+
+### Test 3.0: Initialize Speck in Monorepo Root
+**User action**: Run `/speck:init` in `monorepo-test/`
+**I verify**:
+- [ ] `.speck/` directory created
+- [ ] Speck CLI symlink configured
 
 ### Test 3.1: Monorepo Package Linking
 **User action**: In `packages/api/`, run `/speck.link ../..`
