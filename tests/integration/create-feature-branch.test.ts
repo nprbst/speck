@@ -64,8 +64,15 @@ describe('create-new-feature --branch flag (T081)', () => {
     const specDir = join(repoPath, 'specs', output.result.BRANCH_NAME);
     expect(existsSync(specDir)).toBe(true);
 
-    // Verify no branches.json was created (standard names don't need it)
-    // Note: branches.json may or may not exist depending on implementation
+    // Verify branches.json was created (all branches are now recorded for complete tracking)
+    const branchesFile = join(repoPath, '.speck', 'branches.json');
+    expect(existsSync(branchesFile)).toBe(true);
+
+    const branchesContent = JSON.parse(readFileSync(branchesFile, 'utf-8'));
+    expect(branchesContent.version).toBe('2.0.0');
+    expect(branchesContent.branches).toHaveLength(1);
+    expect(branchesContent.branches[0].name).toBe(output.result.BRANCH_NAME);
+    expect(branchesContent.branches[0].specId).toBe(output.result.BRANCH_NAME);
   });
 
   test('should create feature with non-standard branch name using --branch flag', async () => {
@@ -146,9 +153,9 @@ describe('create-new-feature --branch flag (T081)', () => {
     expect(existsSync(specDir)).toBe(true);
   });
 
-  test('should NOT record mapping for standard-looking --branch names', async () => {
-    // If user passes a branch name that already follows NNN- pattern,
-    // it should still be treated as standard (no branches.json entry needed)
+  test('should record mapping for standard-looking --branch names', async () => {
+    // Even if user passes a branch name that follows NNN- pattern,
+    // it should still be recorded in branches.json for complete tracking
     const standardBranch = '007-standard-branch';
 
     const result =
@@ -162,16 +169,14 @@ describe('create-new-feature --branch flag (T081)', () => {
     expect(output.ok).toBe(true);
     expect(output.result.BRANCH_NAME).toBe(standardBranch);
 
-    // Since branch follows NNN- pattern, it should NOT be recorded in branches.json
+    // All branches are now recorded in branches.json for complete tracking
     const branchesFile = join(repoPath, '.speck', 'branches.json');
-    if (existsSync(branchesFile)) {
-      const branchesContent = JSON.parse(readFileSync(branchesFile, 'utf-8'));
-      // If file exists, it should either be empty or not contain this branch
-      const hasBranch = branchesContent.branches?.some(
-        (b: { name: string }) => b.name === standardBranch
-      );
-      expect(hasBranch).toBe(false);
-    }
+    expect(existsSync(branchesFile)).toBe(true);
+
+    const branchesContent = JSON.parse(readFileSync(branchesFile, 'utf-8'));
+    expect(branchesContent.version).toBe('2.0.0');
+    expect(branchesContent.branches).toHaveLength(1);
+    expect(branchesContent.branches[0].name).toBe(standardBranch);
   });
 
   test('should reject --branch flag with empty value', async () => {

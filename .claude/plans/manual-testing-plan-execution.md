@@ -282,11 +282,26 @@ git add . && git commit -m "Initial monorepo"
   - `shared/specs/001-nodejs-monorepo/plan.md` - Shared utilities (zero deps)
   - `ui/specs/001-nodejs-monorepo/plan.md` - Frontend (Vite 5.x)
 
-### Test 3.3: Independent Package Work
-**User action**: In `packages/api/`, create feature with custom branch
+### Test 3.3: Independent Package Work ✅
+**User action**: In `packages/api/` (inside worktree), run `/speck.specify "API rate limiting middleware"`
+**Result**: Branch `002-api-rate-limiter` created with auto-numbering (custom `--branch` flag not tested)
 **I verify**:
-- [ ] Feature branch created
-- [ ] `branches.json` handles non-standard name if used
+- [x] Feature branch `002-api-rate-limiter` created
+- [x] New worktree `monorepo-test-001-nodejs-monorepo-002-api-rate-limiter` created
+- [x] Spec at `specs/002-api-rate-limiter/spec.md` in new worktree
+- [x] Feature created from within a package context works correctly
+- N/A `branches.json` not needed (standard NNN-name pattern used)
+
+### Test 3.3b: Custom Branch Name with --branch Flag
+**User action**: Run `/speck.specify --branch my-custom-feature "Custom feature with non-standard branch name"`
+**I verify**:
+- [ ] Branch `my-custom-feature` created (NOT auto-numbered)
+- [ ] `.speck/branches.json` created with mapping: `{ "my-custom-feature": "specs/NNN-custom-feature" }`
+- [ ] Worktree named using custom branch (e.g., `monorepo-test-my-custom-feature`)
+- [ ] Spec directory still uses numbered format internally
+- [ ] `/speck.plan` and `/speck.tasks` work correctly with custom branch name
+
+**Purpose**: Verify that `--branch` flag allows non-standard branch names while maintaining spec directory numbering and branches.json lookup.
 
 ### Test 3.4: Monorepo Build Tools Compatibility
 **I create**: `package.json` with workspaces config
