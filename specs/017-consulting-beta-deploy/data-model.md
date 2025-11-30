@@ -3,6 +3,7 @@
 **Feature**: 017-consulting-beta-deploy
 **Date**: 2025-11-30
 **Storage**: Cloudflare D1 (SQLite)
+**Query Builder**: Kysely with kysely-d1 adapter
 
 ## Entity Overview
 
@@ -107,49 +108,40 @@ INSERT INTO inquiries (email, message, submitted_at, source_page, status) VALUES
   ('old@legacy.com', 'This inquiry was handled and archived.', datetime('now', '-7 days'), '/expert-help', 'archived');
 ```
 
-## TypeScript Types
+## TypeScript Types (Kysely)
 
 ```typescript
-// types/inquiry.ts
+// types/database.ts
+import type { Generated, Insertable, Selectable, Updateable } from 'kysely';
 
 /**
- * Inquiry status lifecycle
+ * Database schema for Kysely
  */
-export type InquiryStatus = 'new' | 'contacted' | 'archived';
+export interface Database {
+  inquiries: InquiriesTable;
+}
 
 /**
- * Inquiry entity as stored in D1
+ * Inquiry table schema
  */
-export interface Inquiry {
-  id: number;
+export interface InquiriesTable {
+  id: Generated<number>;
   email: string;
   message: string;
-  submitted_at: string; // ISO 8601
+  submitted_at: Generated<string>; // ISO 8601, auto-generated
   source_page: string;
-  status: InquiryStatus;
+  status: 'new' | 'contacted' | 'archived';
   contacted_at: string | null;
   notes: string | null;
 }
 
-/**
- * Payload for creating a new inquiry (from form submission)
- */
-export interface CreateInquiryInput {
-  email: string;
-  message: string;
-  source_page?: string;
-}
+// Kysely helper types for different operations
+export type Inquiry = Selectable<InquiriesTable>;
+export type NewInquiry = Insertable<InquiriesTable>;
+export type InquiryUpdate = Updateable<InquiriesTable>;
 
 /**
- * Payload for updating inquiry status (admin action)
- */
-export interface UpdateInquiryInput {
-  status?: InquiryStatus;
-  notes?: string;
-}
-
-/**
- * Static content type for service offerings
+ * Static content type for service offerings (not stored in DB)
  */
 export interface ConsultingService {
   id: string;
@@ -159,49 +151,100 @@ export interface ConsultingService {
 }
 ```
 
-## Query Patterns
+## Database Factory
+
+```typescript
+// lib/db.ts
+import { Kysely } from 'kysely';
+import { D1Dialect } from 'kysely-d1';
+import type { Database } from '../types/database';
+
+/**
+ * Create a Kysely instance from a D1 binding
+ */
+export function createDb(d1: D1Database): Kysely<Database> {
+  return new Kysely<Database>({
+    dialect: new D1Dialect({ database: d1 }),
+  });
+}
+```
+
+## Query Patterns (Kysely)
+
+All queries use Kysely's type-safe query builder. Assume `db` is created via `createDb(context.env.DB)`.
 
 ### Insert New Inquiry
 
 ```typescript
-const stmt = db.prepare(`
-  INSERT INTO inquiries (email, message, source_page)
-  VALUES (?, ?, ?)
-`);
-await stmt.bind(email, message, sourcePage).run();
+await db
+  .insertInto('inquiries')
+  .values({
+    email,
+    message,
+    source_page: '/expert-help',
+  })
+  .execute();
 ```
 
 ### List Inquiries by Status
 
 ```typescript
-const stmt = db.prepare(`
-  SELECT * FROM inquiries
-  WHERE status = ?
-  ORDER BY submitted_at DESC
-`);
-const result = await stmt.bind('new').all<Inquiry>();
+const inquiries = await db
+  .selectFrom('inquiries')
+  .selectAll()
+  .where('status', '=', 'new')
+  .orderBy('submitted_at', 'desc')
+  .execute();
+```
+
+### Get Inquiry by ID
+
+```typescript
+const inquiry = await db
+  .selectFrom('inquiries')
+  .selectAll()
+  .where('id', '=', id)
+  .executeTakeFirst();
 ```
 
 ### Mark as Contacted
 
 ```typescript
-const stmt = db.prepare(`
-  UPDATE inquiries
-  SET status = 'contacted', contacted_at = datetime('now')
-  WHERE id = ?
-`);
-await stmt.bind(id).run();
+import { sql } from 'kysely';
+
+await db
+  .updateTable('inquiries')
+  .set({
+    status: 'contacted',
+    contacted_at: sql`datetime('now')`,
+  })
+  .where('id', '=', id)
+  .execute();
 ```
 
 ### Archive Inquiry
 
 ```typescript
-const stmt = db.prepare(`
-  UPDATE inquiries
-  SET status = 'archived', notes = ?
-  WHERE id = ?
-`);
-await stmt.bind(notes, id).run();
+import { sql } from 'kysely';
+
+await db
+  .updateTable('inquiries')
+  .set({
+    status: 'archived',
+    notes,
+  })
+  .where('id', '=', id)
+  .execute();
+```
+
+### Count by Status
+
+```typescript
+const counts = await db
+  .selectFrom('inquiries')
+  .select(['status', db.fn.count<number>('id').as('count')])
+  .groupBy('status')
+  .execute();
 ```
 
 ## Relationships

@@ -5,19 +5,19 @@
 
 ## Summary
 
-This feature adds a help page at `/expert-help` where visitors can learn about implementation assistance and submit interest inquiries. Inquiries are stored in Cloudflare D1 and managed via a private Claude Code slash command (`/speck.inquiries`). The website will be deployed to `beta.speck.codes` on Cloudflare Pages for preview testing.
+This feature adds a help page at `/expert-help` where visitors can learn about implementation assistance and submit interest inquiries. Inquiries are stored in Cloudflare D1 (via Kysely query builder) and managed via a private Claude Code slash command (`/speck.inquiries`). The website will be deployed to `beta.speck.codes` on Cloudflare Pages, with `speck.codes` redirecting to beta until GA.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.7+ with Bun 1.0+ runtime, Astro 5.15+
-**Primary Dependencies**: Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1 (database), Cloudflare Turnstile (spam prevention), Wrangler CLI
-**Storage**: Cloudflare D1 (SQLite-based, serverless)
+**Primary Dependencies**: Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1 (database), Kysely + kysely-d1 (type-safe query builder), Cloudflare Turnstile (spam prevention), Wrangler CLI
+**Storage**: Cloudflare D1 (SQLite-based, serverless) via Kysely query builder
 **Testing**: Playwright (visual regression), Axe-core (accessibility), Bun test (unit)
 **Target Platform**: Web (Cloudflare Pages)
 **Project Type**: Web application (static site + serverless functions)
 **Performance Goals**: <2 second page load, <500ms form validation feedback, <5 minute deployment
 **Constraints**: Form submission requires Cloudflare Functions, D1 requires Wrangler configuration
-**Scale/Scope**: Single page addition, one D1 table, one slash command
+**Scale/Scope**: Single page addition, one D1 table, one slash command, one redirect rule
 
 ## Constitution Check
 
@@ -60,11 +60,17 @@ website/
 │   │   └── InquiryForm.astro      # New: Contact form component
 │   ├── pages/
 │   │   └── expert-help.astro      # New: Help/consulting page
+│   ├── lib/
+│   │   └── db.ts                  # New: Kysely database factory
+│   ├── types/
+│   │   └── database.ts            # New: Kysely type definitions
 │   └── styles/
 │       └── form.css               # New: Form-specific styles
 ├── functions/
 │   └── api/
 │       └── inquiry.ts             # New: D1 inquiry submission endpoint
+├── migrations/
+│   └── 001_create_inquiries.sql   # New: D1 schema migration
 └── wrangler.toml                  # New: Cloudflare configuration
 
 .claude/
@@ -81,7 +87,7 @@ tests/
     └── inquiry-form.test.ts       # New: Form validation unit tests
 ```
 
-**Structure Decision**: Web application pattern with Astro static pages + Cloudflare Functions for form submission. Slash command follows Constitution Principle VIII with command file delegating to TypeScript script.
+**Structure Decision**: Web application pattern with Astro static pages + Cloudflare Functions for form submission. Uses Kysely query builder for type-safe D1 interactions. Slash command follows Constitution Principle VIII with command file delegating to TypeScript script.
 
 ## Documentation Impact
 
@@ -118,13 +124,14 @@ No Constitution violations requiring justification. Feature uses standard patter
 - Help page at `/expert-help` with service descriptions
 - Inquiry form with email + message fields
 - Client-side validation
-- Cloudflare D1 storage
+- Cloudflare D1 storage via Kysely query builder
 - Success confirmation display
 
 ### Phase 2: Admin & Deployment (US3, US4) - P2
 - `/speck.inquiries` slash command
 - Beta deployment to `beta.speck.codes`
 - Cloudflare Pages preview environment
+- Production redirect: `speck.codes` → `beta.speck.codes` (until GA)
 
 ## Risk Assessment
 

@@ -111,6 +111,8 @@ The Speck maintainer deploys the website to beta.speck.codes to test new feature
 - **FR-015**: System MUST provide a private slash command (`/speck.inquiries`) for querying and managing inquiries via Claude Code
 - **FR-016**: Slash command MUST connect to Cloudflare D1 using locally-configured credentials (e.g., environment variables or wrangler config)
 - **FR-017**: Slash command MUST support actions: list new, view details, mark as contacted, archive
+- **FR-018**: System MUST redirect `speck.codes` to `beta.speck.codes` until General Availability (302 temporary redirect)
+- **FR-019**: Redirect MUST preserve URL path and query string (e.g., `speck.codes/docs` → `beta.speck.codes/docs`)
 
 ### Key Entities
 

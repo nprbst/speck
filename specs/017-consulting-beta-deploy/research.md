@@ -9,48 +9,27 @@
 | Topic | Decision | Rationale |
 |-------|----------|-----------|
 | Database | Cloudflare D1 | Native integration, serverless, free tier sufficient |
+| Query Builder | Kysely with kysely-d1 adapter | Type-safe queries, no raw SQL strings, better DX |
 | Spam Prevention | Cloudflare Turnstile (invisible mode) + honeypot | Layered defense without UX friction |
 | Server Functions | Cloudflare Pages Functions | Native integration, no additional infrastructure |
 | Beta Deployment | Branch alias with custom domain | Official Cloudflare feature for staging environments |
+| Production Redirect | speck.codes → beta.speck.codes (until GA) | Single source of truth during beta period |
 
 ---
 
 ## 1. Cloudflare D1 for Form Submissions
 
 ### Decision
-Use Cloudflare D1 with prepared statements for secure inquiry storage.
+Use Cloudflare D1 with Kysely query builder for type-safe, secure inquiry storage.
 
 ### Rationale
 - **Native Integration**: D1 binds directly to Pages Functions via `wrangler.toml`
-- **SQLite Semantics**: Familiar SQL syntax, no ORM required for simple use case
+- **Type Safety**: Kysely provides compile-time type checking for all queries
 - **Serverless**: No connection pooling, cold starts acceptable for low-volume inquiries
 - **Free Tier**: Sufficient for inquiry capture (5GB storage, 5M reads/day)
 
-### Implementation Pattern
-
-```typescript
-// In Pages Function (functions/api/inquiry.ts)
-export async function onRequestPost(context: EventContext<Env, string, unknown>) {
-  const { DB } = context.env;
-
-  const { email, message } = await context.request.json();
-
-  // Use prepared statements to prevent SQL injection
-  const stmt = DB.prepare(`
-    INSERT INTO inquiries (email, message, submitted_at, status)
-    VALUES (?, ?, datetime('now'), 'new')
-  `);
-
-  await stmt.bind(email, message).run();
-
-  return new Response(JSON.stringify({ success: true }), {
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-```
-
 ### Best Practices Applied
-- **Prepared Statements**: Always use `DB.prepare()` with `.bind()` for parameterized queries
+- **Kysely Query Builder**: Type-safe queries without raw SQL strings
 - **Single Writes**: D1 allows only one write transaction at a time; simple inserts are fine
 - **Migrations**: Use `wrangler d1 migrations` for schema changes
 - **Local Dev**: Use `wrangler d1 execute --local` for testing
@@ -59,6 +38,101 @@ export async function onRequestPost(context: EventContext<Env, string, unknown>)
 - [Cloudflare D1 Overview](https://developers.cloudflare.com/d1/)
 - [Query D1 Best Practices](https://developers.cloudflare.com/d1/best-practices/query-d1/)
 - [D1 SQLite Schema & Migrations](https://www.thisdot.co/blog/d1-sqlite-schema-migrations-and-seeds)
+
+---
+
+## 1a. Kysely Query Builder for D1
+
+### Decision
+Use Kysely with the `kysely-d1` adapter for all database interactions.
+
+### Rationale
+- **Type Safety**: Compile-time type checking catches SQL errors before runtime
+- **No Raw SQL Strings**: Queries are built with method chaining, reducing injection risk
+- **Autocompletion**: IDE support for table names, column names, and query methods
+- **D1 Compatibility**: The `kysely-d1` adapter provides full D1 binding support
+- **Lightweight**: Kysely adds minimal overhead compared to full ORMs
+
+### Implementation Pattern
+
+**Install dependencies:**
+```bash
+bun add kysely kysely-d1
+```
+
+**Database type definitions (generated or manual):**
+```typescript
+// types/database.ts
+import type { Generated, Insertable, Selectable, Updateable } from 'kysely';
+
+export interface Database {
+  inquiries: InquiriesTable;
+}
+
+export interface InquiriesTable {
+  id: Generated<number>;
+  email: string;
+  message: string;
+  submitted_at: Generated<string>;
+  source_page: string;
+  status: 'new' | 'contacted' | 'archived';
+  contacted_at: string | null;
+  notes: string | null;
+}
+
+export type Inquiry = Selectable<InquiriesTable>;
+export type NewInquiry = Insertable<InquiriesTable>;
+export type InquiryUpdate = Updateable<InquiriesTable>;
+```
+
+**Create Kysely instance:**
+```typescript
+// lib/db.ts
+import { Kysely } from 'kysely';
+import { D1Dialect } from 'kysely-d1';
+import type { Database } from '../types/database';
+
+export function createDb(d1: D1Database): Kysely<Database> {
+  return new Kysely<Database>({
+    dialect: new D1Dialect({ database: d1 }),
+  });
+}
+```
+
+**Usage in Pages Function:**
+```typescript
+// functions/api/inquiry.ts
+import { createDb } from '../../lib/db';
+
+export async function onRequestPost(context: EventContext<Env, string, unknown>) {
+  const db = createDb(context.env.DB);
+  const { email, message } = await context.request.json();
+
+  await db
+    .insertInto('inquiries')
+    .values({
+      email,
+      message,
+      source_page: '/expert-help',
+    })
+    .execute();
+
+  return new Response(JSON.stringify({ success: true }), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+```
+
+### Best Practices Applied
+- **Centralized DB Factory**: Create Kysely instance via factory function for testability
+- **Type Exports**: Export `Selectable`, `Insertable`, `Updateable` variants for different contexts
+- **No Transactions**: D1 doesn't support transactions via Kysely; use single operations
+- **Type Generation**: Consider `kysely-codegen` for automatic type generation from schema
+
+### Sources
+- [Kysely Official Documentation](https://kysely.dev/)
+- [kysely-d1 Adapter](https://github.com/aidenwallis/kysely-d1)
+- [Cloudflare D1 Community Projects](https://developers.cloudflare.com/d1/reference/community-projects/)
 
 ---
 
@@ -234,6 +308,84 @@ database_id = "<beta-database-id>"
 - [Cloudflare Pages Preview Deployments](https://developers.cloudflare.com/pages/configuration/preview-deployments/)
 - [Custom Branch Aliases](https://developers.cloudflare.com/pages/how-to/custom-branch-aliases/)
 - [Custom Domains for Pages](https://developers.cloudflare.com/pages/configuration/custom-domains/)
+
+---
+
+## 4a. Production Domain Redirect (Pre-GA)
+
+### Decision
+Redirect `speck.codes` to `beta.speck.codes` until General Availability.
+
+### Rationale
+- **Single Source of Truth**: All traffic goes to beta during development period
+- **No Content Duplication**: Avoids maintaining two separate deployments
+- **Clear Signal**: Users understand they're accessing a beta/preview version
+- **Easy GA Transition**: Simply remove redirect rule when ready for production
+
+### Implementation Pattern
+
+**Option 1: Cloudflare Redirect Rules (Recommended)**
+
+In Cloudflare Dashboard → Rules → Redirect Rules:
+
+1. Create new redirect rule:
+   - **Rule name**: "Redirect speck.codes to beta (pre-GA)"
+   - **When incoming requests match**: Hostname equals `speck.codes`
+   - **Then**: Dynamic redirect to `https://beta.speck.codes${http.request.uri.path}`
+   - **Status code**: 302 (Temporary) - use 302 so search engines don't cache permanently
+   - **Preserve query string**: Yes
+
+**Option 2: DNS-Level with Page Rules (Legacy)**
+
+```text
+# Page Rule (being deprecated, use Redirect Rules instead)
+URL: speck.codes/*
+Setting: Forwarding URL (302)
+Destination: https://beta.speck.codes/$1
+```
+
+**Option 3: Worker-Based Redirect**
+
+```typescript
+// workers/redirect.ts (if more complex logic needed)
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    if (url.hostname === 'speck.codes') {
+      url.hostname = 'beta.speck.codes';
+      return Response.redirect(url.toString(), 302);
+    }
+    return fetch(request);
+  }
+};
+```
+
+### DNS Requirements
+
+For the redirect to work, both domains need DNS records:
+
+```text
+# speck.codes zone
+@       A       100::        ; Proxied (orange cloud) - placeholder for redirect
+beta    CNAME   <project>.pages.dev  ; Proxied - actual site
+
+# Or use AAAA with 100:: for apex domain without origin
+```
+
+**Note**: The `100::` IPv6 address is a Cloudflare convention for domains that only need proxy features (like redirects) without an actual origin server.
+
+### GA Transition Plan
+
+When ready for General Availability:
+1. Remove the redirect rule from Cloudflare Dashboard
+2. Point `speck.codes` to the production Pages deployment
+3. Keep `beta.speck.codes` for preview/staging purposes
+4. Consider 301 redirect from `beta.speck.codes` to `speck.codes` post-GA
+
+### Sources
+- [Cloudflare Redirect Rules](https://developers.cloudflare.com/rules/url-forwarding/)
+- [Redirect Rules Cheat Sheet](https://community.cloudflare.com/t/redirect-rules-cheat-sheet/508780)
+- [URL Forwarding with Page Rules](https://developers.cloudflare.com/rules/page-rules/how-to/url-forwarding/)
 
 ---
 

@@ -21,8 +21,11 @@ cd speck-017-consulting-beta-deploy
 # Install dependencies
 bun install
 
-# Install website dependencies
+# Install website dependencies (includes Kysely for type-safe D1 queries)
 cd website && bun install && cd ..
+
+# Note: kysely and kysely-d1 should already be in package.json
+# If not, add them: bun add kysely kysely-d1
 ```
 
 ### 2. Cloudflare Configuration
@@ -109,11 +112,15 @@ website/
 │   │   └── InquiryForm.astro      # Contact form component
 │   ├── pages/
 │   │   └── expert-help.astro      # Help page
+│   ├── lib/
+│   │   └── db.ts                  # Kysely database factory
+│   ├── types/
+│   │   └── database.ts            # Kysely type definitions
 │   └── styles/
 │       └── form.css               # Form styles
 ├── functions/
 │   └── api/
-│       └── inquiry.ts             # D1 inquiry endpoint
+│       └── inquiry.ts             # D1 inquiry endpoint (uses Kysely)
 ├── migrations/
 │   └── 001_create_inquiries.sql   # D1 schema
 ├── wrangler.toml                  # Cloudflare configuration
@@ -125,7 +132,7 @@ website/
 │   └── speck.inquiries.md         # Admin slash command
 └── scripts/
     └── inquiries/
-        └── manage.ts              # Inquiry management script
+        └── manage.ts              # Inquiry management script (uses Kysely)
 ```
 
 ## Common Tasks
@@ -223,7 +230,10 @@ bun test --watch                              # Watch mode
 ## Next Steps
 
 After setup:
-1. Create the help page at `website/src/pages/expert-help.astro`
-2. Create the inquiry form component
-3. Set up the API endpoint in `website/functions/api/inquiry.ts`
-4. Configure beta deployment in Cloudflare Pages dashboard
+1. Create Kysely types at `website/src/types/database.ts`
+2. Create DB factory at `website/src/lib/db.ts`
+3. Create the help page at `website/src/pages/expert-help.astro`
+4. Create the inquiry form component
+5. Set up the API endpoint in `website/functions/api/inquiry.ts` (using Kysely)
+6. Configure beta deployment in Cloudflare Pages dashboard
+7. Set up redirect rule: `speck.codes` → `beta.speck.codes`
