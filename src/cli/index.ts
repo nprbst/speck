@@ -34,6 +34,8 @@ const lazyEnvCommand = (): Promise<typeof import('../../.speck/scripts/env-comma
   import('../../.speck/scripts/env-command.ts');
 const lazyInitCommand = (): Promise<typeof import('../../.speck/scripts/commands/init.ts')> =>
   import('../../.speck/scripts/commands/init.ts');
+const lazyLinkCommand = (): Promise<typeof import('../../.speck/scripts/commands/link.ts')> =>
+  import('../../.speck/scripts/commands/link.ts');
 const lazyLaunchIDECommand = (): Promise<
   typeof import('../../.speck/scripts/worktree/cli-launch-ide.ts')
 > => import('../../.speck/scripts/worktree/cli-launch-ide.ts');
@@ -179,6 +181,21 @@ function createProgram(): Command {
     .action(async (options: Record<string, unknown>) => {
       const module = await lazyInitCommand();
       const args = buildSubcommandArgs([], options);
+      const exitCode = await module.main(args);
+      process.exit(exitCode);
+    });
+
+  // ==========================================================================
+  // link command
+  // ==========================================================================
+  program
+    .command('link')
+    .description('Link repository to multi-repo speck root')
+    .argument('<path>', 'Path to speck root directory')
+    .option('--json', 'Output in JSON format')
+    .action(async (path: string, options: Record<string, unknown>) => {
+      const module = await lazyLinkCommand();
+      const args = [path, ...buildSubcommandArgs([], options)];
       const exitCode = await module.main(args);
       process.exit(exitCode);
     });
