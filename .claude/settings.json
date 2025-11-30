@@ -3,8 +3,12 @@
     "allow": [
       "WebSearch",
       "WebFetch",
+      "Read(.speck/**)",
       "Edit(.speck/**)",
-      "Write(.speck/**)"
+      "Write(.speck/**)",
+      "Read(specs/**)",
+      "Edit(specs/**)",
+      "Write(specs/**)"
     ],
     "deny": [],
     "ask": []
