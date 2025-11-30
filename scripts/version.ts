@@ -63,7 +63,7 @@ async function updatePackageJson(newVersion: string): Promise<void> {
   console.log(`✓ Updated package.json: ${oldVersion} → ${newVersion}`);
 }
 
-async function checkGitStatus(skipGit: boolean): Promise<boolean> {
+async function checkGitStatus(skipGit: boolean, allowDirty: boolean): Promise<boolean> {
   if (skipGit) {
     return false; // Not using git
   }
@@ -78,14 +78,19 @@ async function checkGitStatus(skipGit: boolean): Promise<boolean> {
 
   // Check if there are uncommitted changes
   const status = await $`git status --porcelain`.text();
-  if (status.trim()) {
+  if (status.trim() && !allowDirty) {
     console.error('\n❌ Error: Working directory has uncommitted changes');
     console.error('   Please commit or stash your changes before bumping version.');
+    console.error('   Or use --allow-dirty to proceed with uncommitted changes.');
     console.error('   Or use --no-git to skip git operations.\n');
     process.exit(1);
   }
 
-  return true; // Using git and repo is clean
+  if (status.trim() && allowDirty) {
+    console.log('⚠ Warning: Proceeding with uncommitted changes (--allow-dirty)');
+  }
+
+  return true; // Using git
 }
 
 async function commitAndTag(version: string, skipPush: boolean): Promise<void> {
@@ -117,17 +122,18 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.error('Usage: bun run scripts/version.ts <patch|minor|major|1.2.3> [--no-git]');
+    console.error('Usage: bun run scripts/version.ts <patch|minor|major|1.2.3> [--no-git] [--allow-dirty]');
     process.exit(1);
   }
 
   const bump = args[0];
   const skipGit = args.includes('--no-git');
   const skipPush = args.includes('--no-push');
+  const allowDirty = args.includes('--allow-dirty');
 
   try {
     // Check git status first (before making any changes)
-    const useGit = await checkGitStatus(skipGit);
+    const useGit = await checkGitStatus(skipGit, allowDirty);
 
     // Read current version
     const packageJsonPath = join(process.cwd(), 'package.json');
