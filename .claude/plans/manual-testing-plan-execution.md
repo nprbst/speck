@@ -162,20 +162,32 @@ cd ..
 - [ ] Prompt appeared for parent/local choice
 
 ### Test 2.4: Backend Plan Generation
-**User action**: Run `/speck.plan` from backend
+**User action**: Run `/speck.plan` from backend (worktree)
 **I verify**:
-- [ ] `backend/specs/001-auth-system/plan.md` exists (local)
+- [ ] `backend-worktree/specs/NNN-feature/plan.md` exists (local to child repo)
+- [ ] `backend-worktree/specs/NNN-feature/research.md` exists (local to child repo)
+- [ ] `backend-worktree/specs/NNN-feature/data-model.md` exists (local to child repo)
+- [ ] `backend-worktree/specs/NNN-feature/quickstart.md` exists (local to child repo)
+- [ ] `../specs/NNN-feature/contracts/` exists (shared at root repo)
 - [ ] Uses backend's constitution
+- [ ] Backend creates the shared contracts (first repo to run plan)
 
 ### Test 2.5: Frontend Plan Generation
 **User action**: In `frontend/`, checkout same feature branch, run `/speck.plan`
 **I verify**:
-- [ ] `frontend/specs/001-auth-system/plan.md` exists
+- [ ] `frontend/specs/NNN-feature/plan.md` exists (local to child repo)
+- [ ] `frontend/specs/NNN-feature/research.md` exists (local - its own research)
+- [ ] `frontend/specs/NNN-feature/data-model.md` exists (local - its own data model)
+- [ ] `frontend/specs/NNN-feature/quickstart.md` exists (local - its own quickstart)
+- [ ] Frontend READS existing shared contracts from `../specs/NNN-feature/contracts/`
+- [ ] Frontend does NOT create new contracts (uses backend's)
 - [ ] Different from backend plan (uses frontend constitution)
 
 ### Test 2.6: Shared Contracts Access
-**I create**: `../specs/001-auth-system/contracts/api.md`
-**I verify**: Both repos can access via symlink
+**I verify**:
+- [ ] Contracts at `../specs/NNN-feature/contracts/` (created by backend in 2.4)
+- [ ] Both repos can read contracts from shared location
+- [ ] Contracts are symlinked or accessible via the shared specs directory
 
 ### Test 2.7: Child-Only Spec Creation
 **User action**: In `backend/`, run `/speck.specify "Backend-only database optimization"`, choose "local (child-only)"

@@ -111,12 +111,25 @@ describe('Path Resolution', () => {
         'FEATURE_SPEC',
         'IMPL_PLAN',
         'TASKS',
+        'CONTRACTS_DIR',
+        'RESEARCH',
+        'DATA_MODEL',
+        'QUICKSTART',
       ];
 
       for (const field of requiredFields) {
         expect(paths).toHaveProperty(field);
         expect(paths[field as keyof typeof paths]).toBeTruthy();
       }
+    });
+
+    it('should have CONTRACTS_DIR point to shared location (featureDir)', async () => {
+      const paths = await getFeaturePaths();
+
+      // CONTRACTS_DIR should be under FEATURE_DIR (shared), not REPO_ROOT (local)
+      // In single-repo mode, FEATURE_DIR === REPO_ROOT/specs/feature, so this still works
+      expect(paths.CONTRACTS_DIR).toContain('contracts');
+      expect(paths.CONTRACTS_DIR.startsWith(paths.FEATURE_DIR)).toBe(true);
     });
   });
 

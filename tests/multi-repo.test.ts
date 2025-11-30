@@ -210,6 +210,23 @@ describe('Phase 4: User Story 2 - Multi-Repo Support', () => {
     delete process.env.SPECIFY_FEATURE;
   });
 
+  test('T040a: getFeaturePaths() CONTRACTS_DIR uses speckRoot (shared) in multi-repo mode', async () => {
+    process.chdir(frontendDir);
+
+    await fs.mkdir(path.join(speckRoot, 'specs', '001-test'), { recursive: true });
+    process.env.SPECIFY_FEATURE = '001-test';
+    clearSpeckCache();
+
+    const paths = await getFeaturePaths();
+    const realSpeckRoot = await fs.realpath(speckRoot);
+
+    // CONTRACTS_DIR should be shared (at speckRoot), not local (at repoRoot)
+    expect(paths.CONTRACTS_DIR.startsWith(realSpeckRoot)).toBe(true);
+    expect(paths.CONTRACTS_DIR).toContain(path.join('specs', '001-test', 'contracts'));
+
+    delete process.env.SPECIFY_FEATURE;
+  });
+
   test('T041: Both frontend and backend repos can read the same spec', async () => {
     // Create shared spec
     const specDir = path.join(speckRoot, 'specs', '001-test');
