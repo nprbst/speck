@@ -1,6 +1,6 @@
 {
   "name": "speck",
-  "version": "1.8.34",
+  "version": "1.8.35",
   "description": "Claude Code-Optimized Specification Framework",
   "type": "module",
   "engines": {
