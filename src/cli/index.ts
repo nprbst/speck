@@ -274,12 +274,11 @@ function createProgram(): Command {
   // ==========================================================================
   program
     .command('update-agent-context')
-    .description('Update agent-specific context files with technology stack')
-    .argument('[agent]', 'Agent type (claude, gemini, copilot, cursor-agent, qwen, opencode, codex, windsurf, kilocode, auggie, roo, codebuddy, amp, shai, q)')
+    .description('Update CLAUDE.md context file with technology stack from current feature')
     .option('--json', 'Output in JSON format')
-    .action(async (agent: string | undefined, options: Record<string, unknown>) => {
+    .action(async (options: Record<string, unknown>) => {
       const module = await lazyUpdateAgentContext();
-      const args = agent ? [agent, ...buildSubcommandArgs([], options)] : buildSubcommandArgs([], options);
+      const args = buildSubcommandArgs([], options);
       const exitCode = await module.main(args);
       process.exit(exitCode);
     });
