@@ -4,9 +4,11 @@ import sitemap from '@astrojs/sitemap';
 import cloudflare from '@astrojs/cloudflare';
 
 // https://astro.build/config
+// Using 'server' output with prerender:true on static pages
+// API routes use prerender:false for SSR
 export default defineConfig({
   site: 'https://beta.speck.codes',
-  output: 'hybrid', // Static by default, opt-in to SSR for API endpoints
+  output: 'server',
   adapter: cloudflare({
     platformProxy: {
       enabled: true, // Enable local access to D1 bindings

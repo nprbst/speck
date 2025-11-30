@@ -15,9 +15,15 @@
  */
 
 import { $ } from 'bun';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 const DATABASE_NAME = 'speck-inquiries';
 const USE_REMOTE = process.env.USE_REMOTE === 'true' || process.argv.includes('--remote');
+
+// Find the website directory (contains wrangler.toml)
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const WEBSITE_DIR = resolve(__dirname, '../../../website');
 
 interface Inquiry {
   id: number;
@@ -40,9 +46,9 @@ async function executeSQL(sql: string): Promise<D1Response> {
   const locationFlag = USE_REMOTE ? '--remote' : '--local';
 
   try {
-    // Escape the SQL for command line
-    const escapedSQL = sql.replace(/'/g, "\\'");
-    const result = await $`wrangler d1 execute ${DATABASE_NAME} ${locationFlag} --command="${escapedSQL}" --json`.quiet();
+    // Run wrangler from the website directory where wrangler.toml lives
+    // Use double quotes for --command and let Bun shell handle the escaping
+    const result = await $`cd ${WEBSITE_DIR} && bunx wrangler d1 execute ${DATABASE_NAME} ${locationFlag} --json --command=${sql}`.quiet();
 
     // Parse the JSON output
     const output = result.stdout.toString().trim();
