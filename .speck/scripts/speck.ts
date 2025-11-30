@@ -257,6 +257,41 @@ program
     }
   });
 
+// next-feature command
+const nextFeatureEntry = registry["next-feature"]!;
+program
+  .command("next-feature [args...]")
+  .description(nextFeatureEntry.description)
+  .allowUnknownOption() // Allow flags to pass through
+  .action(async (args: unknown) => {
+    const argsArray: string[] = Array.isArray(args) ? (args as string[]) : [String(args)];
+
+    // Handle lazyMain-based commands
+    if (nextFeatureEntry.lazyMain) {
+      const mainFn = await nextFeatureEntry.lazyMain();
+      const exitCode = await mainFn(argsArray);
+      process.exit(exitCode);
+    } else if (nextFeatureEntry.handler) {
+      const commandString = `next-feature ${argsArray.join(" ")}`;
+      const context: CommandContext = {
+        mode: detectMode(),
+        rawCommand: commandString,
+        workingDirectory: process.cwd(),
+        isInteractive: process.stdin.isTTY ?? false,
+      };
+
+      const parsedArgs = nextFeatureEntry.parseArgs!(commandString) as unknown;
+      const result = await nextFeatureEntry.handler(parsedArgs, context);
+
+      if (result.success) {
+        console.log(result.output);
+      } else {
+        console.error(result.errorOutput);
+        process.exit(result.exitCode);
+      }
+    }
+  });
+
 /**
  * Main entry point - CLI mode only
  */

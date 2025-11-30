@@ -45,6 +45,11 @@ const lazyInitMain = async (): Promise<MainFunction> => {
   return module.main;
 };
 
+const lazyNextFeatureMain = async (): Promise<MainFunction> => {
+  const module = await import("../next-feature");
+  return module.main;
+};
+
 /**
  * Command registry mapping command names to handlers
  *
@@ -104,6 +109,11 @@ export const registry: CommandRegistry = {
   init: {
     lazyMain: lazyInitMain,
     description: "Initialize Speck in current repository and install CLI globally",
+    version: "1.0.0",
+  },
+  "next-feature": {
+    lazyMain: lazyNextFeatureMain,
+    description: "Get next feature number and detect multi-repo mode",
     version: "1.0.0",
   },
 };
