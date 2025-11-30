@@ -443,7 +443,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
       }
     }
 
-    // Also copy common/ and contracts/ directories if they exist
+    // Also copy common/, contracts/, worktree/, and lib/ directories if they exist
     const commonPath = join(config.scriptsSourceDir, 'common');
     if (existsSync(commonPath)) {
       await copyDir(commonPath, join(scriptsDestDir, 'common'));
@@ -452,6 +452,16 @@ async function copyPluginFiles(): Promise<FileCounts> {
     const contractsPath = join(config.scriptsSourceDir, 'contracts');
     if (existsSync(contractsPath)) {
       await copyDir(contractsPath, join(scriptsDestDir, 'contracts'));
+    }
+
+    const worktreePath = join(config.scriptsSourceDir, 'worktree');
+    if (existsSync(worktreePath)) {
+      await copyDir(worktreePath, join(scriptsDestDir, 'worktree'));
+    }
+
+    const libPath = join(config.scriptsSourceDir, 'lib');
+    if (existsSync(libPath)) {
+      await copyDir(libPath, join(scriptsDestDir, 'lib'));
     }
 
     // Copy dist/ directory containing the bundled hooks and CLI

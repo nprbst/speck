@@ -34,6 +34,9 @@ const lazyEnvCommand = (): Promise<typeof import('../../.speck/scripts/env-comma
   import('../../.speck/scripts/env-command.ts');
 const lazyInitCommand = (): Promise<typeof import('../../.speck/scripts/commands/init.ts')> =>
   import('../../.speck/scripts/commands/init.ts');
+const lazyLaunchIDECommand = (): Promise<
+  typeof import('../../.speck/scripts/worktree/cli-launch-ide.ts')
+> => import('../../.speck/scripts/worktree/cli-launch-ide.ts');
 
 /**
  * Output mode for CLI commands
@@ -227,6 +230,24 @@ function createProgram(): Command {
       const args = buildSubcommandArgs([], options);
       const exitCode = await module.main(args);
       process.exit(exitCode);
+    });
+
+  // ==========================================================================
+  // launch-ide command
+  // ==========================================================================
+  program
+    .command('launch-ide')
+    .description('Launch IDE in worktree (for deferred IDE launch)')
+    .requiredOption('--worktree-path <path>', 'Path to worktree directory')
+    .option('--repo-path <path>', 'Path to repository root for config (default: .)')
+    .option('--json', 'Output as JSON')
+    .action(async (options: Record<string, unknown>) => {
+      const module = await lazyLaunchIDECommand();
+      await module.executeLaunchIDECommand({
+        worktreePath: options.worktreePath as string,
+        repoPath: (options.repoPath as string) || '.',
+        json: options.json === true,
+      });
     });
 
   // ==========================================================================
