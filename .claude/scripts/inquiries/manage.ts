@@ -9,6 +9,8 @@
  *   bun run .claude/scripts/inquiries/manage.ts mark-contacted <id>
  *   bun run .claude/scripts/inquiries/manage.ts archive <id> [--notes="reason"]
  *   bun run .claude/scripts/inquiries/manage.ts stats
+ *   bun run .claude/scripts/inquiries/manage.ts respond <id>
+ *   bun run .claude/scripts/inquiries/manage.ts send <id> --subject="..." --body="..."
  *
  * This script uses Wrangler to execute SQL against the D1 database.
  * Ensure you have Wrangler configured with your Cloudflare credentials.
@@ -17,6 +19,8 @@
 import { $ } from 'bun';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { markdownToHtml, renderEmailTemplate } from './templates';
+import { sendEmail, isEmailConfigured } from './email';
 
 const DATABASE_NAME = 'speck-inquiries';
 const USE_REMOTE = process.env.USE_REMOTE === 'true' || process.argv.includes('--remote');
@@ -232,6 +236,129 @@ async function showStats(): Promise<void> {
   console.log('═'.repeat(40));
 }
 
+/**
+ * Fetch inquiry and format for Claude drafting
+ */
+async function respondToInquiry(id: number): Promise<void> {
+  const sql = `SELECT * FROM inquiries WHERE id = ${id}`;
+  const result = await executeSQL(sql);
+
+  if (!result.success) {
+    console.error('Error fetching inquiry:', result.error);
+    process.exit(1);
+  }
+
+  const inquiry = result.results?.[0];
+
+  if (!inquiry) {
+    console.log(`Inquiry #${id} not found.`);
+    process.exit(1);
+  }
+
+  // Output formatted for Claude to draft a response
+  console.log(`\n📝 Draft Response for Inquiry #${inquiry.id}\n`);
+  console.log('═'.repeat(70));
+  console.log(`\nTo: ${inquiry.email}`);
+  console.log(`Submitted: ${formatDate(inquiry.submitted_at)}`);
+  console.log(`Status: ${inquiry.status}`);
+  console.log('\n─── Original Message ───\n');
+  console.log(inquiry.message);
+  console.log('\n─── Draft Your Response Below ───\n');
+  console.log(`Subject: Re: Your Speck Inquiry`);
+  console.log(`\nDear visitor,\n`);
+  console.log(`Thank you for your interest in Speck.\n`);
+  console.log(`[Your response here]\n`);
+  console.log(`Best regards,`);
+  console.log(`The Speck Team`);
+  console.log('\n═'.repeat(70));
+  console.log('\nTo send this response, use:');
+  console.log(`  bun run .claude/scripts/inquiries/manage.ts send ${id} --subject="Re: Your Speck Inquiry" --body="Your markdown response here"${USE_REMOTE ? ' --remote' : ''}`);
+  console.log('');
+}
+
+/**
+ * Send email response via Resend and record in D1
+ */
+async function sendResponse(id: number, subject: string, markdownBody: string): Promise<void> {
+  // Check email configuration
+  if (!isEmailConfigured()) {
+    console.error('Error: RESEND_API_KEY environment variable is not set.');
+    console.error('Set it with: export RESEND_API_KEY=your_api_key');
+    process.exit(1);
+  }
+
+  // Fetch the inquiry
+  const sql = `SELECT * FROM inquiries WHERE id = ${id}`;
+  const result = await executeSQL(sql);
+
+  if (!result.success) {
+    console.error('Error fetching inquiry:', result.error);
+    process.exit(1);
+  }
+
+  const inquiry = result.results?.[0];
+
+  if (!inquiry) {
+    console.log(`Inquiry #${id} not found.`);
+    process.exit(1);
+  }
+
+  console.log(`\n📧 Sending response to ${inquiry.email}...\n`);
+
+  // Convert markdown to HTML
+  const bodyHtml = markdownToHtml(markdownBody);
+
+  // Render complete email template
+  const fullHtml = renderEmailTemplate({
+    recipientEmail: inquiry.email,
+    subject,
+    bodyHtml,
+  });
+
+  // Send via Resend
+  const emailResult = await sendEmail({
+    to: inquiry.email,
+    subject,
+    html: fullHtml,
+    text: markdownBody, // Plain text fallback
+  });
+
+  if (!emailResult.success) {
+    console.error('Error sending email:', emailResult.error);
+    process.exit(1);
+  }
+
+  console.log(`✅ Email sent successfully (ID: ${emailResult.messageId})`);
+
+  // Record response in D1
+  const escapedSubject = subject.replace(/'/g, "''");
+  const escapedMarkdown = markdownBody.replace(/'/g, "''");
+  const escapedHtml = fullHtml.replace(/'/g, "''");
+
+  const insertSql = `INSERT INTO responses (inquiry_id, subject, body_markdown, body_html) VALUES (${id}, '${escapedSubject}', '${escapedMarkdown}', '${escapedHtml}')`;
+  const insertResult = await executeSQL(insertSql);
+
+  if (!insertResult.success) {
+    console.error('Warning: Email sent but failed to record in database:', insertResult.error);
+  } else {
+    console.log('📝 Response recorded in database');
+  }
+
+  // Update inquiry status to contacted
+  const updateSql = `UPDATE inquiries SET status = 'contacted', contacted_at = datetime('now') WHERE id = ${id}`;
+  const updateResult = await executeSQL(updateSql);
+
+  if (!updateResult.success) {
+    console.error('Warning: Failed to update inquiry status:', updateResult.error);
+  } else {
+    console.log('✅ Inquiry marked as contacted');
+  }
+
+  console.log('\n═'.repeat(50));
+  console.log('Response sent and recorded successfully!');
+  console.log('═'.repeat(50));
+}
+
 function printUsage(): void {
   console.log(`
 Inquiry Management Script
@@ -245,9 +372,13 @@ Commands:
   mark-contacted <id>                     Mark an inquiry as contacted
   archive <id> [--notes="reason"]         Archive an inquiry with optional notes
   stats                                   Show inquiry statistics
+  respond <id>                            Show inquiry for Claude to draft a response
+  send <id> --subject="..." --body="..."  Send email response via Resend
 
 Options:
   --remote                                Use remote D1 database (default: local)
+  --subject="..."                         Email subject line (for send command)
+  --body="..."                            Email body in markdown (for send command)
 
 Examples:
   bun run .claude/scripts/inquiries/manage.ts list
@@ -256,6 +387,11 @@ Examples:
   bun run .claude/scripts/inquiries/manage.ts mark-contacted 1
   bun run .claude/scripts/inquiries/manage.ts archive 1 --notes="Handled via email"
   bun run .claude/scripts/inquiries/manage.ts stats --remote
+  bun run .claude/scripts/inquiries/manage.ts respond 1
+  bun run .claude/scripts/inquiries/manage.ts send 1 --subject="Re: Inquiry" --body="Thank you..."
+
+Environment Variables:
+  RESEND_API_KEY                          Required for 'send' command
 `);
 }
 
@@ -271,6 +407,12 @@ async function main(): Promise<void> {
 
   const notesFlag = flags.find((f) => f.startsWith('--notes='));
   const notes = notesFlag?.split('=').slice(1).join('=').replace(/^["']|["']$/g, '');
+
+  const subjectFlag = flags.find((f) => f.startsWith('--subject='));
+  const subject = subjectFlag?.split('=').slice(1).join('=').replace(/^["']|["']$/g, '');
+
+  const bodyFlag = flags.find((f) => f.startsWith('--body='));
+  const body = bodyFlag?.split('=').slice(1).join('=').replace(/^["']|["']$/g, '');
 
   switch (command) {
     case 'list':
@@ -306,6 +448,32 @@ async function main(): Promise<void> {
 
     case 'stats':
       await showStats();
+      break;
+
+    case 'respond':
+      const respondId = parseInt(args[1], 10);
+      if (isNaN(respondId)) {
+        console.error('Error: Please provide a valid inquiry ID.');
+        process.exit(1);
+      }
+      await respondToInquiry(respondId);
+      break;
+
+    case 'send':
+      const sendId = parseInt(args[1], 10);
+      if (isNaN(sendId)) {
+        console.error('Error: Please provide a valid inquiry ID.');
+        process.exit(1);
+      }
+      if (!subject) {
+        console.error('Error: --subject is required for send command.');
+        process.exit(1);
+      }
+      if (!body) {
+        console.error('Error: --body is required for send command.');
+        process.exit(1);
+      }
+      await sendResponse(sendId, subject, body);
       break;
 
     default:

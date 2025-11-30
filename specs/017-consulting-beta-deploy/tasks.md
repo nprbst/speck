@@ -137,26 +137,26 @@
 
 ### Setup for User Story 5
 
-- [ ] T060 Install email dependencies: `bun add resend marked` in project root
-- [ ] T061 [P] Install marked types: `bun add -d @types/marked` in project root
-- [ ] T062 Create D1 migration for responses table in website/migrations/002_create_responses.sql
-- [ ] T063 Run responses migration locally: `wrangler d1 migrations apply speck-inquiries --local`
+- [x] T060 Install email dependencies: `bun add resend marked` in project root
+- [x] T061 [P] Install marked types: `bun add -d @types/marked` in project root (not needed - marked has built-in types)
+- [x] T062 Create D1 migration for responses table in website/migrations/002_create_responses.sql
+- [x] T063 Run responses migration locally: `wrangler d1 migrations apply speck-inquiries --local`
 
 ### Tests for User Story 5
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T064 [P] [US5] Unit tests for email template rendering in tests/unit/email-templates.test.ts
-- [ ] T065 [P] [US5] Unit tests for markdown to HTML conversion in tests/unit/email-markdown.test.ts
+- [x] T064 [P] [US5] Unit tests for email template rendering in tests/unit/email-templates.test.ts
+- [x] T065 [P] [US5] Unit tests for markdown to HTML conversion in tests/unit/email-markdown.test.ts
 
 ### Implementation for User Story 5
 
-- [ ] T066 [US5] Create email HTML template function in .claude/scripts/inquiries/templates.ts
-- [ ] T067 [US5] Create Resend email client wrapper in .claude/scripts/inquiries/email.ts
-- [ ] T068 [US5] Implement `respond` action (fetch inquiry, format for Claude drafting) in .claude/scripts/inquiries/manage.ts
-- [ ] T069 [US5] Implement `send` action (markdown→HTML, Resend API, D1 insert, status update) in .claude/scripts/inquiries/manage.ts
-- [ ] T070 [US5] Update /speck.inquiries slash command with respond/send documentation in .claude/commands/speck.inquiries.md
-- [ ] T071 [US5] Test email workflow against local D1 database with test Resend API key
+- [x] T066 [US5] Create email HTML template function in .claude/scripts/inquiries/templates.ts
+- [x] T067 [US5] Create Resend email client wrapper in .claude/scripts/inquiries/email.ts
+- [x] T068 [US5] Implement `respond` action (fetch inquiry, format for Claude drafting) in .claude/scripts/inquiries/manage.ts
+- [x] T069 [US5] Implement `send` action (markdown→HTML, Resend API, D1 insert, status update) in .claude/scripts/inquiries/manage.ts
+- [x] T070 [US5] Update /speck.inquiries slash command with respond/send documentation in .claude/commands/speck.inquiries.md
+- [x] T071 [US5] Test email workflow against local D1 database with test Resend API key
 
 ### Email Routing Setup for User Story 5
 
