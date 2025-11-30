@@ -58,7 +58,7 @@ export const IDEConfigSchema = z.object({
  */
 export const WorktreeConfigSchema = z.object({
   enabled: z.boolean().default(true),
-  worktreePath: z.string().default(".speck/worktrees"),
+  worktreePath: z.string().default("../"),
   branchPrefix: z.string().optional(),
   ide: IDEConfigSchema,
   dependencies: DependencyConfigSchema,
@@ -141,7 +141,7 @@ export const DEFAULT_FILE_RULES: FileRule[] = [
  */
 export const DEFAULT_WORKTREE_CONFIG: WorktreeConfig = {
   enabled: true,
-  worktreePath: ".speck/worktrees",
+  worktreePath: "../",
   ide: {
     autoLaunch: false,
     editor: "vscode",
