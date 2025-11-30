@@ -112,6 +112,10 @@ export const CLAUDE_SETTINGS_TEMPLATE = {
 /**
  * VSCode tasks.json template for auto-opening Claude panel
  * Using terminal-based Claude with initial prompt for fully automated handoff
+ *
+ * NOTE: We use a login shell (-l) to ensure PATH is properly set up,
+ * since VSCode tasks run in non-login shells that may not have ~/.nvm,
+ * ~/.local/bin, or other user PATH additions.
  */
 export const VSCODE_TASKS_TEMPLATE = {
   version: "2.0.0",
@@ -119,8 +123,12 @@ export const VSCODE_TASKS_TEMPLATE = {
     {
       label: "Start Claude with Handoff",
       type: "shell",
-      command: "claude",
-      args: ["Read .speck/handoff.md and proceed with the task described there."],
+      command: "${env:SHELL}",
+      args: [
+        "-l",
+        "-c",
+        "claude 'Read .speck/handoff.md and proceed with the task described there.'"
+      ],
       runOptions: {
         runOn: "folderOpen",
       },

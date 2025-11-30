@@ -13,6 +13,7 @@ import { executeRemoveCommand } from "./cli-remove";
 import { executeListCommand } from "./cli-list";
 import { executePruneCommand } from "./cli-prune";
 import { executeInitCommand } from "./cli-init";
+import { executeLaunchIDECommand } from "./cli-launch-ide";
 
 const USAGE = `
 Speck Worktree CLI
@@ -21,11 +22,12 @@ Usage:
   bun .speck/scripts/worktree/cli.ts <command> [options]
 
 Commands:
-  create    Create a new worktree for a branch
-  remove    Remove an existing worktree
-  list      List all worktrees
-  prune     Cleanup stale worktree references
-  init      Initialize or update worktree configuration
+  create      Create a new worktree for a branch
+  remove      Remove an existing worktree
+  list        List all worktrees
+  prune       Cleanup stale worktree references
+  init        Initialize or update worktree configuration
+  launch-ide  Launch IDE in an existing worktree (deferred launch)
 
 Create Options:
   --branch <name>         Branch name for the worktree
@@ -56,6 +58,11 @@ Init Options:
   --repo-path <path>      Path to repository root (default: .)
   --defaults              Use default configuration values (non-interactive)
   --minimal               Use minimal configuration (worktree enabled only)
+  --json                  Output results as JSON
+
+Launch-IDE Options:
+  --worktree-path <path>  Path to the worktree directory (required)
+  --repo-path <path>      Path to repository root for config (default: .)
   --json                  Output results as JSON
 
 Global Options:
@@ -103,7 +110,7 @@ async function main(): Promise<void> {
 
   // Parse command (first positional arg)
   const command = args[0];
-  if (!command || !["create", "remove", "list", "prune", "init"].includes(command)) {
+  if (!command || !["create", "remove", "list", "prune", "init", "launch-ide"].includes(command)) {
     console.error(`Error: Unknown command '${command || "(none)"}'`);
     console.log(USAGE);
     process.exit(1);
@@ -189,6 +196,19 @@ async function main(): Promise<void> {
           repoPath,
           defaults: values.defaults ?? false,
           minimal: values.minimal ?? false,
+          json: values.json ?? false,
+        });
+        break;
+      }
+
+      case "launch-ide": {
+        if (!values["worktree-path"]) {
+          throw new Error("--worktree-path is required for 'launch-ide' command");
+        }
+
+        await executeLaunchIDECommand({
+          worktreePath: values["worktree-path"],
+          repoPath,
           json: values.json ?? false,
         });
         break;
