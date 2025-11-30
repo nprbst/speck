@@ -7,6 +7,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 - File-based configuration (`.speck/config.json`), Git worktrees as peer directories of main repository (naming based on repository layout) (012-worktree-integration)
 - TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees) (015-scope-simplification)
 - File-based (`.speck/config.json`, `.speck/branches.json`, `.speck/handoff.md`) (015-scope-simplification)
+- TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (file operations), Zod (validation) (016-atomic-transform-rollback)
+- File-based (`.speck/` directory, JSON metadata, Markdown artifacts) (016-atomic-transform-rollback)
 
 ### Core Runtime & Languages
 - TypeScript 5.3+ with strict type checking
@@ -123,9 +125,9 @@ bun test                  # Run all tests (unit, visual, a11y)
 - **Parent spec**: The root specification directory referenced by `parentSpecId` field
 
 ## Recent Changes
+- 016-atomic-transform-rollback: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (file operations), Zod (validation)
 - 015-scope-simplification: Added TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees)
 - 012-worktree-integration: Added TypeScript 5.3+ with Bun 1.0+ runtime + Zod (schema validation), Git 2.5+ CLI (worktree support), Bun Shell API
-- 012-worktree-integration: Added TypeScript 5.3+ with Bun 1.0+ runtime + Zod (schema validation), Git 2.30+ CLI, Bun Shell API
 
 
 <!-- MANUAL ADDITIONS START -->

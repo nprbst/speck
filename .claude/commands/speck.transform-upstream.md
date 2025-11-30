@@ -18,6 +18,11 @@ You **MUST** consider the user input before proceeding (if not empty).
 Orchestrate the transformation of bash scripts and slash-commands from an
 upstream release by sequentially invoking two specialized transformation agents.
 
+**ATOMIC STAGING**: This command uses a staging pattern for atomic transformation.
+All agent outputs go to staging directories first. Only after both agents succeed
+are files atomically committed to production. On any failure, staging is rolled
+back and production remains unchanged.
+
 ## Execution Steps
 
 ### 1. Setup and Validation
@@ -40,7 +45,34 @@ upstream release by sequentially invoking two specialized transformation agents.
      ```
    - Exit with error if Bun missing
 
-3. **Resolve version to transform**:
+3. **Check for orphaned staging** (before any other operations):
+   ```bash
+   bun run .speck/scripts/transform-upstream/index.ts status
+   ```
+   - If orphaned staging directories exist, prompt user:
+     ```
+     ⚠️  ORPHANED STAGING DETECTED
+
+     Found incomplete staging from previous transformation:
+       Version: <version>
+       Status: <status>
+       Started: <timestamp>
+       Files: X scripts, Y commands
+
+     Options:
+       1. Commit - Complete the transformation (if both agents finished)
+       2. Rollback - Discard staging and start fresh
+       3. Inspect - View staged files before deciding
+
+     Enter choice (commit/rollback/inspect):
+     ```
+   - Handle user response by calling:
+     ```bash
+     bun run .speck/scripts/transform-upstream/index.ts recover <dir> <action>
+     ```
+   - Block new transformation until orphaned staging is resolved
+
+4. **Resolve version to transform**:
    - If `--version <version>` provided: use that version
    - Otherwise: resolve `upstream/latest` symlink to get version
    ```bash
@@ -48,7 +80,7 @@ upstream release by sequentially invoking two specialized transformation agents.
    ```
    - Example: `upstream/latest` → `v0.0.85`
 
-4. **Validate upstream release exists**:
+5. **Validate upstream release exists**:
    - Check that `upstream/<version>/` directory exists
    - If not found, show error:
      ```
@@ -134,9 +166,41 @@ Find source files to transform and detect changes from previous version:
    Skipping transformation agents - updating status only.
    ```
 
-### 3. Agent Invocation Phase
+### 3. Initialize Staging
 
-Invoke transformation agents sequentially (skip agents if no files changed):
+**CRITICAL**: Initialize staging BEFORE invoking any agents.
+
+```bash
+bun run .speck/scripts/transform-upstream/index.ts init <version>
+```
+
+Parse the JSON output to extract staging directories:
+```json
+{
+  "success": true,
+  "rootDir": ".speck/.transform-staging/<version>/",
+  "scriptsDir": ".speck/.transform-staging/<version>/scripts/",
+  "commandsDir": ".speck/.transform-staging/<version>/commands/",
+  "agentsDir": ".speck/.transform-staging/<version>/agents/",
+  "skillsDir": ".speck/.transform-staging/<version>/skills/"
+}
+```
+
+Store these as:
+- `STAGING_ROOT`: rootDir
+- `STAGING_SCRIPTS_DIR`: scriptsDir (Agent 1 OUTPUT_DIR)
+- `STAGING_COMMANDS_DIR`: commandsDir (Agent 2 OUTPUT_DIR for commands)
+- `STAGING_AGENTS_DIR`: agentsDir (Agent 2 OUTPUT_DIR for agents)
+- `STAGING_SKILLS_DIR`: skillsDir (Agent 2 OUTPUT_DIR for skills)
+
+If initialization fails (e.g., orphaned staging exists), the error will indicate
+this. Handle as described in step 1.3.
+
+### 4. Agent Invocation Phase
+
+Invoke transformation agents sequentially (skip agents if no files changed).
+
+**All agent output goes to staging directories, NOT production.**
 
 #### Agent 1: Bash-to-Bun Transformation
 
@@ -160,7 +224,7 @@ Task tool parameters:
     **UPSTREAM_VERSION**: <version>
     **PREVIOUS_VERSION**: <PREV_VERSION> (or "none" if first transformation)
     **SOURCE_DIR**: upstream/<version>/.specify/scripts/bash/
-    **OUTPUT_DIR**: .speck/scripts/
+    **OUTPUT_DIR**: <STAGING_SCRIPTS_DIR>  ← STAGING DIRECTORY, NOT PRODUCTION
     **CHANGED_BASH_SCRIPTS**:
     [List ONLY the changed bash script paths (new + modified), one per line]
 
@@ -224,6 +288,20 @@ Task tool parameters:
 
 **Wait for agent completion** before proceeding to next agent.
 
+**Record Agent 1 result** (even if skipped - use empty result):
+
+After Agent 1 completes, record the result by importing and calling the
+orchestration function. Parse the agent's JSON output for these values:
+- `success`: boolean
+- `filesWritten`: array of file paths written to staging
+- `error`: error message if failed
+- `duration`: execution time in ms
+
+If Agent 1 fails:
+- The orchestration will automatically rollback staging
+- Report error to user
+- Stop execution (do not invoke Agent 2)
+
 **Collect results**:
 
 - Parse JSON from agent output
@@ -253,7 +331,9 @@ Task tool parameters:
     **UPSTREAM_VERSION**: <version>
     **PREVIOUS_VERSION**: <PREV_VERSION> (or "none" if first transformation)
     **SOURCE_DIR**: upstream/<version>/.claude/commands/
-    **OUTPUT_DIR**: .claude/commands/
+    **OUTPUT_DIR_COMMANDS**: <STAGING_COMMANDS_DIR>  ← STAGING DIRECTORY
+    **OUTPUT_DIR_AGENTS**: <STAGING_AGENTS_DIR>  ← STAGING DIRECTORY
+    **OUTPUT_DIR_SKILLS**: <STAGING_SKILLS_DIR>  ← STAGING DIRECTORY
     **CHANGED_SPECKIT_COMMANDS**:
     [List ONLY the changed speckit command paths (new + modified), one per line]
 
@@ -325,6 +405,15 @@ Task tool parameters:
 
 **Wait for agent completion**.
 
+**Record Agent 2 result** (even if skipped - use empty result):
+
+After Agent 2 completes, record the result. Parse the agent's JSON output.
+
+If Agent 2 fails:
+- The orchestration will automatically rollback ALL staging (including Agent 1 output)
+- Report error to user
+- Production remains unchanged
+
 **Collect results**:
 
 - Parse JSON from agent output
@@ -332,7 +421,40 @@ Task tool parameters:
 - Extract list of skipped commands
 - Check for errors or warnings
 
-### 4. Transformation History Tracking (FR-013)
+### 5. Commit Staging to Production
+
+After both agents succeed, commit the staged files to production:
+
+1. **Check for file conflicts**:
+   The commit process automatically checks if any production files were modified
+   since staging began (conflict detection).
+
+2. **If conflicts detected**:
+   ```
+   ⚠️  FILE CONFLICTS DETECTED
+
+   The following production files were modified during transformation:
+     - .speck/scripts/foo.ts (modified 2m ago)
+     - .claude/commands/speck.bar.md (modified 1m ago)
+
+   Options:
+     1. Proceed anyway (overwrite changes)
+     2. Abort and inspect manually
+
+   Enter choice (proceed/abort):
+   ```
+
+3. **Commit if no conflicts or user approves**:
+   The staging system atomically moves all files to production:
+   - `.speck/.transform-staging/<version>/scripts/*` → `.speck/scripts/`
+   - `.speck/.transform-staging/<version>/commands/*` → `.claude/commands/`
+   - `.speck/.transform-staging/<version>/agents/*` → `.claude/agents/`
+   - `.speck/.transform-staging/<version>/skills/*` → `.claude/skills/`
+
+4. **Cleanup**:
+   After successful commit, staging directory is automatically removed.
+
+### 6. Transformation History Tracking (FR-013)
 
 Record factoring decisions in `.speck/transformation-history.json`:
 
@@ -403,7 +525,7 @@ Record factoring decisions in `.speck/transformation-history.json`:
    );
    ```
 
-### 5. Status Tracking
+### 7. Status Tracking
 
 Update `upstream/releases.json` with transformation status:
 
@@ -417,7 +539,7 @@ Or if any agent failed:
 bun run .speck/scripts/common/json-tracker.ts update-status <version> failed "<error message>"
 ```
 
-### 6. Report Results
+### 8. Report Results
 
 Present transformation summary to user:
 
@@ -523,16 +645,24 @@ Status: failed (no changes made - atomic rollback)
 
 **Critical**: Transformation is atomic - either complete success or no changes.
 
-- If Agent 1 fails → no files modified, status updated to "failed"
-- If Agent 2 fails → rollback Agent 1 changes, status updated to "failed"
-- Only on both agents succeeding → commit all changes, status "transformed"
+This is achieved through the staging pattern (016-atomic-transform-rollback):
 
-Agents should use temp directories and atomic moves to ensure this property.
+1. **Staging directory created** at `.speck/.transform-staging/<version>/`
+2. **Agent 1 writes to staging** (`staging/scripts/`)
+3. **Agent 2 writes to staging** (`staging/commands/`, `staging/agents/`, `staging/skills/`)
+4. **Atomic commit** moves all files to production using POSIX rename()
+5. **On any failure** → staging deleted, production unchanged
+
+Failure scenarios:
+- If Agent 1 fails → staging directory deleted, production unchanged
+- If Agent 2 fails → entire staging directory deleted (including Agent 1 output), production unchanged
+- If commit fails → partial commit is possible (documented), staging preserved for recovery
+- If process crashes → orphaned staging detected on next run, user prompted for recovery
 
 ## Notes
 
-- **No bash script**: This command orchestrates agents directly, no
-  `.speck/scripts/transform-upstream.ts` needed
+- **Staging orchestration**: Uses `.speck/scripts/transform-upstream/index.ts` for
+  staging lifecycle management (create, record, commit, rollback, recover)
 - **Version resolution**: `upstream/latest` symlink provides default version
 - **Idempotent**: Can re-run safely - overwrites previous transformation
 - **Status tracking**: `upstream/releases.json` tracks all transformation
@@ -556,16 +686,25 @@ Agents should use temp directories and atomic moves to ensure this property.
 
 ## Architecture Note
 
-This slash command directly orchestrates the transformation agents. Unlike
-`/speck.check-upstream` and `/speck.pull-upstream` which delegate to Bun
-scripts, `/speck.transform-upstream` handles all orchestration logic inline
-because:
+This slash command orchestrates the transformation agents with staging lifecycle
+support from `.speck/scripts/transform-upstream/index.ts`.
 
-1. **Agent coordination**: Needs to sequence two agents with dependencies
-2. **Context preparation**: Must prepare agent-specific context from discovery
-   phase
-3. **Result aggregation**: Must collect and present results from multiple agents
-4. **Atomic semantics**: Must coordinate rollback across agent boundaries
+**Division of responsibilities**:
 
-This is the intended architecture - transformation orchestration happens at the
-slash command level, not in a Bun script.
+1. **Slash command** (this file):
+   - User interaction (prompts, confirmations)
+   - Discovery and diff detection
+   - Agent invocation via Task tool
+   - Result parsing and reporting
+
+2. **Staging orchestration script** (`.speck/scripts/transform-upstream/index.ts`):
+   - Staging directory lifecycle (create, update, cleanup)
+   - Status tracking (agent results, staging state)
+   - Commit/rollback operations
+   - Orphan detection and recovery
+   - File conflict detection
+
+This separation ensures:
+- Atomic semantics are handled by a tested TypeScript module
+- Slash command focuses on orchestration and UX
+- Staging logic can be unit tested independently
