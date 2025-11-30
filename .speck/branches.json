@@ -1,0 +1,16 @@
+{
+  "version": "2.0.0",
+  "branches": [
+    {
+      "name": "016-atomic-transform-rollback",
+      "specId": "016-atomic-transform-rollback",
+      "createdAt": "2025-11-30T18:14:25.376Z",
+      "updatedAt": "2025-11-30T18:14:25.376Z"
+    }
+  ],
+  "specIndex": {
+    "016-atomic-transform-rollback": [
+      "016-atomic-transform-rollback"
+    ]
+  }
+}
