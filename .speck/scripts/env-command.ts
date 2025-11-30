@@ -128,7 +128,7 @@ async function displayTextOutput(config: SpeckConfig, context: MultiRepoContextM
   console.log("=== Speck Environment Status ===\n");
 
   // Display multi-repo context indicator
-  displayMultiRepoContext(context);
+  await displayMultiRepoContext(context);
 
   // Display branch mapping status
   await displayBranchMappingStatus(config, context);
@@ -137,16 +137,30 @@ async function displayTextOutput(config: SpeckConfig, context: MultiRepoContextM
 /**
  * Display multi-repo context indicator
  */
-function displayMultiRepoContext(context: MultiRepoContextMetadata): void {
+async function displayMultiRepoContext(context: MultiRepoContextMetadata): Promise<void> {
+  // Get current branch
+  let currentBranch = "";
+  try {
+    currentBranch = await getCurrentBranch(context.repoRoot);
+  } catch {
+    // Ignore - repo might have no commits
+  }
+
   if (context.mode === "single-repo") {
     console.log("Mode: Single-repo");
     console.log(`  Repo Root: ${context.repoRoot}`);
     console.log(`  Specs Directory: ${context.specsDir}`);
+    if (currentBranch) {
+      console.log(`  Current Branch: ${currentBranch}`);
+    }
     console.log("");
   } else if (context.context === "root") {
     console.log("Mode: Multi-repo (Root)");
     console.log(`  Speck Root: ${context.speckRoot}`);
     console.log(`  Specs Directory: ${context.specsDir}`);
+    if (currentBranch) {
+      console.log(`  Current Branch: ${currentBranch}`);
+    }
     console.log("");
   } else if (context.context === "child") {
     console.log("Mode: Multi-repo (Child Repository)");
@@ -154,6 +168,9 @@ function displayMultiRepoContext(context: MultiRepoContextMetadata): void {
     console.log(`  Parent Spec: ${context.parentSpecId || "Unknown"}`);
     console.log(`  Repo Root: ${context.repoRoot}`);
     console.log(`  Speck Root: ${context.speckRoot}`);
+    if (currentBranch) {
+      console.log(`  Current Branch: ${currentBranch}`);
+    }
     console.log("");
   }
 }
@@ -286,6 +303,7 @@ interface EnvOutputData {
   speckRoot: string;
   repoRoot: string;
   specsDir: string;
+  currentBranch?: string;
   childRepoName?: string | null;
   parentSpecId?: string | null;
   branchStatus?: {
@@ -298,12 +316,21 @@ interface EnvOutputData {
 }
 
 async function buildEnvOutputData(_config: SpeckConfig, context: MultiRepoContextMetadata): Promise<EnvOutputData> {
+  // Get current branch
+  let currentBranch = "";
+  try {
+    currentBranch = await getCurrentBranch(context.repoRoot);
+  } catch {
+    // Ignore - repo might have no commits
+  }
+
   const output: EnvOutputData = {
     mode: context.mode,
     context: context.context,
     speckRoot: context.speckRoot,
     repoRoot: context.repoRoot,
-    specsDir: context.specsDir
+    specsDir: context.specsDir,
+    currentBranch: currentBranch || undefined
   };
 
   if (context.context === "child") {
