@@ -1,0 +1,23 @@
+# Cloudflare Pages configuration for Speck Website
+# See: https://developers.cloudflare.com/pages/functions/wrangler-configuration/
+
+name = "speck-website"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"
+
+# D1 Database binding
+# After creating the database with `wrangler d1 create speck-inquiries`,
+# update the database_id below with the actual ID from the output
+[[d1_databases]]
+binding = "DB"
+database_name = "speck-inquiries"
+database_id = "<YOUR_DATABASE_ID>"  # Replace with actual database ID
+
+# Environment-specific configuration for beta
+[env.beta]
+vars = { ENVIRONMENT = "beta" }
+
+[[env.beta.d1_databases]]
+binding = "DB"
+database_name = "speck-inquiries"
+database_id = "<YOUR_DATABASE_ID>"  # Replace with actual database ID

@@ -1,0 +1,119 @@
+---
+description: Manage inquiries from the expert-help page stored in Cloudflare D1
+---
+
+# /speck.inquiries
+
+Manage interest inquiries submitted through the expert-help page contact form. This command queries and updates inquiries stored in Cloudflare D1.
+
+## Quick Reference
+
+| Action | Command |
+|--------|---------|
+| List all new inquiries | `/speck.inquiries list` |
+| Filter by status | `/speck.inquiries list --status=contacted` |
+| View inquiry details | `/speck.inquiries view 123` |
+| Mark as contacted | `/speck.inquiries mark-contacted 123` |
+| Archive inquiry | `/speck.inquiries archive 123 --notes="Handled"` |
+| View statistics | `/speck.inquiries stats` |
+
+## Usage
+
+Run the inquiry management script with the specified action:
+
+```bash
+bun run .claude/scripts/inquiries/manage.ts <action> [options]
+```
+
+### Actions
+
+**list** - Show recent inquiries (newest first)
+```bash
+# All inquiries
+bun run .claude/scripts/inquiries/manage.ts list
+
+# Filter by status
+bun run .claude/scripts/inquiries/manage.ts list --status=new
+bun run .claude/scripts/inquiries/manage.ts list --status=contacted
+bun run .claude/scripts/inquiries/manage.ts list --status=archived
+```
+
+**view** - Show full details of a specific inquiry
+```bash
+bun run .claude/scripts/inquiries/manage.ts view <id>
+```
+
+**mark-contacted** - Update inquiry status to "contacted" and set timestamp
+```bash
+bun run .claude/scripts/inquiries/manage.ts mark-contacted <id>
+```
+
+**archive** - Archive an inquiry with optional notes
+```bash
+bun run .claude/scripts/inquiries/manage.ts archive <id>
+bun run .claude/scripts/inquiries/manage.ts archive <id> --notes="Handled via email on 2025-01-15"
+```
+
+**stats** - Show inquiry statistics by status
+```bash
+bun run .claude/scripts/inquiries/manage.ts stats
+```
+
+## Database Location
+
+By default, the script queries the **local** D1 database (development).
+
+To query the **remote** (production) database, add the `--remote` flag:
+
+```bash
+bun run .claude/scripts/inquiries/manage.ts list --remote
+bun run .claude/scripts/inquiries/manage.ts view 123 --remote
+```
+
+## Inquiry Status Values
+
+| Status | Description | Emoji |
+|--------|-------------|-------|
+| `new` | Unread inquiry, needs attention | 🆕 |
+| `contacted` | Admin has reached out to the inquirer | 📧 |
+| `archived` | Handled or no longer active | 📁 |
+
+## Example Workflow
+
+1. Check for new inquiries:
+   ```bash
+   bun run .claude/scripts/inquiries/manage.ts list --status=new --remote
+   ```
+
+2. Review an inquiry:
+   ```bash
+   bun run .claude/scripts/inquiries/manage.ts view 42 --remote
+   ```
+
+3. After responding via email, mark as contacted:
+   ```bash
+   bun run .claude/scripts/inquiries/manage.ts mark-contacted 42 --remote
+   ```
+
+4. If no follow-up needed, archive:
+   ```bash
+   bun run .claude/scripts/inquiries/manage.ts archive 42 --notes="Scheduled call for next week" --remote
+   ```
+
+## Prerequisites
+
+- **Wrangler CLI**: Must be installed and authenticated (`wrangler login`)
+- **D1 Database**: The `speck-inquiries` database must exist (created via `wrangler d1 create`)
+- **Migrations**: Run `wrangler d1 migrations apply speck-inquiries` first
+
+## Troubleshooting
+
+**"no such table: inquiries"**
+- Run migrations: `cd website && wrangler d1 migrations apply speck-inquiries --local`
+
+**"authentication required"**
+- Run `wrangler login` to authenticate with Cloudflare
+
+**Empty results**
+- Ensure you're querying the correct database (local vs remote)
+- Check that inquiries have been submitted via the form

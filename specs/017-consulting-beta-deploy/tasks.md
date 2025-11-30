@@ -19,11 +19,11 @@
 
 **Purpose**: Project initialization and Cloudflare configuration
 
-- [ ] T001 Install Astro Cloudflare adapter: `bun add @astrojs/cloudflare` in website/
-- [ ] T002 Install Kysely dependencies: `bun add kysely kysely-d1` in website/
-- [ ] T003 [P] Install Cloudflare Workers types: `bun add -d @cloudflare/workers-types` in website/
-- [ ] T004 [P] Create wrangler.toml with D1 binding placeholder in website/wrangler.toml
-- [ ] T005 Update astro.config.mjs with Cloudflare adapter (hybrid mode, platformProxy enabled) in website/astro.config.mjs
+- [x] T001 Install Astro Cloudflare adapter: `bun add @astrojs/cloudflare` in website/
+- [x] T002 Install Kysely dependencies: `bun add kysely kysely-d1` in website/
+- [x] T003 [P] Install Cloudflare Workers types: `bun add -d @cloudflare/workers-types` in website/
+- [x] T004 [P] Create wrangler.toml with D1 binding placeholder in website/wrangler.toml
+- [x] T005 Update astro.config.mjs with Cloudflare adapter (hybrid mode, platformProxy enabled) in website/astro.config.mjs
 - [ ] T006 Create D1 database via Wrangler: `wrangler d1 create speck-inquiries` and update database_id in wrangler.toml
 
 ---
@@ -34,12 +34,12 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Create D1 migration file with inquiries table schema in website/migrations/001_create_inquiries.sql
-- [ ] T008 [P] Create Kysely type definitions with InquiriesTable interface in website/src/types/database.ts
-- [ ] T009 [P] Create Kysely database factory function in website/src/lib/db.ts
+- [x] T007 Create D1 migration file with inquiries table schema in website/migrations/001_create_inquiries.sql
+- [x] T008 [P] Create Kysely type definitions with InquiriesTable interface in website/src/types/database.ts
+- [x] T009 [P] Create Kysely database factory function in website/src/lib/db.ts
 - [ ] T010 Run D1 migration locally: `wrangler d1 migrations apply speck-inquiries --local`
-- [ ] T011 [P] Create development seed data file in website/migrations/seed.sql
-- [ ] T012 [P] Create environment variable template files (.dev.vars, .env) in website/
+- [x] T011 [P] Create development seed data file in website/migrations/seed.sql
+- [x] T012 [P] Create environment variable template files (.dev.vars, .env) in website/
 - [ ] T013 Configure Turnstile site in Cloudflare Dashboard (localhost, beta.speck.codes, speck.codes)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
@@ -56,16 +56,16 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T014 [P] [US1] E2E test for help page content and navigation in tests/e2e/expert-help.spec.ts
-- [ ] T015 [P] [US1] Accessibility test for help page (90+ Lighthouse) in tests/e2e/expert-help-a11y.spec.ts
+- [x] T014 [P] [US1] E2E test for help page content and navigation in tests/e2e/expert-help.spec.ts
+- [x] T015 [P] [US1] Accessibility test for help page (90+ Lighthouse) in tests/e2e/expert-help-a11y.spec.ts
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Create form-specific styles (will be shared with US2) in website/src/styles/form.css
-- [ ] T017 [US1] Create expert-help page with service descriptions in website/src/pages/expert-help.astro
-- [ ] T018 [US1] Add static consulting service content (implementation-support, training, architecture-review) in website/src/pages/expert-help.astro
-- [ ] T019 [US1] Add soft disclaimer ("responses when schedule permits") per FR-014 in website/src/pages/expert-help.astro
-- [ ] T020 [US1] Add footer navigation link to /expert-help across all pages in website/src/components/ (footer component)
+- [x] T016 [P] [US1] Create form-specific styles (will be shared with US2) in website/src/styles/form.css
+- [x] T017 [US1] Create expert-help page with service descriptions in website/src/pages/expert-help.astro
+- [x] T018 [US1] Add static consulting service content (implementation-support, training, architecture-review) in website/src/pages/expert-help.astro
+- [x] T019 [US1] Add soft disclaimer ("responses when schedule permits") per FR-014 in website/src/pages/expert-help.astro
+- [x] T020 [US1] Add footer navigation link to /expert-help across all pages in website/src/components/ (footer component)
 - [ ] T021 [US1] Verify mobile responsiveness and accessibility (FR-012, SC-007)
 
 **Checkpoint**: Help page displays correctly with all service information
@@ -82,22 +82,22 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T022 [P] [US2] Unit tests for form validation (email format, message length) in tests/unit/inquiry-form.test.ts
-- [ ] T023 [P] [US2] Contract test for POST /api/inquiry endpoint in tests/contract/inquiry-api.test.ts
-- [ ] T024 [P] [US2] E2E test for full form submission flow in tests/e2e/inquiry-submission.spec.ts
+- [x] T022 [P] [US2] Unit tests for form validation (email format, message length) in tests/unit/inquiry-form.test.ts
+- [x] T023 [P] [US2] Contract test for POST /api/inquiry endpoint in tests/contract/inquiry-api.test.ts
+- [x] T024 [P] [US2] E2E test for full form submission flow in tests/e2e/inquiry-submission.spec.ts
 
 ### Implementation for User Story 2
 
-- [ ] T025 [P] [US2] Create client-side validation functions (validateEmail, validateMessage) in website/src/lib/validation.ts
-- [ ] T026 [US2] Create InquiryForm component with email, message fields, and honeypot in website/src/components/InquiryForm.astro
-- [ ] T027 [US2] Add Turnstile widget (invisible mode) to InquiryForm in website/src/components/InquiryForm.astro
-- [ ] T028 [US2] Implement character counter (2000 max) per FR-005 in website/src/components/InquiryForm.astro
-- [ ] T029 [US2] Create Turnstile server verification function in website/src/lib/turnstile.ts
-- [ ] T030 [US2] Create server-side validation for inquiry data in website/functions/api/inquiry.ts
-- [ ] T031 [US2] Implement POST /api/inquiry endpoint with honeypot check, Turnstile verify, D1 insert in website/functions/api/inquiry.ts
-- [ ] T032 [US2] Add success/error response handling per contracts/api.md in website/functions/api/inquiry.ts
-- [ ] T033 [US2] Implement form submission feedback (success confirmation, error display) in website/src/components/InquiryForm.astro
-- [ ] T034 [US2] Integrate InquiryForm component into expert-help page in website/src/pages/expert-help.astro
+- [x] T025 [P] [US2] Create client-side validation functions (validateEmail, validateMessage) in website/src/lib/validation.ts
+- [x] T026 [US2] Create InquiryForm component with email, message fields, and honeypot in website/src/components/InquiryForm.astro
+- [x] T027 [US2] Add Turnstile widget (invisible mode) to InquiryForm in website/src/components/InquiryForm.astro
+- [x] T028 [US2] Implement character counter (2000 max) per FR-005 in website/src/components/InquiryForm.astro
+- [x] T029 [US2] Create Turnstile server verification function in website/src/lib/turnstile.ts
+- [x] T030 [US2] Create server-side validation for inquiry data in website/src/pages/api/inquiry.ts
+- [x] T031 [US2] Implement POST /api/inquiry endpoint with honeypot check, Turnstile verify, D1 insert in website/src/pages/api/inquiry.ts
+- [x] T032 [US2] Add success/error response handling per contracts/api.md in website/src/pages/api/inquiry.ts
+- [x] T033 [US2] Implement form submission feedback (success confirmation, error display) in website/src/components/InquiryForm.astro
+- [x] T034 [US2] Integrate InquiryForm component into expert-help page in website/src/pages/expert-help.astro
 - [ ] T035 [US2] Test form submission locally with wrangler pages dev
 
 **Checkpoint**: Form submission works end-to-end with validation and D1 storage
@@ -116,13 +116,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T037 [US3] Create inquiry management TypeScript script in .claude/scripts/inquiries/manage.ts
-- [ ] T038 [US3] Implement list action (filter by status, newest first) in .claude/scripts/inquiries/manage.ts
-- [ ] T039 [US3] Implement view action (full details by ID) in .claude/scripts/inquiries/manage.ts
-- [ ] T040 [US3] Implement mark-contacted action (update status, set contacted_at) in .claude/scripts/inquiries/manage.ts
-- [ ] T041 [US3] Implement archive action (update status, add notes) in .claude/scripts/inquiries/manage.ts
-- [ ] T042 [US3] Create /speck.inquiries slash command file in .claude/commands/speck.inquiries.md
-- [ ] T043 [US3] Document command usage and actions in .claude/commands/speck.inquiries.md
+- [x] T037 [US3] Create inquiry management TypeScript script in .claude/scripts/inquiries/manage.ts
+- [x] T038 [US3] Implement list action (filter by status, newest first) in .claude/scripts/inquiries/manage.ts
+- [x] T039 [US3] Implement view action (full details by ID) in .claude/scripts/inquiries/manage.ts
+- [x] T040 [US3] Implement mark-contacted action (update status, set contacted_at) in .claude/scripts/inquiries/manage.ts
+- [x] T041 [US3] Implement archive action (update status, add notes) in .claude/scripts/inquiries/manage.ts
+- [x] T042 [US3] Create /speck.inquiries slash command file in .claude/commands/speck.inquiries.md
+- [x] T043 [US3] Document command usage and actions in .claude/commands/speck.inquiries.md
 - [ ] T044 [US3] Test slash command against local D1 database
 
 **Checkpoint**: Slash command successfully queries and modifies inquiry status in D1
