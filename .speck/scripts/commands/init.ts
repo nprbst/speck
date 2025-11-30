@@ -89,6 +89,9 @@ const DEFAULT_ALLOWED_PERMISSIONS = [
   "Bash(git ls-remote:*)",
   "Bash(git ls:*)",
   "Bash(git status)",
+
+  // Speck CLI commands
+  "Bash(speck:*)",
 ] as const;
 
 // =============================================================================

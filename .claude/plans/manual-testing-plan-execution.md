@@ -253,17 +253,25 @@ echo "# Monorepo" > README.md
 git add . && git commit -m "Initial monorepo"
 ```
 
-### Test 3.0: Initialize Speck in Monorepo Root
+### Test 3.0: Initialize Speck in Monorepo Root ✅
 **User action**: Run `/speck:init` in `monorepo-test/`
 **I verify**:
-- [ ] `.speck/` directory created
-- [ ] Speck CLI symlink configured
+- [x] `.speck/` directory created
+- [x] Speck CLI symlink configured
 
-### Test 3.1: Monorepo Package Linking
+### Test 3.1: Monorepo Package Linking ✅
 **User action**: In `packages/api/`, run `/speck.link ../..`
 **I verify**:
-- [ ] `.speck/root` → `../..` (correct relative path)
-- [ ] Resolves to monorepo root
+- [x] `.speck/root` created at `packages/api/.speck/root`
+- [x] Symlink points to `../../..` (correct relative path adjusted for .speck/ depth)
+- [x] Resolves to monorepo root
+- [x] Reverse symlink created at `monorepo-test/.speck/repos/api`
+- [x] `linked-repos.md` updated with **Type: monorepo package**
+
+**Implementation Note**: Created `speck link` CLI subcommand that:
+- Uses CWD (not git root) for `.speck/` location - unified model for monorepo/multi-repo
+- Auto-detects link type by comparing git roots
+- Records "monorepo package" vs "multi-repo child" in linked-repos.md
 
 ### Test 3.2: Shared Spec Across Packages
 **I create**: `specs/001-shared-ui/spec.md` at root
