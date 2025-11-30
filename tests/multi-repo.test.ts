@@ -13,7 +13,11 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { $ } from 'bun';
-import { detectSpeckRoot, clearSpeckCache, getFeaturePaths } from '../.speck/scripts/common/paths.ts';
+import {
+  detectSpeckRoot,
+  clearSpeckCache,
+  getFeaturePaths,
+} from '../.speck/scripts/common/paths.ts';
 
 // Test helper to create directory structure
 async function createTestDir(name: string): Promise<string> {
@@ -111,7 +115,7 @@ describe('Phase 3: User Story 1 - Single-Repo Backward Compatibility', () => {
     const cached = end2 - start2;
 
     expect(uncached).toBeLessThan(10); // <10ms for uncached
-    expect(cached).toBeLessThan(1);    // <1ms for cached
+    expect(cached).toBeLessThan(1); // <1ms for cached
   });
 
   test('T021: No new configuration files appear in single-repo mode', async () => {
@@ -206,11 +210,31 @@ describe('Phase 4: User Story 2 - Multi-Repo Support', () => {
     delete process.env.SPECIFY_FEATURE;
   });
 
+  test('T040a: getFeaturePaths() CONTRACTS_DIR uses speckRoot (shared) in multi-repo mode', async () => {
+    process.chdir(frontendDir);
+
+    await fs.mkdir(path.join(speckRoot, 'specs', '001-test'), { recursive: true });
+    process.env.SPECIFY_FEATURE = '001-test';
+    clearSpeckCache();
+
+    const paths = await getFeaturePaths();
+    const realSpeckRoot = await fs.realpath(speckRoot);
+
+    // CONTRACTS_DIR should be shared (at speckRoot), not local (at repoRoot)
+    expect(paths.CONTRACTS_DIR.startsWith(realSpeckRoot)).toBe(true);
+    expect(paths.CONTRACTS_DIR).toContain(path.join('specs', '001-test', 'contracts'));
+
+    delete process.env.SPECIFY_FEATURE;
+  });
+
   test('T041: Both frontend and backend repos can read the same spec', async () => {
     // Create shared spec
     const specDir = path.join(speckRoot, 'specs', '001-test');
     await fs.mkdir(specDir, { recursive: true });
-    await fs.writeFile(path.join(specDir, 'spec.md'), '# Shared Test Spec\n\nThis is a shared specification.');
+    await fs.writeFile(
+      path.join(specDir, 'spec.md'),
+      '# Shared Test Spec\n\nThis is a shared specification.'
+    );
 
     process.env.SPECIFY_FEATURE = '001-test';
 
@@ -433,7 +457,7 @@ describe('Edge Cases and Error Handling', () => {
     await cleanup(testDir);
   });
 
-  test('Broken symlink falls back to single-repo mode gracefully', async () => {
+  test('Broken symlink throws error requiring user to fix', async () => {
     const speckDir = path.join(testDir, '.speck');
     await fs.mkdir(speckDir, { recursive: true });
 
@@ -443,9 +467,8 @@ describe('Edge Cases and Error Handling', () => {
 
     clearSpeckCache();
 
-    // Should fall back to single-repo mode gracefully (ENOENT caught)
-    const config = await detectSpeckRoot();
-    expect(config.mode).toBe('single-repo');
+    // Should throw error so user knows to fix the broken symlink
+    await expect(detectSpeckRoot()).rejects.toThrow('Multi-repo configuration broken');
   });
 
   test('Non-symlink .speck/root file falls back to single-repo with warning', async () => {
@@ -467,7 +490,7 @@ describe('Edge Cases and Error Handling', () => {
     console.warn = originalWarn;
 
     expect(config.mode).toBe('single-repo');
-    expect(warnings.some(w => w.includes('not a symlink'))).toBe(true);
+    expect(warnings.some((w) => w.includes('not a symlink'))).toBe(true);
   });
 
   test('Self-referencing symlink resolves to .speck directory', async () => {

@@ -87,7 +87,7 @@ export async function executeInitCommand(
       if (error instanceof WorktreeError) {
         console.error(`✗ ${error.message}`);
         if (error.cause) {
-          console.error(`  Cause: ${error.cause}`);
+          console.error(`  Cause: ${String(error.cause)}`);
         }
       } else {
         console.error(`✗ Error: ${error instanceof Error ? error.message : String(error)}`);
@@ -101,7 +101,7 @@ export async function executeInitCommand(
  * Create default configuration with auto-detected values
  */
 async function createDefaultConfig(repoPath: string): Promise<SpeckConfig> {
-  const availableIDEs = await detectAvailableIDEs();
+  const availableIDEs = detectAvailableIDEs();
   const packageManager = await detectPackageManager(repoPath);
 
   // Map IDE command to IDEEditor type
@@ -187,7 +187,7 @@ async function createInteractiveConfig(
   console.log("Press Ctrl+C to cancel at any time.\n");
 
   // Detect available options
-  const availableIDEs = await detectAvailableIDEs();
+  const availableIDEs = detectAvailableIDEs();
   const detectedPackageManager = await detectPackageManager(repoPath);
 
   // Enable worktree integration

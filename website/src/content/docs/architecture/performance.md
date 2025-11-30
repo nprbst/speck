@@ -1,18 +1,18 @@
 ---
 title: "Performance"
-description: "Speck achieves sub-100ms hook latency and 30% faster slash command execution through virtual commands, prerequisite caching, and optimized context loading."
+description: "Speck achieves sub-100ms hook latency and fast slash command execution through hook-based prerequisite injection, caching, and optimized context loading."
 category: architecture
 audience: [existing-users, evaluators]
-prerequisites: ["/docs/architecture/virtual-commands", "/docs/architecture/hooks"]
+prerequisites: ["/docs/architecture/hooks"]
 tags: ["performance", "benchmarks", "hooks", "latency", "optimization"]
-lastUpdated: 2025-11-22
-relatedPages: ["/docs/architecture/virtual-commands", "/docs/architecture/hooks"]
+lastUpdated: 2025-11-29
+relatedPages: ["/docs/architecture/hooks"]
 order: 3
 ---
 
 # Performance
 
-Speck is designed for **Claude-native performance**, with virtual commands, hook-based prerequisite injection, and intelligent caching delivering fast, responsive workflows. This page documents performance metrics and optimization strategies.
+Speck is designed for **Claude-native performance**, with hook-based prerequisite injection and intelligent caching delivering fast, responsive workflows. This page documents performance metrics and optimization strategies.
 
 ## Key Performance Metrics
 
@@ -25,7 +25,7 @@ Hook routing adds minimal overhead to command execution:
 | Operation | Latency | Measurement |
 |-----------|---------|-------------|
 | Hook trigger to registry lookup | ~5ms | Time from PrePromptSubmit event to command detection |
-| Command registry lookup | <5ms | Virtual command resolution |
+| Command resolution | <5ms | CLI command lookup |
 | Subprocess spawn | ~8ms | Launching prerequisite check script |
 | **Total Hook Routing** | **~18ms avg** | From hook trigger to CLI execution start |
 
@@ -102,16 +102,16 @@ Slash commands execute faster with automatic prerequisite injection:
 - Reduces I/O load on file system
 - Balances performance with data freshness
 
-### 2. Virtual Command Registry
+### 2. Dual-Mode CLI
 
 **Problem**: Traditional CLI tools require PATH configuration and shell startup overhead.
 
-**Solution**: Centralized command registry with dynamic lookup.
+**Solution**: Unified CLI with global installation and direct invocation.
 
 **Impact**:
 - Command resolution: <5ms
-- Zero PATH configuration overhead
-- Consistent behavior across environments
+- Zero PATH configuration after `speck init`
+- Consistent behavior across terminal and Claude Code
 
 ### 3. Selective Context Pre-Loading
 
@@ -257,6 +257,5 @@ Command begins implementation logic immediately
 
 ## Related Documentation
 
-- [Virtual Commands](/docs/architecture/virtual-commands) - Learn how virtual commands eliminate path dependencies
-- [Hooks](/docs/architecture/hooks) - Understand how PrePromptSubmit hooks enable automatic context loading
+- [Hooks](/docs/architecture/hooks) - Understand how UserPromptSubmit hooks enable automatic context loading
 - [Commands Reference](/docs/commands/reference) - Complete list of all Speck commands

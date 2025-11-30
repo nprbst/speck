@@ -29,7 +29,7 @@ Parse command-line flags from user input:
 1. **Setup**: Extract prerequisite context from the auto-injected comment in the prompt:
    ```
    <!-- SPECK_PREREQ_CONTEXT
-   {"MODE":"multi-repo","FEATURE_DIR":"/path/to/root-repo/specs/010-feature","IMPL_PLAN":"/path/to/child-repo/specs/010-feature/plan.md","TASKS":"/path/to/child-repo/specs/010-feature/tasks.md","REPO_ROOT":"/path/to/child-repo","AVAILABLE_DOCS":["../../../8-specs/specs/010-feature/spec.md",".speck/memory/constitution.md"]}
+   {"MODE":"multi-repo","FEATURE_DIR":"/path/to/root-repo/specs/010-feature","IMPL_PLAN":"/path/to/child-repo/specs/010-feature/plan.md","TASKS":"/path/to/child-repo/specs/010-feature/tasks.md","REPO_ROOT":"/path/to/child-repo","TEMPLATE_DIR":"/path/to/plugin/templates","AVAILABLE_DOCS":["../../../8-specs/specs/010-feature/spec.md",".speck/memory/constitution.md"]}
    -->
    ```
 
@@ -38,6 +38,7 @@ Parse command-line flags from user input:
    - `IMPL_PLAN`: Full path where plan.md should be written - **WRITE HERE**
    - `TASKS`: Full path where tasks.md should be written (used by /speck.tasks)
    - `REPO_ROOT`: Root directory of current repository (for relative path calculations)
+   - `TEMPLATE_DIR`: Directory containing templates (plan-template.md, spec-template.md, etc.) - **USE FOR TEMPLATES**
    - `MODE`: "single-repo" or "multi-repo" (child in multi-repo setup)
 
    **Multi-repo behavior**:
@@ -46,19 +47,15 @@ Parse command-line flags from user input:
 
    **Fallback**: If the comment is not present (VSCode hook bug), run:
    ```bash
-   speck-setup-plan --json
+   speck setup-plan --json
    ```
    Parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH.
 
-   **Fallback (VSCode hook bug)**: If the virtual command fails with exit code 127, run:
-   ```bash
-   bun ~/.claude/plugins/marketplaces/speck-market/speck/scripts/setup-plan.ts --json
-   ```
-   Then manually parse the JSON output to extract FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, and BRANCH.
+   Then parse the JSON output to extract FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, and BRANCH.
 
-2. **Load context**:
-   - Read spec.md and constitution.md from paths in AVAILABLE_DOCS using Read tool
-   - Load plan.md template (always use Read - not pre-loaded)
+2. **Load context** (use Read tool for all files):
+   - **Read** spec.md and constitution.md from paths in AVAILABLE_DOCS
+   - **Read** plan template from `{TEMPLATE_DIR}/plan-template.md` (e.g., `/Users/.../.claude/plugins/.../templates/plan-template.md`)
 
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
@@ -114,7 +111,7 @@ Parse command-line flags from user input:
    - Decision: [what was chosen]
    - Rationale: [why chosen]
    - Alternatives considered: [what else evaluated]
-   - **Write to**: `{FEATURE_DIR}/research.md` (shared artifact, goes to root in multi-repo)
+   - **Write to**: `{REPO_ROOT}/specs/{feature}/research.md` (local to child repo - each repo does its own research)
 
 **Output**: research.md with all NEEDS CLARIFICATION resolved
 
@@ -122,25 +119,40 @@ Parse command-line flags from user input:
 
 **Prerequisites:** `research.md` complete
 
+**Before generating contracts**: Check for existing shared contracts
+1. If `{FEATURE_DIR}/contracts/` exists and contains files:
+   - Read all contract files in that directory
+   - Use these as constraints for planning (the API is already defined)
+   - Do NOT regenerate contracts - skip to step 3
+2. If no contracts exist, proceed to generate them below
+
 1. **Extract entities from feature spec** → `data-model.md`:
    - Entity name, fields, relationships
    - Validation rules from requirements
    - State transitions if applicable
-   - **Write to**: `{FEATURE_DIR}/data-model.md` (shared artifact, goes to root in multi-repo)
+   - **Write to**: `{REPO_ROOT}/specs/{feature}/data-model.md` (local to child repo - each repo has its own data model)
 
-2. **Generate API contracts** from functional requirements:
+2. **Generate API contracts** from functional requirements (only if no shared contracts exist):
    - For each user action → endpoint
    - Use standard REST/GraphQL patterns
-   - **Write to**: `{FEATURE_DIR}/contracts/` (shared artifacts, go to root in multi-repo)
+   - **Write to**: `{FEATURE_DIR}/contracts/` (shared - goes to root repo, accessible to all child repos)
 
-3. **Agent context update**:
-   - Run `speck-update-agent-context claude`
+3. **Generate quickstart.md** with developer setup instructions:
+   - Prerequisites (runtime versions, dependencies)
+   - Installation steps
+   - Development commands (start, test, build)
+   - Project structure overview
+   - Common tasks and workflows
+   - **Write to**: `{REPO_ROOT}/specs/{feature}/quickstart.md` (local to child repo)
+
+4. **Agent context update**:
+   - Run `speck update-agent-context`
    - These scripts detect which AI agent is in use
    - Update the appropriate agent-specific context file
    - Add only new technology from current plan
    - Preserve manual additions between markers
 
-**Output**: data-model.md, /contracts/*, quickstart.md (all in FEATURE_DIR - shared), agent-specific file
+**Output**: data-model.md (local), contracts/* (shared, if created), quickstart.md (local), agent-specific file
 
 ## Key rules
 

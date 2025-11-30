@@ -11,7 +11,7 @@ import { addWorktree, pruneWorktrees, getWorktreePath } from "./git";
 import { checkWorktreePath, hasSufficientDiskSpace, branchExists } from "./validation";
 import { GitWorktreeError, DiskSpaceError } from "./errors";
 import { launchIDE } from "./ide-launch";
-import { applyFileRules, DEFAULT_FILE_RULES } from "./file-ops";
+import { applyFileRules } from "./file-ops";
 import { installDependencies } from "./deps-install";
 import type {
   CreateWorktreeOptions,
@@ -133,10 +133,8 @@ export async function createWorktree(
     progress("Worktree created successfully", 50);
 
     // Step 9: Apply file rules (T048 - integrate file operations into createWorktree)
-    // Use configured rules, or DEFAULT_FILE_RULES if no rules configured (T050)
-    const fileRules = config.worktree.files.rules.length > 0
-      ? config.worktree.files.rules
-      : DEFAULT_FILE_RULES;
+    // Rules come from config (defaults are embedded in DEFAULT_WORKTREE_CONFIG)
+    const fileRules = config.worktree.files.rules;
 
     if (fileRules.length > 0) {
       progress("Applying file rules...", 60);
@@ -186,7 +184,7 @@ export async function createWorktree(
     if (config.worktree.ide.autoLaunch && !skipIDE) {
       progress("Launching IDE...", 90);
       try {
-        const ideResult = await launchIDE({
+        const ideResult = launchIDE({
           worktreePath,
           editor: config.worktree.ide.editor,
           newWindow: config.worktree.ide.newWindow,

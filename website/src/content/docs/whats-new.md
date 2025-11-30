@@ -4,7 +4,7 @@ description: "Recent feature additions and improvements to Speck for Claude Code
 category: "reference"
 order: 2
 tags: ["changelog", "updates", "features", "releases"]
-lastUpdated: 2025-11-22
+lastUpdated: 2025-11-29
 ---
 
 # What's New in Speck
@@ -13,9 +13,61 @@ Track the latest features, improvements, and capabilities added to Speck.
 
 ---
 
-## November 2025: Advanced Workflows
+## November 2025: Scope Simplification (Spec 015)
 
-### Multi-Repo & Monorepo Support (Spec 007)
+### Streamlined CLI & Session Handoff
+**Released**: November 2025
+
+Simplified Speck architecture with dual-mode CLI, session handoff for worktrees, and global installation.
+
+**Key Capabilities**:
+- **`/speck.init`**: Install Speck CLI globally to `~/.local/bin/speck`
+- **`/speck.help`**: Load the speck-help skill for answering questions
+- **Session handoff**: New Claude sessions in worktrees automatically receive feature context
+- **Dual-mode CLI**: Same commands work in terminal (`speck`) and Claude Code (`/speck.*`)
+- **Output modes**: `--json` for structured output, `--hook` for Claude Code integration
+
+**Improvements**:
+- Simplified branches.json schema (removed stacked PR fields)
+- Bootstrap script with Bun detection and self-removal
+- Non-standard branch name tracking via branches.json
+- Sub-100ms command execution
+
+**Learn More**:
+- [Quick Start Guide](/docs/getting-started/quick-start)
+- [Commands Reference](/docs/commands/reference)
+- [Worktree Integration](/docs/advanced-features/worktrees)
+
+---
+
+## November 2025: Worktree Integration (Spec 012)
+
+### Isolated Workspaces
+**Released**: November 2025
+
+Work on multiple features simultaneously with Git worktrees, automatic IDE launch, and dependency installation.
+
+**Key Capabilities**:
+- **Automatic worktree creation**: `/speck.specify` creates isolated worktree directory
+- **IDE auto-launch**: Opens VSCode, Cursor, or WebStorm automatically
+- **Dependency auto-install**: Runs package manager before IDE opens
+- **Session handoff**: Handoff document passes context to new Claude sessions
+
+**Benefits**:
+- No branch-switching overhead
+- Multiple features in parallel
+- Isolated working directories
+- Automatic context passing between sessions
+
+**Learn More**:
+- [Worktree Integration](/docs/advanced-features/worktrees)
+- [Feature Development Workflow](/docs/workflows/feature-development)
+
+---
+
+## November 2025: Multi-Repo & Monorepo Support (Spec 007)
+
+### Shared Specifications
 **Released**: November 2025
 
 Share specifications across multiple repositories with symlink-based detection and per-repo implementation plans.
@@ -39,86 +91,6 @@ Share specifications across multiple repositories with symlink-based detection a
 
 ---
 
-### Stacked PR Workflows (Spec 008)
-**Released**: November 2025
-
-Break large features into multiple dependent pull requests for faster review cycles and parallel development.
-
-**Key Capabilities**:
-- **`/speck.branch create`**: Create stacked branches with dependency tracking
-- **`/speck.branch list`**: View dependency trees and PR status
-- **`/speck.branch status`**: Health checks for branch stacks
-- **`/speck.branch import`**: Import existing git branches into Speck tracking
-- **Branch metadata**: Track PR numbers, status, and base branches in `.speck/branches.json`
-
-**Benefits**:
-- 400-600 line PRs (vs 2000+ line monolithic PRs)
-- Faster review cycles (15-30 minutes vs hours)
-- Parallel work while waiting for reviews
-- Incremental delivery (merge completed layers without waiting for entire feature)
-
-**Tool Compatibility**:
-- Works with Graphite, GitHub Stack, or manual git workflows
-- No vendor lock-in - use any tool for rebasing and PR creation
-
-**Learn More**:
-- [Stacked PR Concepts](/docs/core-concepts/stacked-prs)
-- [Stacked PR Setup Guide](/docs/advanced-features/stacked-prs)
-- [Stacked PR Workflow Tutorial](/docs/examples/stacked-pr-workflow)
-
----
-
-### Multi-Repo Stacked PRs (Spec 009)
-**Released**: November 2025
-
-Combines multi-repo support with stacked PR workflows for coordinating large features across repositories.
-
-**Key Capabilities**:
-- **Independent stacks per repository**: Each child repo manages its own branch stack
-- **Aggregate status**: View all stacks across repositories with `/speck.branch list --all`
-- **Same-repo dependency constraint**: Branches in repo A cannot depend on branches in repo B (prevents cross-repo complexity)
-- **Unified spec tracking**: All stacks reference same parent specification
-
-**Use Cases**:
-- Backend team creates `db-layer → api-layer` stack
-- Frontend team creates `login-ui → profile-ui` stack
-- Both teams work in parallel on shared authentication feature
-
-**Learn More**:
-- [Multi-Repo Support](/docs/advanced-features/multi-repo-support)
-- [Stacked PR Workflows](/docs/advanced-features/stacked-prs)
-- [Capability Matrix](/docs/reference/capability-matrix)
-
----
-
-### Virtual Commands & Hook Integration (Spec 010)
-**Released**: November 2025
-
-Redesigned command architecture for sub-100ms execution through hook-based prerequisite checks and context pre-loading.
-
-**Key Improvements**:
-- **30% faster slash command execution**: Virtual commands delegate to Bun CLI with automatic prerequisite validation
-- **Sub-100ms hook latency**: PrePromptSubmit hook pre-loads context before LLM invocation
-- **Automatic prerequisite checks**: Commands validate requirements (specs, plans, tasks) without manual verification
-- **Context pre-loading**: File contents injected into prompt automatically (reduces Read tool calls by 60-80%)
-
-**Performance Metrics**:
-- Hook latency: 50-90ms (p50-p95)
-- Command invocation overhead: <10ms
-- Zero blocking user experience
-
-**Technical Details**:
-- Dual-mode commands: Virtual mode for Claude Code hooks, direct mode for terminal
-- Commander.js CLI framework
-- JSON-based prerequisite context injection
-
-**Learn More**:
-- [Architecture: Virtual Commands](/docs/architecture/virtual-commands) *(coming soon)*
-- [Architecture: Hooks](/docs/architecture/hooks) *(coming soon)*
-- [Architecture: Performance](/docs/architecture/performance) *(coming soon)*
-
----
-
 ## October-November 2025: Website & Documentation
 
 ### Plugin Installation & Speck Skill (Spec 006)
@@ -127,7 +99,7 @@ Redesigned command architecture for sub-100ms execution through hook-based prere
 Complete website documentation for plugin installation and Speck skill usage.
 
 **Documentation Added**:
-- [Quick Start Guide](/docs/getting-started/quick-start) - 10-minute installation and first command
+- [Quick Start Guide](/docs/getting-started/quick-start) - 5-minute installation and first command
 - [Installation Guide](/docs/getting-started/installation) - Detailed setup instructions
 - [Three-Phase Workflow](/docs/core-concepts/workflow) - Specify → Plan → Implement methodology
 - [Commands Reference](/docs/commands/reference) - Complete slash command and skill documentation
@@ -176,7 +148,7 @@ Keep Speck up to date with the latest features:
 
 **Q1 2026** *(Roadmap - not committed)*:
 - GitHub integration for automated PR status updates
-- Visual branch dependency graphs
+- Visual dependency graphs
 - Multi-spec workspace management
 - Performance dashboards
 

@@ -15,11 +15,6 @@ import { main as checkPrerequisitesMain } from "../check-prerequisites";
 
 // Heavy commands: dynamic imports (lazy-loaded on demand)
 // Using arrow functions that return dynamic imports ensures the code is only loaded when called
-const lazyBranchMain = async (): Promise<MainFunction> => {
-  const module = await import("../branch-command");
-  return module.main;
-};
-
 const lazyEnvMain = async (): Promise<MainFunction> => {
   const module = await import("../env-command");
   return module.main;
@@ -45,6 +40,16 @@ const lazyUpdateAgentContextMain = async (): Promise<MainFunction> => {
   return module.main;
 };
 
+const lazyInitMain = async (): Promise<MainFunction> => {
+  const module = await import("./init");
+  return module.main;
+};
+
+const lazyNextFeatureMain = async (): Promise<MainFunction> => {
+  const module = await import("../next-feature");
+  return module.main;
+};
+
 /**
  * Command registry mapping command names to handlers
  *
@@ -66,11 +71,6 @@ export const registry: CommandRegistry = {
     handler: envHandler,
     lazyMain: lazyEnvMain,
     description: "Show Speck environment and configuration info",
-    version: "1.0.0",
-  },
-  branch: {
-    lazyMain: lazyBranchMain,
-    description: "Manage stacked feature branches",
     version: "1.0.0",
   },
   "check-prerequisites": {
@@ -104,6 +104,16 @@ export const registry: CommandRegistry = {
   "update-agent-context": {
     lazyMain: lazyUpdateAgentContextMain,
     description: "Update agent-specific context files with technology stack",
+    version: "1.0.0",
+  },
+  init: {
+    lazyMain: lazyInitMain,
+    description: "Initialize Speck in current repository and install CLI globally",
+    version: "1.0.0",
+  },
+  "next-feature": {
+    lazyMain: lazyNextFeatureMain,
+    description: "Get next feature number and detect multi-repo mode",
     version: "1.0.0",
   },
 };

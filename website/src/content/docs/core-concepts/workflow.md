@@ -390,6 +390,17 @@ Commands are designed for Claude Code's workflow:
 - Outputs are markdown (readable, version-controlled)
 - Agents can execute tasks automatically (`/speck.implement`)
 
+### Relationship to Plan Mode
+
+Claude Code includes a built-in Plan Mode for exploring complex tasks. How does Speck relate?
+
+- **Plan Mode** = Scratch paper for thinking (saves to `~/.claude/plans/`)
+- **Speck** = Permanent documentation (saves to `specs/` in your repo)
+
+They're complementary: use Plan Mode to explore options, then capture your decision with `/speck.specify`.
+
+**Learn more**: [Speck vs Plan Mode](/docs/reference/plan-mode-comparison)
+
 ---
 
 ## Common Patterns
@@ -444,7 +455,7 @@ For each feature, define tests first:
 Ready to scale beyond single-repo projects or handle large features?
 
 - **Multi-Repo Projects**: Share specifications across multiple repositories with `/speck.link` - [Learn more](/docs/advanced-features/multi-repo-support)
-- **Stacked PR Workflows**: Break large features into reviewable chunks with `/speck.branch` - [Learn more](/docs/advanced-features/stacked-prs)
+- **Worktree Integration**: Work on multiple features in parallel with session handoff - [Learn more](/docs/advanced-features/worktrees)
 - **Monorepo Support**: Manage workspace projects with shared specs - [Learn more](/docs/advanced-features/monorepos)
 
 ## See Also

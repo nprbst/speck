@@ -124,6 +124,12 @@ export function getPluginRoot(): string {
 
   const scriptDir = import.meta.dir;
 
+  // Handle bundled CLI case: dist/speck-cli.js
+  // scriptDir will be <plugin-root>/dist/ so go up 1 level
+  if (scriptDir.endsWith("/dist") || scriptDir.includes("/dist/")) {
+    return path.resolve(scriptDir, "..");
+  }
+
   if (isPluginInstallation()) {
     // In plugin: scripts are in <plugin-root>/.speck/scripts/common/
     // Navigate up from .speck/scripts/common to plugin root
@@ -220,109 +226,204 @@ export async function detectSpeckRoot(): Promise<SpeckConfig> {
     return cachedConfig;
   }
 
-  const repoRoot = await getRepoRoot();
-  const symlinkPath = path.join(repoRoot, '.speck', 'root');
-
+  // Check CWD first for .speck/root - needed for monorepo packages
+  // In a monorepo, packages share the same git root but have their own .speck/ directories
+  const cwd = process.cwd();
+  const cwdSymlinkPath = path.join(cwd, '.speck', 'root');
   try {
-    const stats = await fs.lstat(symlinkPath);
+    const cwdStats = await fs.lstat(cwdSymlinkPath);
+    if (cwdStats.isSymbolicLink()) {
+      // CWD has .speck/root symlink - this is a monorepo package or multi-repo child
+      const speckRoot = await fs.realpath(cwdSymlinkPath);
 
-    if (!stats.isSymbolicLink()) {
-      console.warn(
-        'WARNING: .speck/root exists but is not a symlink\n' +
-        'Expected: symlink to speck root directory\n' +
-        'Found: regular file/directory\n' +
-        'Falling back to single-repo mode.\n' +
-        'To enable multi-repo: mv .speck/root .speck/root.backup && /speck.link <path>'
-      );
+      // Security: Validate symlink target doesn't escape to sensitive paths
+      const dangerousPaths = ['/', '/etc', '/usr', '/bin', '/sbin', '/System', '/Library'];
+      const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+      if (dangerousPaths.some(dangerous => speckRoot === dangerous || speckRoot.startsWith(dangerous + '/'))) {
+        throw new Error(
+          `Security: .speck/root symlink points to system directory: ${speckRoot}\n` +
+          'Speck root must be a user-owned project directory.\n' +
+          'Fix: rm .speck/root && /speck.link <safe-project-path>'
+        );
+      }
+      if (homeDir && speckRoot === path.dirname(homeDir)) {
+        throw new Error(
+          `Security: .speck/root symlink points above home directory: ${speckRoot}\n` +
+          'Fix: rm .speck/root && /speck.link <project-path-within-home>'
+        );
+      }
+
+      // Verify target exists
+      await fs.access(speckRoot);
+
       const config: SpeckConfig = {
-        mode: 'single-repo',
-        speckRoot: repoRoot,
-        repoRoot,
-        specsDir: path.join(repoRoot, 'specs')
+        mode: 'multi-repo',
+        speckRoot,
+        repoRoot: cwd,  // Use CWD as repoRoot for local artifacts
+        specsDir: path.join(speckRoot, 'specs')
       };
       cachedConfig = config;
       return config;
     }
-
-    // Resolve symlink to absolute path
-    const speckRoot = await fs.realpath(symlinkPath);
-
-    // T094 - Security: Validate symlink target doesn't escape to sensitive paths
-    // Reject paths that point to system directories or parent of home
-    const dangerousPaths = ['/', '/etc', '/usr', '/bin', '/sbin', '/System', '/Library'];
-    const homeDir = process.env.HOME || process.env.USERPROFILE || '';
-    if (dangerousPaths.some(dangerous => speckRoot === dangerous || speckRoot.startsWith(dangerous + '/'))) {
-      throw new Error(
-        `Security: .speck/root symlink points to system directory: ${speckRoot}\n` +
-        'Speck root must be a user-owned project directory.\n' +
-        'Fix: rm .speck/root && /speck.link <safe-project-path>'
-      );
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    // Only ignore ENOENT (file not found) - rethrow security/other errors
+    if (err.code !== 'ENOENT' && err.message?.includes('Security:')) {
+      throw error;
     }
-    if (homeDir && speckRoot === path.dirname(homeDir)) {
-      throw new Error(
-        `Security: .speck/root symlink points above home directory: ${speckRoot}\n` +
-        'Fix: rm .speck/root && /speck.link <project-path-within-home>'
-      );
+    // No .speck/root at CWD, continue to git root check
+  }
+
+  const repoRoot = await getRepoRoot();
+
+  // T120: Handle worktree case - check main worktree's .speck/root symlink
+  // When running from a worktree, the worktree itself doesn't have .speck/root
+  // but the main repository (from which the worktree was created) might have it
+  let mainRepoRoot = repoRoot;
+  const gitPath = path.join(repoRoot, '.git');
+  try {
+    const gitStats = await fs.stat(gitPath);
+    if (gitStats.isFile()) {
+      // This is a worktree - .git is a file pointing to main repo's .git/worktrees/<name>
+      const gitContent = await fs.readFile(gitPath, 'utf-8');
+      const match = gitContent.match(/gitdir:\s*(.+)/);
+      if (match && match[1]) {
+        // Extract main repo from gitdir path (e.g., /path/to/main/.git/worktrees/feature-branch)
+        const gitDir = match[1].trim();
+        // Navigate up from .git/worktrees/xxx to get main repo root
+        // The path pattern is: <main-repo>/.git/worktrees/<worktree-name>
+        const worktreesDir = path.dirname(gitDir); // .git/worktrees
+        const gitDirPath = path.dirname(worktreesDir); // .git
+        mainRepoRoot = path.dirname(gitDirPath); // main repo root
+      }
     }
+  } catch {
+    // If .git doesn't exist or can't be read, use repoRoot as-is
+  }
 
-    // Verify target exists
-    await fs.access(speckRoot);
+  const symlinkPath = path.join(mainRepoRoot, '.speck', 'root');
 
+  // First check if symlink exists at all
+  let symlinkExists = false;
+  let isSymlink = false;
+  try {
+    const stats = await fs.lstat(symlinkPath);
+    symlinkExists = true;
+    isSymlink = stats.isSymbolicLink();
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code !== 'ENOENT') {
+      throw error; // Unexpected error
+    }
+    // Symlink doesn't exist - will check for multi-repo root below
+  }
+
+  // If .speck/root exists but isn't a symlink
+  if (symlinkExists && !isSymlink) {
+    console.warn(
+      'WARNING: .speck/root exists but is not a symlink\n' +
+      'Expected: symlink to speck root directory\n' +
+      'Found: regular file/directory\n' +
+      'Falling back to single-repo mode.\n' +
+      'To enable multi-repo: mv .speck/root .speck/root.backup && /speck.link <path>'
+    );
     const config: SpeckConfig = {
-      mode: 'multi-repo',
-      speckRoot,
+      mode: 'single-repo',
+      speckRoot: repoRoot,
       repoRoot,
-      specsDir: path.join(speckRoot, 'specs')
+      specsDir: path.join(repoRoot, 'specs')
     };
     cachedConfig = config;
     return config;
+  }
 
-  } catch (error) {
-    const err = error as NodeJS.ErrnoException;
-    if (err.code === 'ENOENT') {
-      // Symlink does not exist - check if this is a multi-repo root
-      // Multi-repo root has .speck-link-* symlinks pointing to child repos
-      const childRepos = await findChildRepos(repoRoot);
+  // If symlink exists, try to resolve it
+  if (symlinkExists && isSymlink) {
+    try {
+      // Resolve symlink to absolute path
+      const speckRoot = await fs.realpath(symlinkPath);
 
-      if (childRepos.length > 0) {
-        // This is a multi-repo root (has child repos linked)
-        const config: SpeckConfig = {
-          mode: 'multi-repo',
-          speckRoot: repoRoot,
-          repoRoot,
-          specsDir: path.join(repoRoot, 'specs')
-        };
-        cachedConfig = config;
-        return config;
+      // T094 - Security: Validate symlink target doesn't escape to sensitive paths
+      // Reject paths that point to system directories or parent of home
+      const dangerousPaths = ['/', '/etc', '/usr', '/bin', '/sbin', '/System', '/Library'];
+      const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+      if (dangerousPaths.some(dangerous => speckRoot === dangerous || speckRoot.startsWith(dangerous + '/'))) {
+        throw new Error(
+          `Security: .speck/root symlink points to system directory: ${speckRoot}\n` +
+          'Speck root must be a user-owned project directory.\n' +
+          'Fix: rm .speck/root && /speck.link <safe-project-path>'
+        );
+      }
+      if (homeDir && speckRoot === path.dirname(homeDir)) {
+        throw new Error(
+          `Security: .speck/root symlink points above home directory: ${speckRoot}\n` +
+          'Fix: rm .speck/root && /speck.link <project-path-within-home>'
+        );
       }
 
-      // No child repos found - truly single-repo mode
+      // Verify target exists
+      await fs.access(speckRoot);
+
       const config: SpeckConfig = {
-        mode: 'single-repo',
-        speckRoot: repoRoot,
+        mode: 'multi-repo',
+        speckRoot,
         repoRoot,
-        specsDir: path.join(repoRoot, 'specs')
+        specsDir: path.join(speckRoot, 'specs')
       };
       cachedConfig = config;
       return config;
-    }
 
-    if (err.code === 'ELOOP') {
-      throw new Error(
-        'Multi-repo configuration broken: .speck/root contains circular reference\n' +
-        'Fix: rm .speck/root && /speck.link <valid-path>'
-      );
-    }
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
 
-    // Broken symlink (target does not exist)
-    const target = await fs.readlink(symlinkPath).catch(() => 'unknown');
-    throw new Error(
-      `Multi-repo configuration broken: .speck/root → ${target} (does not exist)\n` +
-      'Fix:\n' +
-      '  1. Remove broken symlink: rm .speck/root\n' +
-      '  2. Link to correct location: /speck.link <path-to-speck-root>'
-    );
+      if (err.code === 'ELOOP') {
+        throw new Error(
+          'Multi-repo configuration broken: .speck/root contains circular reference\n' +
+          'Fix: rm .speck/root && /speck.link <valid-path>'
+        );
+      }
+
+      if (err.code === 'ENOENT') {
+        // Broken symlink - target does not exist
+        const target = await fs.readlink(symlinkPath).catch(() => 'unknown');
+        throw new Error(
+          `Multi-repo configuration broken: .speck/root → ${target} (does not exist)\n` +
+          'Fix:\n' +
+          '  1. Remove broken symlink: rm .speck/root\n' +
+          '  2. Link to correct location: /speck.link <path-to-speck-root>'
+        );
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
   }
+
+  // No symlink - check if this is a multi-repo root
+  // Multi-repo root has .speck-link-* symlinks pointing to child repos
+  const childRepos = await findChildRepos(repoRoot);
+
+  if (childRepos.length > 0) {
+    // This is a multi-repo root (has child repos linked)
+    const config: SpeckConfig = {
+      mode: 'multi-repo',
+      speckRoot: repoRoot,
+      repoRoot,
+      specsDir: path.join(repoRoot, 'specs')
+    };
+    cachedConfig = config;
+    return config;
+  }
+
+  // No child repos found - truly single-repo mode
+  const config: SpeckConfig = {
+    mode: 'single-repo',
+    speckRoot: repoRoot,
+    repoRoot,
+    specsDir: path.join(repoRoot, 'specs')
+  };
+  cachedConfig = config;
+  return config;
 }
 
 /**
@@ -825,7 +926,7 @@ export async function getFeaturePaths(): Promise<FeaturePaths> {
     RESEARCH: path.join(localSpecsDir, "research.md"),  // Local (child repo)
     DATA_MODEL: path.join(localSpecsDir, "data-model.md"),  // Local (child repo)
     QUICKSTART: path.join(localSpecsDir, "quickstart.md"),  // Local (child repo)
-    CONTRACTS_DIR: path.join(localSpecsDir, "contracts"),  // Local (child repo)
+    CONTRACTS_DIR: path.join(featureDir, "contracts"),  // Shared (root repo) - API contracts shared across repos
   };
   // [SPECK-EXTENSION:END]
 }

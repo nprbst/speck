@@ -91,10 +91,7 @@ describe('User Story 5: Single-Repo to Multi-Repo Migration', () => {
     expect(afterConfig.speckRoot).toBe(realParentDir);
 
     // Verify specs are accessible from new location
-    const movedSpec = await fs.readFile(
-      path.join(parentSpecs, '001-feature', 'spec.md'),
-      'utf-8'
-    );
+    const movedSpec = await fs.readFile(path.join(parentSpecs, '001-feature', 'spec.md'), 'utf-8');
     expect(movedSpec).toContain('Existing Feature');
   });
 
@@ -109,10 +106,7 @@ describe('User Story 5: Single-Repo to Multi-Repo Migration', () => {
     );
 
     // Migrate
-    await fs.rename(
-      path.join(singleRepoDir, 'specs'),
-      path.join(parentDir, 'specs')
-    );
+    await fs.rename(path.join(singleRepoDir, 'specs'), path.join(parentDir, 'specs'));
 
     process.chdir(singleRepoDir);
     await fs.mkdir(path.join(singleRepoDir, '.speck'), { recursive: true });
@@ -145,10 +139,7 @@ describe('User Story 5: Single-Repo to Multi-Repo Migration', () => {
     await fs.mkdir(path.join(parentDir, 'specs', '003-conflict'), { recursive: true });
     await fs.mkdir(path.join(singleRepoDir, 'specs', '003-local'), { recursive: true });
 
-    await fs.writeFile(
-      path.join(parentDir, 'specs', '003-conflict', 'spec.md'),
-      '# Shared Spec'
-    );
+    await fs.writeFile(path.join(parentDir, 'specs', '003-conflict', 'spec.md'), '# Shared Spec');
 
     await fs.writeFile(
       path.join(singleRepoDir, 'specs', '003-local', 'spec.md'),
@@ -202,7 +193,12 @@ describe('Git Integration: .gitignore Handling', () => {
     process.chdir(childDir);
 
     // Verify no .gitignore exists
-    expect(await fs.access(path.join(childDir, '.gitignore')).then(() => true).catch(() => false)).toBe(false);
+    expect(
+      await fs
+        .access(path.join(childDir, '.gitignore'))
+        .then(() => true)
+        .catch(() => false)
+    ).toBe(false);
 
     // Link repo
     await fs.mkdir(path.join(childDir, '.speck'), { recursive: true });
@@ -227,10 +223,7 @@ describe('Git Integration: .gitignore Handling', () => {
     await linkRepo('..');
 
     // Create .gitignore that ignores symlinked specs
-    await fs.writeFile(
-      path.join(childDir, '.gitignore'),
-      'specs/*/spec.md\nspecs/*/contracts/\n'
-    );
+    await fs.writeFile(path.join(childDir, '.gitignore'), 'specs/*/spec.md\nspecs/*/contracts/\n');
 
     // Create local spec directory with plan
     const localSpecDir = path.join(childDir, 'specs', '004-git-test');
@@ -270,10 +263,7 @@ describe('Git Integration: .gitignore Handling', () => {
     await linkRepo('..');
 
     // Create .gitignore FIRST
-    await fs.writeFile(
-      path.join(childDir, '.gitignore'),
-      'specs/*/spec.md\n'
-    );
+    await fs.writeFile(path.join(childDir, '.gitignore'), 'specs/*/spec.md\n');
 
     // Add and commit .gitignore
     await $`git add .gitignore`.cwd(childDir).quiet();

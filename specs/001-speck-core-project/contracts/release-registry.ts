@@ -1,3 +1,4 @@
+// @ts-nocheck - Contract file (specification only, not production code)
 /**
  * Release Registry Contracts
  *

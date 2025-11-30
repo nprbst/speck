@@ -91,10 +91,10 @@ function getCheckOptions(prompt: string): {
   const includeTasksCommands = ["implement", "analyze"];
 
   // Commands that should skip feature check (e.g., /speck.specify runs before feature exists)
-  const skipFeatureCheckCommands = ["specify", "constitution", "env", "link"];
+  const skipFeatureCheckCommands = ["specify", "constitution", "env", "link", "init"];
 
   // Commands that should skip plan.md check (e.g., /speck.plan creates plan.md, /speck.clarify runs before plan)
-  const skipPlanCheckCommands = ["plan", "clarify", "constitution", "env", "link"];
+  const skipPlanCheckCommands = ["plan", "clarify", "constitution", "env", "link", "init"];
 
   // Commands that should pre-load file contents (high/medium priority files)
   const includeFileContentsCommands = [

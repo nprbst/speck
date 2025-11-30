@@ -1,31 +1,26 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.7.0 → 1.8.0
-Modified Principles: None
-Added Sections: "XIII. Documentation Skill Synchronization (NON-NEGOTIABLE)" (new principle)
-Removed Sections: None
+Version Change: 1.9.0 → 1.10.0
+Modified Sections:
+  - Principle IX: Renamed "Code Quality Standards" → "Preflight Gate"
+  - Principle IX: Consolidated typecheck, lint, test, format, build into unified `bun preflight`
+  - Principle X: Merged into Principle IX (now "Preflight Gate" covers all validation)
+  - Renumbered Principles X-XIII → IX subsections or X-XII
+Added Sections:
+  - "Pre-existing vs. Introduced Failures" subsection with explicit guidance
+Removed Sections:
+  - Principle X standalone (merged into IX)
 
 Templates Requiring Updates:
-  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/plan-template.md - add speck-knowledge skill update task
-  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/tasks-template.md - add speck-knowledge skill update task to final phase
-  ✅ /Users/nathan/.claude/plugins/marketplaces/speck-market/speck/templates/spec-template.md - no changes required
-  ⚠ .claude/commands/speck.implement.md - add speck-knowledge skill update reminder at completion
-  ⚠ .claude/commands/speck.tasks.md - add speck-knowledge skill update task generation
+  ✅ tasks.md template - update quality gate references to use `bun preflight`
+  ✅ plan.md template - update validation command references
 
-Follow-up TODOs:
-  - Backfill speck-knowledge skill with features 007-012 content
-  - Add speck-knowledge skill validation to check-prerequisites.ts
-  - Update quickstart.md with speck-knowledge skill update guidance
-  - Consider automating speck-knowledge skill updates from spec artifacts
-
-Rationale for 1.8.0 (MINOR bump):
-  - New principle added: Documentation Skill Synchronization
-  - Establishes requirement to keep speck-knowledge Claude Skill current with feature additions
-  - Complements Website Documentation Synchronization (Principle XI)
-  - No breaking changes to existing principles
-  - Backwards compatible but adds new quality expectation for feature completion
-  - Ensures Claude AI assistant has accurate context about Speck features
+Rationale for 1.10.0 (MINOR bump):
+  - Consolidates multiple validation principles into single Preflight Gate
+  - Adds explicit guidance for pre-existing failures (clarifies ambiguity)
+  - Modernizes to use unified `bun preflight` command
+  - Backwards compatible (stricter guidance, not relaxed)
 -->
 
 # Speck Constitution
@@ -202,111 +197,93 @@ that delegate to well-structured, testable implementation scripts.
   TypeScript knowledge. Implementation scripts MUST be runnable/testable
   independently of Claude Code.
 
-### IX. Code Quality Standards (NON-NEGOTIABLE)
+### IX. Preflight Gate (NON-NEGOTIABLE)
 
-All implementation code MUST pass TypeScript type checking with zero errors and
-ESLint validation with zero errors and zero warnings before a feature
-specification can be considered complete.
+All implementation code MUST pass `bun preflight` before a feature specification
+can be considered complete. Preflight validates: format, lint, typecheck, test,
+and build in a single command.
 
-**Rationale**: Type safety and code quality are non-negotiable for
-maintainability, refactoring confidence, and long-term codebase health.
-Allowing type errors or lint warnings creates technical debt that compounds
-over time, makes refactoring dangerous, and degrades developer experience. A
-pristine codebase is a productive codebase.
+**Rationale**: A unified preflight gate ensures consistent quality validation
+across all dimensions. Running separate commands risks forgetting steps and
+creates friction. One command, one gate, zero ambiguity.
+
+**The Preflight Command**:
+
+```bash
+bun preflight
+# Runs: format:check → lint → typecheck → test → build
+```
 
 **Implementation Requirements**:
 
 - MANDATORY validation before spec completion:
-  - `bun run typecheck` MUST exit with code 0 (zero TypeScript errors)
-  - `bun run lint` MUST exit with code 0 (zero ESLint errors, zero warnings)
-- TypeScript configuration MUST enforce strict type checking:
-  - `strict: true`
-  - `noUncheckedIndexedAccess: true`
-  - `noImplicitAny: true`
-  - `strictNullChecks: true`
+  - `bun preflight` MUST exit with code 0
+  - Features MUST NOT introduce new failures in any preflight stage
+- Individual stage requirements:
+  - **format:check**: Code formatting MUST match Prettier/Biome configuration
+  - **lint**: Zero ESLint errors, zero warnings (except documented exceptions)
+  - **typecheck**: Zero TypeScript errors with strict configuration
+  - **test**: Zero new test failures (see baseline comparison below)
+  - **build**: Production build MUST succeed
+- TypeScript strict configuration MUST enforce:
+  - `strict: true`, `noUncheckedIndexedAccess: true`
+  - `noImplicitAny: true`, `strictNullChecks: true`
 - ESLint configuration MUST enforce:
   - All `@typescript-eslint/recommended` rules
-  - All `@typescript-eslint/recommended-requiring-type-checking` rules
-  - `@typescript-eslint/no-explicit-any: warn` (explicit any types require justification)
-  - `@typescript-eslint/no-unsafe-*: error` (unsafe any operations forbidden)
-  - `@typescript-eslint/explicit-function-return-type: warn`
-- Code quality MUST be verified:
-  - During implementation (`/speck.implement` workflow)
-  - Before marking tasks complete
-  - As part of pull request review
-  - In pre-commit hooks (recommended)
-  - In CI/CD pipelines (mandatory for production)
-- Exceptions:
-  - Test files MAY have relaxed rules where test framework requires dynamic types
-  - Generated code MAY be excluded from linting via `.eslintignore`
-  - Temporary `eslint-disable` comments MUST include justification and TODO for removal
-- Quality gate validation:
-  - `check-prerequisites.ts` MUST verify typecheck and lint pass
-  - Feature completion checklist MUST include "Code quality: ✅ 0 typecheck errors, 0 lint warnings"
-  - Pull request template MUST include quality verification step
+  - `@typescript-eslint/no-explicit-any: warn` (requires justification)
+  - `@typescript-eslint/no-unsafe-*: error`
 
-### X. Zero Test Regression Policy (NON-NEGOTIABLE)
+**Test Baseline Requirements**:
 
-No feature specification can be considered complete if it introduces ANY test
-regressions. The test suite MUST maintain or improve its pass rate. Features
-that cause existing tests to fail MUST fix those failures before completion.
+- Capture baseline before feature implementation: `bun test > test-baseline.txt`
+- Track metrics: total tests, pass count, fail count, skip count
+- Store baseline in `<feature-dir>/test-baseline.txt` or document in plan.md
+- Compare final results: failures MUST NOT increase, passes MUST NOT decrease
+- Features MAY improve test suite (fix existing failures, add new passing tests)
 
-**Rationale**: Test regressions indicate breaking changes, unintended side
-effects, or insufficient understanding of existing functionality. A declining
-test suite signals accumulating technical debt and eroding code quality.
-Allowing regressions normalizes failure and creates a culture of "good enough"
-rather than excellence. Every feature MUST leave the codebase healthier than it
-found it.
+**Pre-existing vs. Introduced Failures**:
 
-**Implementation Requirements**:
+This principle distinguishes between failures you inherit and failures you cause:
 
-- MANDATORY test validation before spec completion:
-  - Capture baseline test results before feature implementation begins
-  - Run full test suite: `bun test`
-  - Compare final results against baseline
-  - ZERO tolerance for new test failures
-  - ZERO tolerance for reduced pass rate (e.g., 350 pass → 340 pass is FORBIDDEN)
-  - Test suite MUST show improvement or maintain same pass rate
-- Test baseline requirements:
-  - Document initial test status in feature planning phase
-  - Track metrics: total tests, pass count, fail count, skip count
-  - Store baseline in `<feature-dir>/test-baseline.md` or plan.md
-- Test validation enforcement:
-  - Before marking feature complete, run: `bun test > test-results.txt`
-  - Compare against baseline: failures MUST NOT increase, passes MUST NOT decrease
-  - Any test failures introduced by the feature MUST be fixed
-  - Features MAY improve test suite (fix existing failures, add new passing tests)
-- Acceptable test changes:
-  - ✅ Adding new passing tests for feature functionality
-  - ✅ Fixing existing failing tests (increases pass rate)
-  - ✅ Marking intentionally deferred tests as `.skip` with documented rationale
-  - ✅ Removing obsolete tests that no longer apply (with documented rationale)
-  - ❌ Introducing new test failures
-  - ❌ Reducing pass rate without fixing failures
-  - ❌ Commenting out failing tests to "make them pass"
-  - ❌ Marking tests as `.skip` to hide regressions
-- Test regression handling:
-  - If regressions discovered: HALT feature work immediately
-  - Investigate root cause: is it a real bug or test isolation issue?
-  - Fix the regression: update code or fix test isolation
-  - Document the fix in feature notes
-  - Only proceed once test suite is healthy again
-- Exceptions (RARE, requires explicit justification):
-  - Intentional breaking changes with migration plan (document in plan.md)
-  - Test infrastructure changes requiring temporary test updates (document in dedicated task)
-  - Known flaky tests being fixed as part of this feature (document flakiness evidence)
-- Quality gate validation:
-  - Feature completion checklist MUST include: "Test suite health: ✅ X pass / 0 new fail (baseline: Y pass)"
-  - Pull request template MUST require test regression verification
-  - `/speck.implement` workflow MUST validate test suite before marking complete
-  - `check-prerequisites.ts` SHOULD validate test suite health
+- **Pre-existing failures**: Failures present in the baseline BEFORE your feature
+  work began. These do NOT block feature completion but MUST be documented.
+- **Introduced failures**: New failures caused by your feature work. These MUST
+  be fixed before feature completion (NON-NEGOTIABLE).
+
+Handling pre-existing failures:
+- Document in tasks.md with parenthetical notes: `(X pre-existing failures)`
+- Track in a separate infrastructure issue or tech debt backlog
+- Do NOT use pre-existing failures as cover for introduced regressions
+- Comparison is always: `(baseline failures) vs (final failures)`
+  - If final failures > baseline failures → BLOCKED
+  - If final failures ≤ baseline failures → MAY proceed
 
 **Test Isolation Note**: Tests that pass individually but fail in full suite
 indicate test isolation or parallelism issues, NOT feature regressions. These
-are infrastructure bugs to be fixed separately, not blockers for feature
-completion (but SHOULD be documented and tracked for resolution).
+are infrastructure bugs to be documented and tracked separately.
 
-### XI. Website Documentation Synchronization (NON-NEGOTIABLE)
+**Acceptable Changes**:
+- ✅ Adding new passing tests
+- ✅ Fixing existing failing tests (improves pass rate)
+- ✅ Marking tests as `.skip` with documented rationale (intentional deferral)
+- ✅ Removing obsolete tests with documented rationale
+- ❌ Introducing new failures
+- ❌ Reducing pass rate without fixing failures
+- ❌ Commenting out or skipping tests to hide regressions
+
+**Exceptions** (RARE, requires explicit justification):
+- Test files MAY have relaxed lint rules where test framework requires dynamic types
+- Generated code MAY be excluded via `.eslintignore`
+- Temporary `eslint-disable` comments MUST include justification and TODO
+- Intentional breaking changes with migration plan (document in plan.md)
+
+**Quality Gate Validation**:
+- Feature completion checklist MUST include: "Preflight: ✅ `bun preflight` passes"
+- Document any pre-existing failures: "(N pre-existing, 0 introduced)"
+- Pull request template MUST require preflight verification
+- `/speck.implement` workflow MUST validate preflight before marking complete
+
+### X. Website Documentation Synchronization (NON-NEGOTIABLE)
 
 Features that affect user-facing functionality, workflows, or capabilities MUST
 update the project website documentation before completion. The website MUST
@@ -366,7 +343,7 @@ source of truth. Documentation is not optional—it is a core deliverable.
 documentation debt. This principle ensures that debt is paid before the feature
 ships, not deferred indefinitely.
 
-### XII. Test-Driven Development (TDD)
+### XI. Test-Driven Development (TDD)
 
 Features MUST be implemented using Test-Driven Development (TDD) methodology
 with red-green-refactor workflow unless explicitly exempted for trivial
@@ -376,8 +353,8 @@ features.
 improves code design through testability constraints, and provides
 living documentation of system behavior. Writing tests first forces clarity
 about requirements and edge cases before implementation complexity obscures
-them. TDD complements Zero Test Regression Policy (Principle X) by preventing
-untested code from entering the codebase.
+them. TDD complements the Preflight Gate (Principle IX) by preventing untested
+code from entering the codebase.
 
 **Implementation Requirements**:
 
@@ -436,17 +413,18 @@ untested code from entering the codebase.
 correct behavior. Writing tests first ensures we build what we intend to build,
 not what we accidentally implemented.
 
-### XIII. Documentation Skill Synchronization (NON-NEGOTIABLE)
+### XII. Documentation Skill Synchronization (NON-NEGOTIABLE)
 
-The `speck-knowledge` Claude Skill MUST be kept current with all Speck features,
-workflows, commands, and capabilities. Every feature that adds or modifies
-user-facing functionality MUST update the skill documentation before completion.
+The `speck-help` Claude Skill (formerly `speck-knowledge`) MUST be kept current
+with all Speck features, workflows, commands, and capabilities. Every feature
+that adds or modifies user-facing functionality MUST update the skill
+documentation before completion.
 
-**Rationale**: The `speck-knowledge` skill is the primary interface for Claude AI
+**Rationale**: The `speck-help` skill is the primary interface for Claude AI
 to understand and assist with Speck workflows. Outdated skill documentation leads
 to incorrect guidance, missing feature awareness, and degraded user experience
 when working with Claude on Speck projects. Just as the website serves human
-users (Principle XI), the skill serves AI assistance—both MUST stay synchronized
+users (Principle X), the skill serves AI assistance—both MUST stay synchronized
 with the evolving feature set.
 
 **Implementation Requirements**:
@@ -466,7 +444,7 @@ with the evolving feature set.
   - Internal-only changes (refactoring, performance optimizations) MAY skip
     skill updates if AI-visible behavior is unchanged
 - Skill file location and structure:
-  - Skill file: `.claude/skills/speck-knowledge/SKILL.md`
+  - Skill file: `.claude/skills/speck-help/SKILL.md`
   - Contains YAML frontmatter with activation triggers
   - Organized by capability: Feature Discovery, Template References, File
     Interpretation, etc.
@@ -484,7 +462,7 @@ with the evolving feature set.
   - File interpretation logic MUST align with actual artifact formats
   - Error messages and recovery guidance MUST be current
 - Quality gate validation:
-  - Feature completion checklist MUST include: "Skill docs: ✅ speck-knowledge
+  - Feature completion checklist MUST include: "Skill docs: ✅ speck-help
     updated and verified"
   - Pull request template MUST include skill documentation verification
   - `/speck.implement` workflow SHOULD prompt for skill updates if workflow or
@@ -568,14 +546,12 @@ phases leads to ambiguous specs, incomplete plans, and implementation rework.
 - Each phase produces artifacts in `specs/<feature-num>-<short-name>/`
 - Clarification MUST resolve all `[NEEDS CLARIFICATION]` markers before planning
 - Analysis MUST verify cross-artifact consistency (spec ↔ plan ↔ tasks)
-- Implementation MUST follow TDD workflow (tests first) per Principle XII
-- Implementation MUST pass code quality standards (typecheck + lint) before
-  feature completion
-- Implementation MUST pass test regression validation (zero new failures) before
-  feature completion
+- Implementation MUST follow TDD workflow (tests first) per Principle XI
+- Implementation MUST pass `bun preflight` with zero introduced failures before
+  feature completion (Principle IX)
 - Implementation MUST update website documentation (if user-facing changes)
   before feature completion
-- Implementation MUST update speck-knowledge skill (if workflow/artifact
+- Implementation MUST update speck-help skill (if workflow/artifact
   changes) before feature completion
 
 ### Testability
@@ -605,24 +581,17 @@ default to single-branch or stacked-PR workflows when no explicit flags are prov
 
 **Valid Values**:
 - `single-branch`: Traditional single branch per feature (default)
-- `stacked-pr`: Stacked PR workflow with multiple branches per feature
 
-**Override Hierarchy** (highest to lowest priority):
-1. Command-line flags (`--stacked-pr`, `--single-branch`)
-2. Feature-specific setting in plan.md (`**Workflow Mode**: stacked-pr`)
-3. Repository-wide setting in constitution.md (this setting)
-4. Hardcoded default (`single-branch`)
+*Note: The `stacked-pr` workflow mode was removed in 015-scope-simplification.*
 
-**Rationale**: Teams heavily using stacked PRs can set `stacked-pr` as default to
-reduce friction, while preserving backwards compatibility for single-branch
-workflows. Feature-level and command-level overrides ensure flexibility for
-mixed-mode projects.
+**Rationale**: Single-branch workflow provides simplicity and reliability for
+most development scenarios. Stacked PR support was removed to reduce complexity
+and maintenance burden.
 
 **Implementation Requirements**:
 - Parser MUST read markdown line: `**Default Workflow Mode**: <value>`
 - MUST default to `single-branch` if line absent or malformed
-- MUST validate against enum values (reject invalid values with clear error)
-- MUST be documented in feature 008-stacked-pr-support
+- Only `single-branch` is currently supported
 
 ---
 
@@ -648,14 +617,12 @@ for existing artifacts.
 - All upstream syncs MUST preserve extension markers
 - All slash commands MUST follow Claude Code native principle
 - All command files MUST delegate to implementation scripts (Principle VIII)
-- All implementations MUST pass typecheck and lint with zero errors/warnings
+- All implementations MUST pass `bun preflight` with zero introduced failures
   (Principle IX)
-- All features MUST complete with zero test regressions (Principle X)
-- All user-facing features MUST update website documentation (Principle XI)
+- All user-facing features MUST update website documentation (Principle X)
 - All features MUST follow TDD workflow unless explicitly exempted (Principle
-  XII)
-- All workflow/artifact changes MUST update speck-knowledge skill (Principle
-  XIII)
+  XI)
+- All workflow/artifact changes MUST update speck-help skill (Principle XII)
 
 **Versioning Policy**:
 
@@ -664,4 +631,4 @@ for existing artifacts.
 - MINOR: New principles, sections, or material guidance expansions
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 1.8.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-22
+**Version**: 1.10.0 | **Ratified**: 2025-11-14 | **Last Amended**: 2025-11-29

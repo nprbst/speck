@@ -1,3 +1,4 @@
+// @ts-nocheck - Contract file (specification only, not production code)
 /**
  * CLI Interface Contracts for .speck/scripts/
  *

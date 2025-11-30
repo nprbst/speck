@@ -36,76 +36,49 @@ Given that feature description, do this:
      - "Create a dashboard for analytics" → "analytics-dashboard"
      - "Fix payment processing timeout bug" → "fix-payment-timeout"
 
-2. **Check for existing branches before creating new one**:
+2. **Get next feature number and detect mode**:
 
-   a. First, fetch all remote branches to ensure we have the latest information:
-      ```bash
-      git fetch --all --prune
-      ```
+   Run: `speck next-feature --json --short-name "<short-name>"`
 
-   b. Find the highest feature number across ALL specs/branches:
-      - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-' | sed -E 's/.*refs\/heads\/([0-9]+)-.*/\1/' | sort -n | tail -1`
-      - Local branches: `git branch | grep -E '[0-9]+-' | sed -E 's/.*[ *]([0-9]+)-.*/\1/' | sort -n | tail -1`
-      - Specs directories: `ls -d specs/[0-9]*-* 2>/dev/null | sed -E 's/.*\/([0-9]+)-.*/\1/' | sort -n | tail -1`
+   This single command handles all git branch checking internally and returns:
+   - `NEXT_NUMBER`: The next available feature number
+   - `MODE`: "single-repo" or "multi-repo"
+   - `SPECS_DIR`: Path to the specs directory
 
-   c. Check if the specific short-name already exists:
-      - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'`
-      - Local branches: `git branch | grep -E '^[* ]*[0-9]+-<short-name>$'`
-      - Specs directories: Check for directories matching `specs/[0-9]+-<short-name>`
+   **If `MODE` is "multi-repo"**:
+   - **Ask the user**: "Create spec at parent (shared across repos) or local (this repo only)? (parent/local)"
+   - **Wait for user response**
+   - Store the answer as `SPEC_LOCATION` (either "parent" or "local")
 
-   d. Determine the next available number:
-      - If the short-name already exists (step c), extract the highest number for that short-name and use N+1
-      - If the short-name doesn't exist (step c), use the highest number from ALL specs (step b) + 1
-      - If no specs exist at all, start with 001
+   **If `MODE` is "single-repo"**:
+   - Set `SPEC_LOCATION = "local"` (no prompt needed)
 
-   e. **Detect multi-repo mode and prompt for spec location** (T063):
-      - Run: `speck-check-prerequisites --json --skip-feature-check`
-      - Parse the JSON output and extract the `MODE` field
-      - If `MODE` is `"multi-repo"`:
-        - **Ask the user**: "Create spec at parent (shared across repos) or local (this repo only)? (parent/local)"
-        - **Wait for user response**
-        - Store the answer as `SPEC_LOCATION` (either "parent" or "local")
-      - If `MODE` is `"single-repo"`:
-        - Set `SPEC_LOCATION = "local"` (no prompt needed)
+3. **Create the feature**:
 
-   f. Run the script `speck-create-new-feature --json "$ARGUMENTS"` with the calculated number and short-name:
-      - Pass `--number N+1` and `--short-name "your-short-name"` along with the feature description
-      - **If multi-repo mode and user chose "parent"**: Add `--shared-spec` flag
-      - **If multi-repo mode and user chose "local"**: Add `--local-spec` flag (or omit flag - local is default)
-      - Bash example: `speck-create-new-feature --json --number 5 --short-name "user-auth" --shared-spec "Add user authentication"`
+   Run the command `speck create-new-feature --json --no-ide "$ARGUMENTS"` with the number from step 2:
+   - Pass `--number NEXT_NUMBER` and `--short-name "your-short-name"` along with the feature description
+   - **ALWAYS include `--no-ide`** to defer IDE launch until after spec is fully written
+   - **If multi-repo mode and user chose "parent"**: Add `--shared-spec` flag
+   - **If multi-repo mode and user chose "local"**: Add `--local-spec` flag (or omit flag - local is default)
+   - Bash example: `speck create-new-feature --json --no-ide --number 5 --short-name "user-auth" --shared-spec "Add user authentication"`
+   - With custom branch: `speck create-new-feature --json --no-ide --number 5 --short-name "user-auth" --branch "feature/user-auth" "Add user authentication"`
 
    **IMPORTANT**:
-   - First find the highest number across ALL specs/branches to determine the baseline
-   - Then check if the specific short-name already exists
-   - If short-name exists, use its highest number + 1; otherwise use the overall highest + 1
-   - This ensures sequential numbering across all features while respecting existing short-name versions
    - You must only ever run the create-new-feature script once per feature
    - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
-   - The JSON output will contain BRANCH_NAME and SPEC_FILE paths
+   - The JSON output will contain BRANCH_NAME, SPEC_FILE, and optionally WORKTREE_PATH
+   - **CRITICAL**: The SPEC_FILE path is an **absolute path** - use it exactly as returned. In worktree mode, SPEC_FILE points to the worktree's specs/ directory (NOT the main repo).
    - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot")
+   - **Worktree mode**: If worktree.enabled is true in config, create-new-feature will create the worktree and write handoff artifacts, but NOT launch IDE yet (deferred to step 9)
+   - **Flag support** (override config):
+     - If user passed `--branch <name>` flag: Also pass it to create-new-feature to use a custom branch name
+     - If user passed `--no-worktree` flag: Also pass it to create-new-feature to skip worktree creation
+     - If user passed `--worktree` flag: Also pass it to force worktree creation
+     - If user passed `--no-deps` flag: Also pass it to skip dependency installation
 
-   g. **[SPECK-EXTENSION] Worktree Integration** (Optional - enabled when worktree.enabled = true in .speck/config.json):
-      - **Check worktree configuration**: Load .speck/config.json and check if `worktree.enabled` is true
-      - **If worktree integration is enabled**:
-        1. Run: `bun .speck/scripts/worktree/create.ts --branch "$BRANCH_NAME" --repo-path "$(pwd)"`
-        2. If creation succeeds:
-           - Report: "✓ Created worktree at [path]"
-           - If IDE auto-launch is enabled, report: "✓ Launched [IDE name]"
-        3. If creation fails (non-fatal):
-           - Report warning: "⚠ Worktree creation failed: [error]"
-           - Continue with spec generation (worktree is optional)
-      - **If worktree integration is disabled**:
-        - Skip worktree creation silently
-        - Branch is checked out in main repository (standard Git workflow)
-      - **Flag support** (override config):
-        - If user passed `--no-worktree` flag: Skip worktree creation even if enabled in config
-        - If user passed `--worktree` flag: Create worktree even if disabled in config
-        - If user passed `--no-ide` flag: Pass `--no-ide` to worktree creation to skip IDE launch
-        - If user passed `--no-deps` flag: Pass `--no-deps` to worktree creation to skip dependency installation
+4. **Read** spec template from `{TEMPLATE_DIR}/spec-template.md` using Read tool to understand required sections.
 
-3. Load `${CLAUDE_PLUGIN_ROOT}/templates/spec-template.md` to understand required sections.
-
-4. Follow this execution flow:
+5. Follow this execution flow:
 
     1. Parse user description from Input
        If empty: ERROR "No feature description provided"
@@ -131,11 +104,13 @@ Given that feature description, do this:
     7. Identify Key Entities (if data involved)
     8. Return: SUCCESS (spec ready for planning)
 
-5. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
+6. Write the specification to the **absolute SPEC_FILE path** from the JSON output using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
 
-6. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+   **IMPORTANT**: Always use the exact SPEC_FILE path returned by `create-new-feature`. Do NOT construct a relative path like `specs/NNN-name/spec.md` - the script may have created the spec in a worktree directory, and SPEC_FILE contains the correct absolute path.
 
-   a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
+7. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+
+   a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items (FEATURE_DIR is the directory containing SPEC_FILE, e.g., if SPEC_FILE is `/path/to/specs/001-auth/spec.md`, then FEATURE_DIR is `/path/to/specs/001-auth/`):
 
       ```markdown
       # Specification Quality Checklist: [FEATURE NAME]
@@ -225,7 +200,15 @@ Given that feature description, do this:
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 
-7. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speck.clarify` or `/speck.plan`).
+8. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speck.clarify` or `/speck.plan`).
+
+9. **[SPECK-EXTENSION] Deferred IDE Launch** (Only if worktree was created in step 3):
+   - Check if WORKTREE_PATH was returned by create-new-feature (indicates worktree mode was used)
+   - If WORKTREE_PATH exists AND user did NOT pass `--no-ide` flag:
+     1. Run: `speck launch-ide --worktree-path "$WORKTREE_PATH"`
+     2. If launch succeeds: Report "✓ Launched IDE at [WORKTREE_PATH]"
+     3. If launch fails (non-fatal): Report "⚠ IDE launch failed: [error]"
+   - This ensures the IDE opens AFTER the spec and checklists are fully written, allowing the handoff to work correctly
 
 **NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
 

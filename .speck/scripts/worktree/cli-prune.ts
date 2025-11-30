@@ -68,7 +68,7 @@ export async function executePruneCommand(
       if (error instanceof WorktreeError) {
         console.error(`✗ ${error.message}`);
         if (error.cause) {
-          console.error(`  Cause: ${error.cause}`);
+          console.error(`  Cause: ${String(error.cause)}`);
         }
       } else {
         console.error(`✗ Error: ${error instanceof Error ? error.message : String(error)}`);

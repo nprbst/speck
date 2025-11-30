@@ -3,10 +3,10 @@ title: "Hook System"
 description: "Learn how Speck's PrePromptSubmit hook automatically validates prerequisites and pre-loads context before slash commands execute."
 category: architecture
 audience: [existing-users, evaluators]
-prerequisites: ["/docs/architecture/virtual-commands"]
+prerequisites: []
 tags: ["hooks", "claude-code", "automation", "prerequisites", "context"]
-lastUpdated: 2025-11-22
-relatedPages: ["/docs/architecture/virtual-commands", "/docs/architecture/performance"]
+lastUpdated: 2025-11-29
+relatedPages: ["/docs/architecture/performance"]
 order: 2
 ---
 
@@ -54,7 +54,7 @@ The hook injects context as a machine-readable comment:
     "plan.md": "# Implementation Plan...",
     "constitution.md": "# Project Constitution..."
   },
-  "WORKFLOW_MODE": "stacked-pr"
+  "WORKFLOW_MODE": "single-branch"
 }
 -->
 ```
@@ -185,6 +185,5 @@ Claude: I'll implement the tasks from tasks.md...
 
 ## Related Documentation
 
-- [Virtual Commands](/docs/architecture/virtual-commands) - Understand how commands are discovered and routed
 - [Performance](/docs/architecture/performance) - See detailed hook latency benchmarks
 - [Commands Reference](/docs/commands/reference) - Complete list of commands that use hook-based prerequisites

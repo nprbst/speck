@@ -36,21 +36,17 @@ You **MUST** consider the user input before proceeding (if not empty).
 1. **Setup**: Extract prerequisite context from the auto-injected comment in the prompt:
    ```
    <!-- SPECK_PREREQ_CONTEXT
-   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","AVAILABLE_DOCS":["specs/010-feature/spec.md","specs/010-feature/plan.md","specs/010-feature/tasks.md"]}
+   {"MODE":"single-repo","FEATURE_DIR":"/path/to/specs/010-feature","TEMPLATE_DIR":"/path/to/plugin/templates","AVAILABLE_DOCS":["specs/010-feature/spec.md","specs/010-feature/plan.md","specs/010-feature/tasks.md"]}
    -->
    ```
-   Use the FEATURE_DIR and AVAILABLE_DOCS values from this JSON.
+   Use the FEATURE_DIR, TEMPLATE_DIR, and AVAILABLE_DOCS values from this JSON.
 
    **Fallback**: If the comment is not present (VSCode hook bug), run:
    ```bash
-   speck-check-prerequisites --json
+   speck check-prerequisites --json
    ```
 
-   **Fallback (VSCode hook bug)**: If the virtual command fails with exit code 127, run:
-   ```bash
-   bun ~/.claude/plugins/marketplaces/speck-market/speck/scripts/check-prerequisites.ts --json
-   ```
-   Then manually parse the JSON output to extract FEATURE_DIR and AVAILABLE_DOCS.
+   Then parse the JSON output to extract FEATURE_DIR and AVAILABLE_DOCS.
 
 2. **Clarify intent (dynamic)**: Derive up to THREE initial contextual clarifying questions (no pre-baked catalog). They MUST:
    - Be generated from the user's phrasing + extracted signals from spec/plan/tasks
@@ -219,7 +215,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - ✅ "Are [edge cases/scenarios] addressed in requirements?"
    - ✅ "Does the spec define [missing aspect]?"
 
-6. **Structure Reference**: Generate the checklist following the canonical template in `${CLAUDE_PLUGIN_ROOT}/templates/checklist-template.md` for title, meta section, category headings, and ID formatting. If template is unavailable, use: H1 title, purpose/created meta lines, `##` category sections containing `- [ ] CHK### <requirement item>` lines with globally incrementing IDs starting at CHK001.
+6. **Structure Reference**: **Read** checklist template from `{TEMPLATE_DIR}/checklist-template.md` using Read tool. Follow the template for title, meta section, category headings, and ID formatting. If template is unavailable, use: H1 title, purpose/created meta lines, `##` category sections containing `- [ ] CHK### <requirement item>` lines with globally incrementing IDs starting at CHK001.
 
 7. **Report**: Output full path to created checklist, item count, and remind user that each run creates a new file. Summarize:
    - Focus areas selected

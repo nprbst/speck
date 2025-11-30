@@ -3,31 +3,31 @@
  * Target: <100ms from PreToolUse trigger to CLI execution start
  */
 
-import { describe, test, expect } from "bun:test";
-import { performance } from "perf_hooks";
-import type { HookInput } from "../../.speck/scripts/lib/types";
+import { describe, test, expect } from 'bun:test';
+import { performance } from 'perf_hooks';
+import type { HookInput } from '../../.speck/scripts/lib/types';
 
-describe("Hook Routing Latency Benchmark", () => {
-  test("SC-003: Hook routing latency should be <100ms", async () => {
+describe('Hook Routing Latency Benchmark', () => {
+  test('SC-003: Hook routing latency should be <100ms', async () => {
     const iterations = 100;
     const latencies: number[] = [];
 
     for (let i = 0; i < iterations; i++) {
       const hookInput: HookInput = {
-        tool_name: "Bash",
+        tool_name: 'Bash',
         tool_input: {
-          command: "speck-env",
-          description: "Test command for latency measurement",
+          command: 'speck-env',
+          description: 'Test command for latency measurement',
         },
       };
 
       const startTime = performance.now();
 
       // Simulate hook invocation
-      const proc = Bun.spawn(["bun", ".speck/dist/speck-hook.js"], {
-        stdin: "pipe",
-        stdout: "pipe",
-        stderr: "pipe",
+      const proc = Bun.spawn(['bun', '.speck/dist/speck-hook.js'], {
+        stdin: 'pipe',
+        stdout: 'pipe',
+        stderr: 'pipe',
       });
 
       // Send hook input
@@ -60,7 +60,7 @@ describe("Hook Routing Latency Benchmark", () => {
     expect(avgLatency).toBeLessThan(100);
   });
 
-  test("CLI execution start latency should be <50ms", async () => {
+  test('CLI execution start latency should be <50ms', async () => {
     const iterations = 100;
     const latencies: number[] = [];
 
@@ -68,13 +68,10 @@ describe("Hook Routing Latency Benchmark", () => {
       const startTime = performance.now();
 
       // Direct CLI invocation (no hook overhead)
-      const proc = Bun.spawn(
-        ["bun", ".speck/scripts/speck.ts", "test-hello", "world"],
-        {
-          stdout: "pipe",
-          stderr: "pipe",
-        }
-      );
+      const proc = Bun.spawn(['bun', '.speck/scripts/speck.ts', 'test-hello', 'world'], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      });
 
       await proc.exited;
 

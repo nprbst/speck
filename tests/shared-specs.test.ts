@@ -46,19 +46,31 @@ async function cleanup(dir: string): Promise<void> {
   }
 }
 
-async function createSharedSpec(speckRoot: string, featureName: string, content: string): Promise<void> {
+async function createSharedSpec(
+  speckRoot: string,
+  featureName: string,
+  content: string
+): Promise<void> {
   const specDir = path.join(speckRoot, 'specs', featureName);
   await fs.mkdir(specDir, { recursive: true });
   await fs.writeFile(path.join(specDir, 'spec.md'), content);
 }
 
-async function createLocalSpec(repoRoot: string, featureName: string, content: string): Promise<void> {
+async function createLocalSpec(
+  repoRoot: string,
+  featureName: string,
+  content: string
+): Promise<void> {
   const specDir = path.join(repoRoot, 'specs', featureName);
   await fs.mkdir(specDir, { recursive: true });
   await fs.writeFile(path.join(specDir, 'spec.md'), content);
 }
 
-async function symlinkSpecToLocal(speckRoot: string, repoRoot: string, featureName: string): Promise<void> {
+async function symlinkSpecToLocal(
+  speckRoot: string,
+  repoRoot: string,
+  featureName: string
+): Promise<void> {
   const localFeatureDir = path.join(repoRoot, 'specs', featureName);
   await fs.mkdir(localFeatureDir, { recursive: true });
 
@@ -111,7 +123,10 @@ describe('Phase 8: T063-T067 - Shared Spec Creation', () => {
 
     // Verify spec exists at speck root
     const sharedSpecPath = path.join(speckRoot, 'specs', featureName, 'spec.md');
-    const exists = await fs.access(sharedSpecPath).then(() => true).catch(() => false);
+    const exists = await fs
+      .access(sharedSpecPath)
+      .then(() => true)
+      .catch(() => false);
 
     expect(exists).toBe(true);
 
@@ -364,10 +379,7 @@ describe('Phase 8: T069 - Contracts Directory Symlinking', () => {
     expect(stats.isSymbolicLink()).toBe(true);
 
     // Verify content accessible through symlink
-    const apiSchema = await fs.readFile(
-      path.join(localContractsLink, 'api-schema.md'),
-      'utf-8'
-    );
+    const apiSchema = await fs.readFile(path.join(localContractsLink, 'api-schema.md'), 'utf-8');
     expect(apiSchema).toContain('API Schema');
     expect(apiSchema).toContain('/api/users');
   });
@@ -390,7 +402,10 @@ describe('Phase 8: T069 - Contracts Directory Symlinking', () => {
 
     // Verify no contracts symlink created
     const localContractsLink = path.join(localFeatureDir, 'contracts');
-    const exists = await fs.access(localContractsLink).then(() => true).catch(() => false);
+    const exists = await fs
+      .access(localContractsLink)
+      .then(() => true)
+      .catch(() => false);
     expect(exists).toBe(false);
   });
 
@@ -433,14 +448,8 @@ describe('Phase 8: T069 - Contracts Directory Symlinking', () => {
     expect(backendStats.isSymbolicLink()).toBe(true);
 
     // Read same contract from both repos
-    const frontendModel = await fs.readFile(
-      path.join(frontendContracts, 'user-model.md'),
-      'utf-8'
-    );
-    const backendModel = await fs.readFile(
-      path.join(backendContracts, 'user-model.md'),
-      'utf-8'
-    );
+    const frontendModel = await fs.readFile(path.join(frontendContracts, 'user-model.md'), 'utf-8');
+    const backendModel = await fs.readFile(path.join(backendContracts, 'user-model.md'), 'utf-8');
 
     expect(frontendModel).toBe(backendModel);
     expect(frontendModel).toContain('User entity schema');
@@ -539,10 +548,13 @@ describe('Phase 8: T070-T072a - Git Ignore Patterns', () => {
 
     // Check what's staged
     const diffResult = await $`cd ${frontendDir} && git diff --cached --name-only`.quiet();
-    const stagedFiles = diffResult.text().split('\n').filter(f => f.trim());
+    const stagedFiles = diffResult
+      .text()
+      .split('\n')
+      .filter((f) => f.trim());
 
     // spec.md should NOT be staged
-    const specMdStaged = stagedFiles.some(f => f.includes('spec.md'));
+    const specMdStaged = stagedFiles.some((f) => f.includes('spec.md'));
     expect(specMdStaged).toBe(false);
   });
 
@@ -569,11 +581,14 @@ describe('Phase 8: T070-T072a - Git Ignore Patterns', () => {
 
     // Check staged files
     const diffResult = await $`cd ${frontendDir} && git diff --cached --name-only`.quiet();
-    const stagedFiles = diffResult.text().split('\n').filter(f => f.trim());
+    const stagedFiles = diffResult
+      .text()
+      .split('\n')
+      .filter((f) => f.trim());
 
     // plan.md and tasks.md SHOULD be staged
-    expect(stagedFiles.some(f => f.includes('plan.md'))).toBe(true);
-    expect(stagedFiles.some(f => f.includes('tasks.md'))).toBe(true);
+    expect(stagedFiles.some((f) => f.includes('plan.md'))).toBe(true);
+    expect(stagedFiles.some((f) => f.includes('tasks.md'))).toBe(true);
   });
 
   test('T072a: Symlinked files show as ignored in git status', async () => {
@@ -609,10 +624,12 @@ describe('Phase 8: T070-T072a - Git Ignore Patterns', () => {
     expect(status).not.toContain('contracts/');
 
     // Verify files exist but are ignored
-    const specExists = await fs.access(path.join(localFeatureDir, 'spec.md'))
+    const specExists = await fs
+      .access(path.join(localFeatureDir, 'spec.md'))
       .then(() => true)
       .catch(() => false);
-    const contractsExists = await fs.access(path.join(localFeatureDir, 'contracts'))
+    const contractsExists = await fs
+      .access(path.join(localFeatureDir, 'contracts'))
       .then(() => true)
       .catch(() => false);
 

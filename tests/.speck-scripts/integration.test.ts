@@ -9,16 +9,16 @@
  * This validates Task T070 from tasks.md
  */
 
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { $ } from "bun";
-import { join } from "node:path";
-import { existsSync, rmSync } from "node:fs";
-import type { ReleaseRegistry } from "../../.speck/scripts/contracts/release-registry";
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import { $ } from 'bun';
+import { join } from 'node:path';
+import { existsSync, rmSync } from 'node:fs';
+import type { ReleaseRegistry } from '../../.speck/scripts/contracts/release-registry';
 
-describe("Integration: Full upstream sync pipeline", () => {
+describe('Integration: Full upstream sync pipeline', () => {
   // Use a completely isolated test directory
-  const testDir = join(process.cwd(), ".test-workspace-integration");
-  const testUpstreamDir = join(testDir, "upstream");
+  const testDir = join(process.cwd(), '.test-workspace-integration');
+  const testUpstreamDir = join(testDir, 'upstream');
 
   beforeEach(async () => {
     // Create isolated test workspace
@@ -35,7 +35,7 @@ describe("Integration: Full upstream sync pipeline", () => {
     }
   });
 
-  test("full pipeline: check → pull (validation only, no FS changes)", async () => {
+  test('full pipeline: check → pull (validation only, no FS changes)', async () => {
     // Step 1: Check upstream releases (read-only, safe)
     const checkResult = await $`bun .speck/scripts/check-upstream.ts --json`.quiet();
     expect(checkResult.exitCode).toBe(0);
@@ -45,21 +45,22 @@ describe("Integration: Full upstream sync pipeline", () => {
     expect(checkOutput.releases.length).toBeGreaterThan(0);
 
     const latestRelease = checkOutput.releases[0];
-    expect(latestRelease).toHaveProperty("version");
-    expect(latestRelease).toHaveProperty("publishedAt");
-    expect(latestRelease).toHaveProperty("notesUrl");
+    expect(latestRelease).toHaveProperty('version');
+    expect(latestRelease).toHaveProperty('publishedAt');
+    expect(latestRelease).toHaveProperty('notesUrl');
 
     // Step 2: Verify pull-upstream validates version format (no actual pull)
-    const invalidVersionResult =
-      await $`bun .speck/scripts/pull-upstream.ts invalid-version`.nothrow().quiet();
+    const invalidVersionResult = await $`bun .speck/scripts/pull-upstream.ts invalid-version`
+      .nothrow()
+      .quiet();
     expect(invalidVersionResult.exitCode).toBe(1);
-    expect(invalidVersionResult.stderr.toString()).toContain("Invalid version");
+    expect(invalidVersionResult.stderr.toString()).toContain('Invalid version');
 
     // Step 3: Verify real upstream directory exists and is intact
-    const realUpstreamDir = join(process.cwd(), "upstream");
+    const realUpstreamDir = join(process.cwd(), 'upstream');
     expect(existsSync(realUpstreamDir)).toBe(true);
 
-    const releasesJsonPath = join(realUpstreamDir, "releases.json");
+    const releasesJsonPath = join(realUpstreamDir, 'releases.json');
     expect(existsSync(releasesJsonPath)).toBe(true);
 
     const releasesJson = (await Bun.file(releasesJsonPath).json()) as ReleaseRegistry;
@@ -68,11 +69,11 @@ describe("Integration: Full upstream sync pipeline", () => {
     expect(releasesJson.releases.length).toBeGreaterThan(0);
   }, 120000); // 2 minute timeout for network operations
 
-  test("pipeline handles existing release by reporting error", async () => {
+  test('pipeline handles existing release by reporting error', async () => {
     // Verify that attempting to pull an already-pulled release reports an error
 
-    const realUpstreamDir = join(process.cwd(), "upstream");
-    const releasesJsonPath = join(realUpstreamDir, "releases.json");
+    const realUpstreamDir = join(process.cwd(), 'upstream');
+    const releasesJsonPath = join(realUpstreamDir, 'releases.json');
 
     // Read existing releases to find one that's already pulled
     const releasesJson = (await Bun.file(releasesJsonPath).json()) as ReleaseRegistry;
@@ -85,10 +86,11 @@ describe("Integration: Full upstream sync pipeline", () => {
     const alreadyPulledVersion = releasesJson.releases[0].version;
 
     // Attempt to pull an already-pulled release (should fail with user error)
-    const result = await $`bun .speck/scripts/pull-upstream.ts ${alreadyPulledVersion}`.nothrow()
+    const result = await $`bun .speck/scripts/pull-upstream.ts ${alreadyPulledVersion}`
+      .nothrow()
       .quiet();
     expect(result.exitCode).toBe(1); // User error
-    expect(result.stderr.toString()).toContain("already exists");
+    expect(result.stderr.toString()).toContain('already exists');
 
     // Verify releases.json wasn't corrupted (still has same number of entries)
     const releasesJsonAfter = (await Bun.file(releasesJsonPath).json()) as ReleaseRegistry;
@@ -98,16 +100,15 @@ describe("Integration: Full upstream sync pipeline", () => {
     expect(versionEntries.length).toBe(1); // Should still be exactly one entry
   }, 120000);
 
-  test("pipeline validates version format", async () => {
+  test('pipeline validates version format', async () => {
     // Try to pull invalid version
-    const result = await $`bun .speck/scripts/pull-upstream.ts invalid-version`.nothrow()
-      .quiet();
+    const result = await $`bun .speck/scripts/pull-upstream.ts invalid-version`.nothrow().quiet();
 
     expect(result.exitCode).toBe(1); // User error exit code
-    expect(result.stderr.toString()).toContain("Invalid version");
+    expect(result.stderr.toString()).toContain('Invalid version');
   });
 
-  test("check-upstream handles network errors gracefully", async () => {
+  test('check-upstream handles network errors gracefully', async () => {
     // Test with invalid GitHub repo (to trigger network error)
     // This test uses the actual implementation but expects graceful error handling
 
@@ -121,8 +122,8 @@ describe("Integration: Full upstream sync pipeline", () => {
   });
 });
 
-describe("Integration: Transformation pipeline validation", () => {
-  test.skip("transform-upstream processes pulled release", async () => {
+describe('Integration: Transformation pipeline validation', () => {
+  test.skip('transform-upstream processes pulled release', async () => {
     // TODO: Implement once transformation agent enhancements (T049a-T049d) are complete
     // This test will:
     // 1. Pull a release
@@ -132,12 +133,12 @@ describe("Integration: Transformation pipeline validation", () => {
     // 5. Verify CLI interface compatibility
   });
 
-  test.skip("transformation preserves SPECK-EXTENSION markers", async () => {
+  test.skip('transformation preserves SPECK-EXTENSION markers', async () => {
     // TODO: Implement extension marker preservation test
     // This validates FR-010 from spec.md
   });
 
-  test.skip("transformation detects and reports breaking changes", async () => {
+  test.skip('transformation detects and reports breaking changes', async () => {
     // TODO: Implement after T049a (breaking change detection)
   });
 });

@@ -8,10 +8,10 @@
  * - Cleanup helpers
  */
 
-import { $ } from "bun";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { $ } from 'bun';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 /**
  * Creates a temporary Git repository for testing
@@ -19,20 +19,22 @@ import { join } from "node:path";
  * @param options Configuration options
  * @returns Object with repo path and cleanup function
  */
-export async function createTempGitRepo(options: {
-  /** Initialize with commits */
-  withCommits?: boolean;
-  /** Create initial branch name (default: "main") */
-  initialBranch?: string;
-  /** Add initial files */
-  withFiles?: string[];
-} = {}): Promise<{ path: string; cleanup: () => Promise<void> }> {
-  const prefix = join(tmpdir(), "speck-test-");
+export async function createTempGitRepo(
+  options: {
+    /** Initialize with commits */
+    withCommits?: boolean;
+    /** Create initial branch name (default: "main") */
+    initialBranch?: string;
+    /** Add initial files */
+    withFiles?: string[];
+  } = {}
+): Promise<{ path: string; cleanup: () => Promise<void> }> {
+  const prefix = join(tmpdir(), 'speck-test-');
   const repoPath = await mkdtemp(prefix);
 
   try {
     // Initialize Git repo
-    await $`git init ${options.initialBranch ? `-b ${options.initialBranch}` : ""} ${repoPath}`.quiet();
+    await $`git init ${options.initialBranch ? `-b ${options.initialBranch}` : ''} ${repoPath}`.quiet();
 
     // Configure Git user for commits
     await $`git -C ${repoPath} config user.email "test@example.com"`.quiet();
@@ -50,7 +52,7 @@ export async function createTempGitRepo(options: {
     if (options.withCommits) {
       // Create a dummy file if no files specified
       if (!options.withFiles || options.withFiles.length === 0) {
-        await Bun.write(join(repoPath, "README.md"), "# Test Repository\n");
+        await Bun.write(join(repoPath, 'README.md'), '# Test Repository\n');
       }
 
       await $`git -C ${repoPath} add .`.quiet();
@@ -129,13 +131,13 @@ export class MockPackageManager {
   }> = [];
 
   private nextExitCode = 0;
-  private nextStdout = "";
-  private nextStderr = "";
+  private nextStdout = '';
+  private nextStderr = '';
 
   /**
    * Set the result for the next command execution
    */
-  setNextResult(exitCode: number, stdout = "", stderr = "") {
+  setNextResult(exitCode: number, stdout = '', stderr = '') {
     this.nextExitCode = exitCode;
     this.nextStdout = stdout;
     this.nextStderr = stderr;
@@ -169,8 +171,8 @@ export class MockPackageManager {
       stderr: this.nextStderr,
     };
     this.nextExitCode = 0;
-    this.nextStdout = "";
-    this.nextStderr = "";
+    this.nextStdout = '';
+    this.nextStderr = '';
 
     return output;
   }
@@ -195,31 +197,29 @@ export class MockPackageManager {
   reset() {
     this.commands = [];
     this.nextExitCode = 0;
-    this.nextStdout = "";
-    this.nextStderr = "";
+    this.nextStdout = '';
+    this.nextStderr = '';
   }
 }
 
 /**
  * Helper to assert Git version meets minimum requirements
  */
-export async function assertGitVersion(minVersion = "2.5.0"): Promise<void> {
+export async function assertGitVersion(minVersion = '2.5.0'): Promise<void> {
   try {
     const { stdout } = await $`git --version`.quiet();
     const versionMatch = stdout.toString().match(/git version (\d+\.\d+\.\d+)/);
 
     if (!versionMatch) {
-      throw new Error("Could not determine Git version");
+      throw new Error('Could not determine Git version');
     }
 
-    const version = versionMatch[1];
-    const [major, minor] = version.split(".").map(Number);
-    const [minMajor, minMinor] = minVersion.split(".").map(Number);
+    const version = versionMatch[1]!;
+    const [major, minor] = version.split('.').map(Number);
+    const [minMajor, minMinor] = minVersion.split('.').map(Number);
 
-    if (major < minMajor || (major === minMajor && minor < minMinor)) {
-      throw new Error(
-        `Git version ${version} is below minimum required version ${minVersion}`
-      );
+    if (major! < minMajor! || (major === minMajor && minor! < minMinor!)) {
+      throw new Error(`Git version ${version} is below minimum required version ${minVersion}`);
     }
   } catch (error) {
     throw new Error(`Git is not available or version check failed: ${error}`);
@@ -239,7 +239,7 @@ export async function createFileStructure(
   for (const [name, content] of Object.entries(structure)) {
     const path = join(baseDir, name);
 
-    if (typeof content === "string") {
+    if (typeof content === 'string') {
       // It's a file
       await Bun.write(path, content);
     } else {

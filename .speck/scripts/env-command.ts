@@ -2,10 +2,9 @@
  * Speck Environment Check Command
  *
  * Comprehensive environment and configuration checker for Speck plugin.
- * Displays multi-repo context, branch stack status, and diagnostic information.
+ * Displays multi-repo context, branch mapping status, and diagnostic information.
  *
- * Feature: 008-stacked-pr-support (T072-T082)
- * Feature: 009-multi-repo-stacked (T032-T034)
+ * Feature: 015-scope-simplification (refactored from 008/009)
  *
  * Usage:
  *   bun run .speck/scripts/env-command.ts [options]
@@ -15,9 +14,16 @@
  *   --json     Output as JSON (for programmatic use)
  */
 
-import { readBranches, getAggregatedBranchStatus, type RepoBranchSummary, type BranchEntry } from "./common/branch-mapper.ts";
+import { readBranches, getAggregatedBranchStatus, type RepoBranchSummary } from "./common/branch-mapper.ts";
 import { getCurrentBranch } from "./common/git-operations.ts";
 import { detectSpeckRoot, getMultiRepoContext, findChildReposWithNames, type SpeckConfig, type MultiRepoContextMetadata } from "./common/paths.ts";
+import {
+  formatJsonOutput,
+  formatHookOutput,
+  detectOutputMode,
+  type OutputMode,
+} from "./lib/output-formatter";
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -26,30 +32,50 @@ import path from "node:path";
 // ===========================
 
 export async function main(args: string[] = process.argv.slice(2)): Promise<number> {
-  // DEPRECATION WARNING: This individual script is deprecated
-  // Use the unified CLI instead: bun .speck/scripts/speck.ts env
-  // Or use the virtual command: speck-env
-  if (!args.includes("--json") && process.stdout.isTTY) {
-    console.warn("\x1b[33m⚠️  DEPRECATION WARNING: This script is deprecated. Use 'speck-env' virtual command or 'bun .speck/scripts/speck.ts env' instead.\x1b[0m\n");
-  }
+  const startTime = Date.now();
+  const options = {
+    json: args.includes("--json"),
+    hook: args.includes("--hook"),
+    help: args.includes("--help"),
+  };
+  const outputMode = detectOutputMode(options);
 
-  if (args.includes("--help")) {
+  if (options.help) {
     showHelp();
     return 0;
   }
 
-  const jsonOutput = args.includes("--json");
-
   try {
-    await displayEnvironmentStatus(jsonOutput);
+    await displayEnvironmentStatus(outputMode, startTime);
     return 0;
   } catch (error) {
-    if (jsonOutput) {
-      console.error(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
-    } else {
-      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    outputError("ENV_ERROR", errorMessage, outputMode, startTime);
     return 1;
+  }
+}
+
+/**
+ * Output error in the appropriate format
+ */
+function outputError(
+  code: string,
+  message: string,
+  outputMode: OutputMode,
+  startTime: number
+): void {
+  if (outputMode === "json") {
+    const output = formatJsonOutput({
+      success: false,
+      error: { code, message },
+      command: "env",
+      startTime,
+    });
+    console.log(JSON.stringify(output));
+  } else if (outputMode === "hook") {
+    console.error(`ERROR: ${message}`);
+  } else {
+    console.error(`Error: ${message}`);
   }
 }
 
@@ -66,27 +92,100 @@ Usage:
 
 Options:
   --help     Show this help message
-  --json     Output as JSON (for programmatic use)
+  --json     Output as JSON (structured JSON envelope)
+  --hook     Output hook-formatted response for Claude Code hooks
 
 Description:
   Displays comprehensive environment information including:
   - Multi-repo configuration
-  - Branch stack status (single-repo or aggregate)
+  - Branch mapping status
   - Feature detection
   - System diagnostics
   `.trim());
 }
 
 // ===========================
+// Conflict Detection
+// ===========================
+
+/**
+ * Check for conflicting spec.md files in multi-repo child context
+ *
+ * In multi-repo mode, a child repo can have:
+ * - Child-only specs (local specs that don't exist in shared root) - OK
+ * - Shared specs (specs that exist in shared root) - OK
+ *
+ * But if the SAME feature-id has spec.md in BOTH locations, that creates
+ * ambiguity about which spec is authoritative.
+ *
+ * @returns Warning message if conflict detected, null otherwise
+ */
+async function checkLocalSpecsConflict(context: MultiRepoContextMetadata): Promise<string | null> {
+  // Only check in multi-repo child context
+  if (context.mode !== "multi-repo" || context.context !== "child") {
+    return null;
+  }
+
+  // Check if child repo has a local specs/ directory
+  const localSpecsDir = path.join(context.repoRoot, "specs");
+  if (!existsSync(localSpecsDir)) {
+    return null;
+  }
+
+  // Find features that have spec.md in BOTH local and shared locations
+  const conflicts: string[] = [];
+
+  try {
+    const localFeatures = await fs.readdir(localSpecsDir, { withFileTypes: true });
+
+    for (const entry of localFeatures) {
+      if (!entry.isDirectory()) continue;
+
+      const featureId = entry.name;
+      const localSpecPath = path.join(localSpecsDir, featureId, "spec.md");
+      const sharedSpecPath = path.join(context.specsDir, featureId, "spec.md");
+
+      // Check if spec.md exists in BOTH locations
+      if (existsSync(localSpecPath) && existsSync(sharedSpecPath)) {
+        conflicts.push(featureId);
+      }
+    }
+  } catch {
+    return null;
+  }
+
+  if (conflicts.length === 0) {
+    return null;
+  }
+
+  // Build warning message for conflicting specs
+  const conflictList = conflicts.map(f => `     - ${f}`).join("\n");
+  return (
+    "⚠️  WARNING: Conflicting spec.md files found in both local and shared locations\n" +
+    "\n" +
+    "   Features with conflicts:\n" +
+    conflictList + "\n" +
+    "\n" +
+    "   Each feature should have spec.md in only ONE location:\n" +
+    `   - Shared (for cross-repo features): ${context.specsDir}/<feature>/spec.md\n` +
+    `   - Local (for child-only features): ${localSpecsDir}/<feature>/spec.md\n` +
+    "\n" +
+    "   To resolve, remove the duplicate spec.md from one location."
+  );
+}
+
+// ===========================
 // Main Display Logic
 // ===========================
 
-async function displayEnvironmentStatus(jsonOutput: boolean): Promise<void> {
+async function displayEnvironmentStatus(outputMode: OutputMode, startTime: number): Promise<void> {
   const config = await detectSpeckRoot();
   const context = await getMultiRepoContext();
 
-  if (jsonOutput) {
-    await displayJsonOutput(config, context);
+  if (outputMode === "json") {
+    await displayJsonOutput(config, context, startTime);
+  } else if (outputMode === "hook") {
+    await displayHookOutput(config, context);
   } else {
     await displayTextOutput(config, context);
   }
@@ -99,26 +198,47 @@ async function displayEnvironmentStatus(jsonOutput: boolean): Promise<void> {
 async function displayTextOutput(config: SpeckConfig, context: MultiRepoContextMetadata): Promise<void> {
   console.log("=== Speck Environment Status ===\n");
 
-  // T032: Display multi-repo context indicator when in child
-  displayMultiRepoContext(context);
+  // Display multi-repo context indicator
+  await displayMultiRepoContext(context);
 
-  // T033-T034: Display branch stack status
-  await displayBranchStackStatus(config, context);
+  // Display branch mapping status
+  await displayBranchMappingStatus(config, context);
 }
 
 /**
- * T032 - Display multi-repo context indicator when in child
+ * Display multi-repo context indicator
  */
-function displayMultiRepoContext(context: MultiRepoContextMetadata): void {
+async function displayMultiRepoContext(context: MultiRepoContextMetadata): Promise<void> {
+  // Get current branch
+  let currentBranch = "";
+  try {
+    currentBranch = await getCurrentBranch(context.repoRoot);
+  } catch {
+    // Ignore - repo might have no commits
+  }
+
+  // Check for conflicting local specs/ directory in child repo context
+  const localSpecsWarning = await checkLocalSpecsConflict(context);
+  if (localSpecsWarning) {
+    console.log(localSpecsWarning);
+    console.log("");
+  }
+
   if (context.mode === "single-repo") {
     console.log("Mode: Single-repo");
     console.log(`  Repo Root: ${context.repoRoot}`);
     console.log(`  Specs Directory: ${context.specsDir}`);
+    if (currentBranch) {
+      console.log(`  Current Branch: ${currentBranch}`);
+    }
     console.log("");
   } else if (context.context === "root") {
     console.log("Mode: Multi-repo (Root)");
     console.log(`  Speck Root: ${context.speckRoot}`);
     console.log(`  Specs Directory: ${context.specsDir}`);
+    if (currentBranch) {
+      console.log(`  Current Branch: ${currentBranch}`);
+    }
     console.log("");
   } else if (context.context === "child") {
     console.log("Mode: Multi-repo (Child Repository)");
@@ -126,16 +246,18 @@ function displayMultiRepoContext(context: MultiRepoContextMetadata): void {
     console.log(`  Parent Spec: ${context.parentSpecId || "Unknown"}`);
     console.log(`  Repo Root: ${context.repoRoot}`);
     console.log(`  Speck Root: ${context.speckRoot}`);
+    if (currentBranch) {
+      console.log(`  Current Branch: ${currentBranch}`);
+    }
     console.log("");
   }
 }
 
 /**
- * T033-T034 - Display branch stack status with multi-repo awareness
+ * Display branch mapping status (simplified - no stacked PR visualization)
  */
-async function displayBranchStackStatus(config: SpeckConfig, context: MultiRepoContextMetadata): Promise<void> {
-  // T033: Check if there are child repos (even in single-repo mode for the root)
-  // This handles the case where root doesn't have .speck/root but has children
+async function displayBranchMappingStatus(config: SpeckConfig, context: MultiRepoContextMetadata): Promise<void> {
+  // Check if there are child repos
   const childReposMap = await findChildReposWithNames(config.speckRoot);
   const hasChildRepos = childReposMap.size > 0;
 
@@ -149,19 +271,15 @@ async function displayBranchStackStatus(config: SpeckConfig, context: MultiRepoC
     // No branches.json in root
   }
 
-  // If no branches and no child repos, show "not enabled" message
+  // If no branches and no child repos, show minimal message
   if (!hasBranches && !hasChildRepos) {
-    console.log("Branch Stack Status: Not enabled");
-    console.log("");
-    console.log("To enable stacked PRs:");
-    console.log("  /speck.branch create <branch-name> --base <base-branch>");
+    console.log("Branch Mappings: None");
+    console.log("  (Use non-standard branch names to auto-create mappings)");
     console.log("");
     return;
   }
 
-  // T033: Display aggregate status if:
-  // 1. Multi-repo root context, OR
-  // 2. Single-repo mode BUT has child repos (root with children)
+  // Display aggregate status if multi-repo root or single-repo with children
   if ((context.mode === "multi-repo" && context.context === "root") ||
       (context.mode === "single-repo" && hasChildRepos)) {
     await displayAggregateStatus(config.speckRoot, config.repoRoot);
@@ -172,10 +290,10 @@ async function displayBranchStackStatus(config: SpeckConfig, context: MultiRepoC
 }
 
 /**
- * T033 - Display aggregate branch status for multi-repo root
+ * Display aggregate branch mapping status for multi-repo root
  */
 async function displayAggregateStatus(speckRoot: string, repoRoot: string): Promise<void> {
-  console.log("=== Branch Stack Status (Multi-Repo) ===\n");
+  console.log("=== Branch Mappings (Multi-Repo) ===\n");
 
   const aggregated = await getAggregatedBranchStatus(speckRoot, repoRoot);
 
@@ -183,7 +301,7 @@ async function displayAggregateStatus(speckRoot: string, repoRoot: string): Prom
   if (aggregated.rootRepo) {
     displayRepoSummary("Root", aggregated.rootRepo);
   } else {
-    console.log("Root Repository: (no branches)");
+    console.log("Root Repository: (no branch mappings)");
     console.log("");
   }
 
@@ -195,73 +313,37 @@ async function displayAggregateStatus(speckRoot: string, repoRoot: string): Prom
   }
 
   if (childNames.length === 0 && !aggregated.rootRepo) {
-    console.log("No branches found in any repository.");
+    console.log("No branch mappings found in any repository.");
     console.log("");
   }
 }
 
 /**
- * T034 - Display repository summary with tree visualization
+ * Display repository summary (simplified - no stacked PR fields)
  */
 function displayRepoSummary(header: string, summary: RepoBranchSummary): void {
   console.log(`${header}${summary.specId ? ` (${summary.specId})` : ""}:`);
+  console.log(`  ${summary.branchCount} branch mapping(s)`);
 
-  // Display status counts
-  const counts: string[] = [];
-  if (summary.statusCounts.active > 0) counts.push(`${summary.statusCounts.active} active`);
-  if (summary.statusCounts.submitted > 0) counts.push(`${summary.statusCounts.submitted} submitted`);
-  if (summary.statusCounts.merged > 0) counts.push(`${summary.statusCounts.merged} merged`);
-  if (summary.statusCounts.abandoned > 0) counts.push(`${summary.statusCounts.abandoned} abandoned`);
-
-  if (counts.length > 0) {
-    console.log(`  ${counts.join(", ")}`);
-  }
-
-  // Display dependency trees
-  for (const chain of summary.chains) {
-    if (chain.branches.length > 0) {
-      displayBranchChain(chain.branches, summary.branches);
-    }
+  // List branches
+  for (const branch of summary.branches) {
+    console.log(`    - ${branch.name} → ${branch.specId}`);
   }
 
   console.log("");
 }
 
 /**
- * T034 - Display branch chain with tree visualization
- */
-function displayBranchChain(branchNames: string[], branchEntries: BranchEntry[]): void {
-  if (branchNames.length === 0) return;
-
-  // Display as a stacked chain with PR numbers and status
-  branchNames.forEach((branchName, idx) => {
-    const marker = idx === 0 ? "└─" : "   └─";
-    const branch = branchEntries.find(b => b.name === branchName);
-
-    let display = `  ${marker} ${branchName}`;
-
-    if (branch) {
-      if (branch.pr) {
-        display += ` (${branch.status}, PR #${branch.pr})`;
-      } else if (branch.status !== "active") {
-        display += ` (${branch.status})`;
-      }
-    }
-
-    console.log(display);
-  });
-}
-
-/**
- * Display local branch stack status (single-repo or child context)
+ * Display local branch mapping status (single-repo or child context)
  */
 async function displayLocalStatus(repoRoot: string): Promise<void> {
-  console.log("=== Branch Stack Status ===\n");
+  console.log("=== Branch Mappings ===\n");
 
   const mapping = await readBranches(repoRoot);
 
   if (mapping.branches.length === 0) {
-    console.log("No branches tracked yet.");
+    console.log("No branch mappings yet.");
+    console.log("  (Non-standard branch names are auto-tracked when created)");
     console.log("");
     return;
   }
@@ -269,9 +351,8 @@ async function displayLocalStatus(repoRoot: string): Promise<void> {
   let currentBranch = "";
   try {
     currentBranch = await getCurrentBranch(repoRoot);
-  } catch (error) {
+  } catch {
     // Ignore error - repo might have no commits yet
-    currentBranch = "";
   }
 
   // Group by spec
@@ -279,106 +360,28 @@ async function displayLocalStatus(repoRoot: string): Promise<void> {
 
   for (const specId of specIds) {
     console.log(`Spec: ${specId}`);
-    console.log("Branch Stack:");
 
     const branchNames = mapping.specIndex[specId] || [];
-    const branches = branchNames.map(name =>
-      mapping.branches.find(b => b.name === name)
-    ).filter((b): b is BranchEntry => b !== undefined);
-
-    // Find root branches
-    const rootBranches = branches.filter((b): b is BranchEntry =>
-      b !== undefined && !branchNames.includes(b.baseBranch)
-    );
-
-    // Display tree
-    rootBranches.forEach((root) => {
-      if (!root) return;
-      console.log(`  ${root.baseBranch}`);
-      displayTree(root.name, "  ", true, branches, currentBranch);
-    });
+    for (const branchName of branchNames) {
+      const isCurrent = branchName === currentBranch;
+      console.log(`  - ${branchName}${isCurrent ? " (current)" : ""}`);
+    }
 
     console.log("");
   }
-
-  // Show warnings
-  const needsAttention = mapping.branches.filter(b => b.status === "active" && b.pr === null).length;
-  if (needsAttention > 0) {
-    console.log(`⚠ ${needsAttention} branch(es) may need attention`);
-    console.log("Run /speck.branch status for details");
-    console.log("");
-  }
-
-  // T110 - Check for orphaned branch tracking (child repo unlinked from parent)
-  // TODO: This code needs access to context parameter - currently commented out to fix compilation
-  // if (context.mode === "child" && mapping.branches.length > 0) {
-  //   // Child repo has branches tracked, verify symlink still exists in parent
-  //   try {
-  //     const { findChildRepos } = await import("./common/paths.js");
-  //     const speckRoot = context.speckRoot || "";
-  //     const childRepos = await findChildRepos(speckRoot);
-
-  //     if (!childRepos.includes(repoRoot)) {
-  //       console.log("⚠ Orphaned tracking detected:");
-  //       console.log(`  ${mapping.branches.length} branch(es) tracked but repo unlinked from parent spec`);
-  //       console.log(`  Parent: ${speckRoot}`);
-  //       console.log("  Fix: Re-link with /speck.link or archive .speck/branches.json");
-  //       console.log("");
-  //     }
-  //   } catch {
-  //     // Skip if unable to check parent
-  //   }
-  // }
-}
-
-/**
- * Recursively display branch tree
- */
-function displayTree(
-  branchName: string,
-  indent: string,
-  isLast: boolean,
-  branches: BranchEntry[],
-  currentBranch: string
-): void {
-  const branch = branches.find(b => b.name === branchName);
-  if (!branch) return;
-
-  const marker = isLast ? "└─" : "├─";
-  const isCurrent = branchName === currentBranch;
-
-  let display = `${indent}${marker} ${branchName}`;
-
-  if (branch.pr) {
-    display += ` (${branch.status}, PR #${branch.pr})`;
-  } else if (branch.status !== "active") {
-    display += ` (${branch.status})`;
-  }
-
-  if (isCurrent) {
-    display += " (current)";
-  }
-
-  console.log(display);
-
-  // Find children
-  const children = branches.filter(b => b.baseBranch === branchName);
-  children.forEach((child, idx) => {
-    const childIndent = indent + (isLast ? "  " : "│ ");
-    displayTree(child.name, childIndent, idx === children.length - 1, branches, currentBranch);
-  });
 }
 
 // ===========================
 // JSON Output (Programmatic)
 // ===========================
 
-interface JsonOutput {
+interface EnvOutputData {
   mode: string;
   context: string;
   speckRoot: string;
   repoRoot: string;
   specsDir: string;
+  currentBranch?: string;
   childRepoName?: string | null;
   parentSpecId?: string | null;
   branchStatus?: {
@@ -390,13 +393,22 @@ interface JsonOutput {
   };
 }
 
-async function displayJsonOutput(_config: SpeckConfig, context: MultiRepoContextMetadata): Promise<void> {
-  const output: JsonOutput = {
+async function buildEnvOutputData(_config: SpeckConfig, context: MultiRepoContextMetadata): Promise<EnvOutputData> {
+  // Get current branch
+  let currentBranch = "";
+  try {
+    currentBranch = await getCurrentBranch(context.repoRoot);
+  } catch {
+    // Ignore - repo might have no commits
+  }
+
+  const output: EnvOutputData = {
     mode: context.mode,
     context: context.context,
     speckRoot: context.speckRoot,
     repoRoot: context.repoRoot,
-    specsDir: context.specsDir
+    specsDir: context.specsDir,
+    currentBranch: currentBranch || undefined
   };
 
   if (context.context === "child") {
@@ -404,7 +416,7 @@ async function displayJsonOutput(_config: SpeckConfig, context: MultiRepoContext
     output.parentSpecId = context.parentSpecId;
   }
 
-  // Add branch stack status
+  // Add branch mapping status
   if (context.mode === "multi-repo" && context.context === "root") {
     const aggregated = await getAggregatedBranchStatus(context.speckRoot, context.repoRoot);
     output.branchStatus = {
@@ -425,7 +437,27 @@ async function displayJsonOutput(_config: SpeckConfig, context: MultiRepoContext
     }
   }
 
-  console.log(JSON.stringify(output, null, 2));
+  return output;
+}
+
+async function displayJsonOutput(config: SpeckConfig, context: MultiRepoContextMetadata, startTime: number): Promise<void> {
+  const data = await buildEnvOutputData(config, context);
+  const output = formatJsonOutput({
+    success: true,
+    data,
+    command: "env",
+    startTime,
+  });
+  console.log(JSON.stringify(output));
+}
+
+async function displayHookOutput(config: SpeckConfig, context: MultiRepoContextMetadata): Promise<void> {
+  const data = await buildEnvOutputData(config, context);
+  const hookOutput = formatHookOutput({
+    hookType: "UserPromptSubmit",
+    context: `<!-- SPECK_ENV_CONTEXT\n${JSON.stringify(data)}\n-->`,
+  });
+  console.log(JSON.stringify(hookOutput));
 }
 
 // ===========================

@@ -4,25 +4,25 @@
  * Tests the complete lifecycle of worktree operations.
  */
 
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, rmSync, existsSync, realpathSync } from "fs";
-import { tmpdir } from "os";
-import { join } from "path";
-import { $ } from "bun";
-import { createWorktree } from "../../.speck/scripts/worktree/create";
-import { removeWorktree } from "../../.speck/scripts/worktree/remove";
-import { saveConfig } from "../../.speck/scripts/worktree/config";
-import { DEFAULT_SPECK_CONFIG } from "../../.speck/scripts/worktree/config-schema";
-import { listWorktrees, getWorktreePath } from "../../.speck/scripts/worktree/git";
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import { mkdtempSync, rmSync, existsSync, realpathSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { $ } from 'bun';
+import { createWorktree } from '../../.speck/scripts/worktree/create';
+import { removeWorktree } from '../../.speck/scripts/worktree/remove';
+import { saveConfig } from '../../.speck/scripts/worktree/config';
+import { DEFAULT_SPECK_CONFIG } from '../../.speck/scripts/worktree/config-schema';
+import { listWorktrees, getWorktreePath } from '../../.speck/scripts/worktree/git';
 
-describe("Worktree Lifecycle", () => {
+describe('Worktree Lifecycle', () => {
   let testDir: string;
   let repoPath: string;
 
   beforeEach(async () => {
     // Create temporary directory for test
-    testDir = mkdtempSync(join(tmpdir(), "worktree-lifecycle-test-"));
-    repoPath = join(testDir, "test-repo");
+    testDir = mkdtempSync(join(tmpdir(), 'worktree-lifecycle-test-'));
+    repoPath = join(testDir, 'test-repo');
 
     // Initialize a Git repository
     await $`mkdir -p ${repoPath}`.quiet();
@@ -48,8 +48,8 @@ describe("Worktree Lifecycle", () => {
     }
   });
 
-  test("should complete full lifecycle: create, list, remove", async () => {
-    const branchName = "001-lifecycle-test";
+  test('should complete full lifecycle: create, list, remove', async () => {
+    const branchName = '001-lifecycle-test';
 
     // Step 1: Create branch
     await $`git -C ${repoPath} branch ${branchName}`.quiet();
@@ -70,9 +70,9 @@ describe("Worktree Lifecycle", () => {
     // Step 4: Verify worktree appears in list
     worktrees = await listWorktrees(repoPath);
     expect(worktrees.length).toBe(2); // Main + new worktree
-    expect(worktrees[1].branch).toBe(branchName);
+    expect(worktrees[1]!.branch).toBe(branchName);
     // Normalize paths for comparison (handle /var vs /private/var on macOS)
-    expect(realpathSync(worktrees[1].path)).toBe(realpathSync(worktreePath));
+    expect(realpathSync(worktrees[1]!.path)).toBe(realpathSync(worktreePath));
 
     // Step 5: Verify getWorktreePath finds it
     const foundPath = await getWorktreePath(repoPath, branchName);
@@ -89,7 +89,9 @@ describe("Worktree Lifecycle", () => {
 
     expect(removeResult.success).toBe(true);
     // Path comparison - directory is already removed so just compare strings (normalized)
-    expect(removeResult.worktreePath.replace('/private', '')).toBe(worktreePath.replace('/private', ''));
+    expect(removeResult.worktreePath.replace('/private', '')).toBe(
+      worktreePath.replace('/private', '')
+    );
 
     // Step 8: Verify worktree is gone from list
     worktrees = await listWorktrees(repoPath);
@@ -103,10 +105,10 @@ describe("Worktree Lifecycle", () => {
     expect(existsSync(worktreePath)).toBe(false);
   });
 
-  test("should handle multiple worktrees simultaneously", async () => {
-    const branch1 = "002-feature-a";
-    const branch2 = "003-feature-b";
-    const branch3 = "004-feature-c";
+  test('should handle multiple worktrees simultaneously', async () => {
+    const branch1 = '002-feature-a';
+    const branch2 = '003-feature-b';
+    const branch3 = '004-feature-c';
 
     // Create branches
     await $`git -C ${repoPath} branch ${branch1}`.quiet();
@@ -145,8 +147,8 @@ describe("Worktree Lifecycle", () => {
     expect(await getWorktreePath(repoPath, branch3)).not.toBeNull();
   });
 
-  test("should handle force removal with uncommitted changes", async () => {
-    const branchName = "005-uncommitted-test";
+  test('should handle force removal with uncommitted changes', async () => {
+    const branchName = '005-uncommitted-test';
     await $`git -C ${repoPath} branch ${branchName}`.quiet();
 
     // Create worktree
@@ -183,8 +185,8 @@ describe("Worktree Lifecycle", () => {
     expect(existsSync(worktreePath)).toBe(false);
   });
 
-  test("should optionally delete branch when removing worktree", async () => {
-    const branchName = "006-delete-branch-test";
+  test('should optionally delete branch when removing worktree', async () => {
+    const branchName = '006-delete-branch-test';
     await $`git -C ${repoPath} branch ${branchName}`.quiet();
 
     // Create worktree

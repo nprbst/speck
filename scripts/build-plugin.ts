@@ -149,6 +149,61 @@ function formatBytes(bytes: number): string {
 }
 
 // ============================================================================
+// Hook Bundle Building
+// ============================================================================
+
+/**
+ * Bundle a TypeScript file to JavaScript
+ */
+function bundleScript(sourcePath: string, destPath: string, name: string): void {
+  if (!existsSync(sourcePath)) {
+    return;
+  }
+
+  const result = Bun.spawnSync([
+    'bun', 'build',
+    sourcePath,
+    '--outfile', destPath,
+    '--target', 'bun',
+  ], { cwd: config.sourceRoot });
+
+  if (result.exitCode !== 0) {
+    throw buildFailedError(
+      `${name} bundle build failed`,
+      `Failed to bundle ${name}: ${result.stderr.toString()}`,
+      'Check the source file for TypeScript errors'
+    );
+  }
+}
+
+/**
+ * Rebuild hook bundles and CLI bundle from source TypeScript files
+ *
+ * This ensures the bundled scripts are always up-to-date with source changes.
+ */
+async function rebuildHookBundles(): Promise<void> {
+  const hookSourceDir = join(config.sourceRoot, '.speck/scripts/hooks');
+  const cliSourceDir = join(config.sourceRoot, 'src/cli');
+  const distDir = join(config.sourceRoot, '.speck/dist');
+
+  await ensureDir(distDir);
+
+  // Bundle the PrePromptSubmit hook
+  bundleScript(
+    join(hookSourceDir, 'pre-prompt-submit.ts'),
+    join(distDir, 'pre-prompt-submit-hook.js'),
+    'pre-prompt-submit hook'
+  );
+
+  // Bundle the main CLI (includes all commands: init, env, etc.)
+  bundleScript(
+    join(cliSourceDir, 'index.ts'),
+    join(distDir, 'speck-cli.js'),
+    'speck CLI'
+  );
+}
+
+// ============================================================================
 // Manifest Generation
 // ============================================================================
 
@@ -175,17 +230,6 @@ async function generatePluginManifest(): Promise<void> {
       'development-tools',
     ],
     hooks: {
-      PreToolUse: [
-        {
-          matcher: 'Bash',
-          hooks: [
-            {
-              type: 'command',
-              command: 'bun ${CLAUDE_PLUGIN_ROOT}/dist/speck-hook.js --hook',
-            },
-          ],
-        },
-      ],
       UserPromptSubmit: [
         {
           matcher: '.*',
@@ -399,7 +443,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
       }
     }
 
-    // Also copy common/ and contracts/ directories if they exist
+    // Also copy common/, contracts/, worktree/, and lib/ directories if they exist
     const commonPath = join(config.scriptsSourceDir, 'common');
     if (existsSync(commonPath)) {
       await copyDir(commonPath, join(scriptsDestDir, 'common'));
@@ -410,11 +454,29 @@ async function copyPluginFiles(): Promise<FileCounts> {
       await copyDir(contractsPath, join(scriptsDestDir, 'contracts'));
     }
 
-    // Copy dist/ directory containing the bundled hooks
-    // (speck-hook.js and pre-prompt-submit-hook.js)
+    const worktreePath = join(config.scriptsSourceDir, 'worktree');
+    if (existsSync(worktreePath)) {
+      await copyDir(worktreePath, join(scriptsDestDir, 'worktree'));
+    }
+
+    const libPath = join(config.scriptsSourceDir, 'lib');
+    if (existsSync(libPath)) {
+      await copyDir(libPath, join(scriptsDestDir, 'lib'));
+    }
+
+    // Copy dist/ directory containing the bundled hooks and CLI
+    // (pre-prompt-submit-hook.js, speck-cli.js)
     const distPath = join(config.scriptsSourceDir, '../dist');
     if (existsSync(distPath)) {
       await copyDir(distPath, join(config.outputDir, 'dist'));
+    }
+
+    // Copy bootstrap.sh for CLI installation
+    const bootstrapPath = join(config.sourceRoot, 'src/cli/bootstrap.sh');
+    if (existsSync(bootstrapPath)) {
+      const srcCliDir = join(config.outputDir, 'src/cli');
+      await ensureDir(srcCliDir);
+      await copyFile(bootstrapPath, join(srcCliDir, 'bootstrap.sh'));
     }
   }
 
@@ -701,23 +763,6 @@ async function main() {
   console.log('🚀 Building Speck Plugin Package...\n');
 
   try {
-    // Step 0: Build hook bundle first
-    console.log('🔨 Building hook bundle...');
-    const buildHookScript = join(config.scriptsSourceDir, 'build-hook.ts');
-    if (existsSync(buildHookScript)) {
-      const buildResult = Bun.spawn(['bun', 'run', buildHookScript], {
-        stdout: 'pipe',
-        stderr: 'pipe',
-      });
-      const exitCode = await buildResult.exited;
-      if (exitCode !== 0) {
-        throw new Error('Hook bundle build failed');
-      }
-      console.log('   ✓ Hook bundle built successfully\n');
-    } else {
-      console.log('   ⚠️  Hook build script not found, skipping\n');
-    }
-
     // T009: Load version from package.json
     console.log('📦 Loading version from package.json...');
     config.version = await loadVersion();
@@ -732,6 +777,11 @@ async function main() {
       );
     }
     console.log('   ✓ Version format valid\n');
+
+    // Rebuild hook bundles before packaging
+    console.log('🔨 Rebuilding hook bundles...');
+    await rebuildHookBundles();
+    console.log('   ✓ Hook bundles rebuilt\n');
 
     // T010: Clean and create output directory
     console.log('🗑️  Cleaning output directory...');

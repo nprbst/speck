@@ -5,21 +5,21 @@
  * before /speck.* slash commands expand.
  */
 
-import { describe, it, expect, beforeEach } from "bun:test";
+import { describe, it, expect, beforeEach } from 'bun:test';
 import {
   runPrerequisiteCheck,
   formatPrereqContext,
   formatPrereqError,
-} from "../../.speck/scripts/lib/prereq-runner";
-import { invalidateCache, getCacheStats } from "../../.speck/scripts/lib/prereq-cache";
+} from '../../.speck/scripts/lib/prereq-runner';
+import { invalidateCache, getCacheStats } from '../../.speck/scripts/lib/prereq-cache';
 
-describe("Prerequisite Check Runner", () => {
+describe('Prerequisite Check Runner', () => {
   beforeEach(() => {
     // Clear cache before each test
     invalidateCache();
   });
 
-  it("should run prerequisite check successfully", async () => {
+  it('should run prerequisite check successfully', async () => {
     const result = await runPrerequisiteCheck({ skipFeatureCheck: true }, false);
 
     expect(result).toBeDefined();
@@ -28,7 +28,7 @@ describe("Prerequisite Check Runner", () => {
     expect(result.cached).toBe(false);
   });
 
-  it("should include required fields in output", async () => {
+  it('should include required fields in output', async () => {
     // Use skipFeatureCheck to bypass branch validation
     // The first test already validates the success case
     const result = await runPrerequisiteCheck({ skipFeatureCheck: true }, false);
@@ -45,7 +45,7 @@ describe("Prerequisite Check Runner", () => {
     expect(result).toBeDefined();
   });
 
-  it("should cache successful results", async () => {
+  it('should cache successful results', async () => {
     // First call - not cached
     const result1 = await runPrerequisiteCheck({ skipFeatureCheck: true }, true);
     expect(result1.cached).toBe(false);
@@ -57,7 +57,7 @@ describe("Prerequisite Check Runner", () => {
   });
 
   it(
-    "should respect cache TTL",
+    'should respect cache TTL',
     async () => {
       // First call
       await runPrerequisiteCheck({ skipFeatureCheck: true }, true);
@@ -77,7 +77,7 @@ describe("Prerequisite Check Runner", () => {
     { timeout: 10000 } // 10 second timeout for this test
   );
 
-  it("should invalidate cache when requested", async () => {
+  it('should invalidate cache when requested', async () => {
     // First call
     await runPrerequisiteCheck({ skipFeatureCheck: true }, true);
 
@@ -97,18 +97,18 @@ describe("Prerequisite Check Runner", () => {
     expect(result.cached).toBe(false);
   });
 
-  it("should format prerequisite context correctly", () => {
+  it('should format prerequisite context correctly', () => {
     const mockResult = {
       success: true,
       output: {
-        MODE: "single-repo",
-        FEATURE_DIR: "/path/to/specs/010-feature",
+        MODE: 'single-repo',
+        FEATURE_DIR: '/path/to/specs/010-feature',
         AVAILABLE_DOCS: [
-          "specs/010-feature/spec.md",
-          "specs/010-feature/plan.md",
-          "specs/010-feature/research.md",
-          "specs/010-feature/contracts/api.ts",
-          ".speck/memory/constitution.md"
+          'specs/010-feature/spec.md',
+          'specs/010-feature/plan.md',
+          'specs/010-feature/research.md',
+          'specs/010-feature/contracts/api.ts',
+          '.speck/memory/constitution.md',
         ],
       },
       error: null,
@@ -118,20 +118,20 @@ describe("Prerequisite Check Runner", () => {
     const context = formatPrereqContext(mockResult);
 
     // New format uses JSON comment
-    expect(context).toContain("<!-- SPECK_PREREQ_CONTEXT");
-    expect(context).toContain("\"MODE\":\"single-repo\"");
-    expect(context).toContain("\"FEATURE_DIR\":\"/path/to/specs/010-feature\"");
-    expect(context).toContain("\"AVAILABLE_DOCS\"");
-    expect(context).toContain("specs/010-feature/spec.md");
+    expect(context).toContain('<!-- SPECK_PREREQ_CONTEXT');
+    expect(context).toContain('"MODE":"single-repo"');
+    expect(context).toContain('"FEATURE_DIR":"/path/to/specs/010-feature"');
+    expect(context).toContain('"AVAILABLE_DOCS"');
+    expect(context).toContain('specs/010-feature/spec.md');
   });
 
-  it("should format cached result indicator", () => {
+  it('should format cached result indicator', () => {
     const mockResult = {
       success: true,
       output: {
-        MODE: "single-repo",
-        FEATURE_DIR: "/path/to/specs/010-feature",
-        AVAILABLE_DOCS: ["specs/010-feature/research.md"],
+        MODE: 'single-repo',
+        FEATURE_DIR: '/path/to/specs/010-feature',
+        AVAILABLE_DOCS: ['specs/010-feature/research.md'],
       },
       error: null,
       cached: true,
@@ -139,43 +139,43 @@ describe("Prerequisite Check Runner", () => {
 
     const context = formatPrereqContext(mockResult);
     // JSON format doesn't show cached indicator (it's transparent to consumers)
-    expect(context).toContain("<!-- SPECK_PREREQ_CONTEXT");
-    expect(context).toContain("\"MODE\":\"single-repo\"");
+    expect(context).toContain('<!-- SPECK_PREREQ_CONTEXT');
+    expect(context).toContain('"MODE":"single-repo"');
   });
 
-  it("should return empty string for failed check", () => {
+  it('should return empty string for failed check', () => {
     const mockResult = {
       success: false,
       output: null,
-      error: "Feature directory not found",
+      error: 'Feature directory not found',
       cached: false,
     };
 
     const context = formatPrereqContext(mockResult);
-    expect(context).toBe("");
+    expect(context).toBe('');
   });
 
-  it("should format error messages correctly", () => {
-    const error = "ERROR: Feature directory not found: /path/to/specs/999-missing";
+  it('should format error messages correctly', () => {
+    const error = 'ERROR: Feature directory not found: /path/to/specs/999-missing';
     const formatted = formatPrereqError(error);
 
-    expect(formatted).toContain("⚠️");
-    expect(formatted).toContain("Prerequisite Check Failed");
-    expect(formatted).toContain("Feature directory not found");
+    expect(formatted).toContain('⚠️');
+    expect(formatted).toContain('Prerequisite Check Failed');
+    expect(formatted).toContain('Feature directory not found');
   });
 });
 
-describe("PrePromptSubmit Hook", () => {
-  it("should detect /speck.* and /speck:* slash commands", () => {
+describe('PrePromptSubmit Hook', () => {
+  it('should detect /speck.* and /speck:* slash commands', () => {
     const prompts = [
-      "/speck.plan",
-      "/speck.tasks",
-      "/speck.implement US3",
-      "/speck.analyze",
-      "/speck:plan",
-      "/speck:tasks",
-      "/speck:implement US3",
-      "/speck:analyze",
+      '/speck.plan',
+      '/speck.tasks',
+      '/speck.implement US3',
+      '/speck.analyze',
+      '/speck:plan',
+      '/speck:tasks',
+      '/speck:implement US3',
+      '/speck:analyze',
     ];
 
     for (const prompt of prompts) {
@@ -184,13 +184,8 @@ describe("PrePromptSubmit Hook", () => {
     }
   });
 
-  it("should not detect non-speck commands", () => {
-    const prompts = [
-      "help me with something",
-      "/help",
-      "/clear",
-      "run speck-env",
-    ];
+  it('should not detect non-speck commands', () => {
+    const prompts = ['help me with something', '/help', '/clear', 'run speck-env'];
 
     for (const prompt of prompts) {
       const isSpeckCommand = /^\/speck[.:]/.test(prompt.trim());
@@ -198,58 +193,58 @@ describe("PrePromptSubmit Hook", () => {
     }
   });
 
-  it("should determine check options for /speck.implement and /speck:implement", () => {
-    const prompts = ["/speck.implement US3", "/speck:implement US3"];
+  it('should determine check options for /speck.implement and /speck:implement', () => {
+    const prompts = ['/speck.implement US3', '/speck:implement US3'];
 
     for (const prompt of prompts) {
       const match = prompt.match(/^\/speck[.:](\w+)/);
-      const command = match ? match[1]! : "";
+      const command = match ? match[1]! : '';
 
-      expect(command).toBe("implement");
+      expect(command).toBe('implement');
 
       // implement should require tasks.md
-      const requireTasksCommands = ["implement"];
+      const requireTasksCommands = ['implement'];
       expect(requireTasksCommands.includes(command)).toBe(true);
     }
   });
 
-  it("should determine check options for /speck.specify and /speck:specify", () => {
-    const prompts = ["/speck.specify", "/speck:specify"];
+  it('should determine check options for /speck.specify and /speck:specify', () => {
+    const prompts = ['/speck.specify', '/speck:specify'];
 
     for (const prompt of prompts) {
       const match = prompt.match(/^\/speck[.:](\w+)/);
-      const command = match ? match[1]! : "";
+      const command = match ? match[1]! : '';
 
-      expect(command).toBe("specify");
+      expect(command).toBe('specify');
 
       // specify should skip feature check
-      const skipFeatureCheckCommands = ["specify", "constitution", "env", "link"];
+      const skipFeatureCheckCommands = ['specify', 'constitution', 'env', 'link'];
       expect(skipFeatureCheckCommands.includes(command)).toBe(true);
     }
   });
 
-  it("should allow constitution command to run before specify", () => {
-    const prompts = ["/speck.constitution", "/speck:constitution"];
+  it('should allow constitution command to run before specify', () => {
+    const prompts = ['/speck.constitution', '/speck:constitution'];
 
     for (const prompt of prompts) {
       const match = prompt.match(/^\/speck[.:](\w+)/);
-      const command = match ? match[1]! : "";
+      const command = match ? match[1]! : '';
 
-      expect(command).toBe("constitution");
+      expect(command).toBe('constitution');
 
       // constitution should skip feature check (can run before /speck.specify)
-      const skipFeatureCheckCommands = ["specify", "constitution", "env", "link"];
+      const skipFeatureCheckCommands = ['specify', 'constitution', 'env', 'link'];
       expect(skipFeatureCheckCommands.includes(command)).toBe(true);
 
       // constitution should also skip plan check
-      const skipPlanCheckCommands = ["plan", "constitution", "env", "link"];
+      const skipPlanCheckCommands = ['plan', 'constitution', 'env', 'link'];
       expect(skipPlanCheckCommands.includes(command)).toBe(true);
     }
   });
 
-  it("should simulate hook input/output format", async () => {
+  it('should simulate hook input/output format', async () => {
     const hookInput = {
-      prompt: "/speck.tasks",
+      prompt: '/speck.tasks',
     };
 
     // Simulate hook behavior
@@ -265,26 +260,26 @@ describe("PrePromptSubmit Hook", () => {
 
       const hookOutput = {
         hookSpecificOutput: {
-          hookEventName: "PrePromptSubmit",
+          hookEventName: 'PrePromptSubmit',
           updatedPrompt,
         },
       };
 
-      expect(hookOutput.hookSpecificOutput.hookEventName).toBe("PrePromptSubmit");
-      expect(hookOutput.hookSpecificOutput.updatedPrompt).toContain("/speck.tasks");
-      expect(hookOutput.hookSpecificOutput.updatedPrompt).toContain("<!-- SPECK_PREREQ_CONTEXT");
+      expect(hookOutput.hookSpecificOutput.hookEventName).toBe('PrePromptSubmit');
+      expect(hookOutput.hookSpecificOutput.updatedPrompt).toContain('/speck.tasks');
+      expect(hookOutput.hookSpecificOutput.updatedPrompt).toContain('<!-- SPECK_PREREQ_CONTEXT');
     } else {
-      const errorMessage = formatPrereqError(result.error || "Unknown error");
+      const errorMessage = formatPrereqError(result.error || 'Unknown error');
 
       const hookOutput = {
         hookSpecificOutput: {
-          hookEventName: "PrePromptSubmit",
+          hookEventName: 'PrePromptSubmit',
           updatedPrompt: errorMessage,
         },
       };
 
-      expect(hookOutput.hookSpecificOutput.hookEventName).toBe("PrePromptSubmit");
-      expect(hookOutput.hookSpecificOutput.updatedPrompt).toContain("⚠️");
+      expect(hookOutput.hookSpecificOutput.hookEventName).toBe('PrePromptSubmit');
+      expect(hookOutput.hookSpecificOutput.updatedPrompt).toContain('⚠️');
     }
   });
 });

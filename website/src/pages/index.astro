@@ -12,7 +12,7 @@ const hero = {
   headline: "Specification-driven development for Claude Code",
   subtitle: "Built on GitHub's spec-kit",
   subtitleLink: "https://github.com/github/spec-kit",
-  subheadline: "From idea to implementation with shared specs, stacked PRs, and multi-repo support. Built for Claude Code with native hook integration.",
+  subheadline: "From idea to implementation with shared specs, multi-repo support, and session handoff. Built for Claude Code with native hook integration.",
   ctaPrimary: {
     text: "Install via /plugin",
     href: "/docs/getting-started/installation",
@@ -30,13 +30,13 @@ const features = [
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>`,
   },
   {
-    title: "Stacked PR Workflows",
-    description: "Break large features into reviewable chunks with branch dependency tracking. Works with Graphite, GitHub Stack, or manual git workflows for faster delivery through parallel review.",
+    title: "Worktree Integration",
+    description: "Isolated workspaces with automatic session handoff. New Claude sessions inherit context and continue work seamlessly. Work on multiple features in parallel without branch switching.",
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>`,
   },
   {
     title: "Claude-Native Performance",
-    description: "Virtual commands with hook-based architecture deliver sub-100ms execution. 30% faster slash command execution with automatic prerequisite checks and context pre-loading.",
+    description: "Hook-based architecture delivers sub-100ms execution. Fast slash command execution with automatic prerequisite checks and context pre-loading.",
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
   },
   {
@@ -49,7 +49,7 @@ const features = [
 const differentiators = [
   {
     title: "Only tool built for Claude Code",
-    description: "Native hook integration with automatic prerequisite checks and context pre-loading. Virtual commands execute in under 100ms for the fastest Claude Code workflow.",
+    description: "Native hook integration with automatic prerequisite checks and context pre-loading. Slash commands execute in under 100ms for the fastest Claude Code workflow.",
   },
   {
     title: "Only spec system supporting multi-repo shared specifications",
@@ -142,7 +142,7 @@ const seo = {
       <div class="origins-content">
         <p>
           Speck builds on and remains compatible with GitHub's excellent <a href="https://github.com/github/spec-kit" target="_blank" rel="noopener noreferrer">spec-kit</a> project,
-          extending it for Claude Code users with multi-repo support, stacked PR workflows, and performance optimizations.
+          extending it for Claude Code users with multi-repo support, worktree integration, and performance optimizations.
           If you're not using Claude Code, consider exploring <a href="https://github.com/github/spec-kit" target="_blank" rel="noopener noreferrer">spec-kit directly</a> for specification-driven development.
           <a href="/docs/about/speck-and-spec-kit" class="learn-more-link">Learn more about the relationship →</a>
         </p>

@@ -7,22 +7,20 @@
  */
 
 import { Command } from "commander";
-import { detectMode, readHookInput } from "./lib/mode-detector";
-import { formatHookOutput, passThrough } from "./lib/hook-utils";
 import type { CommandContext } from "./lib/types";
 import { registry } from "./commands/index";
-import { appendFile } from "node:fs/promises";
-import { CommandError, formatError, errorToResult } from "./lib/error-handler";
+import { CommandError, formatError } from "./lib/error-handler";
 
-const SPECK_LOG_FILE = "/tmp/speck-hook-debug.log";
-
-const log = async (msg: string): Promise<void> => {
-  try {
-    await appendFile(SPECK_LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`);
-  } catch (error) {
-    // Silently fail if we can't write to log file
+/**
+ * Helper to detect CLI mode
+ */
+function detectMode(): "cli" | "hook" {
+  // Check for --hook flag or JSON piped input
+  if (process.argv.includes("--hook")) {
+    return "hook";
   }
-};
+  return "cli";
+}
 
 const program = new Command();
 
@@ -82,44 +80,6 @@ program
     } else {
       console.error(result.errorOutput);
       process.exit(result.exitCode);
-    }
-  });
-
-// branch command
-const branchEntry = registry.branch;
-if (!branchEntry) {
-  throw new Error("branch command not found in registry");
-}
-program
-  .command("branch [args...]")
-  .description(branchEntry.description)
-  .allowUnknownOption() // Allow flags like --all to pass through
-  .action(async (args: unknown) => {
-    const argsArray: string[] = Array.isArray(args) ? (args as string[]) : [String(args)];
-
-    // Handle lazyMain-based commands
-    if (branchEntry.lazyMain) {
-      const mainFn = await branchEntry.lazyMain();
-      const exitCode = await mainFn(argsArray);
-      process.exit(exitCode);
-    } else if (branchEntry.handler) {
-      const commandString = `branch ${argsArray.join(" ")}`;
-      const context: CommandContext = {
-        mode: detectMode(),
-        rawCommand: commandString,
-        workingDirectory: process.cwd(),
-        isInteractive: process.stdin.isTTY ?? false,
-      };
-
-      const parsedArgs = branchEntry.parseArgs!(commandString) as unknown;
-      const result = await branchEntry.handler(parsedArgs, context);
-
-      if (result.success) {
-        console.log(result.output);
-      } else {
-        console.error(result.errorOutput);
-        process.exit(result.exitCode);
-      }
     }
   });
 
@@ -297,176 +257,45 @@ program
     }
   });
 
+// next-feature command
+const nextFeatureEntry = registry["next-feature"]!;
+program
+  .command("next-feature [args...]")
+  .description(nextFeatureEntry.description)
+  .allowUnknownOption() // Allow flags to pass through
+  .action(async (args: unknown) => {
+    const argsArray: string[] = Array.isArray(args) ? (args as string[]) : [String(args)];
+
+    // Handle lazyMain-based commands
+    if (nextFeatureEntry.lazyMain) {
+      const mainFn = await nextFeatureEntry.lazyMain();
+      const exitCode = await mainFn(argsArray);
+      process.exit(exitCode);
+    } else if (nextFeatureEntry.handler) {
+      const commandString = `next-feature ${argsArray.join(" ")}`;
+      const context: CommandContext = {
+        mode: detectMode(),
+        rawCommand: commandString,
+        workingDirectory: process.cwd(),
+        isInteractive: process.stdin.isTTY ?? false,
+      };
+
+      const parsedArgs = nextFeatureEntry.parseArgs!(commandString) as unknown;
+      const result = await nextFeatureEntry.handler(parsedArgs, context);
+
+      if (result.success) {
+        console.log(result.output);
+      } else {
+        console.error(result.errorOutput);
+        process.exit(result.exitCode);
+      }
+    }
+  });
+
 /**
- * Main entry point - handles dual-mode operation
+ * Main entry point - CLI mode only
  */
 async function main(): Promise<void> {
-  const mode = detectMode();
-
-  await log(`=== SPECK ENTRY POINT ===`);
-  await log(`Detected mode: ${mode}`);
-  await log(`Process argv: ${JSON.stringify(process.argv)}`);
-  await log(`stdin isTTY: ${process.stdin.isTTY}`);
-
-  if (mode === "hook") {
-    await log(`Entering hook mode...`);
-    await runHookMode();
-  } else {
-    await log(`Entering CLI mode...`);
-    await runCliMode();
-  }
-}
-
-/**
- * Hook mode: Read JSON from stdin, execute command, return JSON output
- */
-async function runHookMode(): Promise<void> {
-  try {
-    await log(`=== HOOK INVOKED ===`);
-    await log(`Environment: ${process.env.CLAUDE_PLUGIN_ROOT || 'NOT SET'}`);
-    await log(`CWD: ${process.cwd()}`);
-    await log(`Platform: ${process.platform}`);
-
-    const hookInput = await readHookInput();
-    await log(`Hook input received: ${JSON.stringify(hookInput)}`);
-
-    const { command } = hookInput.tool_input;
-    await log(`Speck hook called - Command: ${command}`);
-    await log(`Command type: ${typeof command}`);
-
-    // Only intercept commands matching speck-* pattern
-    if (!command.match(/^speck-/)) {
-      // Not a virtual command - pass through
-      await log(`Skip (not speck-*): ${command}`);
-      console.log(JSON.stringify(passThrough()));
-      return;
-    }
-
-    await log(`Intercepting speck command: ${command}`);
-
-    // Parse command string to extract command name and args
-    // "speck-check-prerequisites --json" -> commandName="check-prerequisites", args=["--json"]
-    const commandMatch = command.match(/^speck-(.+?)(?:\s+(.*))?$/);
-    if (!commandMatch) {
-      console.error("Failed to parse command:", command);
-      process.exit(1);
-    }
-
-    const [, commandName, argsString = ""] = commandMatch;
-    const args = argsString.split(/\s+/).filter((arg) => arg.length > 0);
-
-    await log(`Parsed command name: ${commandName}`);
-    await log(`Parsed args: ${JSON.stringify(args)}`);
-    await log(`Registry keys: ${JSON.stringify(Object.keys(registry))}`);
-
-    // Lookup command in registry
-    const commandEntry = commandName ? registry[commandName] : undefined;
-    if (!commandEntry) {
-      await log(`Unknown command: ${commandName} (not in registry)`);
-      console.error(`Unknown command: ${commandName}`);
-      console.log(JSON.stringify(passThrough()));
-      return;
-    }
-
-    await log(`Command found in registry: ${commandName}`);
-    await log(`Command entry has main: ${!!commandEntry.main}`);
-    await log(`Command entry has lazyMain: ${!!commandEntry.lazyMain}`);
-    await log(`Command entry has handler: ${!!commandEntry.handler}`);
-
-    // Capture output
-    const originalLog = console.log;
-    const originalError = console.error;
-    let output = "";
-    let errorOutput = "";
-
-    console.log = (...args: unknown[]): void => {
-      output += args.join(" ") + "\n";
-    };
-
-    console.error = (...args: unknown[]): void => {
-      errorOutput += args.join(" ") + "\n";
-    };
-
-    // Execute command using main/lazyMain function if available, otherwise fall back to handler
-    try {
-      await log(`Starting command execution...`);
-      if (commandEntry.main) {
-        // Static main function - already loaded
-        await log(`Executing via main function`);
-        await commandEntry.main(args);
-        await log(`main function completed`);
-      } else if (commandEntry.lazyMain) {
-        // Lazy-loaded main function - load on demand
-        await log(`Executing via lazyMain function`);
-        const mainFn = await commandEntry.lazyMain();
-        await log(`lazyMain loaded, executing...`);
-        await mainFn(args);
-        await log(`lazyMain function completed`);
-      } else if (commandEntry.handler) {
-        // Handler-based command (legacy/simple commands)
-        await log(`Executing via handler`);
-        const context: CommandContext = {
-          mode: "hook",
-          rawCommand: command,
-          workingDirectory: process.cwd(),
-          isInteractive: false,
-        };
-        const parsedArgs = commandEntry.parseArgs ? (commandEntry.parseArgs(command) as unknown) : {};
-        await log(`Parsed args for handler: ${JSON.stringify(parsedArgs)}`);
-        const result = await commandEntry.handler(parsedArgs, context);
-        await log(`Handler result: success=${result.success}, output length=${result.output?.length || 0}`);
-        if (result.success && result.output) {
-          output += result.output;
-        }
-        if (!result.success && result.errorOutput) {
-          errorOutput += result.errorOutput;
-        }
-      } else {
-        throw new Error(`Command ${commandName} has no main, lazyMain, or handler`);
-      }
-    } catch (error) {
-      // Command execution error - capture in errorOutput with proper formatting
-      await log(`Command execution error: ${error instanceof Error ? error.message : String(error)}`);
-      await log(`Error stack: ${error instanceof Error ? error.stack : 'N/A'}`);
-      const errorResult = errorToResult(
-        error instanceof Error ? error : new Error(String(error))
-      );
-      errorOutput += errorResult.errorOutput || "";
-    }
-
-    // Restore console
-    console.log = originalLog;
-    console.error = originalError;
-
-    await log(`Captured output length: ${output.length}`);
-    await log(`Captured error output length: ${errorOutput.length}`);
-    await log(`Output preview: ${output.substring(0, 200)}`);
-    await log(`Error output preview: ${errorOutput.substring(0, 200)}`);
-
-    // Return hook output with captured result
-    const result = output.trim() || errorOutput.trim() || "";
-    const hookOutput = formatHookOutput(result, hookInput.tool_input);
-    await log(`Returning result length: ${result.length}`);
-    await log(`Result preview: ${result.substring(0, 100)}`);
-    await log(`Hook output: ${JSON.stringify(hookOutput).substring(0, 200)}`);
-    await log(`=== HOOK COMPLETE ===`);
-    console.log(JSON.stringify(hookOutput));
-  } catch (error) {
-    // Hook-level error - log to stderr, return empty JSON (pass-through)
-    await log(`!!! HOOK ERROR !!!`);
-    await log(`Hook error: ${error instanceof Error ? error.message : String(error)}`);
-    await log(`Error stack: ${error instanceof Error ? error.stack : 'N/A'}`);
-    await log(`=== HOOK FAILED ===`);
-    console.error("Hook error:", error instanceof Error ? error.message : String(error));
-    console.log("{}");
-    process.exit(1);
-  }
-}
-
-/**
- * CLI mode: Normal command-line execution with stdout/stderr
- */
-async function runCliMode(): Promise<void> {
   try {
     await program.parseAsync(process.argv);
   } catch (error) {

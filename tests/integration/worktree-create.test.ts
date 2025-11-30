@@ -4,24 +4,24 @@
  * Tests the core worktree creation workflow end-to-end.
  */
 
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, rmSync } from "fs";
-import { tmpdir } from "os";
-import { join } from "path";
-import { $ } from "bun";
-import { createWorktree } from "../../.speck/scripts/worktree/create";
-import { saveConfig } from "../../.speck/scripts/worktree/config";
-import { DEFAULT_SPECK_CONFIG } from "../../.speck/scripts/worktree/config-schema";
-import { listWorktrees } from "../../.speck/scripts/worktree/git";
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import { mkdtempSync, rmSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { $ } from 'bun';
+import { createWorktree } from '../../.speck/scripts/worktree/create';
+import { saveConfig } from '../../.speck/scripts/worktree/config';
+import { DEFAULT_SPECK_CONFIG } from '../../.speck/scripts/worktree/config-schema';
+import { listWorktrees } from '../../.speck/scripts/worktree/git';
 
-describe("Worktree Creation", () => {
+describe('Worktree Creation', () => {
   let testDir: string;
   let repoPath: string;
 
   beforeEach(async () => {
     // Create temporary directory for test
-    testDir = mkdtempSync(join(tmpdir(), "worktree-create-test-"));
-    repoPath = join(testDir, "test-repo");
+    testDir = mkdtempSync(join(tmpdir(), 'worktree-create-test-'));
+    repoPath = join(testDir, 'test-repo');
 
     // Initialize a Git repository
     await $`mkdir -p ${repoPath}`.quiet();
@@ -47,9 +47,9 @@ describe("Worktree Creation", () => {
     }
   });
 
-  test("should create a basic worktree for a new branch", async () => {
+  test('should create a basic worktree for a new branch', async () => {
     // Create a test branch
-    const branchName = "001-test-feature";
+    const branchName = '001-test-feature';
     await $`git -C ${repoPath} branch ${branchName}`.quiet();
 
     // Create worktree
@@ -62,17 +62,17 @@ describe("Worktree Creation", () => {
     expect(result.success).toBe(true);
     expect(result.worktreePath).toBeDefined();
     expect(result.metadata.branchName).toBe(branchName);
-    expect(result.metadata.status).toBe("ready");
+    expect(result.metadata.status).toBe('ready');
 
     // Verify worktree was created in Git
     const worktrees = await listWorktrees(repoPath);
     expect(worktrees.length).toBe(2); // Main + new worktree
-    expect(worktrees[1].branch).toBe(branchName);
+    expect(worktrees[1]!.branch).toBe(branchName);
   });
 
-  test("should handle branch prefix correctly", async () => {
-    const branchName = "002-another-feature";
-    const branchPrefix = "feature/";
+  test('should handle branch prefix correctly', async () => {
+    const branchName = '002-another-feature';
+    const branchPrefix = 'feature/';
 
     // Create branch with prefix
     await $`git -C ${repoPath} branch ${branchPrefix}${branchName}`.quiet();
@@ -88,17 +88,17 @@ describe("Worktree Creation", () => {
     expect(result.metadata.branchName).toBe(`${branchPrefix}${branchName}`);
   });
 
-  test("should fail if branch does not exist", async () => {
+  test('should fail if branch does not exist', async () => {
     expect(async () => {
       await createWorktree({
         repoPath,
-        branchName: "nonexistent-branch",
+        branchName: 'nonexistent-branch',
       });
     }).toThrow();
   });
 
-  test("should fail if worktree already exists for branch", async () => {
-    const branchName = "003-duplicate-test";
+  test('should fail if worktree already exists for branch', async () => {
+    const branchName = '003-duplicate-test';
     await $`git -C ${repoPath} branch ${branchName}`.quiet();
 
     // Create first worktree
@@ -116,9 +116,9 @@ describe("Worktree Creation", () => {
     }).toThrow();
   });
 
-  test("should cleanup stale worktrees before creation", async () => {
-    const branchName = "004-cleanup-test";
-    const tempBranchName = "005-temp";
+  test('should cleanup stale worktrees before creation', async () => {
+    const branchName = '004-cleanup-test';
+    const tempBranchName = '005-temp';
 
     // Create branches
     await $`git -C ${repoPath} branch ${branchName}`.quiet();
@@ -142,9 +142,9 @@ describe("Worktree Creation", () => {
     expect(result2.success).toBe(true);
   });
 
-  test("should handle custom worktree path", async () => {
-    const branchName = "006-custom-path";
-    const customPath = join(testDir, "custom-worktree-location");
+  test('should handle custom worktree path', async () => {
+    const branchName = '006-custom-path';
+    const customPath = join(testDir, 'custom-worktree-location');
 
     await $`git -C ${repoPath} branch ${branchName}`.quiet();
 

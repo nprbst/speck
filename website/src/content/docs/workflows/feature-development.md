@@ -6,7 +6,7 @@ audience: [existing-users, evaluators]
 prerequisites: ["/docs/getting-started/quick-start", "/docs/core-concepts/workflow"]
 tags: ["workflow", "worktrees", "parallel-development", "best-practices"]
 lastUpdated: 2025-11-22
-relatedPages: ["/docs/advanced-features/worktrees", "/docs/advanced-features/stacked-prs", "/docs/commands/reference"]
+relatedPages: ["/docs/advanced-features/worktrees", "/docs/commands/reference"]
 order: 4
 ---
 
@@ -204,85 +204,6 @@ bun .speck/scripts/worktree/cli.ts remove 002-user-auth
 bun .speck/scripts/worktree/cli.ts prune
 ```
 
-## Worktree + Stacked PRs Workflow
-
-Combine worktrees with stacked PRs for maximum productivity on large features.
-
-### Scenario: Large Feature (Multi-Layer Implementation)
-
-**Feature**: Add complete payment processing system
-**Layers**: Database → API → UI → Testing
-
-#### Layer 1: Database Schema
-
-```bash
-# Main feature branch (no worktree needed, just tracking)
-git checkout -b username/payment-processing
-
-# Create first stacked branch with worktree
-/speck:branch create username/payment-db --base username/payment-processing
-# → Worktree created at ../my-app-username-payment-db/
-# → VSCode opens in worktree
-
-# Implement database layer
-/speck:specify "Add payment database schema"
-/speck:plan
-/speck:implement
-
-# Commit and create PR
-git add .
-git commit -m "feat: add payment database schema"
-git push origin username/payment-db
-gh pr create --base username/payment-processing
-```
-
-#### Layer 2: API Endpoints (Depends on DB)
-
-```bash
-# Create second stacked branch with new worktree
-/speck:branch create username/payment-api --base username/payment-db
-# → New worktree at ../my-app-username-payment-api/
-# → New VSCode window opens
-# → DB worktree remains open
-
-# Implement API layer
-/speck:specify "Add payment API endpoints"
-/speck:plan
-/speck:implement
-
-# Commit and create stacked PR
-git add .
-git commit -m "feat: add payment API endpoints"
-git push origin username/payment-api
-gh pr create --base username/payment-db  # Stacked on DB PR
-```
-
-#### Layer 3: UI Components (Depends on API)
-
-```bash
-# Create third stacked branch with new worktree
-/speck:branch create username/payment-ui --base username/payment-api
-# → Third worktree
-# → Third VSCode window
-# → API and DB worktrees remain open
-
-# Implement UI layer
-/speck:specify "Add payment UI components"
-/speck:plan
-/speck:implement
-```
-
-**Result**: Three worktrees, three VSCode windows, three PRs (stacked), no branch switching!
-
-**PR Stack**:
-```
-main
-└── username/payment-processing (base branch)
-    └── username/payment-db (PR #101)
-        └── username/payment-api (PR #102, depends on #101)
-            └── username/payment-ui (PR #103, depends on #102)
-```
-
 ## Worktree Management Commands
 
 ### List All Worktrees
@@ -322,7 +243,7 @@ bun .speck/scripts/worktree/cli.ts prune             # Actually remove
 
 ### Worktree Override Flags
 
-Both `/speck:specify` and `/speck:branch` support these flags:
+`/speck:specify` supports these flags:
 
 - `--no-worktree` - Create branch without worktree (override config)
 - `--no-ide` - Skip IDE auto-launch (override config)
@@ -408,29 +329,6 @@ backend-repo/
 └── .speck/config.json  → worktrees enabled with auto-install
 ```
 
-### Stacked PRs with Worktrees
-
-**Best practice**: One worktree per stacked branch
-
-```bash
-# Base feature (no worktree needed)
-git checkout -b username/feature-base
-
-# Stack 1: Database layer
-/speck:branch create username/feature-db --base username/feature-base
-# → Worktree 1
-
-# Stack 2: API layer
-/speck:branch create username/feature-api --base username/feature-db
-# → Worktree 2
-
-# Stack 3: UI layer
-/speck:branch create username/feature-ui --base username/feature-api
-# → Worktree 3
-```
-
-**Result**: Three worktrees, three PRs, independent development.
-
 ## Troubleshooting
 
 ### Worktree Creation Fails
@@ -498,7 +396,6 @@ bun .speck/scripts/worktree/cli.ts prune
 ## See Also
 
 - [Worktree Integration Guide](/docs/advanced-features/worktrees) - Complete worktree feature documentation
-- [Stacked PR Setup](/docs/advanced-features/stacked-prs) - Stacked PR workflow without worktrees
 - [Configuration Reference](/docs/configuration/speck-config) - `.speck/config.json` schema
 - [Commands Reference](/docs/commands/reference) - All Speck commands
 - [Three-Phase Workflow](/docs/core-concepts/workflow) - Specify → Plan → Implement cycle

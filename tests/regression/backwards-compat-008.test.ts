@@ -10,11 +10,11 @@
  * - No new warnings or errors in existing commands
  */
 
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { existsSync, rmSync, mkdirSync } from "node:fs";
-import { $ } from "bun";
-import path from "node:path";
-import os from "node:os";
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import { existsSync, rmSync, mkdirSync } from 'node:fs';
+import { $ } from 'bun';
+import path from 'node:path';
+import os from 'node:os';
 
 // Test repository setup
 let testRepoDir: string;
@@ -34,15 +34,15 @@ beforeEach(async () => {
   await $`git config user.name "Test User"`.quiet();
 
   // Create basic Speck structure
-  mkdirSync(path.join(testRepoDir, "specs"), { recursive: true });
+  mkdirSync(path.join(testRepoDir, 'specs'), { recursive: true });
 
   // Create a test spec
-  const specDir = path.join(testRepoDir, "specs/001-test-feature");
+  const specDir = path.join(testRepoDir, 'specs/001-test-feature');
   mkdirSync(specDir, { recursive: true });
 
   // Write minimal spec.md
   await Bun.write(
-    path.join(specDir, "spec.md"),
+    path.join(specDir, 'spec.md'),
     `# Test Feature
 
 ## User Scenarios
@@ -70,9 +70,9 @@ afterEach(async () => {
   }
 });
 
-describe("Backwards Compatibility (US1)", () => {
-  test("SC-001.1: .speck/branches.json is NOT created during normal operations", async () => {
-    const branchesJsonPath = path.join(testRepoDir, ".speck/branches.json");
+describe('Backwards Compatibility (US1)', () => {
+  test('SC-001.1: .speck/branches.json is NOT created during normal operations', async () => {
+    const branchesJsonPath = path.join(testRepoDir, '.speck/branches.json');
 
     // Verify branches.json does not exist initially
     expect(existsSync(branchesJsonPath)).toBe(false);
@@ -85,32 +85,32 @@ describe("Backwards Compatibility (US1)", () => {
     expect(existsSync(branchesJsonPath)).toBe(false);
   });
 
-  test("SC-001.2: Branch detection works without branches.json", async () => {
+  test('SC-001.2: Branch detection works without branches.json', async () => {
     // Test that git branch detection works in traditional mode (via git directly)
     const result = await $`git branch --show-current`.text();
     const currentBranch = result.trim();
 
-    expect(currentBranch).toBe("001-test-feature");
+    expect(currentBranch).toBe('001-test-feature');
   });
 
-  test("SC-001.3: Feature path detection works without branches.json", async () => {
+  test('SC-001.3: Feature path detection works without branches.json', async () => {
     // Test that feature directory detection works in traditional mode
     // Verify specs directory exists and contains the feature
-    const specsDir = path.join(testRepoDir, "specs");
-    const featureDir = path.join(specsDir, "001-test-feature");
+    const specsDir = path.join(testRepoDir, 'specs');
+    const featureDir = path.join(specsDir, '001-test-feature');
 
     expect(existsSync(specsDir)).toBe(true);
     expect(existsSync(featureDir)).toBe(true);
-    expect(existsSync(path.join(featureDir, "spec.md"))).toBe(true);
+    expect(existsSync(path.join(featureDir, 'spec.md'))).toBe(true);
   });
 
-  test("SC-001.4: No stacked PR warnings in traditional mode", async () => {
+  test('SC-001.4: No stacked PR warnings in traditional mode', async () => {
     // Verify that running commands in traditional mode produces no warnings
     // about stacked PRs or branches.json
 
     // This test would normally check command output for warnings
     // For now, we verify the absence of branches.json implies no warnings
-    const branchesJsonPath = path.join(testRepoDir, ".speck/branches.json");
+    const branchesJsonPath = path.join(testRepoDir, '.speck/branches.json');
 
     expect(existsSync(branchesJsonPath)).toBe(false);
 
@@ -118,17 +118,17 @@ describe("Backwards Compatibility (US1)", () => {
     // and verify no "stacked" or "branches.json" warnings appear
   });
 
-  test("SC-001.5: Branch validation skips NNN-pattern enforcement when branches.json exists", async () => {
+  test('SC-001.5: Branch validation skips NNN-pattern enforcement when branches.json exists', async () => {
     // This tests the opposite: when branches.json DOES exist,
     // branch name validation should be relaxed
 
-    const branchesJsonPath = path.join(testRepoDir, ".speck/branches.json");
+    const branchesJsonPath = path.join(testRepoDir, '.speck/branches.json');
 
     // Create a minimal branches.json
     await Bun.write(
       branchesJsonPath,
       JSON.stringify({
-        version: "1.0.0",
+        version: '1.0.0',
         branches: [],
         specIndex: {},
       })
@@ -140,44 +140,41 @@ describe("Backwards Compatibility (US1)", () => {
     // (tested via checkFeatureBranch function)
   });
 
-  test("SC-001.6: Workflow mode defaults to single-branch when not specified", async () => {
+  test('SC-001.6: Workflow mode defaults to single-branch when not specified', async () => {
     // Test that no constitution.md exists in traditional mode
-    const constitutionPath = path.join(testRepoDir, ".specify/memory/constitution.md");
+    const constitutionPath = path.join(testRepoDir, '.specify/memory/constitution.md');
 
     expect(existsSync(constitutionPath)).toBe(false);
 
     // Without constitution, agents should default to "single-branch" mode
   });
 
-  test("SC-001.7: Traditional branch naming still works", async () => {
+  test('SC-001.7: Traditional branch naming still works', async () => {
     // Verify that traditional NNN-feature-name branches still work
-    const currentBranch = "001-test-feature";
+    const currentBranch = '001-test-feature';
 
     // Extract spec ID from branch name (traditional pattern)
     const match = currentBranch.match(/^(\d{3})-/);
 
     expect(match).not.toBe(null);
-    expect(match![1]).toBe("001");
+    expect(match![1]).toBe('001');
 
     // Verify spec directory exists
-    const specDir = path.join(testRepoDir, "specs/001-test-feature");
+    const specDir = path.join(testRepoDir, 'specs/001-test-feature');
     expect(existsSync(specDir)).toBe(true);
   });
 
-  test("SC-001.8: No migration required for existing repositories", async () => {
+  test('SC-001.8: No migration required for existing repositories', async () => {
     // Test that existing repositories can continue using single-branch workflow
     // without any migration steps
 
-    const branchesJsonPath = path.join(testRepoDir, ".speck/branches.json");
+    const branchesJsonPath = path.join(testRepoDir, '.speck/branches.json');
 
     // Repository has no branches.json
     expect(existsSync(branchesJsonPath)).toBe(false);
 
     // Developer creates commits
-    await Bun.write(
-      path.join(testRepoDir, "test.txt"),
-      "Test content"
-    );
+    await Bun.write(path.join(testRepoDir, 'test.txt'), 'Test content');
     await $`git add .`.quiet();
     await $`git commit -m "Test commit"`.quiet();
 
@@ -186,13 +183,13 @@ describe("Backwards Compatibility (US1)", () => {
 
     // Repository continues to function normally
     const result = await $`git log --oneline`.text();
-    expect(result).toContain("Test commit");
+    expect(result).toContain('Test commit');
   });
 });
 
-describe("Stacked PR Opt-In (US2)", () => {
-  test("SC-009: branches.json is created only when /speck.branch create is used", async () => {
-    const branchesJsonPath = path.join(testRepoDir, ".speck/branches.json");
+describe('Stacked PR Opt-In (US2)', () => {
+  test('SC-009: branches.json is created only when /speck.branch create is used', async () => {
+    const branchesJsonPath = path.join(testRepoDir, '.speck/branches.json');
 
     // Initially does not exist
     expect(existsSync(branchesJsonPath)).toBe(false);
@@ -204,20 +201,20 @@ describe("Stacked PR Opt-In (US2)", () => {
     await Bun.write(
       branchesJsonPath,
       JSON.stringify({
-        version: "1.0.0",
+        version: '1.0.0',
         branches: [
           {
-            name: "username/test-branch",
-            specId: "001-test-feature",
-            baseBranch: "main",
-            status: "active",
+            name: 'username/test-branch',
+            specId: '001-test-feature',
+            baseBranch: 'main',
+            status: 'active',
             pr: null,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
         ],
         specIndex: {
-          "001-test-feature": ["username/test-branch"],
+          '001-test-feature': ['username/test-branch'],
         },
       })
     );
@@ -227,10 +224,10 @@ describe("Stacked PR Opt-In (US2)", () => {
   });
 });
 
-describe("Workflow Mode Detection", () => {
-  test("T122: getDefaultWorkflowMode reads from constitution.md", async () => {
+describe('Workflow Mode Detection', () => {
+  test('T122: getDefaultWorkflowMode reads from constitution.md', async () => {
     // Create .specify/memory directory (correct path per spec)
-    const memoryDir = path.join(testRepoDir, ".specify/memory");
+    const memoryDir = path.join(testRepoDir, '.specify/memory');
     mkdirSync(memoryDir, { recursive: true });
 
     // Write constitution with stacked-pr workflow mode
@@ -242,32 +239,32 @@ describe("Workflow Mode Detection", () => {
 
 This setting enables stacked PR workflow by default.
 `;
-    await Bun.write(path.join(memoryDir, "constitution.md"), constitutionContent);
+    await Bun.write(path.join(memoryDir, 'constitution.md'), constitutionContent);
 
     // Verify file was created with correct content
-    expect(existsSync(path.join(memoryDir, "constitution.md"))).toBe(true);
-    const content = await Bun.file(path.join(memoryDir, "constitution.md")).text();
-    expect(content).toContain("**Default Workflow Mode**: stacked-pr");
+    expect(existsSync(path.join(memoryDir, 'constitution.md'))).toBe(true);
+    const content = await Bun.file(path.join(memoryDir, 'constitution.md')).text();
+    expect(content).toContain('**Default Workflow Mode**: stacked-pr');
   });
 
-  test("T122: getDefaultWorkflowMode handles single-branch mode", async () => {
-    const memoryDir = path.join(testRepoDir, ".specify/memory");
+  test('T122: getDefaultWorkflowMode handles single-branch mode', async () => {
+    const memoryDir = path.join(testRepoDir, '.specify/memory');
     mkdirSync(memoryDir, { recursive: true });
 
     const constitutionContent = `# Speck Constitution
 
 **Default Workflow Mode**: single-branch
 `;
-    await Bun.write(path.join(memoryDir, "constitution.md"), constitutionContent);
+    await Bun.write(path.join(memoryDir, 'constitution.md'), constitutionContent);
 
     // Verify single-branch mode is specified
-    const content = await Bun.file(path.join(memoryDir, "constitution.md")).text();
-    expect(content).toContain("**Default Workflow Mode**: single-branch");
+    const content = await Bun.file(path.join(memoryDir, 'constitution.md')).text();
+    expect(content).toContain('**Default Workflow Mode**: single-branch');
   });
 
-  test("T122: getDefaultWorkflowMode returns null when not found", async () => {
+  test('T122: getDefaultWorkflowMode returns null when not found', async () => {
     // No constitution.md exists in test repo
-    const constitutionPath = path.join(testRepoDir, ".specify/memory/constitution.md");
+    const constitutionPath = path.join(testRepoDir, '.specify/memory/constitution.md');
 
     expect(existsSync(constitutionPath)).toBe(false);
     // When constitution doesn't exist, agents should default to "single-branch"
