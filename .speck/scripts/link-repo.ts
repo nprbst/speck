@@ -7,11 +7,11 @@
  *
  * Usage:
  *   bun run .speck/scripts/link-repo.ts <path-to-speck-root>
- *   /speck.link <path-to-speck-root>
+ *   /speck:link <path-to-speck-root>
  *
  * Examples:
  *   bun run .speck/scripts/link-repo.ts ..
- *   /speck.link ../..
+ *   /speck:link ../..
  */
 
 import fs from 'node:fs/promises';
@@ -29,11 +29,11 @@ export async function linkRepo(targetPath: string): Promise<void> {
   if (!targetPath || targetPath.trim() === '') {
     throw new Error(
       'Missing required argument: path-to-speck-root\n' +
-      'Usage: /speck.link <path>\n' +
+      'Usage: /speck:link <path>\n' +
       'Examples:\n' +
-      '  /speck.link ..          (parent directory)\n' +
-      '  /speck.link ../..       (grandparent, for monorepo)\n' +
-      '  /speck.link /abs/path   (absolute path)'
+      '  /speck:link ..          (parent directory)\n' +
+      '  /speck:link ../..       (grandparent, for monorepo)\n' +
+      '  /speck:link /abs/path   (absolute path)'
     );
   }
 
@@ -66,7 +66,7 @@ export async function linkRepo(targetPath: string): Promise<void> {
     if (!stats.isSymbolicLink()) {
       throw new Error(
         '.speck/root exists but is not a symlink\n' +
-        'Fix: mv .speck/root .speck/root.backup && /speck.link ' + targetPath
+        'Fix: mv .speck/root .speck/root.backup && /speck:link ' + targetPath
       );
     }
 
@@ -128,9 +128,9 @@ export async function linkRepo(targetPath: string): Promise<void> {
   console.log(`  Repo Root: ${config.repoRoot}`);
   console.log(`  Specs: ${config.specsDir}`);
   console.log('\nNext steps:');
-  console.log('  1. Create shared spec: /speck.specify "Feature description"');
-  console.log('  2. Generate local plan: /speck.plan');
-  console.log('  3. Check configuration: /speck.env');
+  console.log('  1. Create shared spec: /speck:specify "Feature description"');
+  console.log('  2. Generate local plan: /speck:plan');
+  console.log('  3. Check configuration: /speck:env');
 }
 
 /**
