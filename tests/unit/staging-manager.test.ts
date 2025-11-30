@@ -186,7 +186,12 @@ describe('listStagedFiles', () => {
     const files = await listStagedFiles(context);
 
     expect(files).toHaveLength(4);
-    expect(files.map((f) => f.category).sort()).toEqual(['agents', 'commands', 'scripts', 'skills']);
+    expect(files.map((f) => f.category).sort()).toEqual([
+      'agents',
+      'commands',
+      'scripts',
+      'skills',
+    ]);
   });
 
   it('sets correct production paths', async () => {

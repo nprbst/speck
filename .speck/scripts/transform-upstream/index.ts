@@ -413,19 +413,22 @@ export async function recoverOrphanedStaging(
     case 'rollback':
       return rollbackStagingChanges(context, 'Manual orphan recovery');
 
-    case 'inspect':
+    case 'inspect': {
       const info = await inspectStaging(context);
       return {
         success: true,
         context,
         error: JSON.stringify(info, null, 2), // Abuse error field for inspection output
       };
+    }
 
-    default:
+    default: {
+      const _exhaustiveCheck: never = action;
       return {
         success: false,
-        error: `Unknown recovery action: ${action}`,
+        error: `Unknown recovery action: ${String(_exhaustiveCheck)}`,
       };
+    }
   }
 }
 

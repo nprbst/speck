@@ -106,7 +106,11 @@ function processGlobalOptions(options: { json?: boolean; hook?: boolean }): void
 /**
  * Build argument array for subcommand, including global flags
  */
-function buildSubcommandArgs(args: string[], options: Record<string, unknown>, rawArgs?: string[]): string[] {
+function buildSubcommandArgs(
+  args: string[],
+  options: Record<string, unknown>,
+  rawArgs?: string[]
+): string[] {
   const result = [...args];
 
   // Propagate global flags to subcommand
@@ -122,7 +126,9 @@ function buildSubcommandArgs(args: string[], options: Record<string, unknown>, r
     // Only pass the flag if it was explicitly provided by user, not default
     if (key === 'worktree') {
       // Check if user explicitly passed --worktree or --no-worktree
-      const hasWorktreeFlag = rawArgs?.some(arg => arg === '--worktree' || arg === '--no-worktree');
+      const hasWorktreeFlag = rawArgs?.some(
+        (arg) => arg === '--worktree' || arg === '--no-worktree'
+      );
       if (hasWorktreeFlag) {
         if (value === true) {
           result.push('--worktree');

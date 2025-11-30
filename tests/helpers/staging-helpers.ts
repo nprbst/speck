@@ -204,8 +204,18 @@ export async function createMockStagingMetadata(
     targetVersion: string;
     previousVersion: string | null;
     agentResults: {
-      agent1: { success: boolean; filesWritten: string[]; error: string | null; duration: number } | null;
-      agent2: { success: boolean; filesWritten: string[]; error: string | null; duration: number } | null;
+      agent1: {
+        success: boolean;
+        filesWritten: string[];
+        error: string | null;
+        duration: number;
+      } | null;
+      agent2: {
+        success: boolean;
+        filesWritten: string[];
+        error: string | null;
+        duration: number;
+      } | null;
     };
     productionBaseline: {
       files: Record<string, { exists: boolean; mtime: number | null; size: number | null }>;
@@ -240,7 +250,9 @@ export async function createMockStagingMetadata(
  * @param stagingDir Path to staging version directory
  * @returns Parsed staging metadata or null if not found
  */
-export async function readMockStagingMetadata(stagingDir: string): Promise<Record<string, unknown> | null> {
+export async function readMockStagingMetadata(
+  stagingDir: string
+): Promise<Record<string, unknown> | null> {
   const metadataPath = join(stagingDir, 'staging.json');
   if (!existsSync(metadataPath)) {
     return null;
@@ -328,7 +340,9 @@ export async function getFileMtime(filePath: string): Promise<number | null> {
  * @param env Staging test environment
  * @returns Record of relative paths to file content
  */
-export async function createProductionBaseline(env: StagingTestEnv): Promise<Record<string, string>> {
+export async function createProductionBaseline(
+  env: StagingTestEnv
+): Promise<Record<string, string>> {
   const baseline: Record<string, string> = {};
 
   // Helper to add files from a directory

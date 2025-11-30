@@ -415,7 +415,7 @@ export async function detectOrphanedStaging(projectRoot: string): Promise<string
 
       if (existsSync(metadataPath)) {
         try {
-          const metadata = await Bun.file(metadataPath).json();
+          const metadata: unknown = await Bun.file(metadataPath).json();
           const parsed = StagingMetadataSchema.safeParse(metadata);
 
           if (parsed.success && !isTerminalStatus(parsed.data.status)) {
@@ -447,7 +447,7 @@ export async function getStagingStatus(stagingDir: string): Promise<StagingMetad
   }
 
   try {
-    const data = await Bun.file(metadataPath).json();
+    const data: unknown = await Bun.file(metadataPath).json();
     const parsed = StagingMetadataSchema.safeParse(data);
     return parsed.success ? parsed.data : null;
   } catch {

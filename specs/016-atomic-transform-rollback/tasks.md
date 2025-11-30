@@ -76,7 +76,7 @@
 ### Tests for User Story 1
 
 - [X] T018 [P] [US1] [TEST] Write tests for commitStaging() success path in tests/unit/staging-manager.test.ts
-- [ ] T019 [P] [US1] [TEST] Write integration test for full successful transformation in tests/integration/transform-success.test.ts
+- [X] T019 [P] [US1] [TEST] Write integration test for full successful transformation in tests/integration/transform-success.test.ts
 
 ### Implementation for User Story 1
 
@@ -87,7 +87,7 @@
 - [X] T024 [US1] Update Agent 1 OUTPUT_DIR to staging scripts directory in orchestration
 - [X] T025 [US1] Update Agent 2 OUTPUT_DIR to staging commands directory in orchestration
 - [X] T026 [US1] Add commit trigger after both agents succeed in orchestration
-- [ ] T027 [US1] Modify transform-upstream command to use new orchestration in .claude/commands/speck.transform-upstream.md
+- [X] T027 [US1] Modify transform-upstream command to use new orchestration in .claude/commands/speck.transform-upstream.md
 
 **Checkpoint**: User Story 1 complete - successful transformations use staging and atomic commit
 
@@ -102,14 +102,14 @@
 ### Tests for User Story 2
 
 - [X] T028 [P] [US2] [TEST] Write tests for rollbackStaging() in tests/unit/staging-manager.test.ts
-- [ ] T029 [P] [US2] [TEST] Write integration test for rollback on Agent 2 failure in tests/integration/transform-rollback.test.ts
+- [X] T029 [P] [US2] [TEST] Write integration test for rollback on Agent 2 failure in tests/integration/transform-rollback.test.ts
 
 ### Implementation for User Story 2
 
 - [X] T030 [US2] Implement rollbackStaging(context) with directory cleanup in .speck/scripts/common/staging-manager.ts (red-green-refactor)
-- [ ] T031 [US2] Add rollback trigger on Agent 2 failure in orchestration script .speck/scripts/transform-upstream/index.ts
-- [ ] T032 [US2] Update transformation status to 'failed' with error message on rollback in orchestration
-- [ ] T033 [US2] Verify production files unchanged after rollback (assertion in test)
+- [X] T031 [US2] Add rollback trigger on Agent 2 failure in orchestration script .speck/scripts/transform-upstream/index.ts
+- [X] T032 [US2] Update transformation status to 'failed' with error message on rollback in orchestration
+- [X] T033 [US2] Verify production files unchanged after rollback (assertion in test)
 
 **Checkpoint**: User Story 2 complete - Agent 2 failures trigger clean rollback
 
@@ -123,14 +123,14 @@
 
 ### Tests for User Story 4
 
-- [ ] T034 [P] [US4] [TEST] Write tests for partial staging cleanup on early failure in tests/unit/staging-manager.test.ts
-- [ ] T035 [P] [US4] [TEST] Write integration test for Agent 1 failure handling in tests/integration/transform-agent1-failure.test.ts
+- [X] T034 [P] [US4] [TEST] Write tests for partial staging cleanup on early failure in tests/unit/staging-manager.test.ts
+- [X] T035 [P] [US4] [TEST] Write integration test for Agent 1 failure handling in tests/integration/transform-agent1-failure.test.ts
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Add rollback trigger on Agent 1 failure in orchestration script .speck/scripts/transform-upstream/index.ts
-- [ ] T037 [US4] Ensure Agent 2 is never invoked after Agent 1 failure
-- [ ] T038 [US4] Add Agent 1 error details to transformation status
+- [X] T036 [US4] Add rollback trigger on Agent 1 failure in orchestration script .speck/scripts/transform-upstream/index.ts
+- [X] T037 [US4] Ensure Agent 2 is never invoked after Agent 1 failure
+- [X] T038 [US4] Add Agent 1 error details to transformation status
 
 **Checkpoint**: User Story 4 complete - Agent 1 failures clean up properly
 
@@ -144,19 +144,19 @@
 
 ### Tests for User Story 3
 
-- [ ] T039 [P] [US3] [TEST] Write tests for detectOrphanedStaging() in tests/unit/staging-manager.test.ts
-- [ ] T040 [P] [US3] [TEST] Write tests for getStagingStatus() in tests/unit/staging-manager.test.ts
-- [ ] T041 [P] [US3] [TEST] Write tests for inspectStaging() in tests/unit/staging-manager.test.ts
-- [ ] T042 [P] [US3] [TEST] Write integration test for orphan recovery flow in tests/integration/orphan-recovery.test.ts
+- [X] T039 [P] [US3] [TEST] Write tests for detectOrphanedStaging() in tests/unit/staging-manager.test.ts
+- [X] T040 [P] [US3] [TEST] Write tests for getStagingStatus() in tests/unit/staging-manager.test.ts
+- [X] T041 [P] [US3] [TEST] Write tests for inspectStaging() in tests/unit/staging-manager.test.ts
+- [X] T042 [P] [US3] [TEST] Write integration test for orphan recovery flow in tests/integration/orphan-recovery.test.ts
 
 ### Implementation for User Story 3
 
-- [ ] T043 [US3] Implement detectOrphanedStaging() in .speck/scripts/common/staging-manager.ts (red-green-refactor)
-- [ ] T044 [US3] Implement getStagingStatus(directory) to read staging.json metadata in .speck/scripts/common/staging-manager.ts (red-green-refactor)
-- [ ] T045 [US3] Implement inspectStaging(context) to display staging contents in .speck/scripts/common/staging-manager.ts (red-green-refactor)
-- [ ] T046 [US3] Add orphan detection check at transform-upstream startup in .speck/scripts/transform-upstream/index.ts
-- [ ] T047 [US3] Implement recovery prompt with commit/rollback/inspect options in orchestration
-- [ ] T048 [US3] Block new transformation if unresolved staging exists (FR-007)
+- [X] T043 [US3] Implement detectOrphanedStaging() in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T044 [US3] Implement getStagingStatus(directory) to read staging.json metadata in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T045 [US3] Implement inspectStaging(context) to display staging contents in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T046 [US3] Add orphan detection check at transform-upstream startup in .speck/scripts/transform-upstream/index.ts
+- [X] T047 [US3] Implement recovery prompt with commit/rollback/inspect options in orchestration
+- [X] T048 [US3] Block new transformation if unresolved staging exists (FR-007)
 
 **Checkpoint**: User Story 3 complete - orphaned staging directories detected and recoverable
 
@@ -168,14 +168,14 @@
 
 ### Tests for Conflict Detection
 
-- [ ] T049 [P] [TEST] Write tests for detectFileConflicts() in tests/unit/staging-manager.test.ts
-- [ ] T050 [P] [TEST] Write integration test for conflict warning in tests/integration/conflict-detection.test.ts
+- [X] T049 [P] [TEST] Write tests for detectFileConflicts() in tests/unit/staging-manager.test.ts
+- [X] T050 [P] [TEST] Write integration test for conflict warning in tests/integration/conflict-detection.test.ts
 
 ### Implementation for Conflict Detection
 
-- [ ] T051 Implement detectFileConflicts(context) comparing mtimes in .speck/scripts/common/staging-manager.ts (red-green-refactor)
-- [ ] T052 Add conflict check before commit in commitStaging() in .speck/scripts/common/staging-manager.ts
-- [ ] T053 Add conflict warning output with option to proceed or abort in orchestration
+- [X] T051 Implement detectFileConflicts(context) comparing mtimes in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T052 Add conflict check before commit in commitStaging() in .speck/scripts/common/staging-manager.ts
+- [X] T053 Add conflict warning output with option to proceed or abort in orchestration
 
 **Checkpoint**: Conflict detection complete - users warned about concurrent modifications
 
@@ -187,15 +187,15 @@
 
 ### Tests for Status & Reporting
 
-- [ ] T054 [P] [TEST] Write tests for file manifest generation in tests/unit/staging-manager.test.ts
-- [ ] T055 [P] [TEST] Write tests for extended transformation status in tests/unit/transformation-history.test.ts
+- [X] T054 [P] [TEST] Write tests for file manifest generation in tests/unit/staging-manager.test.ts
+- [X] T055 [P] [TEST] Write tests for extended transformation status in tests/unit/transformation-history.test.ts
 
 ### Implementation for Status & Reporting
 
-- [ ] T056 Implement generateFileManifest(context) in .speck/scripts/common/staging-manager.ts (red-green-refactor)
-- [ ] T057 Add file manifest display before commit (FR-011) in orchestration
-- [ ] T058 Extend transformation history with staging states in .speck/scripts/common/transformation-history.ts
-- [ ] T059 Add rollback reason tracking to transformation status
+- [X] T056 Implement generateFileManifest(context) in .speck/scripts/common/staging-manager.ts (red-green-refactor)
+- [X] T057 Add file manifest display before commit (FR-011) in orchestration
+- [X] T058 Extend transformation history with staging states in .speck/scripts/common/transformation-history.ts
+- [X] T059 Add rollback reason tracking to transformation status
 
 **Checkpoint**: Status and reporting complete - clear visibility into transformation state
 
@@ -205,11 +205,11 @@
 
 **Purpose**: Final validation and cleanup
 
-- [ ] T060 Run bun preflight and fix any issues
-- [ ] T061 Verify all acceptance scenarios from spec.md pass
-- [ ] T062 Update transformation history documentation if needed
-- [ ] T063 [P] Code cleanup and remove any debug logging
-- [ ] T064 Run quickstart.md validation steps
+- [X] T060 Run bun preflight and fix any issues
+- [X] T061 Verify all acceptance scenarios from spec.md pass
+- [X] T062 Update transformation history documentation if needed
+- [X] T063 [P] Code cleanup and remove any debug logging
+- [X] T064 Run quickstart.md validation steps
 
 ---
 
