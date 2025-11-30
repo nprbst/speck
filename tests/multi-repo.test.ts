@@ -457,7 +457,7 @@ describe('Edge Cases and Error Handling', () => {
     await cleanup(testDir);
   });
 
-  test('Broken symlink falls back to single-repo mode gracefully', async () => {
+  test('Broken symlink throws error requiring user to fix', async () => {
     const speckDir = path.join(testDir, '.speck');
     await fs.mkdir(speckDir, { recursive: true });
 
@@ -467,9 +467,8 @@ describe('Edge Cases and Error Handling', () => {
 
     clearSpeckCache();
 
-    // Should fall back to single-repo mode gracefully (ENOENT caught)
-    const config = await detectSpeckRoot();
-    expect(config.mode).toBe('single-repo');
+    // Should throw error so user knows to fix the broken symlink
+    await expect(detectSpeckRoot()).rejects.toThrow('Multi-repo configuration broken');
   });
 
   test('Non-symlink .speck/root file falls back to single-repo with warning', async () => {
