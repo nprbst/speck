@@ -23,29 +23,37 @@ import { Command } from 'commander';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 
-// Import command handlers (lazy-loaded for performance)
-const lazyCheckPrerequisites = (): Promise<
-  typeof import('../../.speck/scripts/check-prerequisites.ts')
-> => import('../../.speck/scripts/check-prerequisites.ts');
-const lazyCreateNewFeature = (): Promise<
-  typeof import('../../.speck/scripts/create-new-feature.ts')
-> => import('../../.speck/scripts/create-new-feature.ts');
-const lazyEnvCommand = (): Promise<typeof import('../../.speck/scripts/env-command.ts')> =>
-  import('../../.speck/scripts/env-command.ts');
-const lazyInitCommand = (): Promise<typeof import('../../.speck/scripts/commands/init.ts')> =>
-  import('../../.speck/scripts/commands/init.ts');
-const lazyLinkCommand = (): Promise<typeof import('../../.speck/scripts/commands/link.ts')> =>
-  import('../../.speck/scripts/commands/link.ts');
-const lazyLaunchIDECommand = (): Promise<
-  typeof import('../../.speck/scripts/worktree/cli-launch-ide.ts')
-> => import('../../.speck/scripts/worktree/cli-launch-ide.ts');
-const lazySetupPlan = (): Promise<typeof import('../../.speck/scripts/setup-plan.ts')> =>
-  import('../../.speck/scripts/setup-plan.ts');
-const lazyUpdateAgentContext = (): Promise<
-  typeof import('../../.speck/scripts/update-agent-context.ts')
-> => import('../../.speck/scripts/update-agent-context.ts');
-const lazyNextFeature = (): Promise<typeof import('../../.speck/scripts/next-feature.ts')> =>
-  import('../../.speck/scripts/next-feature.ts');
+/**
+ * Command module interface - all commands export main(args) => Promise<number>
+ */
+interface CommandModule {
+  main: (args: string[]) => Promise<number>;
+}
+
+/**
+ * Command registry with lazy loaders
+ * Single source of truth for all command module paths
+ */
+const commandRegistry = {
+  'check-prerequisites': () => import('../../.speck/scripts/check-prerequisites.ts'),
+  'create-new-feature': () => import('../../.speck/scripts/create-new-feature.ts'),
+  env: () => import('../../.speck/scripts/env-command.ts'),
+  init: () => import('../../.speck/scripts/commands/init.ts'),
+  link: () => import('../../.speck/scripts/commands/link.ts'),
+  'launch-ide': () => import('../../.speck/scripts/worktree/cli-launch-ide.ts'),
+  'setup-plan': () => import('../../.speck/scripts/setup-plan.ts'),
+  'update-agent-context': () => import('../../.speck/scripts/update-agent-context.ts'),
+  'next-feature': () => import('../../.speck/scripts/next-feature.ts'),
+} as const;
+
+type CommandName = keyof typeof commandRegistry;
+
+/**
+ * Load a command module by name
+ */
+async function loadCommand(name: CommandName): Promise<CommandModule> {
+  return commandRegistry[name]() as Promise<CommandModule>;
+}
 
 /**
  * Output mode for CLI commands
@@ -187,7 +195,7 @@ function createProgram(): Command {
     .option('--ide-autolaunch <bool>', 'Auto-launch IDE when creating features (true/false)')
     .option('--ide-editor <editor>', 'IDE editor choice (vscode/cursor/webstorm/idea/pycharm)')
     .action(async (options: Record<string, unknown>) => {
-      const module = await lazyInitCommand();
+      const module = await loadCommand('init');
       const args = buildSubcommandArgs([], options);
       const exitCode = await module.main(args);
       process.exit(exitCode);
@@ -202,7 +210,7 @@ function createProgram(): Command {
     .argument('<path>', 'Path to speck root directory')
     .option('--json', 'Output in JSON format')
     .action(async (path: string, options: Record<string, unknown>) => {
-      const module = await lazyLinkCommand();
+      const module = await loadCommand('link');
       const args = [path, ...buildSubcommandArgs([], options)];
       const exitCode = await module.main(args);
       process.exit(exitCode);
@@ -223,8 +231,8 @@ function createProgram(): Command {
     .option('--worktree', 'Create a worktree for the feature branch (overrides config)')
     .option('--no-worktree', 'Skip worktree creation (overrides config)')
     .option('--no-ide', 'Skip IDE auto-launch')
-    .action(async (description: string, options: Record<string, unknown>, command) => {
-      const module = await lazyCreateNewFeature();
+    .action(async (description: string, options: Record<string, unknown>, command: Command) => {
+      const module = await loadCommand('create-new-feature');
       // Pass raw args to detect explicit --worktree / --no-worktree flags
       const rawArgs = command.args.concat(process.argv.slice(3));
       const args = [description, ...buildSubcommandArgs([], options, rawArgs)];
@@ -249,7 +257,7 @@ function createProgram(): Command {
     .option('--include-workflow-mode', 'Include workflow mode in output')
     .option('--validate-code-quality', 'Validate TypeScript typecheck and ESLint')
     .action(async (options: Record<string, unknown>) => {
-      const module = await lazyCheckPrerequisites();
+      const module = await loadCommand('check-prerequisites');
       const args = buildSubcommandArgs([], options);
       const exitCode = await module.main(args);
       process.exit(exitCode);
@@ -264,7 +272,7 @@ function createProgram(): Command {
     .option('--json', 'Output as JSON')
     .option('--hook', 'Output hook-formatted response')
     .action(async (options: Record<string, unknown>) => {
-      const module = await lazyEnvCommand();
+      const module = await loadCommand('env');
       const args = buildSubcommandArgs([], options);
       const exitCode = await module.main(args);
       process.exit(exitCode);
@@ -280,12 +288,10 @@ function createProgram(): Command {
     .option('--repo-path <path>', 'Path to repository root for config (default: .)')
     .option('--json', 'Output as JSON')
     .action(async (options: Record<string, unknown>) => {
-      const module = await lazyLaunchIDECommand();
-      await module.executeLaunchIDECommand({
-        worktreePath: options.worktreePath as string,
-        repoPath: (options.repoPath as string) || '.',
-        json: options.json === true,
-      });
+      const module = await loadCommand('launch-ide');
+      const args = buildSubcommandArgs([], options);
+      const exitCode = await module.main(args);
+      process.exit(exitCode);
     });
 
   // ==========================================================================
@@ -296,7 +302,7 @@ function createProgram(): Command {
     .description('Set up plan.md for the current feature')
     .option('--json', 'Output in JSON format')
     .action(async (options: Record<string, unknown>) => {
-      const module = await lazySetupPlan();
+      const module = await loadCommand('setup-plan');
       const args = buildSubcommandArgs([], options);
       const exitCode = await module.main(args);
       process.exit(exitCode);
@@ -310,7 +316,7 @@ function createProgram(): Command {
     .description('Update CLAUDE.md context file with technology stack from current feature')
     .option('--json', 'Output in JSON format')
     .action(async (options: Record<string, unknown>) => {
-      const module = await lazyUpdateAgentContext();
+      const module = await loadCommand('update-agent-context');
       const args = buildSubcommandArgs([], options);
       const exitCode = await module.main(args);
       process.exit(exitCode);
@@ -325,7 +331,7 @@ function createProgram(): Command {
     .option('--json', 'Output in JSON format')
     .option('--short-name <name>', 'Short name to check for existing branches')
     .action(async (options: Record<string, unknown>) => {
-      const module = await lazyNextFeature();
+      const module = await loadCommand('next-feature');
       const args = buildSubcommandArgs([], options);
       const exitCode = await module.main(args);
       process.exit(exitCode);

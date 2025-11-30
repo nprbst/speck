@@ -118,7 +118,7 @@ function getRepoName(): string {
     // https://github.com/org/repo.git -> repo
     // git@github.com:org/repo.git -> repo
     const match = remoteUrl.match(/\/([^/]+?)(?:\.git)?$/) || remoteUrl.match(/:([^/]+?)(?:\.git)?$/);
-    if (match) {
+    if (match?.[1]) {
       return match[1];
     }
   }
@@ -148,7 +148,7 @@ function getGitUserName(): string {
  */
 function getTodayDate(): string {
   const now = new Date();
-  return now.toISOString().split("T")[0];
+  return now.toISOString().split("T")[0] ?? "";
 }
 
 /**
@@ -161,20 +161,6 @@ function adjustPathForSpeckDepth(inputPath: string): string {
   }
   // Prepend ../ to account for .speck/ directory
   return join("..", inputPath);
-}
-
-/**
- * Check if a symlink exists and points to expected target
- */
-function isValidSymlink(symlinkPath: string, expectedTarget: string): boolean {
-  try {
-    if (!existsSync(symlinkPath)) return false;
-    if (!lstatSync(symlinkPath).isSymbolicLink()) return false;
-    const target = readlinkSync(symlinkPath);
-    return target === expectedTarget;
-  } catch {
-    return false;
-  }
 }
 
 /**
@@ -299,7 +285,7 @@ function createReverseSymlink(speckRootPath: string, repoName: string, currentRe
 /**
  * Execute the link command
  */
-function runLink(targetPath: string, options: LinkOptions): LinkResult {
+function runLink(targetPath: string, _options: LinkOptions): LinkResult {
   // Use current working directory as the location for .speck/
   // This allows both multi-repo (separate git repos) and monorepo (packages in same git repo)
   // to work identically
@@ -462,7 +448,7 @@ function formatOutput(result: LinkResult, options: LinkOptions): string {
 /**
  * Main entry point for CLI invocation
  */
-export async function main(args: string[]): Promise<number> {
+export function main(args: string[]): Promise<number> {
   // Parse arguments
   const { values, positionals } = parseArgs({
     args,
@@ -473,17 +459,17 @@ export async function main(args: string[]): Promise<number> {
   });
 
   // Validate positional argument
-  if (positionals.length === 0) {
+  const targetPath = positionals[0];
+  if (!targetPath) {
     const errorMsg = "Error: Missing required argument <path>\n\nUsage: speck link <path> [--json]";
     if (values.json) {
       console.log(JSON.stringify({ ok: false, message: errorMsg }, null, 2));
     } else {
       console.error(errorMsg);
     }
-    return 1;
+    return Promise.resolve(1);
   }
 
-  const targetPath = positionals[0];
   const options: LinkOptions = {
     json: values.json ?? false,
   };
@@ -494,12 +480,12 @@ export async function main(args: string[]): Promise<number> {
   // Output result
   console.log(formatOutput(result, options));
 
-  return result.success ? 0 : 1;
+  return Promise.resolve(result.success ? 0 : 1);
 }
 
 // Run if executed directly
 if (import.meta.main) {
-  main(process.argv.slice(2)).then((exitCode) => {
+  void main(process.argv.slice(2)).then((exitCode) => {
     process.exit(exitCode);
   });
 }

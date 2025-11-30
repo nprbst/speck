@@ -282,7 +282,7 @@ async function createSpeckConfig(speckDir: string, isInteractive: boolean, optio
   }
 
   // Start with defaults (worktree enabled = true)
-  const config: SpeckConfig = JSON.parse(JSON.stringify(DEFAULT_SPECK_CONFIG));
+  const config: SpeckConfig = JSON.parse(JSON.stringify(DEFAULT_SPECK_CONFIG)) as SpeckConfig;
 
   // Check if any config flags were provided via CLI
   const hasConfigFlags = options.worktreeEnabled !== undefined ||
@@ -640,7 +640,7 @@ export async function main(args: string[]): Promise<number> {
 
 // Run if executed directly
 if (import.meta.main) {
-  main(process.argv.slice(2)).then((exitCode) => {
+  void main(process.argv.slice(2)).then((exitCode) => {
     process.exit(exitCode);
   });
 }
