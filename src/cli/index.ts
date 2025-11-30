@@ -37,6 +37,8 @@ const lazyInitCommand = (): Promise<typeof import('../../.speck/scripts/commands
 const lazyLaunchIDECommand = (): Promise<
   typeof import('../../.speck/scripts/worktree/cli-launch-ide.ts')
 > => import('../../.speck/scripts/worktree/cli-launch-ide.ts');
+const lazySetupPlan = (): Promise<typeof import('../../.speck/scripts/setup-plan.ts')> =>
+  import('../../.speck/scripts/setup-plan.ts');
 
 /**
  * Output mode for CLI commands
@@ -248,6 +250,20 @@ function createProgram(): Command {
         repoPath: (options.repoPath as string) || '.',
         json: options.json === true,
       });
+    });
+
+  // ==========================================================================
+  // setup-plan command
+  // ==========================================================================
+  program
+    .command('setup-plan')
+    .description('Set up plan.md for the current feature')
+    .option('--json', 'Output in JSON format')
+    .action(async (options: Record<string, unknown>) => {
+      const module = await lazySetupPlan();
+      const args = buildSubcommandArgs([], options);
+      const exitCode = await module.main(args);
+      process.exit(exitCode);
     });
 
   // ==========================================================================
