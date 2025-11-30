@@ -273,12 +273,14 @@ git add . && git commit -m "Initial monorepo"
 - Auto-detects link type by comparing git roots
 - Records "monorepo package" vs "multi-repo child" in linked-repos.md
 
-### Test 3.2: Shared Spec Across Packages
-**I create**: `specs/001-shared-ui/spec.md` at root
-**User action**: From `packages/ui/`, run `/speck.plan`; from `packages/shared/`, run `/speck.plan`
+### Test 3.2: Shared Spec Across Packages ✅
+**User action**: From `packages/ui/`, `packages/shared/`, and `packages/api/`, run `/speck.plan`
 **I verify**:
-- [ ] Both read same spec.md
-- [ ] Each generates own plan.md
+- [x] All three read same `specs/001-nodejs-monorepo/spec.md`
+- [x] Each generates own plan.md with package-specific content:
+  - `api/specs/001-nodejs-monorepo/plan.md` - Backend API (Express 4.x)
+  - `shared/specs/001-nodejs-monorepo/plan.md` - Shared utilities (zero deps)
+  - `ui/specs/001-nodejs-monorepo/plan.md` - Frontend (Vite 5.x)
 
 ### Test 3.3: Independent Package Work
 **User action**: In `packages/api/`, create feature with custom branch
