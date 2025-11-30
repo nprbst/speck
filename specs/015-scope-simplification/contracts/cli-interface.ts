@@ -85,14 +85,19 @@ export type ExitCode = (typeof ExitCode)[keyof typeof ExitCode];
 /**
  * Available CLI subcommands
  *
- * @see FR-007: CLI MUST support subcommands: init, create-new-feature,
- *             check-prerequisites, env, help
+ * @see FR-007: CLI MUST support subcommands: init, link, create-new-feature, next-feature,
+ *             check-prerequisites, env, launch-ide, setup-plan, update-agent-context, help
  */
 export const Commands = {
   INIT: "init",
+  LINK: "link",
   CREATE_NEW_FEATURE: "create-new-feature",
+  NEXT_FEATURE: "next-feature",
   CHECK_PREREQUISITES: "check-prerequisites",
   ENV: "env",
+  LAUNCH_IDE: "launch-ide",
+  SETUP_PLAN: "setup-plan",
+  UPDATE_AGENT_CONTEXT: "update-agent-context",
   HELP: "help",
 } as const;
 
@@ -130,11 +135,61 @@ export interface GlobalOptions {
 /**
  * Options for `speck init`
  *
- * @see FR-017 through FR-020
+ * @see FR-017 through FR-020f
  */
 export interface InitOptions extends GlobalOptions {
   /** Force reinstall even if symlink exists */
   force?: boolean;
+
+  /** Enable/disable worktree mode (default: true) */
+  worktreeEnabled?: boolean;
+
+  /** Enable/disable IDE auto-launch (default: false) */
+  ideAutolaunch?: boolean;
+
+  /** IDE editor choice: vscode, cursor, webstorm, idea, pycharm */
+  ideEditor?: string;
+}
+
+/**
+ * Options for `speck link`
+ *
+ * @see FR-007a
+ */
+export interface LinkOptions extends GlobalOptions {
+  /** Path to speck root directory */
+  path: string;
+}
+
+/**
+ * Options for `speck launch-ide`
+ *
+ * @see FR-007b
+ */
+export interface LaunchIDEOptions extends GlobalOptions {
+  /** Path to worktree directory */
+  worktreePath: string;
+
+  /** Path to repository root for config (default: .) */
+  repoPath?: string;
+}
+
+/**
+ * Options for `speck setup-plan`
+ *
+ * @see FR-007c
+ */
+export interface SetupPlanOptions extends GlobalOptions {
+  // Uses global options only
+}
+
+/**
+ * Options for `speck update-agent-context`
+ *
+ * @see FR-007d
+ */
+export interface UpdateAgentContextOptions extends GlobalOptions {
+  // Uses global options only
 }
 
 /**
@@ -240,6 +295,52 @@ export interface InitResult {
 
   /** Instructions if not in PATH */
   pathInstructions?: string;
+
+  /** Whether symlink already existed (idempotent case) */
+  alreadyInstalled?: boolean;
+
+  /** Whether .speck/ directory was created */
+  speckDirCreated?: boolean;
+
+  /** Path to .speck/ directory */
+  speckDirPath?: string;
+
+  /** Whether config.json was created */
+  configCreated?: boolean;
+
+  /** Number of permissions added to .claude/settings.local.json */
+  permissionsConfigured?: number;
+
+  /** Next step suggestion (e.g., run constitution command) */
+  nextStep?: string;
+}
+
+/**
+ * Result for `speck link`
+ */
+export interface LinkResult {
+  /** Path to symlink created */
+  symlinkPath: string;
+
+  /** Path to speck root */
+  rootPath: string;
+
+  /** Whether link already existed */
+  alreadyLinked?: boolean;
+}
+
+/**
+ * Result for `speck launch-ide`
+ */
+export interface LaunchIDEResult {
+  /** Whether IDE was launched */
+  launched: boolean;
+
+  /** IDE that was launched */
+  ide?: string;
+
+  /** Path that was opened */
+  path?: string;
 }
 
 /**

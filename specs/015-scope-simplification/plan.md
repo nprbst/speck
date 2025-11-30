@@ -11,8 +11,8 @@ Simplify and robustify Speck by removing stacked PR support and virtual commands
 ## Technical Context
 
 **Language/Version**: TypeScript 5.3+ with Bun 1.0+ runtime
-**Primary Dependencies**: Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees), jq (JSON processing in hooks)
-**Storage**: File-based (`.speck/config.json`, `.speck/branches.json`, `.speck/handoff.md`, `.claude/settings.json`)
+**Primary Dependencies**: Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees)
+**Storage**: File-based (`.speck/config.json`, `.speck/branches.json`, `.speck/handoff.md`, `quickstart.md`, `.vscode/tasks.json`)
 **Testing**: Bun test runner with TDD approach per Constitution Principle XII
 **Target Platform**: macOS, Linux (Unix-like systems)
 **Project Type**: Single (CLI tool with plugin components)
@@ -78,29 +78,33 @@ specs/015-scope-simplification/
 ```text
 src/
 └── cli/
-    ├── index.ts         # NEW: Main CLI entry point (TypeScript)
-    └── bootstrap.sh     # NEW: Bun detection and self-removing wrapper
+    ├── index.ts         # Main CLI entry point with subcommands:
+    │                    # init, link, create-new-feature, next-feature, check-prerequisites,
+    │                    # env, launch-ide, setup-plan, update-agent-context, help
+    └── bootstrap.sh     # Bun detection and self-removing wrapper
 
 .speck/
 ├── scripts/
-│   ├── speck.ts         # REFACTOR: Remove hook mode
 │   ├── commands/
-│   │   ├── index.ts     # REFACTOR: Remove branch command
-│   │   ├── init.ts      # NEW: Init command handler
-│   │   └── help.ts      # NEW: Help command handler
+│   │   ├── index.ts     # Command registry
+│   │   ├── init.ts      # Init command: symlink + config.json + permissions
+│   │   └── link.ts      # Link command: multi-repo linking
 │   ├── common/
-│   │   └── branch-mapper.ts  # REFACTOR: Simplified schema
+│   │   └── branch-mapper.ts  # Simplified schema (v2.0.0)
 │   └── worktree/
-│       ├── handoff.ts        # NEW: Handoff document generation
-│       └── handoff-hook.sh   # NEW: SessionStart hook script template
-├── config.json          # Existing: Speck configuration
-└── branches.json        # Existing: Branch mappings
+│       ├── handoff.ts        # Handoff document generation
+│       ├── cli-launch-ide.ts # Standalone IDE launch command
+│       └── config-schema.ts  # Config schema with defaults
+├── setup-plan.ts        # Setup plan.md from template
+├── update-agent-context.ts  # Update CLAUDE.md context
+├── config.json          # Speck configuration (created by init)
+└── branches.json        # Branch mappings
 
 # Files written to NEW WORKTREES (not in main repo):
 # <worktree>/.speck/handoff.md           # Handoff document
-# <worktree>/.claude/settings.json       # SessionStart hook config
-# <worktree>/.claude/scripts/handoff.sh  # Hook script (copied from template)
-# <worktree>/.vscode/tasks.json          # Auto-open Claude panel
+# <worktree>/quickstart.md               # Quick reference for feature
+# <worktree>/.vscode/tasks.json          # Focus Claude panel on folder open
+# Note: SessionStart hook disabled due to race condition
 
 .claude/
 ├── commands/
@@ -202,14 +206,32 @@ Each implementation task has a corresponding test task that runs first:
 - Update package.json scripts
 - See [bootstrap-addendum.md](./bootstrap-addendum.md) for bootstrap implementation details
 
+### Phase 2a: Init Config Flow (Post-Implementation Enhancement)
+- Interactive prompts for worktree/IDE preferences (TTY mode)
+- Create `.speck/config.json` with user choices
+- CLI flags for non-interactive mode: `--worktree-enabled`, `--ide-autolaunch`, `--ide-editor`
+- Auto-configure `.claude/settings.local.json` permissions
+- Default `worktree.enabled=true`, `worktree.path=../`
+
+### Phase 2b: Additional CLI Commands (Post-Implementation Enhancement)
+- `speck link`: Link child repo to multi-repo root
+- `speck launch-ide`: Standalone IDE launch for worktrees
+- `speck setup-plan`: Create plan.md from template
+- `speck update-agent-context`: Update CLAUDE.md with feature context
+
 ### Phase 3: Worktree + Handoff Integration
 - Use atomic `git worktree add -b` for branch+worktree creation (no checkout switching)
 - Implement handoff document generation (`.speck/handoff.md`)
-- Write `.claude/settings.json` with SessionStart hook to worktree
-- Write `.claude/scripts/handoff.sh` hook script to worktree
-- Write `.vscode/tasks.json` for auto-open Claude panel
-- Implement hook self-cleanup (archive handoff, remove hook from settings)
+- Generate `quickstart.md` for quick reference
+- Write `.vscode/tasks.json` for Claude panel focus on folder open
+- ~~SessionStart hook~~ **DEPRECATED**: Disabled due to race condition
 - See [session-handoff-addendum.md](./session-handoff-addendum.md) for implementation details
+
+### Phase 3a: Multi-Repo Enhancements (Post-Implementation Enhancement)
+- Monorepo detection via `.speck/root` symlink
+- Shared contracts at root repo level
+- Conflict detection for spec.md files
+- Multi-repo detection from worktree's main repository
 
 ### Phase 4: Skill & Documentation
 - Rename and update speck-help skill
@@ -246,7 +268,7 @@ Each implementation task has a corresponding test task that runs first:
 | SC-008: 5-minute getting started | Streamlined documentation |
 | SC-009: Multi-repo works | No changes to multi-repo code |
 | SC-010: branches.json resolution | getSpecForBranch() in simplified schema |
-| SC-011: Session handoff works | Integration test for handoff loading via SessionStart hook with `hookSpecificOutput.additionalContext` |
+| SC-011: Session handoff available | Handoff.md + quickstart.md written to worktree; VSCode task focuses Claude panel on folder open (Note: SessionStart hook disabled due to race condition) |
 | SC-012: /speck.help works | Skill activation test |
 
 ## Next Step

@@ -53,20 +53,21 @@ Claude Code running in VSCode needs to execute Speck commands reliably via Bash 
 
 ### User Story 3 - New Spec Creates Worktree with Session Handoff (Priority: P2)
 
-When a developer creates a new feature spec, Speck automatically creates a Git worktree for the new branch, writes a handoff document containing feature context, launches VSCode at the worktree, and the new Claude Code session loads the handoff document on start to be primed for working on the feature.
+When a developer creates a new feature spec, Speck automatically creates a Git worktree for the new branch, writes a handoff document containing feature context, launches VSCode at the worktree, and a VSCode task focuses the Claude panel on folder open (handoff document available for manual reference).
 
 **Why this priority**: This automates the tedious setup steps that every feature requires and ensures the new Claude session has full context. Reduces friction significantly but depends on P1 working first.
 
-**Independent Test**: Can be fully tested by running `speck create-new-feature "Test Feature"`, verifying worktree exists, handoff document is present, IDE launches, and new Claude session shows feature context.
+**Independent Test**: Can be fully tested by running `speck create-new-feature "Test Feature"`, verifying worktree exists, handoff document is present, IDE launches, and VSCode task focuses Claude panel.
 
 **Acceptance Scenarios**:
 
 1. **Given** worktree integration is enabled in config, **When** user creates a new feature, **Then** a Git worktree is created at `../<repo-name>-worktrees/<branch-name>/`
-2. **Given** worktree is created successfully, **When** spec is initialized, **Then** a handoff document is written to the worktree containing feature name, spec path, and initial context
-3. **Given** handoff document exists in worktree, **When** VSCode opens with Claude Code, **Then** Claude Code session start hook loads the handoff document to prime the session
+2. **Given** worktree is created successfully, **When** spec is initialized, **Then** a handoff document (`handoff.md`) and quickstart document (`quickstart.md`) are written to the worktree
+3. **Given** handoff document exists in worktree, **When** VSCode opens with Claude Code, **Then** VSCode task focuses Claude panel (Note: automatic context injection disabled; handoff available for manual reference)
 4. **Given** worktree is created successfully, **When** IDE auto-launch is enabled, **Then** VSCode opens at the worktree path with Claude Code extension active
 5. **Given** worktree creation fails for any reason, **When** user creates a feature, **Then** the spec is still created in the main repo and a warning is displayed (non-fatal)
 6. **Given** user passes `--no-worktree` flag, **When** creating a feature, **Then** worktree creation is skipped regardless of config
+7. **Given** spec is written during worktree creation, **When** worktree mode is enabled, **Then** spec.md is written to the worktree's specs/ directory (not main repo)
 
 ---
 
@@ -85,6 +86,10 @@ A developer cloning a Speck-enabled repository for the first time runs the `/spe
 3. **Given** `~/.local/bin` is in user's PATH, **When** they open a new terminal, **Then** `speck` command is available globally
 4. **Given** symlink already exists, **When** user runs init again, **Then** they see a message that Speck is already installed (idempotent)
 5. **Given** `~/.local/bin` does not exist, **When** user runs init, **Then** the directory is created before symlinking
+6. **Given** user runs `speck init` in TTY, **When** command executes, **Then** interactive prompts ask for worktree and IDE preferences
+7. **Given** user runs `speck init --worktree-enabled false --ide-autolaunch true --ide-editor cursor`, **When** command executes, **Then** config.json is created with specified values (non-interactive)
+8. **Given** user runs `speck init`, **When** command executes, **Then** default permissions are added to `.claude/settings.local.json`
+9. **Given** user runs `speck init`, **When** command completes, **Then** `.speck/config.json` is created with user preferences (default: worktree enabled)
 
 ---
 
@@ -132,7 +137,11 @@ A developer working with a multi-repo Speck configuration (root repo with linked
 
 1. **Given** a multi-repo setup with root and child repos, **When** user runs `speck check-prerequisites` in child repo, **Then** system detects multi-repo mode and reports correct paths
 2. **Given** a shared spec in root repo, **When** user works in child repo, **Then** they can access and reference the shared spec
-3. **Given** user creates spec in child repo, **When** prompted for location, **Then** they can choose parent (shared) or local (child-only) placement
+3. **Given** user creates spec in child repo, **When** prompted for location, **Then** they can choose parent (shared) or local (child-only) placement via `--shared-spec` or `--local-spec` flags
+4. **Given** a monorepo package with `.speck/root` symlink at CWD, **When** user runs `speck check-prerequisites`, **Then** system detects multi-repo mode from symlink
+5. **Given** multi-repo mode is active, **When** contracts are created, **Then** contracts are shared at root repo level while other artifacts remain local
+6. **Given** conflicting spec.md files exist in multi-repo mode, **When** user runs check-prerequisites, **Then** system displays warning about the conflict
+7. **Given** user runs `speck link <path>`, **When** command executes, **Then** current repo is linked to specified multi-repo root
 
 ---
 
@@ -184,7 +193,12 @@ A new user visits the Speck website to understand what Speck does and how to use
 #### CLI Requirements (Consolidation)
 
 - **FR-006**: System MUST provide a single `speck` entry point executable via `#!/usr/bin/env bun`
-- **FR-007**: CLI MUST support subcommands: `init`, `create-new-feature`, `check-prerequisites`, `env`, `help`
+- **FR-007**: CLI MUST support subcommands: `init`, `link`, `create-new-feature`, `next-feature`, `check-prerequisites`, `env`, `launch-ide`, `setup-plan`, `update-agent-context`, `help`
+- **FR-007a**: CLI MUST support `link` subcommand to link child repos to multi-repo root
+- **FR-007b**: CLI MUST support `launch-ide` subcommand to launch IDE at worktree path (for deferred IDE launch)
+- **FR-007c**: CLI MUST support `setup-plan` subcommand to create plan.md from template
+- **FR-007d**: CLI MUST support `update-agent-context` subcommand to update CLAUDE.md with feature context
+- **FR-007e**: CLI MUST support `next-feature` subcommand to check for existing feature branches and guide user to correct branch
 - **FR-008**: CLI MUST accept `--json` flag on all commands to output structured JSON for LLM parsing
 - **FR-009**: CLI MUST accept `--hook` flag on all commands for hook IO mode (reads JSON from stdin, outputs hook-formatted response)
 - **FR-009a**: When `--hook` flag is present, CLI MUST read JSON payload from stdin containing hook context before processing
@@ -206,37 +220,42 @@ A new user visits the Speck website to understand what Speck does and how to use
 
 - **FR-017**: `speck init` MUST create a symlink at `~/.local/bin/speck` pointing to the repository's bootstrap script
 - **FR-018**: `speck init` MUST create `~/.local/bin/` directory if it doesn't exist
-- **FR-019**: `speck init` MUST be idempotent (running twice produces no errors)
+- **FR-019**: `speck init` MUST be idempotent (running twice produces no errors, checks PATH first)
 - **FR-020**: `speck init` MUST report if `~/.local/bin` is not in the user's PATH with instructions to add it
+- **FR-020a**: `speck init` MUST create `.speck/config.json` with worktree and IDE preferences
+- **FR-020b**: `speck init` MUST interactively prompt for config options when running in TTY mode
+- **FR-020c**: `speck init` MUST support CLI flags for non-interactive config: `--worktree-enabled`, `--ide-autolaunch`, `--ide-editor`
+- **FR-020d**: `speck init` MUST auto-configure default permissions in `.claude/settings.local.json`
+- **FR-020e**: Default `worktree.enabled` configuration MUST be `true`
+- **FR-020f**: Default `worktree.path` configuration MUST be `../` for peer directory worktrees
 
 #### Bun Bootstrap Requirements
 
-- **FR-020a**: System MUST provide a `bootstrap.sh` script that detects Bun installation before executing CLI
-- **FR-020b**: If Bun is not found, bootstrap MUST display platform-specific installation instructions (macOS/Linux/WSL)
-- **FR-020c**: Bootstrap MUST check common Bun locations: PATH, `$HOME/.bun/bin/bun`, `/usr/local/bin/bun`, `/opt/homebrew/bin/bun`
-- **FR-020d**: After Bun is detected, bootstrap MUST rewire the `speck` symlink to point directly to `index.ts`
-- **FR-020e**: Bootstrap self-removal pattern MUST result in zero overhead for subsequent CLI invocations (direct exec via shebang)
+- **FR-021a**: System MUST provide a `bootstrap.sh` script that detects Bun installation before executing CLI
+- **FR-021b**: If Bun is not found, bootstrap MUST display platform-specific installation instructions (macOS/Linux/WSL)
+- **FR-021c**: Bootstrap MUST check common Bun locations: PATH, `$HOME/.bun/bin/bun`, `/usr/local/bin/bun`, `/opt/homebrew/bin/bun`
+- **FR-021d**: After Bun is detected, bootstrap MUST rewire the `speck` symlink to point directly to `index.ts`
+- **FR-021e**: Bootstrap self-removal pattern MUST result in zero overhead for subsequent CLI invocations (direct exec via shebang)
 
 #### Worktree Integration Requirements
 
-- **FR-021**: When creating a new feature with worktree enabled, system MUST create a Git worktree at a predictable path
-- **FR-021a**: System MUST use atomic `git worktree add -b <branch> <path> HEAD` to create branch and worktree without switching the current checkout
-- **FR-022**: Worktree path MUST follow the pattern `../<repo-name>-worktrees/<branch-name>/`
-- **FR-023**: After worktree creation, system MUST launch configured IDE at the worktree path
-- **FR-024**: IDE launch MUST pass arguments to auto-open Claude Code extension
-- **FR-025**: Worktree creation and IDE launch failures MUST be non-fatal warnings, not blocking errors
-- **FR-026**: Users MUST be able to override worktree behavior with `--no-worktree` and `--no-ide` flags
+- **FR-022**: When creating a new feature with worktree enabled, system MUST create a Git worktree at a predictable path
+- **FR-022a**: System MUST use atomic `git worktree add -b <branch> <path> HEAD` to create branch and worktree without switching the current checkout
+- **FR-023**: Worktree path MUST follow the pattern `../<repo-name>-worktrees/<branch-name>/` (configurable via worktree.path)
+- **FR-024**: After worktree creation, system MUST launch configured IDE at the worktree path
+- **FR-025**: IDE launch MUST pass arguments to auto-open Claude Code extension
+- **FR-026**: Worktree creation and IDE launch failures MUST be non-fatal warnings, not blocking errors
+- **FR-027**: Users MUST be able to override worktree behavior with `--no-worktree` and `--no-ide` flags
 
 #### Session Handoff Requirements
 
-- **FR-027**: When creating a worktree, system MUST write a handoff document to `.speck/handoff.md` in the worktree
-- **FR-028**: Handoff document MUST contain: feature name, spec path, branch name, and initial context for Claude
-- **FR-029**: System MUST write `.claude/settings.json` to worktree with SessionStart hook configuration pointing to handoff script
-- **FR-029a**: SessionStart hook script MUST output JSON with `hookSpecificOutput.additionalContext` to inject handoff content into Claude session
-- **FR-029b**: Hook script MUST use proper JSON escaping (e.g., `jq -Rs`) for handoff content
-- **FR-030**: After handoff document is loaded, system MUST archive it (rename to `handoff.done.md`) AND remove SessionStart hook from settings.json
-- **FR-030a**: Hook self-cleanup prevents repeated context injection on subsequent session starts
-- **FR-031**: Handoff document and hook setup failures MUST be non-fatal warnings (graceful degradation)
+- **FR-028**: When creating a worktree, system MUST write a handoff document to `.speck/handoff.md` in the worktree
+- **FR-028a**: System MUST also generate a `quickstart.md` file with feature context for manual reference
+- **FR-029**: Handoff document MUST contain: feature name, spec path, branch name, and initial context for Claude
+- **FR-030**: System MUST write `.vscode/tasks.json` to worktree to focus Claude panel on folder open
+- **FR-030a**: ~~SessionStart hook configuration~~ **DEPRECATED**: SessionStart hook disabled due to race condition; VSCode task provides IDE focus only
+- **FR-030b**: Handoff context injection relies on manual loading via `/speck.help` or reading handoff.md/quickstart.md
+- **FR-031**: Handoff document and setup failures MUST be non-fatal warnings (graceful degradation)
 
 #### VSCode Integration Requirements
 
@@ -249,6 +268,13 @@ A new user visits the Speck website to understand what Speck does and how to use
 - **FR-032**: System MUST record branch-to-spec mappings in `.speck/branches.json` for non-standard branch names
 - **FR-033**: `check-prerequisites` MUST consult branches.json to resolve spec for non-standard branch names
 - **FR-034**: branches.json schema MUST support: branch name, spec ID, created timestamp
+
+#### Multi-Repo Enhancement Requirements
+
+- **FR-040**: System MUST support monorepo package detection via `.speck/root` symlink at CWD
+- **FR-041**: Multi-repo mode MUST share contracts at root repo level while keeping other artifacts local
+- **FR-042**: System MUST warn about conflicting spec.md files in multi-repo mode
+- **FR-043**: System MUST detect multi-repo mode from worktree's main repository
 
 #### Website Requirements (Content Pruning)
 
@@ -283,7 +309,7 @@ A new user visits the Speck website to understand what Speck does and how to use
 - **SC-008**: New users can understand Speck's core workflow from documentation in under 5 minutes
 - **SC-009**: Multi-repo workflows function correctly after simplification
 - **SC-010**: Non-standard branch names are correctly resolved to their specs via branches.json
-- **SC-011**: New Claude sessions in worktrees are pre-loaded with feature context via handoff document
+- **SC-011**: New Claude sessions in worktrees have handoff context available via `handoff.md` and `quickstart.md`; VSCode task focuses Claude panel on folder open (Note: automatic context injection disabled due to race condition)
 - **SC-012**: `/speck.help` successfully answers common usage questions
 
 ## Assumptions
