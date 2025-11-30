@@ -6,11 +6,20 @@
       "specId": "016-atomic-transform-rollback",
       "createdAt": "2025-11-30T18:14:25.376Z",
       "updatedAt": "2025-11-30T18:14:25.376Z"
+    },
+    {
+      "name": "017-consulting-beta-deploy",
+      "specId": "017-consulting-beta-deploy",
+      "createdAt": "2025-11-30T21:24:49.945Z",
+      "updatedAt": "2025-11-30T21:24:49.945Z"
     }
   ],
   "specIndex": {
     "016-atomic-transform-rollback": [
       "016-atomic-transform-rollback"
+    ],
+    "017-consulting-beta-deploy": [
+      "017-consulting-beta-deploy"
     ]
   }
 }
