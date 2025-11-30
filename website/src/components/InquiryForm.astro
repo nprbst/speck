@@ -12,7 +12,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 <form id="inquiry-form" class="inquiry-form" method="POST" action="/api/inquiry">
   <!-- Success/Error Messages (hidden by default) -->
   <div id="form-success" class="form-success" hidden>
-    <strong>Thank you!</strong> Your inquiry has been received. I'll respond when schedule permits.
+    <strong>Thank you!</strong> Your inquiry has been received. We'll respond when schedule permits.
   </div>
   <div id="form-error" class="form-failure" hidden>
     <strong>Something went wrong.</strong> <span id="error-message">Please try again later.</span>
@@ -29,7 +29,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       required
       autocomplete="email"
     />
-    <span class="form-hint">I'll use this to respond to your inquiry.</span>
+    <span class="form-hint">We'll use this to respond to your inquiry.</span>
   </div>
 
   <div class="form-group">
@@ -38,7 +38,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       id="message"
       name="message"
       class="form-textarea"
-      placeholder="Tell me about your project and how I can help..."
+      placeholder="Tell us about your project and how we can help..."
       required
       maxlength="2000"
       rows="6"
