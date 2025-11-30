@@ -10,7 +10,7 @@ This feature adds a help page at `/expert-help` where visitors can learn about i
 ## Technical Context
 
 **Language/Version**: TypeScript 5.7+ with Bun 1.0+ runtime, Astro 5.15+
-**Primary Dependencies**: Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1 (database), Kysely + kysely-d1 (type-safe query builder), Cloudflare Turnstile (spam prevention), Wrangler CLI
+**Primary Dependencies**: Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1 (database), Kysely + kysely-d1 (type-safe query builder), Cloudflare Turnstile (spam prevention), Wrangler CLI, Resend (email API), marked (markdown to HTML)
 **Storage**: Cloudflare D1 (SQLite-based, serverless) via Kysely query builder
 **Testing**: Playwright (visual regression), Axe-core (accessibility), Bun test (unit)
 **Target Platform**: Web (Cloudflare Pages)
@@ -70,7 +70,8 @@ website/
 │   └── api/
 │       └── inquiry.ts             # New: D1 inquiry submission endpoint
 ├── migrations/
-│   └── 001_create_inquiries.sql   # New: D1 schema migration
+│   ├── 001_create_inquiries.sql   # New: D1 schema migration
+│   └── 002_create_responses.sql   # New: Email responses table
 └── wrangler.toml                  # New: Cloudflare configuration
 
 .claude/
@@ -78,7 +79,9 @@ website/
 │   └── speck.inquiries.md         # New: Inquiry management command
 └── scripts/
     └── inquiries/
-        └── manage.ts              # New: Inquiry management implementation
+        ├── manage.ts              # New: Inquiry management implementation
+        ├── email.ts               # New: Resend email integration
+        └── templates.ts           # New: Email HTML templates
 
 tests/
 ├── e2e/
@@ -127,11 +130,18 @@ No Constitution violations requiring justification. Feature uses standard patter
 - Cloudflare D1 storage via Kysely query builder
 - Success confirmation display
 
-### Phase 2: Admin & Deployment (US3, US4) - P2
+### Phase 2: Admin & Deployment (US3, US4, US5) - P2
 - `/speck.inquiries` slash command
 - Beta deployment to `beta.speck.codes`
 - Cloudflare Pages preview environment
 - Production redirect: `speck.codes` → `beta.speck.codes` (until GA)
+
+### Phase 2.5: Email Response Workflow (US5) - P2
+- `respond` action to fetch inquiry for Claude drafting
+- `send` action with Resend API integration
+- Markdown to HTML conversion via `marked`
+- `responses` table for email audit trail
+- Environment variable: `RESEND_API_KEY`
 
 ## Risk Assessment
 

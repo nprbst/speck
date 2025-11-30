@@ -129,6 +129,39 @@
 
 ---
 
+## Phase 5.5: User Story 5 - Admin Responds to Inquiries via Email (Priority: P2)
+
+**Goal**: Enable admin to respond to inquiries via email with Claude-drafted responses, Resend API, and audit trail
+
+**Independent Test**: Run `/speck.inquiries respond <id>`, iterate on draft, send email, verify delivery and database storage
+
+### Setup for User Story 5
+
+- [ ] T060 Install email dependencies: `bun add resend marked` in project root
+- [ ] T061 [P] Install marked types: `bun add -d @types/marked` in project root
+- [ ] T062 Create D1 migration for responses table in website/migrations/002_create_responses.sql
+- [ ] T063 Run responses migration locally: `wrangler d1 migrations apply speck-inquiries --local`
+
+### Tests for User Story 5
+
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+
+- [ ] T064 [P] [US5] Unit tests for email template rendering in tests/unit/email-templates.test.ts
+- [ ] T065 [P] [US5] Unit tests for markdown to HTML conversion in tests/unit/email-markdown.test.ts
+
+### Implementation for User Story 5
+
+- [ ] T066 [US5] Create email HTML template function in .claude/scripts/inquiries/templates.ts
+- [ ] T067 [US5] Create Resend email client wrapper in .claude/scripts/inquiries/email.ts
+- [ ] T068 [US5] Implement `respond` action (fetch inquiry, format for Claude drafting) in .claude/scripts/inquiries/manage.ts
+- [ ] T069 [US5] Implement `send` action (markdown→HTML, Resend API, D1 insert, status update) in .claude/scripts/inquiries/manage.ts
+- [ ] T070 [US5] Update /speck.inquiries slash command with respond/send documentation in .claude/commands/speck.inquiries.md
+- [ ] T071 [US5] Test email workflow against local D1 database with test Resend API key
+
+**Checkpoint**: Email response workflow works end-to-end with Claude drafting and Resend delivery
+
+---
+
 ## Phase 6: User Story 4 - Website Deployed to Beta Environment (Priority: P2)
 
 **Goal**: Deploy website to beta.speck.codes with automatic deployments and production redirect
@@ -173,6 +206,7 @@
 - **US1 (Phase 3)**: Depends on Foundational (T007-T013)
 - **US2 (Phase 4)**: Depends on Foundational; can run parallel with US1 until T034 (integration)
 - **US3 (Phase 5)**: Depends on Foundational; can run parallel with US1/US2
+- **US5 (Phase 5.5)**: Depends on US3 completion (extends inquiry management)
 - **US4 (Phase 6)**: Depends on US1 + US2 completion (need deployable content)
 - **Polish (Phase 7)**: Depends on all user stories complete
 
@@ -181,6 +215,7 @@
 - **US1 (P1)**: Independent after Foundational
 - **US2 (P1)**: Independent after Foundational; integrates with US1 page at T034
 - **US3 (P2)**: Independent after Foundational; reads data created by US2
+- **US5 (P2)**: Depends on US3; extends slash command with email capability
 - **US4 (P2)**: Requires US1 + US2 for meaningful deployment
 
 ### Within Each User Story
@@ -268,4 +303,4 @@ With multiple developers:
 - Verify tests fail before implementing (TDD per Constitution XI)
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
-- Total tasks: 59
+- Total tasks: 71

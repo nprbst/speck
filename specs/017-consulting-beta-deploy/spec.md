@@ -83,6 +83,24 @@ The Speck maintainer deploys the website to beta.speck.codes to test new feature
 
 ---
 
+### User Story 5 - Admin Responds to Inquiries via Email (Priority: P2)
+
+The Speck maintainer reviews a new inquiry and wants to respond directly via email without leaving Claude Code. They use the slash command to have Claude draft a response, iterate on the message, and send it through the integrated email service.
+
+**Why this priority**: Email responses close the loop with interested visitors. This extends User Story 3's inquiry management with actual communication capability.
+
+**Independent Test**: Run `/speck.inquiries respond <id>`, review Claude's draft, approve, and verify email is sent and recorded.
+
+**Acceptance Scenarios**:
+
+1. **Given** an inquiry exists, **When** the admin runs `/speck.inquiries respond <id>`, **Then** the inquiry details are displayed for Claude to draft a response
+2. **Given** Claude has drafted a response, **When** the admin requests changes, **Then** Claude iterates on the draft until approved
+3. **Given** the admin approves a response, **When** the send action is executed, **Then** the email is sent via Resend API
+4. **Given** an email is sent, **When** the operation completes, **Then** the response is stored in the database with subject, body, and timestamp
+5. **Given** an email is sent, **When** the operation completes, **Then** the inquiry status is updated to "contacted"
+
+---
+
 ### Edge Cases
 
 - What happens when the form is submitted with an extremely long message? (Message should have reasonable character limit)
@@ -113,6 +131,12 @@ The Speck maintainer deploys the website to beta.speck.codes to test new feature
 - **FR-017**: Slash command MUST support actions: list new, view details, mark as contacted, archive
 - **FR-018**: System MUST redirect `speck.codes` to `beta.speck.codes` until General Availability (302 temporary redirect)
 - **FR-019**: Redirect MUST preserve URL path and query string (e.g., `speck.codes/docs` → `beta.speck.codes/docs`)
+- **FR-020**: Slash command MUST support `respond` action to fetch inquiry details for Claude to draft a response
+- **FR-021**: Slash command MUST support `send` action to send email via Resend API with subject and markdown body
+- **FR-022**: System MUST convert markdown body to styled HTML for email delivery
+- **FR-023**: System MUST store sent responses in a `responses` table with inquiry_id, subject, body_markdown, body_html, sent_at
+- **FR-024**: System MUST update inquiry status to "contacted" after successful email send
+- **FR-025**: Emails MUST be sent from `inquiries@speck.codes` with the same reply-to address
 
 ### Key Entities
 
@@ -127,6 +151,14 @@ The Speck maintainer deploys the website to beta.speck.codes to test new feature
   - title (display name)
   - description (what the engagement includes)
   - example_outcomes (what clients can expect)
+
+- **Response**: Represents an email response sent to an inquiry (extensible to conversations)
+  - inquiry_id (required, references Inquiry)
+  - subject (required, email subject line)
+  - body_markdown (required, original markdown content)
+  - body_html (required, rendered HTML for email)
+  - sent_at (timestamp, auto-generated)
+  - sent_by (identifier, default: 'admin')
 
 ## Success Criteria *(mandatory)*
 
@@ -146,5 +178,5 @@ The Speck maintainer deploys the website to beta.speck.codes to test new feature
 - Cloudflare Pages is the hosting platform for both beta and production
 - The user (Nathan) has access to a Cloudflare account with the speck.codes domain configured
 - Lead storage will use Cloudflare D1 (SQLite-based database in Cloudflare ecosystem)
-- Email notifications for new leads are out of scope for this feature (can be added later)
+- Automated email notifications for new leads are out of scope (manual response via slash command is in scope)
 - Production deployment to speck.codes/speck.dev is not included in this feature scope
