@@ -23,6 +23,7 @@ import {
   detectOutputMode,
   type OutputMode,
 } from "./lib/output-formatter";
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -104,6 +105,76 @@ Description:
 }
 
 // ===========================
+// Conflict Detection
+// ===========================
+
+/**
+ * Check for conflicting spec.md files in multi-repo child context
+ *
+ * In multi-repo mode, a child repo can have:
+ * - Child-only specs (local specs that don't exist in shared root) - OK
+ * - Shared specs (specs that exist in shared root) - OK
+ *
+ * But if the SAME feature-id has spec.md in BOTH locations, that creates
+ * ambiguity about which spec is authoritative.
+ *
+ * @returns Warning message if conflict detected, null otherwise
+ */
+async function checkLocalSpecsConflict(context: MultiRepoContextMetadata): Promise<string | null> {
+  // Only check in multi-repo child context
+  if (context.mode !== "multi-repo" || context.context !== "child") {
+    return null;
+  }
+
+  // Check if child repo has a local specs/ directory
+  const localSpecsDir = path.join(context.repoRoot, "specs");
+  if (!existsSync(localSpecsDir)) {
+    return null;
+  }
+
+  // Find features that have spec.md in BOTH local and shared locations
+  const conflicts: string[] = [];
+
+  try {
+    const localFeatures = await fs.readdir(localSpecsDir, { withFileTypes: true });
+
+    for (const entry of localFeatures) {
+      if (!entry.isDirectory()) continue;
+
+      const featureId = entry.name;
+      const localSpecPath = path.join(localSpecsDir, featureId, "spec.md");
+      const sharedSpecPath = path.join(context.specsDir, featureId, "spec.md");
+
+      // Check if spec.md exists in BOTH locations
+      if (existsSync(localSpecPath) && existsSync(sharedSpecPath)) {
+        conflicts.push(featureId);
+      }
+    }
+  } catch {
+    return null;
+  }
+
+  if (conflicts.length === 0) {
+    return null;
+  }
+
+  // Build warning message for conflicting specs
+  const conflictList = conflicts.map(f => `     - ${f}`).join("\n");
+  return (
+    "⚠️  WARNING: Conflicting spec.md files found in both local and shared locations\n" +
+    "\n" +
+    "   Features with conflicts:\n" +
+    conflictList + "\n" +
+    "\n" +
+    "   Each feature should have spec.md in only ONE location:\n" +
+    `   - Shared (for cross-repo features): ${context.specsDir}/<feature>/spec.md\n` +
+    `   - Local (for child-only features): ${localSpecsDir}/<feature>/spec.md\n` +
+    "\n" +
+    "   To resolve, remove the duplicate spec.md from one location."
+  );
+}
+
+// ===========================
 // Main Display Logic
 // ===========================
 
@@ -144,6 +215,13 @@ async function displayMultiRepoContext(context: MultiRepoContextMetadata): Promi
     currentBranch = await getCurrentBranch(context.repoRoot);
   } catch {
     // Ignore - repo might have no commits
+  }
+
+  // Check for conflicting local specs/ directory in child repo context
+  const localSpecsWarning = await checkLocalSpecsConflict(context);
+  if (localSpecsWarning) {
+    console.log(localSpecsWarning);
+    console.log("");
   }
 
   if (context.mode === "single-repo") {

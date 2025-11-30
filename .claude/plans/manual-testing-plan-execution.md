@@ -220,11 +220,21 @@ Fix:
 
 **Symlink restored** after test.
 
-### Test 2.9: Conflicting Local specs/ Directory
-**I do**: Create `backend/specs/` directory while linked
+### Test 2.9: Conflicting spec.md in Same Feature ✅ PASS
+**Clarification**: Child-only specs (like `003-db-optimization`) are perfectly valid. The conflict is when the SAME feature-id has `spec.md` in BOTH shared and local locations.
+
+**I do**: Ensure `002-cross-repo-auth/spec.md` exists in both `backend/specs/` AND shared `../specs/`
 **User action**: Run `/speck.env`
 **I verify**:
-- [ ] Warning about local specs/ with multi-repo active
+- [x] Warning about conflicting spec.md files for same feature-id
+- [x] Lists specific features with conflicts (`002-cross-repo-auth`)
+- [x] Does NOT warn about child-only specs (`001-cross-repo-auth` local-only is fine)
+
+**Implementation**: Added `checkLocalSpecsConflict()` function to `env-command.ts` that:
+- Scans local `specs/<feature>/spec.md` files
+- Checks if shared `specs/<feature>/spec.md` also exists for same feature-id
+- Only warns when BOTH locations have spec.md for the same feature
+- Allows child-only specs (no shared equivalent) without warning
 
 ---
 
