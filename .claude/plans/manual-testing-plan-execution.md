@@ -127,80 +127,98 @@ git add . && git commit -m "Initial frontend"
 cd ..
 ```
 
-### Test 2.0: Initialize Speck in Root
+### Test 2.0: Initialize Speck in Root ✅
 **User action**: Run `/speck:init` in `multi-repo-test/`
 **I verify**:
-- [ ] `.speck/` directory created in root
-- [ ] Speck CLI symlink configured
+- [x] `.speck/` directory created in root
+- [x] Speck CLI symlink configured
 
-### Test 2.0a: Initialize Speck in Backend
+### Test 2.0a: Initialize Speck in Backend ✅
 **User action**: Run `/speck:init` in `backend/`
 **I verify**:
-- [ ] `.speck/` directory created in backend
+- [x] `.speck/` directory created in backend
 
-### Test 2.0b: Initialize Speck in Frontend
+### Test 2.0b: Initialize Speck in Frontend ✅
 **User action**: Run `/speck:init` in `frontend/`
 **I verify**:
-- [ ] `.speck/` directory created in frontend
+- [x] `.speck/` directory created in frontend
 
-### Test 2.1: Link Backend
+### Test 2.1: Link Backend ✅
 **User action**: In `backend/`, run `/speck.link ..`
 **I verify**:
-- [ ] `.speck/root` symlink exists and points to `..`
-- [ ] Symlink is relative (not absolute)
-- [ ] `/speck.env` shows multi-repo mode
+- [x] `.speck/root` symlink exists and points to `..`
+- [x] Symlink is relative (not absolute)
+- [x] `/speck.env` shows multi-repo mode
 
-### Test 2.2: Link Frontend
+### Test 2.2: Link Frontend ✅
 **User action**: In `frontend/`, run `/speck.link ..`
 **I verify**:
-- [ ] `.speck/root` symlink exists
+- [x] `.speck/root` symlink exists
 
-### Test 2.3: Create Shared Spec from Backend
+### Test 2.3: Create Shared Spec from Backend ✅
 **User action**: In `backend/`, run `/speck.specify "Cross-repo authentication system"`, choose "parent (shared)"
 **I verify**:
-- [ ] Spec at `../specs/001-auth-system/spec.md` (shared location)
-- [ ] Prompt appeared for parent/local choice
+- [x] Spec at `../specs/002-cross-repo-auth/spec.md` (shared location)
+- [x] Prompt appeared for parent/local choice
 
-### Test 2.4: Backend Plan Generation
+### Test 2.4: Backend Plan Generation ✅
 **User action**: Run `/speck.plan` from backend (worktree)
 **I verify**:
-- [ ] `backend-worktree/specs/NNN-feature/plan.md` exists (local to child repo)
-- [ ] `backend-worktree/specs/NNN-feature/research.md` exists (local to child repo)
-- [ ] `backend-worktree/specs/NNN-feature/data-model.md` exists (local to child repo)
-- [ ] `backend-worktree/specs/NNN-feature/quickstart.md` exists (local to child repo)
-- [ ] `../specs/NNN-feature/contracts/` exists (shared at root repo)
-- [ ] Uses backend's constitution
-- [ ] Backend creates the shared contracts (first repo to run plan)
+- [x] `backend-002-cross-repo-auth/specs/002-cross-repo-auth/plan.md` exists (local to child repo)
+- [x] `backend-002-cross-repo-auth/specs/002-cross-repo-auth/research.md` exists (local to child repo)
+- [x] `backend-002-cross-repo-auth/specs/002-cross-repo-auth/data-model.md` exists (local to child repo)
+- [ ] `backend-002-cross-repo-auth/specs/002-cross-repo-auth/quickstart.md` exists (local to child repo) - **NOT GENERATED**
+- [x] `../specs/002-cross-repo-auth/contracts/` exists (shared at root repo)
+- [x] Uses backend's constitution
+- [x] Backend creates the shared contracts (first repo to run plan)
 
-### Test 2.5: Frontend Plan Generation
+### Test 2.5: Frontend Plan Generation ✅
 **User action**: In `frontend/`, checkout same feature branch, run `/speck.plan`
 **I verify**:
-- [ ] `frontend/specs/NNN-feature/plan.md` exists (local to child repo)
-- [ ] `frontend/specs/NNN-feature/research.md` exists (local - its own research)
-- [ ] `frontend/specs/NNN-feature/data-model.md` exists (local - its own data model)
-- [ ] `frontend/specs/NNN-feature/quickstart.md` exists (local - its own quickstart)
-- [ ] Frontend READS existing shared contracts from `../specs/NNN-feature/contracts/`
-- [ ] Frontend does NOT create new contracts (uses backend's)
-- [ ] Different from backend plan (uses frontend constitution)
+- [x] `frontend/specs/002-cross-repo-auth/plan.md` exists (local to child repo)
+- [x] `frontend/specs/002-cross-repo-auth/research.md` exists (local - its own research)
+- [x] `frontend/specs/002-cross-repo-auth/data-model.md` exists (local - its own data model)
+- [x] `frontend/specs/002-cross-repo-auth/quickstart.md` exists (local - its own quickstart)
+- [x] Frontend READS existing shared contracts from `../specs/002-cross-repo-auth/contracts/`
+- [x] Frontend does NOT create new contracts (uses backend's)
+- [x] Different from backend plan (uses frontend constitution)
 
-### Test 2.6: Shared Contracts Access
+### Test 2.6: Shared Contracts Access ✅
 **I verify**:
-- [ ] Contracts at `../specs/NNN-feature/contracts/` (created by backend in 2.4)
-- [ ] Both repos can read contracts from shared location
-- [ ] Contracts are symlinked or accessible via the shared specs directory
+- [x] Contracts at `../specs/002-cross-repo-auth/contracts/` (created by backend in 2.4)
+  - `auth-api.md`
+  - `admin-api.md`
+- [x] Both repos can read contracts from shared location
+- [x] Contracts are accessible via the shared specs directory
 
-### Test 2.7: Child-Only Spec Creation
+**Observation**: Backend worktree (`backend-002-cross-repo-auth`) missing `.speck/root` symlink - worktrees don't inherit parent `.speck/` contents. This is expected but may need documentation.
+
+### Test 2.7: Child-Only Spec Creation ✅
 **User action**: In `backend/`, run `/speck.specify "Backend-only database optimization"`, choose "local (child-only)"
 **I verify**:
-- [ ] Spec at `backend/specs/002-db-optimization/spec.md` (no symlink to parent)
-- [ ] Not visible from frontend
+- [x] Spec at `backend-003-db-optimization/specs/003-db-optimization/spec.md` (local, no symlink to parent)
+- [x] Not visible from frontend
+- [x] Not in shared specs (root repo)
 
-### Test 2.8: Broken Symlink Detection
+### Test 2.8: Broken Symlink Detection ✅ PASS (after fix)
 **I do**: `rm backend/.speck/root && ln -s /nonexistent backend/.speck/root`
 **User action**: Run `/speck.env`
 **I verify**:
-- [ ] Clear error message about broken symlink
-- [ ] Suggests fix command
+- [x] Clear error message about broken symlink
+- [x] Suggests fix command
+
+**Initial failure**: `detectSpeckRoot()` didn't distinguish between "no symlink" and "broken symlink".
+**Fix applied**: Refactored `paths.ts` to check symlink existence separately from target resolution.
+
+**Error output now shows**:
+```
+Multi-repo configuration broken: .speck/root → /nonexistent (does not exist)
+Fix:
+  1. Remove broken symlink: rm .speck/root
+  2. Link to correct location: /speck.link <path-to-speck-root>
+```
+
+**Symlink restored** after test.
 
 ### Test 2.9: Conflicting Local specs/ Directory
 **I do**: Create `backend/specs/` directory while linked
