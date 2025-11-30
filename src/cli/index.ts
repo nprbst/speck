@@ -157,6 +157,9 @@ function createProgram(): Command {
     .description('Install Speck CLI globally via symlink to ~/.local/bin/speck')
     .option('--json', 'Output in JSON format')
     .option('--force', 'Force reinstall even if symlink exists')
+    .option('--worktree-enabled <bool>', 'Enable worktree mode (true/false)')
+    .option('--ide-autolaunch <bool>', 'Auto-launch IDE when creating features (true/false)')
+    .option('--ide-editor <editor>', 'IDE editor choice (vscode/cursor/webstorm/idea/pycharm)')
     .action(async (options: Record<string, unknown>) => {
       const module = await lazyInitCommand();
       const args = buildSubcommandArgs([], options);

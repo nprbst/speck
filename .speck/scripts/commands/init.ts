@@ -31,6 +31,9 @@ import { DEFAULT_SPECK_CONFIG, type SpeckConfig, type IDEEditor } from "../workt
 interface InitOptions {
   force: boolean;
   json: boolean;
+  worktreeEnabled?: boolean;
+  ideAutolaunch?: boolean;
+  ideEditor?: string;
 }
 
 interface InitResult {
@@ -267,7 +270,7 @@ async function promptIDE(defaultEditor: IDEEditor): Promise<IDEEditor> {
  * Prompt user for config preferences and create .speck/config.json
  * Returns true if config was created, false if skipped or on error
  */
-async function createSpeckConfig(speckDir: string, isInteractive: boolean): Promise<boolean> {
+async function createSpeckConfig(speckDir: string, isInteractive: boolean, options: InitOptions): Promise<boolean> {
   const configPath = join(speckDir, "config.json");
 
   // Skip if config already exists
@@ -276,9 +279,25 @@ async function createSpeckConfig(speckDir: string, isInteractive: boolean): Prom
   }
 
   // Start with defaults (worktree enabled = true)
-  const config: SpeckConfig = { ...DEFAULT_SPECK_CONFIG };
+  const config: SpeckConfig = JSON.parse(JSON.stringify(DEFAULT_SPECK_CONFIG));
 
-  if (isInteractive) {
+  // Check if any config flags were provided via CLI
+  const hasConfigFlags = options.worktreeEnabled !== undefined ||
+                         options.ideAutolaunch !== undefined ||
+                         options.ideEditor !== undefined;
+
+  if (hasConfigFlags) {
+    // Use CLI flags directly - no prompts needed
+    if (options.worktreeEnabled !== undefined) {
+      config.worktree.enabled = options.worktreeEnabled;
+    }
+    if (options.ideAutolaunch !== undefined) {
+      config.worktree.ide.autoLaunch = options.ideAutolaunch;
+    }
+    if (options.ideEditor !== undefined && IDE_EDITORS.includes(options.ideEditor as IDEEditor)) {
+      config.worktree.ide.editor = options.ideEditor as IDEEditor;
+    }
+  } else if (isInteractive) {
     console.log("\n📋 Configure Speck preferences:\n");
 
     // Prompt for worktree mode
@@ -294,6 +313,7 @@ async function createSpeckConfig(speckDir: string, isInteractive: boolean): Prom
 
     console.log(""); // Empty line after prompts
   }
+  // Otherwise use defaults (worktree enabled = true, IDE features off)
 
   // Write config
   try {
@@ -404,9 +424,9 @@ Then run 'speck init' again.`,
     const constitutionPath = join(speckResult.path, "memory", "constitution.md");
     needsConstitution = !existsSync(constitutionPath);
 
-    // Step 2a: Create config.json with user preferences (interactive if not JSON mode)
+    // Step 2a: Create config.json with user preferences (interactive if not JSON mode and no flags provided)
     const isInteractive = !options.json && process.stdin.isTTY;
-    configCreated = await createSpeckConfig(speckResult.path, isInteractive);
+    configCreated = await createSpeckConfig(speckResult.path, isInteractive, options);
   }
 
   // Step 2b: Configure plugin permissions in .claude/settings.local.json
@@ -585,13 +605,25 @@ export async function main(args: string[]): Promise<number> {
     options: {
       force: { type: "boolean", default: false },
       json: { type: "boolean", default: false },
+      "worktree-enabled": { type: "string" },
+      "ide-autolaunch": { type: "string" },
+      "ide-editor": { type: "string" },
     },
     allowPositionals: true,
   });
 
+  // Parse boolean string values
+  const parseBoolean = (val: string | undefined): boolean | undefined => {
+    if (val === undefined) return undefined;
+    return val.toLowerCase() === "true" || val === "1" || val.toLowerCase() === "yes";
+  };
+
   const options: InitOptions = {
     force: values.force ?? false,
     json: values.json ?? false,
+    worktreeEnabled: parseBoolean(values["worktree-enabled"]),
+    ideAutolaunch: parseBoolean(values["ide-autolaunch"]),
+    ideEditor: values["ide-editor"],
   };
 
   // Run init
