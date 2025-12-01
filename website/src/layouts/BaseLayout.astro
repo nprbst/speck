@@ -48,7 +48,7 @@ const siteTitle = title.includes('Speck') ? title : `${title} | Speck`;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,WONK@9..144,700,1&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
 
@@ -125,8 +125,8 @@ const siteTitle = title.includes('Speck') ? title : `${title} | Speck`;
     </script>
   </head>
   <body class={bodyClass}>
-    <!-- Skip to main content link for accessibility -->
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <!-- Decorative badge -->
+    <span class="site-badge" aria-hidden="true">Beta</span>
 
     <slot />
   </body>

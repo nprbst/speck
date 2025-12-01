@@ -28,8 +28,10 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
 <header class="site-header">
   <div class="container">
     <nav class="nav" aria-label="Main navigation">
-      <a href={logo.href} class="logo-link">
-        <img src={logo.src} alt={logo.alt} class="logo" />
+      <a href={logo.href} class="logo-link" aria-label={logo.alt}>
+        <svg class="logo" width="130" height="36" viewBox="0 0 130 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <text x="0" y="28" font-family="var(--font-logo), Georgia, serif" font-size="28" font-weight="700" fill="currentColor">Speck</text>
+        </svg>
       </a>
 
       <!-- Navigation links -->
@@ -106,10 +108,10 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
           aria-expanded="false"
           data-mobile-menu-toggle
         >
-          <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="1"></circle>
-            <circle cx="12" cy="5" r="1"></circle>
-            <circle cx="12" cy="19" r="1"></circle>
+          <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <circle cx="12" cy="5" r="2"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+            <circle cx="12" cy="19" r="2"></circle>
           </svg>
           <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -161,7 +163,8 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
     display: flex;
     align-items: center;
     text-decoration: none;
-    transition: transform var(--transition-normal), opacity var(--transition-normal);
+    color: var(--color-text);
+    transition: transform var(--transition-normal), opacity var(--transition-normal), color var(--transition-normal);
   }
 
   .logo-link:hover {
@@ -175,9 +178,11 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
   }
 
   .nav-links {
+    display: none; /* Hidden by default - shown by JS or desktop media query */
     list-style: none;
     gap: 0.5rem;
     margin: 0;
+    padding: 0;
   }
 
   /* Desktop: show nav links inline */
@@ -330,6 +335,7 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
     padding: 0;
     color: var(--color-text-secondary);
     transition: all var(--transition-normal);
+    flex-shrink: 0; /* Prevent button from being squished */
   }
 
   .mobile-menu-toggle:hover {
@@ -367,31 +373,31 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
 
   /* Mobile styles */
   @media (max-width: 48em) {
+    .nav {
+      flex-wrap: wrap;
+    }
+
     .docs-menu-toggle {
       display: flex;
     }
 
     .mobile-menu-toggle {
-      display: flex;
+      display: flex !important;
     }
 
+    /* Mobile nav-links: part of header flow, expands when open */
     .nav-links {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: var(--color-bg);
-      border-bottom: 1px solid var(--color-border);
+      display: none !important;
       flex-direction: column;
-      gap: 0;
-      padding: 0.75rem;
-      display: none;
-      box-shadow: var(--shadow-lg);
+      gap: 0.25rem;
+      width: 100%;
+      order: 10; /* Push to end (new row) */
+      padding: 0.5rem 0;
     }
 
     .nav-links[data-menu-open='true'] {
-      display: flex;
-      animation: fadeInUp 0.3s var(--ease-out-soft);
+      display: flex !important;
+      animation: fadeInDown 0.2s var(--ease-out-soft);
     }
 
     .nav-item {
@@ -400,7 +406,7 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
 
     .nav-link {
       display: block;
-      padding: 0.875rem 1rem;
+      padding: 0.75rem 1rem;
       border-radius: var(--radius-md);
     }
 
@@ -497,54 +503,84 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
       }
     }
 
-    function initNavigation() {
-      // Theme toggle - use event delegation to avoid re-adding listeners
-      const themeToggle = document.querySelector('[data-theme-toggle]');
-      if (themeToggle && !themeToggle.hasAttribute('data-click-bound')) {
-        themeToggle.setAttribute('data-click-bound', 'true');
-        themeToggle.addEventListener('click', function(e) {
-          e.preventDefault();
-          cycleTheme();
-        });
-      }
-
-      // Mobile menu toggle functionality
-      const menuToggle = document.querySelector('[data-mobile-menu-toggle]');
-      const navLinks = document.querySelector('[data-nav-links]');
-
-      if (menuToggle && navLinks && !menuToggle.hasAttribute('data-click-bound')) {
-        menuToggle.setAttribute('data-click-bound', 'true');
-
-        menuToggle.addEventListener('click', function() {
-          const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
-          menuToggle.setAttribute('aria-expanded', String(!isExpanded));
-          navLinks.setAttribute('data-menu-open', String(!isExpanded));
-        });
-
-        navLinks.querySelectorAll('.nav-link').forEach(function(link) {
-          link.addEventListener('click', function() {
-            menuToggle.setAttribute('aria-expanded', 'false');
-            navLinks.setAttribute('data-menu-open', 'false');
-          });
-        });
-
-        document.addEventListener('click', function(e) {
-          if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
-            menuToggle.setAttribute('aria-expanded', 'false');
-            navLinks.setAttribute('data-menu-open', 'false');
-          }
-        });
+    function closeMenu() {
+      var menuToggle = document.querySelector('[data-mobile-menu-toggle]');
+      var navLinks = document.querySelector('[data-nav-links]');
+      if (menuToggle && navLinks) {
+        menuToggle.setAttribute('aria-expanded', 'false');
+        navLinks.removeAttribute('data-menu-open');
       }
     }
 
-    // Run immediately
-    initTheme();
-    initNavigation();
+    function toggleMenu() {
+      var menuToggle = document.querySelector('[data-mobile-menu-toggle]');
+      var navLinks = document.querySelector('[data-nav-links]');
+      if (!menuToggle || !navLinks) return;
 
-    // Re-run after View Transitions
-    document.addEventListener('astro:page-load', function() {
-      initTheme();
-      initNavigation();
-    });
+      var isOpen = navLinks.hasAttribute('data-menu-open');
+      if (isOpen) {
+        menuToggle.setAttribute('aria-expanded', 'false');
+        navLinks.removeAttribute('data-menu-open');
+      } else {
+        menuToggle.setAttribute('aria-expanded', 'true');
+        navLinks.setAttribute('data-menu-open', 'true');
+      }
+    }
+
+    // Single document click handler using event delegation (only add once)
+    if (!window._speckClickHandlerAdded) {
+      window._speckClickHandlerAdded = true;
+
+      document.addEventListener('click', function(e) {
+        var target = e.target;
+
+        // Theme toggle
+        var themeToggle = target.closest('[data-theme-toggle]');
+        if (themeToggle) {
+          e.preventDefault();
+          cycleTheme();
+          return;
+        }
+
+        // Mobile menu toggle
+        var mobileToggle = target.closest('[data-mobile-menu-toggle]');
+        if (mobileToggle) {
+          e.preventDefault();
+          toggleMenu();
+          return;
+        }
+
+        // Close menu when clicking nav links
+        var navLink = target.closest('.nav-link');
+        var navLinks = document.querySelector('[data-nav-links]');
+        if (navLink && navLinks && navLinks.contains(navLink)) {
+          closeMenu();
+          return;
+        }
+
+        // Close menu when clicking outside
+        var menuToggle = document.querySelector('[data-mobile-menu-toggle]');
+        navLinks = document.querySelector('[data-nav-links]');
+        if (menuToggle && navLinks && navLinks.hasAttribute('data-menu-open')) {
+          if (!menuToggle.contains(target) && !navLinks.contains(target)) {
+            closeMenu();
+          }
+        }
+      });
+    }
+
+    // Run immediately on every page load/navigation
+    closeMenu();
+    initTheme();
+
+    // Handle View Transitions - only add listener once
+    if (!window._speckAstroListenersAdded) {
+      window._speckAstroListenersAdded = true;
+
+      document.addEventListener('astro:page-load', function() {
+        closeMenu();
+        initTheme();
+      });
+    }
   })();
 </script>
