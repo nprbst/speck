@@ -555,6 +555,9 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
         var navLinks = document.querySelector('[data-nav-links]');
         if (navLink && navLinks && navLinks.contains(navLink)) {
           closeMenu();
+          // Immediately hide page content to prevent flash during transition
+          var main = document.querySelector('main');
+          if (main) main.style.opacity = '0';
           return;
         }
 
@@ -576,6 +579,11 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
     // Handle View Transitions - only add listener once
     if (!window._speckAstroListenersAdded) {
       window._speckAstroListenersAdded = true;
+
+      // Close menu BEFORE swap so layout is collapsed for transition snapshot
+      document.addEventListener('astro:before-swap', function() {
+        closeMenu();
+      });
 
       document.addEventListener('astro:page-load', function() {
         closeMenu();
