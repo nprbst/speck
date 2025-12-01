@@ -292,7 +292,7 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
   /* Table of Contents */
   .toc {
     display: none;
-    width: 240px;
+    width: 280px;
     padding: 1.5rem;
     position: sticky;
     top: 80px;
@@ -312,6 +312,7 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: 1.25rem;
+    overflow: hidden;
   }
 
   .toc-title {
@@ -349,6 +350,8 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
     padding: 0.375rem 0.625rem;
     border-radius: var(--radius-sm);
     margin: 0 -0.625rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .toc-link:hover {
