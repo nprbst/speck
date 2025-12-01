@@ -23,6 +23,20 @@ export interface Props {
 }
 
 const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = false } = Astro.props;
+
+// Get the first path segment (section) from a path
+// '/docs/getting-started/quick-start' → '/docs'
+// '/comparison' → '/comparison'
+const getSection = (path: string) => {
+  const segments = path.split('/').filter(Boolean);
+  return segments.length > 0 ? '/' + segments[0] : '/';
+};
+
+// Check if a nav link is active - match by section (first path segment)
+const isActive = (linkHref: string) => {
+  if (linkHref === '/') return currentPath === '/';
+  return getSection(currentPath) === getSection(linkHref);
+};
 ---
 
 <header class="site-header">
@@ -41,8 +55,8 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
             <li class="nav-item">
               <a
                 href={link.href}
-                class:list={['nav-link', { active: currentPath === link.href }]}
-                aria-current={currentPath === link.href ? 'page' : undefined}
+                class:list={['nav-link', { active: isActive(link.href) }]}
+                aria-current={isActive(link.href) ? 'page' : undefined}
                 target={link.external ? '_blank' : undefined}
                 rel={link.external ? 'noopener noreferrer' : undefined}
               >
@@ -214,7 +228,6 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
   .nav-link.active {
     color: var(--color-accent);
     font-weight: 600;
-    background-color: var(--color-accent-subtle);
   }
 
   /* Underline indicator for active link */
@@ -572,9 +585,43 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
       });
     }
 
+    // Get the first path segment (section) from a path
+    // '/docs/getting-started/quick-start' → '/docs'
+    function getSection(path) {
+      var segments = path.split('/').filter(Boolean);
+      return segments.length > 0 ? '/' + segments[0] : '/';
+    }
+
+    function updateActiveNavLink() {
+      var currentPath = window.location.pathname;
+      var currentSection = getSection(currentPath);
+      var links = document.querySelectorAll('.nav-link');
+
+      links.forEach(function(link) {
+        var href = link.getAttribute('href');
+        var isActive = false;
+
+        if (href === '/') {
+          isActive = currentPath === '/';
+        } else if (href && !href.startsWith('http')) {
+          // Internal links: match by section
+          isActive = getSection(href) === currentSection;
+        }
+
+        if (isActive) {
+          link.classList.add('active');
+          link.setAttribute('aria-current', 'page');
+        } else {
+          link.classList.remove('active');
+          link.removeAttribute('aria-current');
+        }
+      });
+    }
+
     // Run immediately on every page load/navigation
     closeMenu();
     initTheme();
+    updateActiveNavLink();
 
     // Handle View Transitions - only add listener once
     if (!window._speckAstroListenersAdded) {
@@ -588,6 +635,7 @@ const { currentPath, links, logo, mobileBreakpoint = 768, showDocsMenuToggle = f
       document.addEventListener('astro:page-load', function() {
         closeMenu();
         initTheme();
+        updateActiveNavLink();
       });
     }
   })();
