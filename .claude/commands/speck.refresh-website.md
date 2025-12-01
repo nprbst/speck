@@ -120,6 +120,26 @@ Common pages to check:
 - `commands/reference.md` - if new commands were added
 - `getting-started/quick-start.md` - if setup process changed
 - `core-concepts/workflow.md` - if workflow changed
+- `README.md` - if any of the above changed (see Step 6)
+
+### Step 6: Check README Alignment
+
+After updating website docs, verify `README.md` reflects the changes:
+
+1. **Compare README sections to website equivalents**:
+   - Quick Start ↔ `getting-started/quick-start.md`
+   - Core Commands ↔ `commands/reference.md`
+   - Features ↔ `core-concepts/workflow.md`
+   - Advanced Features ↔ `advanced-features/*.md`
+
+2. **Update README if**:
+   - New commands were added (update Core Commands table)
+   - Installation process changed (update Quick Start)
+   - New features were added (update Features list)
+   - Advanced features changed (update Advanced Features table)
+
+3. **Keep README concise** - highlights + links, not full duplicates of website
+   content
 
 ## Example Output
 
@@ -129,6 +149,7 @@ After running this command, you should have:
 2. Updated `whats-new.md` with new feature sections
 3. Updated `lastUpdated` date
 4. Any other necessary documentation updates
+5. Updated `README.md` if affected sections changed
 
 ## Notes
 

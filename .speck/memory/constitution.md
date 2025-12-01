@@ -304,6 +304,8 @@ source of truth. Documentation is not optional—it is a core deliverable.
   - Modify CLI behavior or output formats
   - Update constitutional principles or governance policies
   - Affect getting-started experience or quickstart guides
+  - **Note**: These triggers also apply to `README.md` updates when affected
+    sections change (see README synchronization below)
 - Website update scope determination:
   - During planning phase, identify affected documentation pages
   - Add website update tasks to `tasks.md` for applicable features
@@ -318,6 +320,14 @@ source of truth. Documentation is not optional—it is a core deliverable.
   - Manually update affected pages if automated sync is not applicable
   - Verify updates by building website locally: `bun run website:build`
   - Preview changes: `bun run website:dev` (localhost:4321)
+- README synchronization (when affected sections change):
+  - Update `README.md` using this mapping to website sources:
+    - Quick Start ↔ `getting-started/quick-start.md`
+    - Core Commands ↔ `commands/reference.md`
+    - Features ↔ `core-concepts/workflow.md`
+    - Advanced Features ↔ `advanced-features/*.md`
+  - Keep README concise (highlights + links, not full duplicates)
+  - Run `/speck.refresh-website` to check README alignment after website updates
 - Documentation quality standards:
   - Examples MUST be tested and verified to work
   - Screenshots MUST be current (if applicable)
@@ -325,8 +335,8 @@ source of truth. Documentation is not optional—it is a core deliverable.
   - Terminology MUST match current implementation
   - Version-specific guidance MUST note version requirements
 - Quality gate validation:
-  - Feature completion checklist MUST include: "Website docs: ✅ Updated and
-    verified"
+  - Feature completion checklist MUST include: "Website & README: ✅ Updated
+    and verified"
   - Pull request template MUST include website documentation verification
   - `/speck.implement` workflow SHOULD prompt for website updates if user-facing
     changes detected
