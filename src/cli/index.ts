@@ -174,7 +174,7 @@ function createProgram(): Command {
 
   program
     .name('speck')
-    .description('Speck CLI - Claude Code-Optimized Specification Framework')
+    .description('Speck CLI - Claude Code-Native Spec-Driven Development')
     .version(getVersion(), '-V, --version', 'Show version number')
     .option('--json', 'Output structured JSON for LLM parsing')
     .option('--hook', 'Output hook-formatted response for Claude Code hooks')

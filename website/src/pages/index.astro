@@ -1,7 +1,7 @@
 ---
 /**
- * Homepage
- * Landing page communicating Speck's value proposition
+ * Homepage - Organic Theme
+ * Landing page with warm gradients and gentle animations
  */
 
 import HomeLayout from '@/layouts/HomeLayout.astro';
@@ -48,11 +48,11 @@ const features = [
 
 const differentiators = [
   {
-    title: "Only tool built for Claude Code",
+    title: "Built for Claude Code",
     description: "Native hook integration with automatic prerequisite checks and context pre-loading. Slash commands execute in under 100ms for the fastest Claude Code workflow.",
   },
   {
-    title: "Only spec system supporting multi-repo shared specifications",
+    title: "Multi-repo shared specifications",
     description: "Link child repos to a central spec root with symlink-based detection. Each repo generates independent implementation plans from shared specifications.",
   },
 ];
@@ -83,6 +83,14 @@ const seo = {
 <HomeLayout title={seo.title} description={seo.description}>
   <!-- Hero Section -->
   <section class="hero">
+    <!-- Floating decorative elements -->
+    <div class="hero-decoration">
+      <div class="floating-shape shape-1"></div>
+      <div class="floating-shape shape-2"></div>
+      <div class="floating-shape shape-3"></div>
+      <div class="floating-shape shape-4"></div>
+    </div>
+
     <div class="container">
       <div class="hero-content">
         <h1 class="hero-headline">{hero.headline}</h1>
@@ -109,11 +117,12 @@ const seo = {
     <div class="container">
       <h2 class="section-title">Why Speck?</h2>
       <div class="features-grid">
-        {features.map(feature => (
+        {features.map((feature, index) => (
           <FeatureCard
             title={feature.title}
             description={feature.description}
             icon={feature.icon}
+            index={index}
           />
         ))}
       </div>
@@ -125,8 +134,8 @@ const seo = {
     <div class="container">
       <h2 class="section-title">What Makes Speck Unique</h2>
       <div class="differentiators-grid">
-        {differentiators.map(diff => (
-          <div class="differentiator-card">
+        {differentiators.map((diff, index) => (
+          <div class="differentiator-card" style={`animation-delay: ${index * 100}ms`}>
             <h3 class="differentiator-title">{diff.title}</h3>
             <p class="differentiator-description">{diff.description}</p>
           </div>
@@ -216,26 +225,90 @@ const seo = {
 </HomeLayout>
 
 <style>
-  /* Hero Section */
+  /* Hero Section - Organic */
   .hero {
-    padding: var(--space-2xl) 0;
-    min-height: 70vh;
+    position: relative;
+    padding: var(--space-3xl) 0;
+    min-height: 80vh;
     display: flex;
     align-items: center;
+    background: var(--gradient-hero);
+    overflow: hidden;
+  }
+
+  /* Floating decorative shapes */
+  .hero-decoration {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .floating-shape {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.15;
+    background: var(--color-accent);
+    filter: blur(40px);
+  }
+
+  .shape-1 {
+    width: 400px;
+    height: 400px;
+    top: -100px;
+    right: -100px;
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .shape-2 {
+    width: 300px;
+    height: 300px;
+    bottom: -50px;
+    left: -50px;
+    animation: float 10s ease-in-out infinite;
+    animation-delay: -2s;
+  }
+
+  .shape-3 {
+    width: 200px;
+    height: 200px;
+    top: 40%;
+    left: 10%;
+    opacity: 0.1;
+    animation: gentlePulse 6s ease-in-out infinite;
+  }
+
+  .shape-4 {
+    width: 150px;
+    height: 150px;
+    bottom: 30%;
+    right: 15%;
+    opacity: 0.08;
+    animation: float 7s ease-in-out infinite;
+    animation-delay: -3s;
+  }
+
+  [data-theme='dark'] .floating-shape {
+    opacity: 0.1;
+    filter: blur(60px);
   }
 
   .hero-content {
     max-width: 800px;
     margin: 0 auto;
     text-align: center;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.8s var(--ease-out-soft);
   }
 
   .hero-headline {
-    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
     font-weight: 700;
     margin-bottom: var(--space-sm);
     line-height: 1.1;
     color: var(--color-text);
+    letter-spacing: -0.02em;
   }
 
   .hero-subtitle {
@@ -249,18 +322,22 @@ const seo = {
     color: var(--color-accent);
     text-decoration: none;
     border-bottom: 1px solid transparent;
-    transition: border-color var(--transition-fast);
+    transition: border-color var(--transition-normal), color var(--transition-normal);
   }
 
   .subtitle-link:hover {
     border-bottom-color: var(--color-accent);
+    color: var(--color-accent-hover);
   }
 
   .hero-subheadline {
     font-size: clamp(1.125rem, 2.5vw, 1.375rem);
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     margin-bottom: var(--space-2xl);
-    line-height: 1.6;
+    line-height: 1.7;
+    max-width: 650px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .hero-ctas {
@@ -270,43 +347,47 @@ const seo = {
     flex-wrap: wrap;
   }
 
-  /* Buttons */
+  /* Buttons - Organic */
   .btn {
     display: inline-flex;
     align-items: center;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-md);
+    padding: 0.875rem 1.75rem;
+    border-radius: var(--radius-lg);
     font-weight: 600;
     text-decoration: none;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-normal);
     border: 2px solid transparent;
     font-size: 1rem;
+    position: relative;
+    overflow: hidden;
   }
 
   .btn-primary {
     background: var(--color-accent);
-    color: var(--color-bg);
+    color: white;
     border-color: var(--color-accent);
+    box-shadow: var(--shadow-md);
   }
 
   .btn-primary:hover {
     background: var(--color-accent-hover);
     border-color: var(--color-accent-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
   }
 
   .btn-secondary {
-    background: var(--color-bg-secondary);
+    background: var(--color-surface);
     color: var(--color-text);
     border-color: var(--color-border);
+    box-shadow: var(--shadow-sm);
   }
 
   .btn-secondary:hover {
     background: var(--color-bg);
     border-color: var(--color-accent);
     color: var(--color-accent);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: var(--shadow-md);
   }
 
@@ -314,47 +395,79 @@ const seo = {
   .features,
   .comparison-preview,
   .quick-start-preview {
-    padding: var(--space-2xl) 0;
+    padding: var(--space-3xl) 0;
   }
 
   .section-title {
-    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4vw, 2.75rem);
     font-weight: 700;
     text-align: center;
     margin-bottom: var(--space-2xl);
     color: var(--color-text);
+    letter-spacing: -0.02em;
   }
 
   /* Features Grid */
   .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--space-lg);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-xl);
   }
 
   /* Differentiators Section */
   .differentiators {
-    background: var(--color-bg-secondary);
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-3xl) 0;
+    background: var(--gradient-warm);
+    position: relative;
+  }
+
+  .differentiators::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+  }
+
+  .differentiators::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-border), transparent);
   }
 
   .differentiators-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: var(--space-xl);
-    max-width: 900px;
+    max-width: 950px;
     margin: 0 auto;
   }
 
   .differentiator-card {
     padding: var(--space-xl);
-    background: var(--color-bg);
-    border: 1px solid var(--color-accent);
-    border-radius: var(--radius-lg);
+    background: var(--gradient-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+    animation: fadeInUp 0.6s var(--ease-out-soft) both;
+  }
+
+  .differentiator-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-accent-subtle);
   }
 
   .differentiator-title {
+    font-family: var(--font-heading);
     font-size: 1.375rem;
     font-weight: 600;
     margin-bottom: var(--space-md);
@@ -362,14 +475,14 @@ const seo = {
   }
 
   .differentiator-description {
-    color: var(--color-text-muted);
-    line-height: 1.6;
+    color: var(--color-text-secondary);
+    line-height: 1.75;
     margin: 0;
   }
 
   /* Origins Section */
   .origins {
-    padding: var(--space-2xl) 0;
+    padding: var(--space-3xl) 0;
     background: var(--color-bg);
   }
 
@@ -381,8 +494,8 @@ const seo = {
 
   .origins-content p {
     font-size: 1.125rem;
-    line-height: 1.8;
-    color: var(--color-text-muted);
+    line-height: 1.85;
+    color: var(--color-text-secondary);
     margin: 0;
   }
 
@@ -390,25 +503,32 @@ const seo = {
     color: var(--color-accent);
     text-decoration: none;
     border-bottom: 1px solid transparent;
-    transition: border-color var(--transition-fast);
+    transition: border-color var(--transition-normal), color var(--transition-normal);
   }
 
   .origins-content a:hover {
     border-bottom-color: var(--color-accent);
+    color: var(--color-accent-hover);
   }
 
   .learn-more-link {
+    display: inline-block;
+    margin-top: var(--space-md);
     font-weight: 600;
   }
 
   /* Comparison Preview */
+  .comparison-preview {
+    background: var(--color-bg-secondary);
+  }
+
   .comparison-description {
     text-align: center;
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     max-width: 700px;
     margin: 0 auto var(--space-2xl);
     font-size: 1.125rem;
-    line-height: 1.6;
+    line-height: 1.75;
   }
 
   .comparison-grid {
@@ -419,13 +539,21 @@ const seo = {
   }
 
   .comparison-column {
-    background: var(--color-bg-secondary);
+    background: var(--gradient-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     padding: var(--space-xl);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-normal);
+  }
+
+  .comparison-column:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
   }
 
   .comparison-column h3 {
+    font-family: var(--font-heading);
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: var(--space-md);
@@ -440,10 +568,11 @@ const seo = {
 
   .comparison-column li {
     padding: var(--space-sm) 0;
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     display: flex;
     align-items: flex-start;
     gap: var(--space-sm);
+    line-height: 1.6;
   }
 
   .comparison-column li::before {
@@ -459,37 +588,50 @@ const seo = {
 
   /* Quick Start Preview */
   .quick-start-content {
-    max-width: 900px;
+    max-width: 950px;
     margin: 0 auto;
   }
 
   .quick-start-steps {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--space-lg);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--space-xl);
     margin-bottom: var(--space-2xl);
   }
 
   .step {
     text-align: center;
     padding: var(--space-xl);
+    background: var(--gradient-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-normal);
+  }
+
+  .step:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
   }
 
   .step-number {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    background: var(--color-accent);
-    color: var(--color-bg);
-    border-radius: 50%;
+    width: 3.5rem;
+    height: 3.5rem;
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+    color: white;
+    border-radius: var(--radius-full);
+    font-family: var(--font-heading);
     font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: var(--space-md);
+    box-shadow: var(--shadow-md);
   }
 
   .step h3 {
+    font-family: var(--font-heading);
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: var(--space-sm);
@@ -497,15 +639,18 @@ const seo = {
   }
 
   .step p {
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     margin: 0;
+    line-height: 1.6;
   }
 
   .step code {
     background: var(--color-code-bg);
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
+    color: var(--color-code-text);
+    padding: 0.25em 0.5em;
+    border-radius: var(--radius-sm);
     font-size: 0.9em;
+    font-weight: 500;
   }
 
   .quick-start-cta {
@@ -515,8 +660,8 @@ const seo = {
   /* Responsive */
   @media (max-width: 48em) {
     .hero {
-      padding: var(--space-xl) 0;
-      min-height: 60vh;
+      padding: var(--space-2xl) 0;
+      min-height: 70vh;
     }
 
     .hero-ctas {
@@ -544,13 +689,32 @@ const seo = {
     .quick-start-steps {
       grid-template-columns: 1fr;
     }
+
+    .floating-shape {
+      display: none;
+    }
   }
 
   /* Thumb-accessible CTAs on mobile */
   @media (max-width: 30em) {
     .btn {
-      min-height: 48px;
+      min-height: 52px;
       font-size: 1.125rem;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .floating-shape {
+      animation: none;
+    }
+
+    .hero-content {
+      animation: none;
+    }
+
+    .differentiator-card {
+      animation: none;
     }
   }
 </style>

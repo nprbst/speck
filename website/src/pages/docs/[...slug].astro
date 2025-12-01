@@ -8,6 +8,8 @@ import { getCollection, getEntry } from 'astro:content';
 import DocsLayout from '@/layouts/DocsLayout.astro';
 import type { CollectionEntry } from 'astro:content';
 
+export const prerender = true;
+
 export async function getStaticPaths() {
   const docs = await getCollection('docs');
 
