@@ -378,3 +378,14 @@ button {
     margin-bottom: 1rem;
   }
 }
+
+/* ========================================
+   View Transitions
+   ======================================== */
+
+/* Instant page swaps - disable all view transition animations */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}

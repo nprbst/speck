@@ -136,7 +136,6 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
     max-width: 45rem;
     padding: 2rem 3rem;
     margin: 0 auto;
-    animation: fadeInUp 0.5s var(--ease-out-soft);
   }
 
   /* Breadcrumbs */
@@ -448,70 +447,74 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
     }
   }
 
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .docs-content {
-      animation: none;
-    }
-  }
 </style>
 
-<script>
-  function initSidebarToggle() {
-    const toggleEl = document.querySelector('[data-sidebar-toggle]');
-    const sidebarEl = document.querySelector('.sidebar');
-    const overlayEl = document.querySelector('[data-sidebar-overlay]');
-
-    if (!toggleEl || !sidebarEl || !overlayEl) return;
-    if (toggleEl.hasAttribute('data-initialized')) return;
-    toggleEl.setAttribute('data-initialized', 'true');
-
-    // Capture checked elements for closures
-    const toggle = toggleEl;
-    const sidebar = sidebarEl;
-    const overlay = overlayEl;
-
-    function openSidebar() {
-      sidebar.classList.add('open');
-      overlay.classList.add('visible');
-      toggle.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
-    }
+<script is:inline>
+  // Use event delegation to handle sidebar toggle
+  // This works even when sidebar is recreated but toggle persists
+  (function() {
+    if (window._sidebarInitialized) return;
+    window._sidebarInitialized = true;
 
     function closeSidebar() {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('visible');
-      toggle.setAttribute('aria-expanded', 'false');
+      var sidebar = document.querySelector('.sidebar');
+      var overlay = document.querySelector('[data-sidebar-overlay]');
+      var toggle = document.querySelector('[data-sidebar-toggle]');
+      if (sidebar) sidebar.classList.remove('open');
+      if (overlay) overlay.classList.remove('visible');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = '';
     }
 
-    toggle.addEventListener('click', () => {
-      const isOpen = sidebar.classList.contains('open');
-      if (isOpen) {
+    function openSidebar() {
+      var sidebar = document.querySelector('.sidebar');
+      var overlay = document.querySelector('[data-sidebar-overlay]');
+      var toggle = document.querySelector('[data-sidebar-toggle]');
+      if (sidebar) sidebar.classList.add('open');
+      if (overlay) overlay.classList.add('visible');
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Event delegation for clicks
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+
+      // Toggle button click
+      if (target.closest('[data-sidebar-toggle]')) {
+        var sidebar = document.querySelector('.sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+        return;
+      }
+
+      // Overlay click
+      if (target.closest('[data-sidebar-overlay]')) {
         closeSidebar();
-      } else {
-        openSidebar();
+        return;
+      }
+
+      // Sidebar link click
+      if (target.closest('.sidebar-link')) {
+        closeSidebar();
+        return;
       }
     });
-
-    overlay.addEventListener('click', closeSidebar);
 
     // Close on escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && sidebar.classList.contains('open')) {
-        closeSidebar();
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var sidebar = document.querySelector('.sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+          closeSidebar();
+        }
       }
     });
 
-    // Close when clicking a sidebar link
-    sidebar.querySelectorAll('.sidebar-link').forEach((link) => {
-      link.addEventListener('click', closeSidebar);
-    });
-  }
-
-  // Run on initial load
-  initSidebarToggle();
-
-  // Re-run after View Transitions
-  document.addEventListener('astro:page-load', initSidebarToggle);
+    // Close sidebar on page navigation
+    document.addEventListener('astro:before-swap', closeSidebar);
+  })();
 </script>

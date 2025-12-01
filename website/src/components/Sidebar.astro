@@ -47,7 +47,7 @@ const categoryNames: Record<string, string> = {
 const categoryOrder = ['getting-started', 'core-concepts', 'advanced-features', 'architecture', 'examples', 'commands', 'reference'];
 ---
 
-<aside class="sidebar" transition:persist>
+<aside class="sidebar">
   <nav class="sidebar-nav" aria-label="Documentation navigation">
     {categoryOrder.filter(cat => categories[cat]).map(category => (
       <section class="sidebar-section">

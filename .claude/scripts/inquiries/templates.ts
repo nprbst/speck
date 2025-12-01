@@ -202,7 +202,7 @@ export function renderEmailTemplate(data: EmailTemplateData): string {
     </div>
     <div class="footer">
       <p>
-        Sent from <a href="https://speck.codes">Speck</a> - Claude Code-Optimized Specification Framework
+        Sent from <a href="https://speck.codes">Speck</a> - Claude Code-Native Spec-Driven Development
       </p>
     </div>
   </div>
