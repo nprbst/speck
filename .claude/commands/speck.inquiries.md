@@ -6,6 +6,22 @@ description: Manage inquiries from the expert-help page stored in Cloudflare D1
 
 Manage interest inquiries submitted through the expert-help page contact form. This command queries and updates inquiries stored in Cloudflare D1.
 
+## IMPORTANT: Just Run the Commands
+
+**Do NOT explore the codebase or check wrangler configuration.** The management script at `.claude/scripts/inquiries/manage.ts` handles everything internally including directory navigation.
+
+**Start immediately with:**
+```bash
+bun run .claude/scripts/inquiries/manage.ts stats
+bun run .claude/scripts/inquiries/manage.ts list
+```
+
+**Key points:**
+- Always use `bun` (not npm/npx) - this is a Bun project
+- Run commands from the **project root** directory
+- The script internally navigates to `website/` for wrangler operations
+- Add `--remote` flag for production database
+
 ## Quick Reference
 
 | Action | Command |
@@ -69,11 +85,26 @@ This outputs the inquiry details formatted for Claude to draft a response, inclu
 
 **send** - Send an email response via Resend API and record in database
 ```bash
+# Via --body flag
 bun run .claude/scripts/inquiries/manage.ts send <id> --subject="Re: Your Speck Inquiry" --body="Your markdown response..."
+
+# Via stdin (heredoc) - preferred for multi-line content
+bun run .claude/scripts/inquiries/manage.ts send <id> --subject="Re: Your Speck Inquiry" <<'EOF'
+Your **markdown** response here.
+
+- Supports full markdown
+- Multi-line content
+- Code blocks, etc.
+EOF
+
+# Preview HTML without sending (no RESEND_API_KEY required)
+bun run .claude/scripts/inquiries/manage.ts send <id> --subject="..." --preview <<'EOF'
+Preview content...
+EOF
 ```
 This command:
-- Converts the markdown body to HTML
-- Sends the email via Resend API
+- Converts the markdown body to HTML with styled email template
+- Sends the email via Resend API (unless `--preview`)
 - Records the response in the `responses` table
 - Updates the inquiry status to "contacted"
 
@@ -149,22 +180,22 @@ bun run .claude/scripts/inquiries/manage.ts view 123 --remote
 
 ## Prerequisites
 
-- **Wrangler CLI**: Must be installed and authenticated (`wrangler login`)
-- **D1 Database**: The `speck-inquiries` database must exist (created via `wrangler d1 create`)
-- **Migrations**: Run `wrangler d1 migrations apply speck-inquiries` first
+- **Wrangler CLI**: Accessed via `bunx wrangler` (not npx). Authenticate with `bunx wrangler login`
+- **D1 Database**: The `speck-inquiries` database must exist (created via `bunx wrangler d1 create`)
+- **Migrations**: Run `cd website && bunx wrangler d1 migrations apply speck-inquiries --local` first
 - **RESEND_API_KEY**: Required for `send` command. Set via `export RESEND_API_KEY=re_xxxxx`
 
 ## Troubleshooting
 
 **"no such table: inquiries"**
-- Run migrations: `cd website && wrangler d1 migrations apply speck-inquiries --local`
+- Run migrations: `cd website && bunx wrangler d1 migrations apply speck-inquiries --local`
 
 **"no such table: responses"**
-- Run migrations: `cd website && wrangler d1 migrations apply speck-inquiries --local`
+- Run migrations: `cd website && bunx wrangler d1 migrations apply speck-inquiries --local`
 - Ensure migration 002_create_responses.sql exists
 
 **"authentication required"**
-- Run `wrangler login` to authenticate with Cloudflare
+- Run `bunx wrangler login` to authenticate with Cloudflare
 
 **"RESEND_API_KEY environment variable is not set"**
 - Set the API key: `export RESEND_API_KEY=re_xxxxx`

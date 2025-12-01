@@ -22,6 +22,17 @@ import { fileURLToPath } from 'url';
 import { markdownToHtml, renderEmailTemplate } from './templates';
 import { sendEmail, isEmailConfigured } from './email';
 
+/**
+ * Read body content from stdin (for heredoc usage)
+ */
+async function readStdin(): Promise<string> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of Bun.stdin.stream()) {
+    chunks.push(Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks).toString('utf-8').trim();
+}
+
 const DATABASE_NAME = 'speck-inquiries';
 const USE_REMOTE = process.env.USE_REMOTE === 'true' || process.argv.includes('--remote');
 
@@ -159,10 +170,10 @@ async function viewInquiry(id: number): Promise<void> {
   console.log(`Status:       ${inquiry.status}`);
   console.log(`Submitted:    ${formatDate(inquiry.submitted_at)}`);
   console.log(`Source:       ${inquiry.source_page}`);
-  if (inquiry.contacted_at) {
+  if (inquiry.contacted_at && inquiry.contacted_at !== 'null') {
     console.log(`Contacted:    ${formatDate(inquiry.contacted_at)}`);
   }
-  if (inquiry.notes) {
+  if (inquiry.notes && inquiry.notes !== 'null') {
     console.log(`Notes:        ${inquiry.notes}`);
   }
   console.log('─'.repeat(60));
@@ -278,12 +289,14 @@ async function respondToInquiry(id: number): Promise<void> {
 
 /**
  * Send email response via Resend and record in D1
+ * @param preview - If true, only show HTML output without sending
  */
-async function sendResponse(id: number, subject: string, markdownBody: string): Promise<void> {
-  // Check email configuration
-  if (!isEmailConfigured()) {
+async function sendResponse(id: number, subject: string, markdownBody: string, preview = false): Promise<void> {
+  // Check email configuration (skip for preview mode)
+  if (!preview && !isEmailConfigured()) {
     console.error('Error: RESEND_API_KEY environment variable is not set.');
     console.error('Set it with: export RESEND_API_KEY=your_api_key');
+    console.error('Tip: Use --preview to see HTML output without sending.');
     process.exit(1);
   }
 
@@ -303,8 +316,6 @@ async function sendResponse(id: number, subject: string, markdownBody: string): 
     process.exit(1);
   }
 
-  console.log(`\n📧 Sending response to ${inquiry.email}...\n`);
-
   // Convert markdown to HTML
   const bodyHtml = markdownToHtml(markdownBody);
 
@@ -314,6 +325,25 @@ async function sendResponse(id: number, subject: string, markdownBody: string): 
     subject,
     bodyHtml,
   });
+
+  // Preview mode: write to temp file and open in browser
+  if (preview) {
+    const tempFile = `/tmp/speck-email-preview-${id}-${Date.now()}.html`;
+    await Bun.write(tempFile, fullHtml);
+
+    console.log(`\n👁️  Preview mode - Email would be sent to: ${inquiry.email}`);
+    console.log(`Subject: ${subject}`);
+    console.log(`\nOpening preview in browser: ${tempFile}\n`);
+
+    // Open in default browser (macOS: open, Linux: xdg-open, Windows: start)
+    const openCmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
+    await $`${openCmd} ${tempFile}`.quiet();
+
+    console.log('To send this email, remove the --preview flag.');
+    return;
+  }
+
+  console.log(`\n📧 Sending response to ${inquiry.email}...\n`);
 
   // Send via Resend
   const emailResult = await sendEmail({
@@ -373,12 +403,13 @@ Commands:
   archive <id> [--notes="reason"]         Archive an inquiry with optional notes
   stats                                   Show inquiry statistics
   respond <id>                            Show inquiry for Claude to draft a response
-  send <id> --subject="..." --body="..."  Send email response via Resend
+  send <id> --subject="..."               Send email response via Resend
 
 Options:
   --remote                                Use remote D1 database (default: local)
   --subject="..."                         Email subject line (for send command)
-  --body="..."                            Email body in markdown (for send command)
+  --body="..."                            Email body in markdown (or pipe via stdin)
+  --preview                               Preview HTML output without sending email
 
 Examples:
   bun run .claude/scripts/inquiries/manage.ts list
@@ -412,7 +443,9 @@ async function main(): Promise<void> {
   const subject = subjectFlag?.split('=').slice(1).join('=').replace(/^["']|["']$/g, '');
 
   const bodyFlag = flags.find((f) => f.startsWith('--body='));
-  const body = bodyFlag?.split('=').slice(1).join('=').replace(/^["']|["']$/g, '');
+  let body = bodyFlag?.split('=').slice(1).join('=').replace(/^["']|["']$/g, '');
+
+  const preview = flags.includes('--preview');
 
   switch (command) {
     case 'list':
@@ -469,11 +502,16 @@ async function main(): Promise<void> {
         console.error('Error: --subject is required for send command.');
         process.exit(1);
       }
+      // Read body from stdin if not provided via --body flag
       if (!body) {
-        console.error('Error: --body is required for send command.');
+        body = await readStdin();
+      }
+      if (!body) {
+        console.error('Error: --body is required for send command, or pipe content via stdin.');
+        console.error('Example: cat body.md | bun run ... send 1 --subject="..."');
         process.exit(1);
       }
-      await sendResponse(sendId, subject, body);
+      await sendResponse(sendId, subject, body, preview);
       break;
 
     default:

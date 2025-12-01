@@ -85,27 +85,52 @@ export function renderEmailTemplate(data: EmailTemplateData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>${escapedSubject}</title>
   <style>
+    /* Light mode (default) */
+    :root {
+      --color-bg: #ffffff;
+      --color-bg-outer: #f8f8f7;
+      --color-text: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-border: #e0e0e0;
+      --color-accent: #c17d4a;
+      --color-code-bg: #f5f5f5;
+    }
+
+    /* Dark mode (system preference) */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg: #1a1a1a;
+        --color-bg-outer: #0f0f0f;
+        --color-text: #e8e6e3;
+        --color-text-secondary: #a8a8a8;
+        --color-border: #3a3a3a;
+        --color-accent: #d4a574;
+        --color-code-bg: #2a2a2a;
+      }
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       line-height: 1.6;
-      color: #333;
+      color: var(--color-text);
       margin: 0;
       padding: 0;
-      background-color: #f5f5f5;
+      background-color: var(--color-bg-outer);
     }
     .container {
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
-      background-color: #ffffff;
+      background-color: var(--color-bg);
     }
     .content {
       padding: 20px 0;
     }
     .content h1, .content h2, .content h3 {
-      color: #1a1a1a;
+      color: var(--color-text);
       margin-top: 24px;
       margin-bottom: 12px;
     }
@@ -123,18 +148,19 @@ export function renderEmailTemplate(data: EmailTemplateData): string {
       margin-bottom: 8px;
     }
     .content a {
-      color: #0066cc;
+      color: var(--color-accent);
       text-decoration: underline;
     }
     .content code {
-      background-color: #f0f0f0;
+      background-color: var(--color-code-bg);
+      color: var(--color-text);
       padding: 2px 6px;
       border-radius: 3px;
       font-family: 'SF Mono', Monaco, 'Courier New', monospace;
       font-size: 14px;
     }
     .content pre {
-      background-color: #f0f0f0;
+      background-color: var(--color-code-bg);
       padding: 12px;
       border-radius: 6px;
       overflow-x: auto;
@@ -146,24 +172,25 @@ export function renderEmailTemplate(data: EmailTemplateData): string {
     .content blockquote {
       margin: 0 0 16px 0;
       padding: 12px 16px;
-      border-left: 4px solid #ddd;
-      background-color: #fafafa;
+      border-left: 4px solid var(--color-border);
+      background-color: var(--color-code-bg);
+      color: var(--color-text-secondary);
     }
     .content hr {
       border: none;
-      border-top: 1px solid #ddd;
+      border-top: 1px solid var(--color-border);
       margin: 24px 0;
     }
     .footer {
       margin-top: 32px;
       padding-top: 16px;
-      border-top: 1px solid #eee;
+      border-top: 1px solid var(--color-border);
       font-size: 12px;
-      color: #666;
+      color: var(--color-text-secondary);
       text-align: center;
     }
     .footer a {
-      color: #0066cc;
+      color: var(--color-accent);
       text-decoration: none;
     }
   </style>

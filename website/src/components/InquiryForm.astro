@@ -159,7 +159,9 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         if (honeypot) {
           // Bot detected, silently fail
           successMsg?.removeAttribute('hidden');
-          form.reset();
+          form.querySelectorAll('.form-group, .form-submit').forEach((el) => {
+            (el as HTMLElement).style.display = 'none';
+          });
           return;
         }
 
@@ -171,12 +173,14 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
           body: JSON.stringify(data),
         });
 
-        const result = await response.json();
+        const result = (await response.json()) as { success?: boolean; error?: string };
 
         if (response.ok && result.success) {
           successMsg?.removeAttribute('hidden');
-          form.reset();
-          if (charCount) charCount.textContent = '0';
+          // Hide form fields on success
+          form.querySelectorAll('.form-group, .form-submit').forEach((el) => {
+            (el as HTMLElement).style.display = 'none';
+          });
         } else {
           if (errorText) {
             errorText.textContent = result.error || 'Please try again later.';
@@ -361,8 +365,12 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
   }
 
   .submit-loading {
-    display: inline-flex;
+    display: none;
     align-items: center;
     gap: var(--space-sm);
+  }
+
+  .submit-loading:not([hidden]) {
+    display: inline-flex;
   }
 </style>
