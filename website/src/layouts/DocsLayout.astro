@@ -5,8 +5,15 @@
  */
 
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import Navigation from '@/components/Navigation.astro';
 import Sidebar from '@/components/Sidebar.astro';
 import type { MarkdownHeading } from 'astro';
+
+const navLinks = [
+  { text: 'Docs', href: '/docs/getting-started/quick-start' },
+  { text: 'Comparison', href: '/comparison' },
+  { text: 'GitHub', href: 'https://github.com/nprbst/speck', external: true },
+];
 
 interface Props {
   title: string;
@@ -45,7 +52,21 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
   description={description}
   canonical={canonicalURL.href}
 >
+  <Navigation
+    currentPath={Astro.url.pathname}
+    links={navLinks}
+    logo={{
+      src: '/images/speck-logo.svg',
+      alt: 'Speck',
+      href: '/',
+    }}
+    showDocsMenuToggle={true}
+  />
+
   <div class="docs-container">
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+
     <Sidebar docs={allDocs} currentSlug={slug} />
 
     <main class="docs-main">
@@ -165,15 +186,18 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
   }
 
   .prose :global(h1) {
+    font-family: var(--font-heading);
     font-size: 2.25rem;
     font-weight: 700;
     line-height: 1.2;
     margin-top: 0;
     margin-bottom: 1.5rem;
     color: var(--color-text);
+    letter-spacing: -0.02em;
   }
 
   .prose :global(h2) {
+    font-family: var(--font-heading);
     font-size: 1.75rem;
     font-weight: 600;
     line-height: 1.3;
@@ -182,15 +206,18 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--color-border);
     color: var(--color-text);
+    letter-spacing: -0.01em;
   }
 
   .prose :global(h3) {
+    font-family: var(--font-heading);
     font-size: 1.375rem;
     font-weight: 600;
     line-height: 1.4;
     margin-top: 2rem;
     margin-bottom: 0.75rem;
     color: var(--color-text);
+    letter-spacing: -0.01em;
   }
 
   .prose :global(p) {
@@ -338,8 +365,36 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
     border-bottom-color: var(--color-accent);
   }
 
+  /* Sidebar overlay */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+  }
+
+  .sidebar-overlay.visible {
+    opacity: 1;
+  }
+
   /* Mobile responsive */
   @media (max-width: 768px) {
+    .sidebar-toggle {
+      display: flex;
+    }
+
+    .sidebar-overlay {
+      display: block;
+      pointer-events: none;
+    }
+
+    .sidebar-overlay.visible {
+      pointer-events: auto;
+    }
+
     .docs-content {
       padding: 1.5rem 1rem;
     }
@@ -357,3 +412,63 @@ const canonicalURL = new URL(`/docs/${slug}`, Astro.site || 'https://speck.dev')
     }
   }
 </style>
+
+<script>
+  function initSidebarToggle() {
+    const toggleEl = document.querySelector('[data-sidebar-toggle]');
+    const sidebarEl = document.querySelector('.sidebar');
+    const overlayEl = document.querySelector('[data-sidebar-overlay]');
+
+    if (!toggleEl || !sidebarEl || !overlayEl) return;
+    if (toggleEl.hasAttribute('data-initialized')) return;
+    toggleEl.setAttribute('data-initialized', 'true');
+
+    // Capture checked elements for closures
+    const toggle = toggleEl;
+    const sidebar = sidebarEl;
+    const overlay = overlayEl;
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      overlay.classList.add('visible');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('visible');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+
+    toggle.addEventListener('click', () => {
+      const isOpen = sidebar.classList.contains('open');
+      if (isOpen) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    });
+
+    overlay.addEventListener('click', closeSidebar);
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+        closeSidebar();
+      }
+    });
+
+    // Close when clicking a sidebar link
+    sidebar.querySelectorAll('.sidebar-link').forEach((link) => {
+      link.addEventListener('click', closeSidebar);
+    });
+  }
+
+  // Run on initial load
+  initSidebarToggle();
+
+  // Re-run after View Transitions
+  document.addEventListener('astro:page-load', initSidebarToggle);
+</script>
