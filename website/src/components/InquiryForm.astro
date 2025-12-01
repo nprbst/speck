@@ -1,0 +1,376 @@
+---
+/**
+ * Inquiry Form Component
+ * Contact form for visitors to submit interest inquiries
+ * Includes honeypot spam prevention and Turnstile integration
+ */
+
+// Get Turnstile site key from environment
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+---
+
+<form id="inquiry-form" class="inquiry-form" method="POST" action="/api/inquiry">
+  <!-- Success/Error Messages (hidden by default) -->
+  <div id="form-success" class="form-success" hidden>
+    <strong>Thank you!</strong> Your inquiry has been received. We'll respond when schedule permits.
+  </div>
+  <div id="form-error" class="form-failure" hidden>
+    <strong>Something went wrong.</strong> <span id="error-message">Please try again later.</span>
+  </div>
+
+  <div class="form-group">
+    <label for="email" class="form-label form-label-required">Email Address</label>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      class="form-input"
+      placeholder="you@example.com"
+      required
+      autocomplete="email"
+    />
+    <span class="form-hint">We'll use this to respond to your inquiry.</span>
+  </div>
+
+  <div class="form-group">
+    <label for="message" class="form-label form-label-required">Message</label>
+    <textarea
+      id="message"
+      name="message"
+      class="form-textarea"
+      placeholder="Tell us about your project and how we can help..."
+      required
+      maxlength="2000"
+      rows="6"
+    ></textarea>
+    <div class="form-counter">
+      <span id="char-count">0</span> / 2000 characters
+    </div>
+  </div>
+
+  <!-- Honeypot field (hidden from users, catches simple bots) -->
+  <input
+    type="text"
+    name="website"
+    class="hp-field"
+    tabindex="-1"
+    autocomplete="off"
+    aria-hidden="true"
+  />
+
+  <!-- Turnstile widget (invisible mode) -->
+  {turnstileSiteKey && (
+    <div
+      class="cf-turnstile"
+      data-sitekey={turnstileSiteKey}
+      data-callback="onTurnstileSuccess"
+      data-size="invisible"
+    ></div>
+  )}
+
+  <button type="submit" class="form-submit" id="submit-btn">
+    <span class="submit-text">Send Inquiry</span>
+    <span class="submit-loading" hidden>
+      <span class="form-loading"></span>
+      Sending...
+    </span>
+  </button>
+</form>
+
+<!-- Turnstile Script -->
+{turnstileSiteKey && (
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+)}
+
+<script>
+  // Character counter
+  const messageField = document.getElementById('message') as HTMLTextAreaElement;
+  const charCount = document.getElementById('char-count');
+
+  if (messageField && charCount) {
+    const updateCounter = () => {
+      const count = messageField.value.length;
+      charCount.textContent = count.toString();
+
+      const counterParent = charCount.parentElement;
+      if (counterParent) {
+        counterParent.classList.remove('warning', 'error');
+        if (count > 1800) {
+          counterParent.classList.add('error');
+        } else if (count > 1500) {
+          counterParent.classList.add('warning');
+        }
+      }
+    };
+
+    messageField.addEventListener('input', updateCounter);
+    updateCounter();
+  }
+
+  // Form submission handling
+  const form = document.getElementById('inquiry-form') as HTMLFormElement;
+  const submitBtn = document.getElementById('submit-btn');
+  const submitText = submitBtn?.querySelector('.submit-text');
+  const submitLoading = submitBtn?.querySelector('.submit-loading');
+  const successMsg = document.getElementById('form-success');
+  const errorMsg = document.getElementById('form-error');
+  const errorText = document.getElementById('error-message');
+
+  // Global callback for Turnstile
+  (window as unknown as { onTurnstileSuccess: (token: string) => void }).onTurnstileSuccess = (token: string) => {
+    // Store the token for form submission
+    const tokenInput = document.createElement('input');
+    tokenInput.type = 'hidden';
+    tokenInput.name = 'turnstile_token';
+    tokenInput.value = token;
+
+    // Remove any existing token input
+    const existingToken = form?.querySelector('input[name="turnstile_token"]');
+    if (existingToken) {
+      existingToken.remove();
+    }
+
+    form?.appendChild(tokenInput);
+  };
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Reset messages
+      successMsg?.setAttribute('hidden', '');
+      errorMsg?.setAttribute('hidden', '');
+
+      // Show loading state
+      if (submitText) submitText.setAttribute('hidden', '');
+      if (submitLoading) submitLoading.removeAttribute('hidden');
+      if (submitBtn) (submitBtn as HTMLButtonElement).disabled = true;
+
+      try {
+        const formData = new FormData(form);
+        const data = {
+          email: formData.get('email'),
+          message: formData.get('message'),
+          turnstile_token: formData.get('turnstile_token') || '',
+        };
+
+        // Check honeypot
+        const honeypot = formData.get('website');
+        if (honeypot) {
+          // Bot detected, silently fail
+          successMsg?.removeAttribute('hidden');
+          form.querySelectorAll('.form-group, .form-submit').forEach((el) => {
+            (el as HTMLElement).style.display = 'none';
+          });
+          return;
+        }
+
+        const response = await fetch('/api/inquiry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = (await response.json()) as { success?: boolean; error?: string };
+
+        if (response.ok && result.success) {
+          successMsg?.removeAttribute('hidden');
+          // Hide form fields on success
+          form.querySelectorAll('.form-group, .form-submit').forEach((el) => {
+            (el as HTMLElement).style.display = 'none';
+          });
+        } else {
+          if (errorText) {
+            errorText.textContent = result.error || 'Please try again later.';
+          }
+          errorMsg?.removeAttribute('hidden');
+        }
+      } catch (error) {
+        console.error('Form submission error:', error);
+        if (errorText) {
+          errorText.textContent = 'Unable to submit. Please check your connection and try again.';
+        }
+        errorMsg?.removeAttribute('hidden');
+      } finally {
+        // Reset button state
+        if (submitText) submitText.removeAttribute('hidden');
+        if (submitLoading) submitLoading.setAttribute('hidden', '');
+        if (submitBtn) (submitBtn as HTMLButtonElement).disabled = false;
+      }
+    });
+  }
+</script>
+
+<style>
+  .inquiry-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .form-group {
+    margin-bottom: var(--space-md);
+  }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+    color: var(--color-text);
+  }
+
+  .form-label-required::after {
+    content: ' *';
+    color: var(--color-error, #ef4444);
+  }
+
+  .form-input,
+  .form-textarea {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .form-input:focus,
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+
+  .form-textarea {
+    min-height: 150px;
+    resize: vertical;
+  }
+
+  .form-hint {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-top: var(--space-xs);
+  }
+
+  .form-counter {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-align: right;
+    margin-top: var(--space-xs);
+  }
+
+  .form-counter.warning {
+    color: var(--color-warning, #f59e0b);
+  }
+
+  .form-counter.error {
+    color: var(--color-error, #ef4444);
+  }
+
+  /* Honeypot field */
+  .hp-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Submit button */
+  .form-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-xl);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-bg);
+    background-color: var(--color-accent);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-height: 48px;
+    width: 100%;
+  }
+
+  .form-submit:hover:not(:disabled) {
+    background-color: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .form-submit:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+  }
+
+  .form-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Feedback messages */
+  .form-success {
+    padding: var(--space-md);
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: var(--radius-md);
+    color: #16a34a;
+    margin-bottom: var(--space-lg);
+  }
+
+  [data-theme='light'] .form-success {
+    background-color: rgba(34, 197, 94, 0.05);
+  }
+
+  .form-failure {
+    padding: var(--space-md);
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-md);
+    color: #ef4444;
+    margin-bottom: var(--space-lg);
+  }
+
+  [data-theme='light'] .form-failure {
+    background-color: rgba(239, 68, 68, 0.05);
+  }
+
+  /* Loading spinner */
+  .form-loading {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .submit-loading {
+    display: none;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .submit-loading:not([hidden]) {
+    display: inline-flex;
+  }
+</style>

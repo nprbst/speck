@@ -5,6 +5,8 @@
  */
 
 import { ViewTransitions } from 'astro:transitions';
+import '../styles/global.css';
+import '../styles/theme.css';
 
 export interface Props {
   title: string;
@@ -86,10 +88,6 @@ const siteTitle = title.includes('Speck') ? title : `${title} | Speck`;
       const theme = getStoredTheme() || getSystemTheme();
       document.documentElement.setAttribute('data-theme', theme);
     </script>
-
-    <!-- Global Styles -->
-    <link rel="stylesheet" href="/src/styles/global.css" />
-    <link rel="stylesheet" href="/src/styles/theme.css" />
 
     <!-- View Transitions for SPA-like navigation -->
     <ViewTransitions />

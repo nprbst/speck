@@ -1,0 +1,407 @@
+---
+/**
+ * Expert Help Page
+ * Offers implementation assistance for organizations adopting Spec-Driven AI development
+ * Positioned as a community expert resource, not commercial consulting
+ */
+
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Navigation from '@components/Navigation.astro';
+import ThemeToggle from '@components/ThemeToggle.astro';
+import InquiryForm from '@components/InquiryForm.astro';
+
+const navLinks = [
+  { text: 'Docs', href: '/docs/getting-started/quick-start' },
+  { text: 'Comparison', href: '/comparison' },
+  { text: 'GitHub', href: 'https://github.com/nprbst/speck', external: true },
+];
+
+// Service offerings data
+const services = [
+  {
+    id: 'implementation-support',
+    title: 'Implementation Support',
+    description: 'Hands-on guidance integrating Speck into your development workflow. From initial setup to advanced multi-repo configurations.',
+    outcomes: [
+      'Working Speck setup tailored to your team structure',
+      'Custom templates aligned with your project needs',
+      'Team onboarding and best practices documentation',
+    ],
+  },
+  {
+    id: 'training',
+    title: 'Team Training',
+    description: 'Help your team adopt Spec-Driven AI development practices. Learn how to write effective specifications and leverage Claude Code workflows.',
+    outcomes: [
+      'Understanding of spec-driven development philosophy',
+      'Practical skills for writing clear, actionable specifications',
+      'Confidence using Claude Code with Speck commands',
+    ],
+  },
+  {
+    id: 'architecture-review',
+    title: 'Architecture Review',
+    description: 'Review your current development setup and get recommendations for AI-assisted development improvements.',
+    outcomes: [
+      'Assessment of current workflow pain points',
+      'Recommendations for specification structure',
+      'Roadmap for incremental adoption',
+    ],
+  },
+];
+
+const seo = {
+  title: 'Expert Help - Speck',
+  description: 'Get hands-on help adopting Spec-Driven AI development with Speck. Implementation support, training, and architecture review from the Speck team.',
+  keywords: ['speck help', 'consulting', 'implementation support', 'training', 'claude code', 'spec-driven development'],
+};
+---
+
+<BaseLayout title={seo.title} description={seo.description} keywords={seo.keywords}>
+  <Navigation
+    currentPath={Astro.url.pathname}
+    links={navLinks}
+    logo={{
+      src: '/images/speck-logo.svg',
+      alt: 'Speck',
+      href: '/',
+    }}
+  />
+
+  <main id="main-content" class="expert-help-main">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <h1>Expert Help with Speck</h1>
+        <p class="hero-subtitle">
+          Hands-on guidance for organizations adopting Spec-Driven AI development practices
+        </p>
+        <p class="hero-context">
+          Speck is an <strong>open source passion project</strong>. We're happy to help teams and organizations
+          get started when our schedule permits—think of it as community support from people deeply
+          invested in the project's success.
+        </p>
+      </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services">
+      <div class="container">
+        <h2>How We Can Help</h2>
+        <div class="services-grid">
+          {services.map(service => (
+            <article class="service-card" id={service.id}>
+              <h3>{service.title}</h3>
+              <p class="service-description">{service.description}</p>
+              <h4>What you can expect:</h4>
+              <ul class="service-outcomes">
+                {service.outcomes.map(outcome => (
+                  <li>{outcome}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact">
+      <div class="container">
+        <div class="contact-content">
+          <div class="contact-info">
+            <h2>Get in Touch</h2>
+            <p>
+              Interested in getting help with Speck? Share a bit about what you're working on
+              and how we might be able to help.
+            </p>
+            <p class="disclaimer">
+              <em>
+                Note: We respond when schedule permits. This is a passion project, not a commercial
+                consulting practice—we're genuinely interested in helping organizations succeed with
+                Spec-Driven AI development.
+              </em>
+            </p>
+          </div>
+          <div class="contact-form">
+            <InquiryForm />
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div class="footer-section">
+        <h4>Speck</h4>
+        <p>Claude Code-Optimized Specification Framework</p>
+      </div>
+      <div class="footer-section">
+        <h4>Links</h4>
+        <ul>
+          <li><a href="/docs/getting-started/quick-start">Quick Start</a></li>
+          <li><a href="/docs/commands/reference">Commands</a></li>
+          <li><a href="/comparison">Comparison</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="https://github.com/nprbst/speck" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href="https://github.com/nprbst/speck/issues" target="_blank" rel="noopener noreferrer">Issues</a></li>
+          <li><a href="/expert-help">Expert Help</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <ThemeToggle position="footer" />
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>&copy; {new Date().getFullYear()} Speck. MIT License. Built on <a href="https://github.com/github/spec-kit" target="_blank" rel="noopener noreferrer">GitHub's spec-kit</a>.</p>
+    </div>
+  </footer>
+</BaseLayout>
+
+<style>
+  /* Import form styles */
+  @import '../styles/form.css';
+
+  .expert-help-main {
+    min-height: calc(100vh - 4rem);
+  }
+
+  /* Hero Section */
+  .hero {
+    padding: var(--space-2xl) 0;
+    text-align: center;
+    background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    margin-bottom: var(--space-md);
+    color: var(--color-text);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+    color: var(--color-text-muted);
+    max-width: 600px;
+    margin: 0 auto var(--space-lg);
+    line-height: 1.6;
+  }
+
+  .hero-context {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .hero-context strong {
+    color: var(--color-accent);
+  }
+
+  /* Services Section */
+  .services {
+    padding: var(--space-2xl) 0;
+  }
+
+  .services h2 {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+    color: var(--color-text);
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-xl);
+  }
+
+  .service-card {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .service-card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .service-card h3 {
+    font-size: 1.375rem;
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+    color: var(--color-text);
+  }
+
+  .service-description {
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin-bottom: var(--space-lg);
+  }
+
+  .service-card h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .service-outcomes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .service-outcomes li {
+    padding: var(--space-xs) 0;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    font-size: 0.9375rem;
+  }
+
+  .service-outcomes li::before {
+    content: "✓";
+    color: var(--color-accent);
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  /* Contact Section */
+  .contact {
+    padding: var(--space-2xl) 0;
+    background: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .contact-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2xl);
+    align-items: start;
+  }
+
+  .contact-info h2 {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 700;
+    margin-bottom: var(--space-lg);
+    color: var(--color-text);
+  }
+
+  .contact-info p {
+    color: var(--color-text-muted);
+    line-height: 1.7;
+    margin-bottom: var(--space-md);
+  }
+
+  .disclaimer {
+    font-size: 0.9375rem;
+    padding: var(--space-md);
+    background: var(--color-bg);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+
+  .contact-form {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+  }
+
+  /* Footer */
+  .site-footer {
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-2xl) 0 var(--space-xl);
+    margin-top: 0;
+  }
+
+  .footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
+  }
+
+  .footer-section h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+    color: var(--color-text);
+  }
+
+  .footer-section p {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .footer-section ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .footer-section li {
+    margin-bottom: var(--space-xs);
+  }
+
+  .footer-section a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color var(--transition-fast);
+  }
+
+  .footer-section a:hover {
+    color: var(--color-accent);
+  }
+
+  .footer-bottom {
+    text-align: center;
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .footer-bottom p {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .footer-bottom a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--transition-fast);
+  }
+
+  .footer-bottom a:hover {
+    border-bottom-color: var(--color-accent);
+  }
+
+  /* Responsive */
+  @media (max-width: 48em) {
+    .contact-content {
+      grid-template-columns: 1fr;
+    }
+
+    .services-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

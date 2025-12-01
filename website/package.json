@@ -6,19 +6,29 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "pages:dev": "wrangler pages dev dist",
     "sync": "bun ../website/scripts/sync-docs.ts",
     "typecheck": "astro check",
-    "astro": "astro"
+    "astro": "astro",
+    "db:migrate": "wrangler d1 migrations apply speck-inquiries --local",
+    "db:migrate:remote": "wrangler d1 migrations apply speck-inquiries --remote",
+    "db:query": "wrangler d1 execute speck-inquiries --local --command",
+    "db:list": "wrangler d1 execute speck-inquiries --local --command \"SELECT id, email, status, submitted_at FROM inquiries ORDER BY submitted_at DESC\""
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.12",
     "@astrojs/sitemap": "^3.6.0",
     "astro": "^5.15.8",
+    "kysely": "^0.28.8",
+    "kysely-d1": "^0.4.0",
     "shiki": "^3.15.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "@playwright/test": "^1.48.0",
     "@axe-core/playwright": "^4.10.2",
-    "typescript": "^5.7.2"
+    "@cloudflare/workers-types": "^4.20251128.0",
+    "@playwright/test": "^1.48.0",
+    "typescript": "^5.7.2",
+    "wrangler": "^4.51.0"
   }
 }
