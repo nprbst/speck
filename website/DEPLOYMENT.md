@@ -236,8 +236,9 @@ Option 2: **Manual Deploy** (from Cloudflare Dashboard)
    - Confirm docs were copied to `website/src/content/docs/`
 
 2. **Verify Docs Pages**:
-   - Visit `/docs/getting-started/installation`
    - Visit `/docs/getting-started/quick-start`
+   - Visit `/docs/getting-started/troubleshooting`
+   - Visit `/docs/getting-started/setup-reference`
    - Confirm content displays correctly
 
 3. **Test Webhook Rebuild**:

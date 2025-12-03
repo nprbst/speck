@@ -26,7 +26,7 @@ If you haven't installed Speck yet:
 3. Add marketplace: `speck-market`
 4. Install: `speck` plugin
 
-See the [Installation Guide](/docs/getting-started/installation) for detailed steps.
+See the [Quick Start Guide](/docs/getting-started/quick-start) for detailed steps.
 
 ---
 
@@ -35,7 +35,7 @@ See the [Installation Guide](/docs/getting-started/installation) for detailed st
 Start by describing your feature in plain English. Open Claude Code and run:
 
 ```
-/speck.specify
+/speck:specify
 ```
 
 When prompted, describe the feature:
@@ -134,7 +134,7 @@ Enable users to choose between light and dark color schemes, reducing eye strain
 Run the clarify command:
 
 ```
-/speck.clarify
+/speck:clarify
 ```
 
 Speck analyzes your spec and asks targeted questions:
@@ -181,7 +181,7 @@ The Speck skill helps you understand what you've specified before diving into te
 Now design the technical implementation:
 
 ```
-/speck.plan
+/speck:plan
 ```
 
 Speck generates multiple planning artifacts:
@@ -299,7 +299,7 @@ This helps you validate the approach before starting implementation.
 Break down the plan into actionable tasks:
 
 ```
-/speck.tasks
+/speck:tasks
 ```
 
 Speck generates `tasks.md`:
@@ -361,7 +361,7 @@ The skill provides real-time visibility into your progress.
 Execute the tasks automatically:
 
 ```
-/speck.implement
+/speck:implement
 ```
 
 Speck reads the tasks and implements them in dependency order.
@@ -570,4 +570,4 @@ Ready to scale beyond single-repo projects?
 
 ---
 
-**Questions?** Open a GitHub Discussion or check the [troubleshooting guide](/docs/getting-started/installation#troubleshooting).
+**Questions?** Open a GitHub Discussion or check the [Troubleshooting Guide](/docs/getting-started/troubleshooting).

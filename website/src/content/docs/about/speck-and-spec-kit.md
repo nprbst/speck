@@ -32,7 +32,7 @@ The foundational **specify → plan → implement** workflow comes directly from
 - Technical planning happens only after requirements are clear
 - Implementation tasks are generated from vetted plans
 
-Speck preserves this workflow structure 100%, using `/speck.specify`, `/speck.plan`, and `/speck.implement` commands that mirror spec-kit's bash scripts.
+Speck preserves this workflow structure 100%, using `/speck:specify`, `/speck:plan`, and `/speck:implement` commands that mirror spec-kit's bash scripts.
 
 ### Constitution-Based Project Governance
 
@@ -118,7 +118,7 @@ Speck achieves measurable performance improvements through:
 
 Speck is distributed as a **Claude Code plugin** with:
 - **One-command installation** via `/plugin`
-- **Slash command integration** (`/speck.specify`, `/speck.plan`, etc.)
+- **Slash command integration** (`/speck:specify`, `/speck:plan`, etc.)
 - **Dedicated agents** for complex workflows
 - **Skills** for knowledge retrieval
 
@@ -142,8 +142,8 @@ You can **use Speck for some features and spec-kit for others** in the same proj
 ### Upstream Sync Capability
 
 Speck provides commands to sync with spec-kit releases:
-- `/speck.pull-upstream` fetches the latest spec-kit release
-- `/speck.transform-upstream` converts bash scripts to Bun TypeScript
+- `/speck:pull-upstream` fetches the latest spec-kit release
+- `/speck:transform-upstream` converts bash scripts to Bun TypeScript
 - **Automatic compatibility validation** ensures Speck extensions don't break upstream alignment
 
 ### Constitution Alignment

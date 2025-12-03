@@ -322,7 +322,7 @@ Session handoff is **enabled by default** when worktree integration is enabled. 
 The handoff document is automatically updated when:
 - Tasks are marked complete in tasks.md
 - Plan or spec changes are made
-- You run `/speck.implement` and progress is made
+- You run `/speck:implement` and progress is made
 
 You can manually regenerate the handoff document:
 
@@ -487,96 +487,18 @@ Create a new feature specification with worktree:
 - `--no-deps` - Skip dependency installation
 - `--reuse-worktree` - Reuse existing worktree if it exists
 
-## Edge Cases and Troubleshooting
+## Troubleshooting
 
-### Insufficient Disk Space
+**Common worktree issues:**
+- Insufficient disk space → Run `bun .speck/scripts/worktree/cli.ts prune` to clean up
+- Worktree collision → Use `--reuse-worktree` flag or remove existing worktree
+- IDE launch failure → Verify `which code` works; worktree remains usable manually
+- Dependency installation failure → Check network; try manual `bun install`
+- Git version too old → Requires Git 2.5+
 
-**Error**:
-```
-Error: Insufficient disk space
-  Available: 512 MB
-  Required: 1 GB minimum
+Speck automatically cleans up stale worktree references when running any worktree command.
 
-Troubleshooting:
-  1. Remove unused worktrees: bun .speck/scripts/worktree/cli.ts prune
-  2. Clear package manager cache: bun pm cache rm --all
-  3. Identify large files: du -sh *
-```
-
-**Solution**: Free up disk space or disable dependency auto-install.
-
-### Existing Worktree Collision
-
-**Error**:
-```
-Error: Worktree directory already exists
-  Path: /Users/dev/my-app-002-user-auth
-
-Troubleshooting:
-  1. Remove existing worktree: bun .speck/scripts/worktree/cli.ts remove 002-user-auth
-  2. Reuse existing worktree: use --reuse-worktree flag
-```
-
-**Solution**: Remove existing worktree or use `--reuse-worktree` flag.
-
-### IDE Launch Failure
-
-**Error**:
-```
-Error: Failed to launch IDE
-  Command: code /Users/dev/my-app-002-user-auth
-  Exit code: 127
-
-Troubleshooting:
-  1. Verify IDE is installed: which code
-  2. Check IDE command in config: .speck/config.json
-  3. Try manual launch: code /Users/dev/my-app-002-user-auth
-```
-
-**Solution**: Worktree remains usable; you can open it manually.
-
-### Dependency Installation Failure
-
-**Error**:
-```
-Error: Dependency installation failed
-  Package manager: bun
-  Exit code: 1
-
-Troubleshooting:
-  1. Check network connectivity
-  2. Verify package.json is valid
-  3. Try manual install: cd /path/to/worktree && bun install
-  4. Disable auto-install in config
-```
-
-**Solution**: IDE launch is aborted; fix issues and retry or disable auto-install.
-
-### Stale Worktree References
-
-**Auto-cleanup**:
-```
-Detected stale worktree reference: 002-user-auth
-  Worktree directory was manually deleted
-  Cleaning up Git references...
-  ✓ Stale reference removed
-```
-
-Speck automatically detects and cleans up stale references when you run any worktree command.
-
-### Unsupported Git Version
-
-**Error**:
-```
-Error: Git version too old
-  Current: 2.4.0
-  Required: 2.5.0+
-
-Troubleshooting:
-  Update Git: https://git-scm.com/downloads
-```
-
-**Solution**: Upgrade Git to 2.5 or later.
+For detailed solutions, see [Worktree Issues](/docs/getting-started/troubleshooting#worktree-issues) in the Troubleshooting Guide.
 
 ## Best Practices
 

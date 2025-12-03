@@ -1,5 +1,5 @@
 ---
-title: "Speck vs Claude Code Plan Mode"
+title: "Speck vs Plan Mode"
 description: "Understanding when to use Speck's workflow vs Claude Code's built-in Plan Mode"
 category: "reference"
 order: 2
@@ -7,7 +7,7 @@ tags: ["comparison", "plan-mode", "workflow", "claude-code"]
 lastUpdated: 2025-11-29
 ---
 
-# Speck vs Claude Code Plan Mode
+# Speck vs Claude Code's Plan Mode
 
 Claude Code includes a built-in Plan Mode for exploring complex tasks. How does it relate to Speck?
 
@@ -71,10 +71,10 @@ Plan Mode and Speck work best in concert - each handling a different phase of fe
 ├─────────────────────────────────────────────────────────────────┤
 │  "Here's what we're building and how we'll track it"            │
 │                                                                 │
-│  /speck.specify → Formal requirements (spec.md)                 │
-│  /speck.plan    → Technical design (plan.md)                    │
-│  /speck.tasks   → Trackable work items (tasks.md)               │
-│  /speck.implement → Automated execution                         │
+│  /speck:specify → Formal requirements (spec.md)                 │
+│  /speck:plan    → Technical design (plan.md)                    │
+│  /speck:tasks   → Trackable work items (tasks.md)               │
+│  /speck:implement → Automated execution                         │
 │                                                                 │
 │  Output: specs/042-api-caching/ (committed to repo)             │
 └─────────────────────────────────────────────────────────────────┘
@@ -108,7 +108,7 @@ Plan Mode output (~/.claude/plans/api-caching.md):
 Now you know what to build. Capture it formally:
 
 ```
-> /speck.specify "Add Redis caching to high-traffic API endpoints"
+> /speck:specify "Add Redis caching to high-traffic API endpoints"
 
 Speck generates specs/042-api-caching/spec.md:
 - FR-001: Cache GET /api/products (5 min TTL)
@@ -122,14 +122,14 @@ Speck generates specs/042-api-caching/spec.md:
 You return the next day. Plan Mode exploration is still in `~/.claude/plans/` for reference, but your work continues from the Speck spec:
 
 ```
-> /speck.plan
+> /speck:plan
 
 Generates plan.md with:
 - Tech stack: ioredis, Express middleware
 - Architecture: Cache-aside pattern
 - File changes: src/middleware/cache.ts, src/config/redis.ts
 
-> /speck.tasks
+> /speck:tasks
 
 Generates tasks.md:
 - [ ] T001: Install ioredis dependency
@@ -138,7 +138,7 @@ Generates tasks.md:
 - [ ] T004: Add caching to /api/products endpoint
 ...
 
-> /speck.implement
+> /speck:implement
 
 Executes tasks in order, checking off as completed
 ```
@@ -198,9 +198,9 @@ Speck's templates enforce a structure: requirements → design → tasks. This e
 
 | | Plan Mode | Speck |
 |-|-----------|-------|
-| **Commands** | Built-in (enter via prompt) | `/speck.specify`, `/speck.plan`, etc. |
-| **Automation** | Manual execution | `/speck.implement` executes tasks |
-| **Validation** | None | `/speck.analyze` checks consistency |
+| **Commands** | Built-in (enter via prompt) | `/speck:specify`, `/speck:plan`, etc. |
+| **Automation** | Manual execution | `/speck:implement` executes tasks |
+| **Validation** | None | `/speck:analyze` checks consistency |
 
 ## Decision Guide
 
@@ -227,7 +227,7 @@ Start with exploration, graduate to documentation:
   ↓ explores WebSockets vs SSE vs polling
   ↓ identifies constraints and trade-offs
 
-[/speck.specify] "Add real-time notifications using WebSockets"
+[/speck:specify] "Add real-time notifications using WebSockets"
   ↓ formal requirements captured
   ↓ team can review approach
 ```
@@ -237,7 +237,7 @@ Start with exploration, graduate to documentation:
 When requirements are clear from the start:
 
 ```
-[/speck.specify] "Add dark mode toggle with system preference detection"
+[/speck:specify] "Add dark mode toggle with system preference detection"
   ↓ requirements are straightforward
   ↓ no exploration needed
 ```

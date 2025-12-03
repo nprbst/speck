@@ -283,8 +283,9 @@ async function main() {
 
   const pages: PageTest[] = [
     { url: '/', name: 'Homepage', expectedStatus: 200 },
-    { url: '/docs/getting-started/installation', name: 'Installation Guide', expectedStatus: 200 },
     { url: '/docs/getting-started/quick-start', name: 'Quick Start', expectedStatus: 200 },
+    { url: '/docs/getting-started/troubleshooting', name: 'Troubleshooting Guide', expectedStatus: 200 },
+    { url: '/docs/getting-started/setup-reference', name: 'Setup Reference', expectedStatus: 200 },
     { url: '/docs/commands/reference', name: 'Commands Reference', expectedStatus: 200 },
     { url: '/comparison', name: 'Comparison Page', expectedStatus: 200 },
     { url: '/nonexistent-page', name: '404 Page', expectedStatus: 404 },

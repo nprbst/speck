@@ -41,12 +41,12 @@ This reference table shows feature compatibility across different Speck usage co
 
 | Feature | Single-Repo | Multi-Repo Root | Multi-Repo Child | Limitations |
 |---------|-------------|-----------------|------------------|-------------|
-| Symlink detection | N/A (Single repo) | ✅ Supported | ✅ Supported (via `.speck/root`) | Requires manual `/speck.link` setup in child repos |
+| Symlink detection | N/A (Single repo) | ✅ Supported | ✅ Supported (via `.speck/root`) | Requires manual `/speck:link` setup in child repos |
 | Shared specifications | N/A (Single repo) | ✅ Supported | ✅ Supported | Spec lives at root, children reference via symlink |
 | Per-repo implementation plans | N/A (Single repo) | ✅ Supported | ✅ Supported | Each repo generates independent `plan.md` from shared spec |
 | Cross-repo coordination | N/A (Single repo) | ⚠️ Manual (via shared spec) | ⚠️ Manual (via shared spec) | No automatic synchronization - requires manual review |
-| `/speck.link` command | N/A (Single repo) | N/A (Root doesn't link) | ✅ Supported | Creates `.speck/root` symlink to parent directory |
-| `/speck.env` multi-repo detection | N/A (Single repo) | ✅ Supported (Shows root) | ✅ Supported (Shows child) | Displays current repository context and linked root |
+| `/speck:link` command | N/A (Single repo) | N/A (Root doesn't link) | ✅ Supported | Creates `.speck/root` symlink to parent directory |
+| `/speck:env` multi-repo detection | N/A (Single repo) | ✅ Supported (Shows root) | ✅ Supported (Shows child) | Displays current repository context and linked root |
 
 ## Worktree Integration (Spec 012)
 

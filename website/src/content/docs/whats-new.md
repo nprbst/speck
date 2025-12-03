@@ -45,10 +45,10 @@ Staged transformation with atomic commit/rollback semantics protects production 
 Simplified Speck architecture with dual-mode CLI, session handoff for worktrees, and global installation.
 
 **Key Capabilities**:
-- **`/speck.init`**: Install Speck CLI globally to `~/.local/bin/speck`
-- **`/speck.help`**: Load the speck-help skill for answering questions
+- **`/speck:init`**: Install Speck CLI globally to `~/.local/bin/speck`
+- **`/speck:help`**: Load the speck-help skill for answering questions
 - **Session handoff**: New Claude sessions in worktrees automatically receive feature context
-- **Dual-mode CLI**: Same commands work in terminal (`speck`) and Claude Code (`/speck.*`)
+- **Dual-mode CLI**: Same commands work in terminal (`speck`) and Claude Code (`/speck:*`)
 - **Output modes**: `--json` for structured output, `--hook` for Claude Code integration
 
 **Improvements**:
@@ -72,7 +72,7 @@ Simplified Speck architecture with dual-mode CLI, session handoff for worktrees,
 Work on multiple features simultaneously with Git worktrees, automatic IDE launch, and dependency installation.
 
 **Key Capabilities**:
-- **Automatic worktree creation**: `/speck.specify` creates isolated worktree directory
+- **Automatic worktree creation**: `/speck:specify` creates isolated worktree directory
 - **IDE auto-launch**: Opens VSCode, Cursor, or WebStorm automatically
 - **Dependency auto-install**: Runs package manager before IDE opens
 - **Session handoff**: Handoff document passes context to new Claude sessions
@@ -97,7 +97,7 @@ Work on multiple features simultaneously with Git worktrees, automatic IDE launc
 Share specifications across multiple repositories with symlink-based detection and per-repo implementation plans.
 
 **Key Capabilities**:
-- **`/speck.link` command**: Link child repositories to specification root
+- **`/speck:link` command**: Link child repositories to specification root
 - **Symlink detection**: Automatic multi-repo mode when `.speck/root` symlink present
 - **Shared specifications**: Single `spec.md` across all repositories
 - **Per-repo plans**: Each repository generates independent `plan.md` and `tasks.md`
@@ -124,7 +124,8 @@ Complete website documentation for plugin installation and Speck skill usage.
 
 **Documentation Added**:
 - [Quick Start Guide](/docs/getting-started/quick-start) - 5-minute installation and first command
-- [Installation Guide](/docs/getting-started/installation) - Detailed setup instructions
+- [Troubleshooting Guide](/docs/getting-started/troubleshooting) - Solutions to common issues
+- [Setup Reference](/docs/getting-started/setup-reference) - Version compatibility and verification
 - [Three-Phase Workflow](/docs/core-concepts/workflow) - Specify → Plan → Implement methodology
 - [Commands Reference](/docs/commands/reference) - Complete slash command and skill documentation
 - [First Feature Tutorial](/docs/examples/first-feature) - Dark mode toggle walkthrough

@@ -9,6 +9,7 @@ interface DocEntry {
   title: string;
   category: string;
   order: number;
+  redirect?: string;
 }
 
 interface Props {
@@ -41,10 +42,11 @@ const categoryNames: Record<string, string> = {
   'examples': 'Examples',
   'commands': 'Commands',
   'reference': 'Reference',
+  'community': 'Community',
 };
 
 // Category order
-const categoryOrder = ['getting-started', 'core-concepts', 'advanced-features', 'architecture', 'examples', 'commands', 'reference'];
+const categoryOrder = ['getting-started', 'core-concepts', 'advanced-features', 'architecture', 'examples', 'commands', 'reference', 'community'];
 ---
 
 <aside class="sidebar">
@@ -56,7 +58,7 @@ const categoryOrder = ['getting-started', 'core-concepts', 'advanced-features', 
           {categories[category].map(doc => (
             <li class="sidebar-item">
               <a
-                href={`/docs/${doc.slug}`}
+                href={doc.redirect || `/docs/${doc.slug}`}
                 class:list={['sidebar-link', { active: currentSlug === doc.slug }]}
                 aria-current={currentSlug === doc.slug ? 'page' : undefined}
               >

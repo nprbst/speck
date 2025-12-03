@@ -12,8 +12,10 @@ export const prerender = true;
 
 export async function getStaticPaths() {
   const docs = await getCollection('docs');
+  // Filter out draft and redirect pages (redirects only appear in sidebar, no rendered page)
+  const publishedDocs = docs.filter(doc => !doc.data.draft && !doc.data.redirect);
 
-  return docs.map(doc => ({
+  return publishedDocs.map(doc => ({
     params: { slug: doc.slug },
     props: { doc },
   }));
@@ -26,14 +28,17 @@ interface Props {
 const { doc } = Astro.props;
 const { Content, headings } = await doc.render();
 
-// Get all docs for sidebar
+// Get all docs for sidebar (filter out drafts, include redirects for nav)
 const allDocs = await getCollection('docs');
-const docsForSidebar = allDocs.map(d => ({
-  slug: d.slug,
-  title: d.data.title,
-  category: d.data.category,
-  order: d.data.order,
-}));
+const docsForSidebar = allDocs
+  .filter(d => !d.data.draft)
+  .map(d => ({
+    slug: d.slug,
+    title: d.data.title,
+    category: d.data.category,
+    order: d.data.order,
+    redirect: d.data.redirect,
+  }));
 ---
 
 <DocsLayout

@@ -15,11 +15,11 @@ Speck provides slash commands and a natural language skill for Claude Code. Use 
 
 Speck provides a unified CLI that works identically whether invoked as slash commands in Claude Code or as terminal commands:
 
-**Claude Code**: `/speck.specify "Add login feature"`
+**Claude Code**: `/speck:specify "Add login feature"`
 **Terminal**: `speck create-new-feature "Add login feature"`
 
 **Key Benefits**:
-- **Global CLI Access**: Install once with `/speck.init`, use `speck` from anywhere
+- **Global CLI Access**: Install once with `/speck:init`, use `speck` from anywhere
 - **Automatic Prerequisites**: Hook system validates context and pre-loads files before commands run (see [Hook System](/docs/architecture/hooks))
 - **Sub-100ms Latency**: Commands execute with minimal overhead (~18ms average)
 - **Output Modes**: Use `--json` for structured output, `--hook` for Claude Code hook integration
@@ -92,11 +92,11 @@ No special syntax required - just ask!
 | Use Case | Skill (Ask) | Slash Command (Execute) |
 |----------|-------------|-------------------------|
 | Understand existing spec | ✅ "What user stories are defined?" | ❌ |
-| Create new spec | ❌ | ✅ `/speck.specify` |
+| Create new spec | ❌ | ✅ `/speck:specify` |
 | Check task status | ✅ "What tasks are pending?" | ❌ |
-| Generate plan | ❌ | ✅ `/speck.plan` |
+| Generate plan | ❌ | ✅ `/speck:plan` |
 | Get workflow help | ✅ "What should I do next?" | ❌ |
-| Execute tasks | ❌ | ✅ `/speck.implement` |
+| Execute tasks | ❌ | ✅ `/speck:implement` |
 
 **Rule of thumb**: Skill for questions and exploration, commands for generation and execution.
 
@@ -113,7 +113,7 @@ No special syntax required - just ask!
 5. Select "speck" from the plugin list
 6. Select "Install"
 
-See the [Installation Guide](/docs/getting-started/installation) for detailed instructions.
+See the [Quick Start Guide](/docs/getting-started/quick-start) for detailed instructions.
 
 ### Updating Speck
 
@@ -131,13 +131,13 @@ Keep Speck up to date with the latest features:
 
 ## Core Commands
 
-### `/speck.specify`
+### `/speck:specify`
 
 Create or update a feature specification from natural language input.
 
 **Usage:**
 ```
-/speck.specify [feature description] [flags]
+/speck:specify [feature description] [flags]
 ```
 
 **What it does:**
@@ -156,12 +156,12 @@ Create or update a feature specification from natural language input.
 
 **Example:**
 ```
-/speck.specify Add a dark mode toggle to the application settings
+/speck:specify Add a dark mode toggle to the application settings
 ```
 
 **With worktrees enabled:**
 ```
-/speck.specify Add dark mode toggle --no-ide
+/speck:specify Add dark mode toggle --no-ide
 # Creates worktree but skips IDE launch
 ```
 
@@ -171,13 +171,13 @@ Create or update a feature specification from natural language input.
 
 ---
 
-### `/speck.clarify`
+### `/speck:clarify`
 
 Identify underspecified areas in your specification by asking targeted clarification questions.
 
 **Usage:**
 ```
-/speck.clarify
+/speck:clarify
 ```
 
 **Prerequisites:**
@@ -196,13 +196,13 @@ Identify underspecified areas in your specification by asking targeted clarifica
 
 ---
 
-### `/speck.plan`
+### `/speck:plan`
 
 Generate a detailed implementation plan with technical design, research, and contracts.
 
 **Usage:**
 ```
-/speck.plan
+/speck:plan
 ```
 
 **Prerequisites:**
@@ -224,13 +224,13 @@ Generate a detailed implementation plan with technical design, research, and con
 
 ---
 
-### `/speck.tasks`
+### `/speck:tasks`
 
 Generate a dependency-ordered task breakdown from your implementation plan.
 
 **Usage:**
 ```
-/speck.tasks
+/speck:tasks
 ```
 
 **Prerequisites:**
@@ -247,13 +247,13 @@ Generate a dependency-ordered task breakdown from your implementation plan.
 
 ---
 
-### `/speck.implement`
+### `/speck:implement`
 
 Execute the implementation plan by processing all tasks in dependency order.
 
 **Usage:**
 ```
-/speck.implement
+/speck:implement
 ```
 
 **Prerequisites:**
@@ -279,13 +279,13 @@ Execute the implementation plan by processing all tasks in dependency order.
 
 ## Multi-Repo Commands
 
-### `/speck.link`
+### `/speck:link`
 
 Link a child repository to a multi-repo specification root.
 
 **Usage:**
 ```
-/speck.link
+/speck:link
 ```
 
 **What it does:**
@@ -321,13 +321,13 @@ child-repo-2/         # Backend
 
 ## Setup Commands
 
-### `/speck.init`
+### `/speck:init`
 
 Install the Speck CLI globally for terminal access.
 
 **Usage:**
 ```
-/speck.init
+/speck:init
 ```
 
 **What it does:**
@@ -343,7 +343,7 @@ Install the Speck CLI globally for terminal access.
 **Example:**
 ```bash
 # Install globally
-/speck.init
+/speck:init
 
 # Now you can use speck from terminal
 speck check-prerequisites
@@ -355,13 +355,13 @@ speck env
 
 ---
 
-### `/speck.help`
+### `/speck:help`
 
 Load the speck-help skill for answering questions about Speck features.
 
 **Usage:**
 ```
-/speck.help
+/speck:help
 ```
 
 **What it does:**
@@ -391,13 +391,13 @@ What should I do next?
 
 ## Utility Commands
 
-### `/speck.constitution`
+### `/speck:constitution`
 
 Create or update the project's constitutional principles.
 
 **Usage:**
 ```
-/speck.constitution
+/speck:constitution
 ```
 
 **What it does:**
@@ -413,13 +413,13 @@ Create or update the project's constitutional principles.
 
 ---
 
-### `/speck.checklist`
+### `/speck:checklist`
 
 Generate a custom checklist for validating the current feature specification.
 
 **Usage:**
 ```
-/speck.checklist
+/speck:checklist
 ```
 
 **What it does:**
@@ -431,13 +431,13 @@ Generate a custom checklist for validating the current feature specification.
 
 ---
 
-### `/speck.analyze`
+### `/speck:analyze`
 
 Perform cross-artifact consistency analysis across spec, plan, and tasks.
 
 **Usage:**
 ```
-/speck.analyze
+/speck:analyze
 ```
 
 **Prerequisites:**
@@ -463,13 +463,13 @@ Here's a typical workflow using Speck commands:
 
 ```bash
 # 1. Create specification
-/speck.specify
+/speck:specify
 
 # Describe your feature in plain English
 > "Add a user profile page with avatar upload, bio editing, and privacy settings"
 
 # 2. Clarify ambiguities
-/speck.clarify
+/speck:clarify
 
 # Answer questions about edge cases, scope, and requirements
 > "Avatar size limit: 5MB"
@@ -477,22 +477,22 @@ Here's a typical workflow using Speck commands:
 > "Privacy settings: public, friends-only, private"
 
 # 3. Generate implementation plan
-/speck.plan
+/speck:plan
 
 # Review research.md, data-model.md, contracts/, quickstart.md
 
 # 4. Generate task breakdown
-/speck.tasks
+/speck:tasks
 
 # Review tasks.md for dependency order and parallel opportunities
 
 # 5. Execute implementation
-/speck.implement
+/speck:implement
 
 # Tasks execute automatically, respecting dependencies
 
 # 6. Validate quality (optional)
-/speck.analyze
+/speck:analyze
 
 # Check for spec/plan/task inconsistencies
 ```
@@ -503,13 +503,13 @@ Most Speck commands run interactively and don't require flags. However, you can 
 
 ```bash
 # Inline feature description
-/speck.specify Add dark mode toggle
+/speck:specify Add dark mode toggle
 
 # Skip interactive prompts (use defaults)
-/speck.plan --yes
+/speck:plan --yes
 
 # Force regeneration (overwrite existing files)
-/speck.tasks --force
+/speck:tasks --force
 ```
 
 ## Getting Help
@@ -517,7 +517,7 @@ Most Speck commands run interactively and don't require flags. However, you can 
 For detailed help on any command:
 
 ```bash
-/speck.help [command]
+/speck:help [command]
 ```
 
 Or visit the [Concepts documentation](/docs/core-concepts/workflow) to understand the three-phase workflow.

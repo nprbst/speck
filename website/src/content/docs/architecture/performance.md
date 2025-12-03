@@ -8,6 +8,7 @@ tags: ["performance", "benchmarks", "hooks", "latency", "optimization"]
 lastUpdated: 2025-11-29
 relatedPages: ["/docs/architecture/hooks"]
 order: 3
+draft: true
 ---
 
 # Performance
@@ -52,7 +53,7 @@ Hook routing adds minimal overhead to command execution:
 Slash commands execute faster with automatic prerequisite injection:
 
 **Before (manual prerequisite checks)**:
-1. User invokes `/speck.implement`
+1. User invokes `/speck:implement`
 2. Command runs `speck-check-prerequisites` (~50-100ms)
 3. Command reads tasks.md (~20ms)
 4. Command reads plan.md (~15ms)
@@ -61,7 +62,7 @@ Slash commands execute faster with automatic prerequisite injection:
 **Total**: ~85-135ms before implementation logic starts
 
 **After (hook-based injection)**:
-1. User invokes `/speck.implement`
+1. User invokes `/speck:implement`
 2. Hook pre-loads context (cached: <5ms, uncached: ~50-100ms)
 3. Command begins execution immediately
 
@@ -201,7 +202,7 @@ Slash Command Execution Time (n=50):
 ### Before: Manual Prerequisite Checks
 
 ```text
-User invokes /speck.implement
+User invokes /speck:implement
   ↓
 Command runs speck-check-prerequisites (50-100ms)
   ↓
@@ -217,7 +218,7 @@ Command begins implementation logic
 ### After: Hook-Based Prerequisite Injection
 
 ```text
-User invokes /speck.implement
+User invokes /speck:implement
   ↓
 Hook detects command (5ms)
   ↓
@@ -244,7 +245,7 @@ Command begins implementation logic immediately
 
 ### For Users
 
-1. **Run related commands in quick succession**: Cache TTL is 5 seconds, so running `/speck.plan` and `/speck.implement` within 5s uses cached prerequisites
+1. **Run related commands in quick succession**: Cache TTL is 5 seconds, so running `/speck:plan` and `/speck:implement` within 5s uses cached prerequisites
 2. **Keep critical files small**: tasks.md, plan.md, and constitution.md under 50KB each for fast pre-loading
 3. **Use hooks**: Install PrePromptSubmit hook for automatic prerequisite injection
 

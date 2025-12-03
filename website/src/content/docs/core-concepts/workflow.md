@@ -40,21 +40,21 @@ The skill reads from your `specs/` directories and helps you navigate your featu
 
 Execute generation and implementation tasks:
 
-- `/speck.specify` - Create feature specifications
-- `/speck.plan` - Generate implementation plans
-- `/speck.tasks` - Break down work into tasks
-- `/speck.implement` - Execute implementation
+- `/speck:specify` - Create feature specifications
+- `/speck:plan` - Generate implementation plans
+- `/speck:tasks` - Break down work into tasks
+- `/speck:implement` - Execute implementation
 
 ### When to Use Each
 
 | Situation | Use Skill | Use Slash Command |
 |-----------|-----------|-------------------|
 | Understand existing spec | ✅ "What does this spec define?" | ❌ |
-| Create new specification | ❌ | ✅ `/speck.specify` |
+| Create new specification | ❌ | ✅ `/speck:specify` |
 | Check task status | ✅ "What tasks are pending?" | ❌ |
-| Generate implementation plan | ❌ | ✅ `/speck.plan` |
+| Generate implementation plan | ❌ | ✅ `/speck:plan` |
 | Explore requirements | ✅ "List all functional requirements" | ❌ |
-| Execute implementation | ❌ | ✅ `/speck.implement` |
+| Execute implementation | ❌ | ✅ `/speck:implement` |
 
 **Rule of thumb**: Skill for questions, commands for actions.
 
@@ -85,8 +85,8 @@ The three-phase workflow (specify, plan, implement), inherited from [spec-kit](h
 
 ### Commands
 
-- `/speck.specify` - Generate initial specification
-- `/speck.clarify` - Resolve ambiguities with targeted questions
+- `/speck:specify` - Generate initial specification
+- `/speck:clarify` - Resolve ambiguities with targeted questions
 
 ### Using the Skill in This Phase
 
@@ -151,7 +151,7 @@ What's the success criteria for this feature?
 
 ### Commands
 
-- `/speck.plan` - Generate implementation plan and design artifacts
+- `/speck:plan` - Generate implementation plan and design artifacts
 
 ### Using the Skill in This Phase
 
@@ -242,8 +242,8 @@ Show me the data model entities
 
 ### Commands
 
-- `/speck.tasks` - Generate task breakdown
-- `/speck.implement` - Execute tasks automatically
+- `/speck:tasks` - Generate task breakdown
+- `/speck:implement` - Execute tasks automatically
 
 ### Using the Skill in This Phase
 
@@ -312,18 +312,18 @@ What's the implementation order for this feature?
 
 ```bash
 # 1. Describe what you're building (no tech details!)
-/speck.specify
+/speck:specify
 
 > "Add user profile editing with avatar upload, bio, and privacy settings"
 
 # 2. Clarify edge cases and ambiguities
-/speck.clarify
+/speck:clarify
 
 > Q: "Should avatars persist if user deletes their account?"
 > A: "No, delete all user data including avatars on account deletion"
 
 # 3. Design the technical implementation
-/speck.plan
+/speck:plan
 
 # Review generated artifacts:
 # - plan.md (tech stack, architecture)
@@ -332,12 +332,12 @@ What's the implementation order for this feature?
 # - quickstart.md (dev setup instructions)
 
 # 4. Generate task breakdown
-/speck.tasks
+/speck:tasks
 
 # Review tasks.md for execution order
 
 # 5. Implement automatically
-/speck.implement
+/speck:implement
 
 # Tasks execute in dependency order
 # Progress tracked with [X] markers
@@ -349,16 +349,16 @@ If requirements change mid-implementation:
 
 ```bash
 # Update the specification
-/speck.specify
+/speck:specify
 
 # Re-run planning (updates design artifacts)
-/speck.plan --force
+/speck:plan --force
 
 # Regenerate tasks (marks new work, preserves completed tasks)
-/speck.tasks --force
+/speck:tasks --force
 
 # Continue implementation from where you left off
-/speck.implement
+/speck:implement
 ```
 
 ---
@@ -377,7 +377,7 @@ All feature documentation lives in `specs/###-feature/`. No scattered Google Doc
 
 ### Automated Consistency
 
-Running `/speck.analyze` validates that:
+Running `/speck:analyze` validates that:
 - All requirements from spec.md map to tasks in tasks.md
 - Technical plan matches specification scope
 - No orphaned or duplicate tasks
@@ -385,10 +385,10 @@ Running `/speck.analyze` validates that:
 ### Claude Code Optimization
 
 Commands are designed for Claude Code's workflow:
-- Slash commands (`/speck.*`) integrate natively
+- Slash commands (`/speck:*`) integrate natively
 - Natural language inputs (no complex syntax)
 - Outputs are markdown (readable, version-controlled)
-- Agents can execute tasks automatically (`/speck.implement`)
+- Agents can execute tasks automatically (`/speck:implement`)
 
 ### Relationship to Plan Mode
 
@@ -397,7 +397,7 @@ Claude Code includes a built-in Plan Mode for exploring complex tasks. How does 
 - **Plan Mode** = Scratch paper for thinking (saves to `~/.claude/plans/`)
 - **Speck** = Permanent documentation (saves to `specs/` in your repo)
 
-They're complementary: use Plan Mode to explore options, then capture your decision with `/speck.specify`.
+They're complementary: use Plan Mode to explore options, then capture your decision with `/speck:specify`.
 
 **Learn more**: [Speck vs Plan Mode](/docs/reference/plan-mode-comparison)
 
@@ -454,7 +454,7 @@ For each feature, define tests first:
 
 Ready to scale beyond single-repo projects or handle large features?
 
-- **Multi-Repo Projects**: Share specifications across multiple repositories with `/speck.link` - [Learn more](/docs/advanced-features/multi-repo-support)
+- **Multi-Repo Projects**: Share specifications across multiple repositories with `/speck:link` - [Learn more](/docs/advanced-features/multi-repo-support)
 - **Worktree Integration**: Work on multiple features in parallel with session handoff - [Learn more](/docs/advanced-features/worktrees)
 - **Monorepo Support**: Manage workspace projects with shared specs - [Learn more](/docs/advanced-features/monorepos)
 

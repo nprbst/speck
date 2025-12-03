@@ -64,7 +64,7 @@ When detected, Speck treats each workspace as a separate context similar to mult
 |  | Monorepo | Multi-Repo |
 |---|----------|------------|
 | **Structure** | Single repo, multiple workspaces | Multiple separate repos |
-| **Detection** | Automatic (workspace config) | Manual (symlinks via `/speck.link`) |
+| **Detection** | Automatic (workspace config) | Manual (symlinks via `/speck:link`) |
 | **Shared specs** | Optional (same as multi-repo) | Yes (via root directory) |
 | **Version control** | Single git repository | Separate git repositories |
 | **Dependencies** | Internal workspace dependencies | External package dependencies |
@@ -93,11 +93,11 @@ Each package generates its own plan:
 ```bash
 # From UI package
 cd packages/ui
-/speck.plan
+/speck:plan
 
 # From API package
 cd packages/api
-/speck.plan
+/speck:plan
 ```
 
 ### Package-Level Specifications
@@ -154,14 +154,14 @@ cd /monorepo-root
 mkdir shared-specs
 
 # In Claude Code, from shared-specs/
-/speck.specify "User authentication"
+/speck:specify "User authentication"
 
 # Link packages to shared specs
 cd packages/ui
-/speck.link ../../shared-specs
+/speck:link ../../shared-specs
 
 cd ../api
-/speck.link ../../shared-specs
+/speck:link ../../shared-specs
 ```
 
 Now both packages read from the same shared specification.
@@ -191,10 +191,10 @@ Link other packages to the specs workspace:
 
 ```bash
 cd packages/ui
-/speck.link ../../specs
+/speck:link ../../specs
 
 cd ../api
-/speck.link ../../specs
+/speck:link ../../specs
 ```
 
 ## Common Monorepo Patterns
@@ -251,11 +251,11 @@ Run commands from any package or the monorepo root:
 ```bash
 # From package directory
 cd packages/ui
-/speck.plan       # Generates plan for current package
+/speck:plan       # Generates plan for current package
 
 # From monorepo root
 cd /monorepo-root
-/speck.env --all  # Shows status across all workspaces
+/speck:env --all  # Shows status across all workspaces
 ```
 
 ## Best Practices
@@ -319,36 +319,12 @@ git commit -m "Add user auth specification"
 
 ## Troubleshooting
 
-### Workspace Not Detected
+**Common monorepo issues:**
+- Workspace not detected → Check for `pnpm-workspace.yaml` or `workspaces` in package.json
+- Cross-package imports failing → Configure `workspace:*` dependencies
+- Plans identical across packages → Create per-package constitutions
 
-**Symptom**: `/speck.env` doesn't show workspace context
-
-**Solution**: Ensure workspace configuration file exists at root:
-```bash
-# Check for workspace config
-ls pnpm-workspace.yaml
-# or
-grep workspaces package.json
-```
-
-### Cross-Package Imports Failing
-
-**Symptom**: TypeScript errors importing from other packages
-
-**Solution**: Configure workspace dependencies in package.json:
-```json
-{
-  "dependencies": {
-    "@myorg/shared": "workspace:*"
-  }
-}
-```
-
-### Plans Identical Across Packages
-
-**Symptom**: UI and API packages generate same implementation plan
-
-**Solution**: Building on [spec-kit](https://github.com/github/spec-kit)'s constitution concept, each package should have its own constitution defining different tech stacks. Update per-package constitutions, then regenerate plans.
+For detailed solutions, see [Monorepo Issues](/docs/getting-started/troubleshooting#monorepo-issues) in the Troubleshooting Guide.
 
 ## Performance
 
@@ -390,17 +366,17 @@ mv /old/shared-specs/* specs/
 ```bash
 cd packages/frontend
 rm .speck/root
-/speck.link ../../specs
+/speck:link ../../specs
 
 cd ../backend
 rm .speck/root
-/speck.link ../../specs
+/speck:link ../../specs
 ```
 
 5. **Verify**:
 ```bash
 cd packages/frontend
-/speck.env  # Should show monorepo context
+/speck:env  # Should show monorepo context
 ```
 
 ## Next Steps

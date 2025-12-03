@@ -63,7 +63,7 @@ cd shared-specs
 
 In Claude Code, run:
 ```
-/speck.specify "User authentication with JWT tokens"
+/speck:specify "User authentication with JWT tokens"
 ```
 
 This creates:
@@ -169,7 +169,7 @@ cd ../frontend
 
 In Claude Code, run:
 ```
-/speck.link ../shared-specs
+/speck:link ../shared-specs
 ```
 
 **Expected output**:
@@ -195,7 +195,7 @@ You should see:
 Still in the frontend directory, generate the implementation plan:
 
 ```
-/speck.plan
+/speck:plan
 ```
 
 **What happens**:
@@ -240,7 +240,7 @@ cd ../backend
 
 In Claude Code, run:
 ```
-/speck.link ../shared-specs
+/speck:link ../shared-specs
 ```
 
 ## Step 6: Generate Backend Plan
@@ -248,7 +248,7 @@ In Claude Code, run:
 Generate the backend implementation plan:
 
 ```
-/speck.plan
+/speck:plan
 ```
 
 **What happens**:
@@ -288,8 +288,8 @@ Generate the backend implementation plan:
 From the backend directory, generate tasks and implement:
 
 ```
-/speck.tasks
-/speck.implement
+/speck:tasks
+/speck:implement
 ```
 
 Speck will:
@@ -360,8 +360,8 @@ cd ../frontend
 
 In Claude Code:
 ```
-/speck.tasks
-/speck.implement
+/speck:tasks
+/speck:implement
 ```
 
 **Example implementation** (Claude Code generates):
@@ -473,7 +473,7 @@ cd ../shared-specs
 
 In Claude Code:
 ```
-/speck.env --all
+/speck:env --all
 ```
 
 **Output**:
@@ -500,7 +500,7 @@ You've successfully completed the tutorial if:
 - [x] Backend implements API contract exactly as defined
 - [x] Frontend calls API using contract structure
 - [x] Login flow works end-to-end
-- [x] `/speck.env --all` shows both repos in multi-repo mode
+- [x] `/speck:env --all` shows both repos in multi-repo mode
 
 ## What You Learned
 
@@ -519,36 +519,9 @@ You've successfully completed the tutorial if:
 
 ## Troubleshooting
 
-**Symlink not working?**
-```bash
-# Verify symlink
-cd frontend
-ls -la .speck/root
+**Common issues in this tutorial:**
+- Symlink not working → Verify with `ls -la .speck/root`, recreate with absolute path
+- Plans are identical → Each repo needs its own constitution for different tech stacks
+- Contract mismatch → Both repos should read from the shared root specs
 
-# Recreate with absolute path
-/speck.link /absolute/path/to/shared-specs
-```
-
-**Plans are identical?**
-```bash
-# Each repo needs different constitution
-cd frontend
-# Edit .speck/memory/constitution.md to define React/TypeScript stack
-
-cd ../backend
-# Edit .speck/memory/constitution.md to define Node.js/Express stack
-
-# Regenerate plans
-/speck.plan --force
-```
-
-**Contract mismatch?**
-```bash
-# Verify both repos reference same contract
-cd frontend
-cat specs/001-user-auth/contracts/api.md
-
-cd ../backend
-cat specs/001-user-auth/contracts/api.md
-# Should be identical (both read from root)
-```
+For detailed solutions, see [Multi-Repo Issues](/docs/getting-started/troubleshooting#multi-repo-issues) in the Troubleshooting Guide.

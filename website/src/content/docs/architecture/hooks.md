@@ -8,6 +8,7 @@ tags: ["hooks", "claude-code", "automation", "prerequisites", "context"]
 lastUpdated: 2025-11-29
 relatedPages: ["/docs/architecture/performance"]
 order: 2
+draft: true
 ---
 
 # Hook System
@@ -19,7 +20,7 @@ Speck leverages Claude Code's **PrePromptSubmit hook** to automatically validate
 Hooks are user-configurable extension points in Claude Code that run automatically in response to events. Speck uses the **PrePromptSubmit hook**, which triggers when you invoke a slash command.
 
 **Key Benefits:**
-- **Zero Manual Checks**: No need to run `/speck.env` or validate prerequisites manually
+- **Zero Manual Checks**: No need to run `/speck:env` or validate prerequisites manually
 - **Instant Context**: Commands receive pre-loaded file contents without reading from disk
 - **Fast Execution**: Cached prerequisite results avoid redundant file system operations
 - **Consistent State**: All commands run with validated, up-to-date context
@@ -28,7 +29,7 @@ Hooks are user-configurable extension points in Claude Code that run automatical
 
 ### Execution Flow
 
-When you invoke `/speck.plan` in Claude Code:
+When you invoke `/speck:plan` in Claude Code:
 
 1. **Hook Trigger**: PrePromptSubmit hook detects the command invocation
 2. **Command Detection**: Hook script identifies this as a Speck command requiring prerequisites
@@ -91,7 +92,7 @@ To maintain sub-100ms performance, the hook caches prerequisite results for **5 
 - **Cached check**: <5ms (returns cached JSON)
 - **Cache TTL**: 5 seconds (balances freshness with performance)
 
-If you run `/speck.plan` and then `/speck.implement` within 5 seconds, the second command uses cached context. After 5 seconds, the hook re-runs prerequisite checks to ensure freshness.
+If you run `/speck:plan` and then `/speck:implement` within 5 seconds, the second command uses cached context. After 5 seconds, the hook re-runs prerequisite checks to ensure freshness.
 
 ### Cache Metadata
 
@@ -113,7 +114,7 @@ If prerequisite checks fail (e.g., missing tasks.md), the hook:
 
 1. **Blocks Command Execution**: Prevents the slash command from running with invalid state
 2. **Shows Clear Error**: Displays error message with remediation steps
-3. **Suggests Next Steps**: e.g., "Run `/speck.tasks` to generate tasks.md first"
+3. **Suggests Next Steps**: e.g., "Run `/speck:tasks` to generate tasks.md first"
 
 This prevents commands from failing mid-execution due to missing prerequisites.
 
@@ -146,7 +147,7 @@ export async function onUserPromptSubmit(context) {
 }
 ```
 
-The hook automatically detects Speck commands and only runs for relevant invocations (e.g., `/speck.plan`, `/speck.implement`). It has zero impact on non-Speck commands.
+The hook automatically detects Speck commands and only runs for relevant invocations (e.g., `/speck:plan`, `/speck:implement`). It has zero impact on non-Speck commands.
 
 ## Backwards Compatibility
 
@@ -165,7 +166,7 @@ This ensures Speck works in:
 
 **Before hooks** (manual prerequisite checks):
 ```markdown
-User: /speck.implement
+User: /speck:implement
 Claude: Let me first run speck-check-prerequisites...
 [Command runs prerequisite check]
 [Command reads tasks.md]
@@ -175,7 +176,7 @@ Claude: Let me first run speck-check-prerequisites...
 
 **With hooks** (automatic prerequisite injection):
 ```markdown
-User: /speck.implement
+User: /speck:implement
 [Hook automatically injects prerequisites]
 Claude: I'll implement the tasks from tasks.md...
 [Command begins implementation immediately]

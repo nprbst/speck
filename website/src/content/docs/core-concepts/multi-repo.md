@@ -24,7 +24,7 @@ Speck detects multi-repo contexts by checking for a `.speck/root` symlink in you
 1. Check for `.speck/root` symlink
 2. Verify symlink points to valid specification directory
 3. Enable multi-repo features (shared specs, per-repo plans)
-4. Display multi-repo context in `/speck.env`
+4. Display multi-repo context in `/speck:env`
 
 **Performance**: Symlink detection adds <10ms overhead (median) to command execution.
 
@@ -128,7 +128,7 @@ Multi-repo support enables coordination without tight coupling:
 **What Speck Provides**:
 - Shared specifications (requirements, contracts)
 - Per-repo implementation plans
-- Aggregate status view (`/speck.env` from root)
+- Aggregate status view (`/speck:env` from root)
 - Independent branch stacks per repo (with spec 009)
 
 **What Speck Does NOT Provide**:

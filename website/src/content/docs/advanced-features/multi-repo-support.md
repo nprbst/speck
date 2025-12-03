@@ -3,8 +3,8 @@ title: "Multi-Repo Setup"
 description: "Configure Speck for multi-repository projects using symlink-based detection and shared specifications."
 category: advanced-features
 audience: [existing-users, evaluators]
-prerequisites: ["/docs/getting-started/installation", "/docs/core-concepts/workflow", "/docs/core-concepts/multi-repo"]
-tags: ["multi-repo", "symlinks", "speck.link", "setup"]
+prerequisites: ["/docs/getting-started/quick-start", "/docs/core-concepts/workflow", "/docs/core-concepts/multi-repo"]
+tags: ["multi-repo", "symlinks", "speck:link", "setup"]
 lastUpdated: 2025-11-22
 relatedPages: ["/docs/advanced-features/monorepos", "/docs/examples/multi-repo-workflow", "/docs/reference/capability-matrix"]
 order: 1
@@ -12,12 +12,13 @@ order: 1
 
 # Multi-Repo Setup
 
-Set up Speck to coordinate feature development across multiple repositories using shared specifications and per-repo implementation plans.
+Set up Speck to coordinate feature development across multiple repositories using shared specifications and per-repo implementation plans and tasks.
 
 ## Prerequisites
 
 - Speck plugin installed in Claude Code
 - Two or more git repositories (e.g., frontend and backend)
+- Optional: A root git repository for shared specs
 - Repositories located on the same filesystem (for symlinks)
 
 ## Setup Overview
@@ -41,10 +42,11 @@ Create a separate repository just for specifications:
 mkdir shared-specs
 cd shared-specs
 git init
-
-# Create your first shared specification
-# (In Claude Code)
-/speck.specify "User authentication with JWT tokens"
+claude
+```
+Create your first shared specification
+```
+/speck:specify "User authentication with JWT tokens"
 ```
 
 ### Option B: Use Existing Repository as Root
@@ -54,30 +56,35 @@ Use an existing repository (e.g., backend) as the specification root:
 ```bash
 # In your backend repository
 cd backend-repo
-
-# Create specification normally
-# (In Claude Code)
-/speck.specify "User authentication with JWT tokens"
-
-# Backend repo IS the root - no linking needed here
-# Other repos will link TO this one
+claude
 ```
 
-**Best Practice**: Dedicated specifications repository (Option A) works best for microservices where no single repo is the "owner" of shared specs.
+Create specification normally
+
+```
+/speck:specify "User authentication with JWT tokens"
+```
+
+`backend repo` IS the root - no linking needed here. Other repos will link TO this one.
+
+**Best Practice**: Dedicated specifications repository (Option A) works best for systems where no single repo should be the "owner" of shared specs.
 
 ## Step 2: Link Child Repositories
 
 For each child repository that will implement the shared specification:
 
-### Using `/speck.link` Command
+### Using `/speck:link` Command
 
 ```bash
 # From child repository (e.g., frontend)
 cd frontend-repo
+claude
+```
 
-# Link to root specification directory
-# (In Claude Code)
-/speck.link ../shared-specs
+Link to root specification directory
+
+```
+/speck:link ../shared-specs
 ```
 
 **What this does**:
@@ -90,17 +97,17 @@ cd frontend-repo
 
 **Relative paths** (recommended):
 ```bash
-/speck.link ../shared-specs
-/speck.link ../../workspace/specifications
+/speck:link ../shared-specs
+/speck:link ../../workspace/specifications
 ```
 
-**Absolute paths** (use if repos move independently):
+**Absolute paths** (use if repos move independently _and you are working solo_):
 ```bash
-/speck.link /Users/yourname/workspace/shared-specs
-/speck.link /home/user/projects/specs
+/speck:link /Users/yourname/workspace/shared-specs
+/speck:link /home/user/projects/specs
 ```
 
-**Recommendation**: Use relative paths when all repos live in the same workspace directory.
+**Recommendation**: Use relative paths.
 
 ### Symlink Verification
 
@@ -116,30 +123,32 @@ ls -la .speck/root
 
 ## Step 3: Verify Configuration
 
-Use `/speck.env` to verify multi-repo detection:
+<!-- TODO: Rename this /speck:doctor and make it like that -->
+Use `/speck:env` to verify multi-repo detection:
 
-```bash
-# From child repository
-# (In Claude Code)
-/speck.env
+From child repository:
+
+```ash
+/speck:env
 ```
 
 **Expected output**:
-```
+<!-- TOOD: verify -->
+```yaml
 Repository Mode: multi-repo-child
 Root Directory: ../shared-specs
 Current Feature: 001-user-auth
 ```
 
 **From root repository**:
-```
+```yaml
 Repository Mode: multi-repo-root
 Root Directory: .
 Current Feature: 001-user-auth
 ```
 
 **From single-repo** (no symlink):
-```
+```yaml
 Repository Mode: single-repo
 Root Directory: N/A
 Current Feature: 001-user-auth
@@ -151,36 +160,38 @@ Once linked, child repos can generate independent plans from shared specs:
 
 ### In Root Repository
 
-```bash
-# Create shared specification
-# (In Claude Code)
-/speck.specify "User authentication with JWT tokens"
+Create shared specification:
 
-# Output: specs/001-user-auth/spec.md
+```
+/speck:specify "User authentication with JWT tokens"
+```
+```yaml
+Output: specs/001-user-auth/spec.md
 ```
 
 ### In Child Repository A (Frontend)
 
-```bash
-# Generate frontend-specific plan
-# (In Claude Code)
-/speck.plan
-
-# Reads from: ../shared-specs/specs/001-user-auth/spec.md (shared)
-# Writes to: specs/001-user-auth/plan.md (independent)
-# Writes to: specs/001-user-auth/tasks.md (independent)
+Generate frontend-specific plan:
+```
+/speck:plan
+```
+```yaml
+▸ Reads from: ../shared-specs/specs/001-user-auth/spec.md (shared)
+▸ Writes to: specs/001-user-auth/plan.md (independent)
+▸ Writes to: specs/001-user-auth/tasks.md (independent)
 ```
 
 ### In Child Repository B (Backend)
 
-```bash
-# Generate backend-specific plan
-# (In Claude Code)
-/speck.plan
+Generate backend-specific plan:
 
-# Reads from: ../shared-specs/specs/001-user-auth/spec.md (shared)
-# Writes to: specs/001-user-auth/plan.md (independent)
-# Writes to: specs/001-user-auth/tasks.md (independent)
+```
+/speck:plan
+```
+```yaml
+▸ Reads from: ../shared-specs/specs/001-user-auth/spec.md (shared)
+▸ Writes to: specs/001-user-auth/plan.md (independent)
+▸ Writes to: specs/001-user-auth/tasks.md (independent)
 ```
 
 Each child repo creates its own implementation plan based on the shared specification.
@@ -189,20 +200,25 @@ Each child repo creates its own implementation plan based on the shared specific
 
 | File | Location | Sharing |
 |------|----------|---------|
+| `constitution.md` | Root & Child repos | Shared & Per-repo (constitutional principles) |
 | `spec.md` | Root only | Shared (all repos read from root) |
+| `checklists/` | Root only | Shared (project compliance checklists) |
 | `contracts/` | Root only | Shared (API definitions, schemas) |
-| `data-model.md` | Root only (optional) | Shared (entity definitions) |
+| `research.md` | Each repo | Per-repo (tech stack research) |
+| `data-model.md` | Each repo (optional) | Per-repo (entity definitions) |
 | `plan.md` | Each repo | Per-repo (independent implementations) |
 | `tasks.md` | Each repo | Per-repo (repo-specific task breakdown) |
-| `constitution.md` | Each repo | Per-repo (architectural principles) |
 
 **Key Principle**: Specifications and contracts are shared. Implementation details are per-repo.
 
 ## Directory Structure Example
 
-```
-workspace/
+<!-- TODO: Is there a way to tighten the vertical padding in this block? -->
+```bash
+project/
 ├── shared-specs/                # Root repository
+│   ├── .speck/
+│   │   └── constitution.md      # Shared constitution
 │   └── specs/001-user-auth/
 │       ├── spec.md              # Shared specification
 │       ├── contracts/           # Shared API contracts
@@ -211,7 +227,7 @@ workspace/
 │
 ├── frontend-repo/               # Child repository A
 │   ├── .speck/
-│   │   └── root -> ../../shared-specs  # Symlink
+│   │   └── root  ../../shared-specs  # Symlink
 │   └── specs/001-user-auth/
 │       ├── spec.md              # Symlink to root
 │       ├── plan.md              # Frontend plan (React)
@@ -219,7 +235,8 @@ workspace/
 │
 └── backend-repo/                # Child repository B
     ├── .speck/
-    │   └── root -> ../../shared-specs   # Symlink
+    │   ├── constitution.md      # Backend constitution
+    │   └── root  ../../shared-specs   # Symlink
     └── specs/001-user-auth/
         ├── spec.md              # Symlink to root
         ├── plan.md              # Backend plan (Node.js)
@@ -233,22 +250,37 @@ workspace/
 ```bash
 # 1. Create shared spec in root
 cd shared-specs
-/speck.specify "Payment processing with Stripe"
-
+```
+```
+/speck:specify "Payment processing with Stripe"
+```
+```bash
 # 2. Link child repos (if not already linked)
 cd ../frontend-repo
-/speck.link ../shared-specs
-
+```
+```
+/speck:link ../shared-specs
+```
+```bash
 cd ../backend-repo
-/speck.link ../shared-specs
-
+```
+```
+/speck:link ../shared-specs
+```
+```bash
 # 3. Generate plans in each child
 cd ../frontend-repo
-/speck.plan  # Creates frontend plan
-
+```
+```
+/speck:plan  # Creates frontend plan
+```
+```bash
 cd ../backend-repo
-/speck.plan  # Creates backend plan
-
+```
+```
+/speck:plan  # Creates backend plan
+```
+```bash
 # 4. Implement in parallel
 # Each team works on their plan independently
 ```
@@ -262,59 +294,27 @@ cd shared-specs
 
 # 2. Regenerate plans in child repos
 cd ../frontend-repo
-/speck.plan  # Regenerates frontend plan with changes
-
+claude
+```
+```
+/speck:plan  # Regenerates frontend plan with changes
+```
+```bash
 cd ../backend-repo
-/speck.plan  # Regenerates backend plan with changes
+claude
+```
+```
+/speck:plan  # Regenerates backend plan with changes
 ```
 
 ## Troubleshooting
 
-### "Repository mode: single-repo" when expecting multi-repo
+**Common multi-repo issues:**
+- Symlink missing or broken → Check with `ls -la .speck/root`
+- Spec file not found → Verify symlink points to correct directory
+- Plans out of sync → Regenerate plans with `/speck:plan` in each repo
 
-**Cause**: `.speck/root` symlink missing or broken
-
-**Solution**:
-```bash
-# Check if symlink exists
-ls -la .speck/root
-
-# If missing, create it
-/speck.link ../shared-specs
-
-# If broken, remove and recreate
-rm .speck/root
-/speck.link ../shared-specs
-```
-
-### "Spec file not found" error
-
-**Cause**: Symlink points to wrong directory
-
-**Solution**:
-```bash
-# Verify symlink target
-ls -la .speck/root
-
-# Should show valid path to root repo
-# If wrong, remove and recreate
-rm .speck/root
-/speck.link /correct/path/to/shared-specs
-```
-
-### Plans out of sync with shared spec
-
-**Cause**: Spec updated but plans not regenerated
-
-**Solution**:
-```bash
-# Regenerate plan in each child repo
-cd frontend-repo
-/speck.plan
-
-cd backend-repo
-/speck.plan
-```
+For detailed solutions, see [Multi-Repo Issues](/docs/getting-started/troubleshooting#multi-repo-issues) in the Troubleshooting Guide.
 
 ## Advanced Configuration
 
@@ -325,7 +325,7 @@ Speck extends [spec-kit](https://github.com/github/spec-kit)'s constitution conc
 ```bash
 # Frontend repo constitution
 cd frontend-repo
-/speck.constitution
+/speck:constitution
 
 # Principles:
 # - React components must be functional
@@ -334,7 +334,7 @@ cd frontend-repo
 
 # Backend repo constitution
 cd backend-repo
-/speck.constitution
+/speck:constitution
 
 # Principles:
 # - RESTful API design

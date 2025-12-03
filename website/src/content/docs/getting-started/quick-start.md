@@ -1,6 +1,6 @@
 ---
 title: "Quick Start Guide"
-description: "Install Speck and run your first command in under 10 minutes"
+description: "Install Speck and run your first command in 2 minutes"
 category: "getting-started"
 order: 1
 lastUpdated: 2025-11-22
@@ -9,7 +9,7 @@ tags: ["installation", "setup", "beginner", "plugin"]
 
 # Quick Start Guide
 
-Get started with Speck in under 10 minutes. This guide will walk you through plugin installation and running your first specification command.
+Get started with Speck in 2 minutes. This guide will walk you through plugin installation and running your first specification command.
 
 ## Prerequisites
 
@@ -17,13 +17,13 @@ Before you begin, ensure you have:
 
 - **Claude Code 2.0+** - With plugin system support
 
-That's it! No other dependencies required.
+That's it! No other dependencies are required to be preinstalled.
 
 ### Verify Claude Code Version
 
 ```bash
 claude --version
-# Should show: Claude Code v2.0.0 or higher
+# Should show: Claude Code v2.0.56 or higher
 ```
 
 **If you need to upgrade**: Visit [claude.com/code](https://claude.com/code) for the latest installer.
@@ -37,26 +37,21 @@ claude --version
    claude
    ```
 
-2. **Open plugin manager**:
+2. **Install the `speck-market`place**:
    ```
-   /plugin
+   /plugin marketplace add nprbst/speck-market
    ```
-
-3. **Add speck-market**:
-   - Select "Manage marketplaces"
-   - Select "Add marketplace"
-   - Enter: `speck-market`
 
 4. **Install Speck**:
-   - Select "speck-market"
-   - Find "speck" in the plugin list
-   - Select "Install"
+   ```
+   /plugin install speck@speck-market
+   ```
 
 ✅ **Done!** Speck is now installed.
 
 ## Optional: Worktree Integration Setup
 
-**New in Speck 1.0**: Work on multiple features simultaneously using Git worktrees with automatic IDE launch and dependency installation.
+Work on multiple features simultaneously using Git worktrees with automatic IDE launch and dependency installation.
 
 ### What are Worktrees?
 
@@ -71,14 +66,15 @@ Worktrees let you have multiple branches checked out at the same time, eliminati
 
 **Option 1: Interactive Wizard** (Recommended)
 
-```bash
-bun .speck/scripts/worktree/cli.ts init
+```
+/speck:init
 ```
 
 Follow the prompts to configure:
 - Enable/disable worktree integration
-- Choose your IDE (VSCode, Cursor, WebStorm, etc.)
-- Configure dependency auto-install
+- Enable/disable IDE auto-launch
+  - Choose your IDE (VSCode for now...others coming soon?)
+  - Configure dependency auto-install
 - Set file copy/symlink rules
 
 **Option 2: Manual Configuration**
@@ -92,7 +88,7 @@ Create `.speck/config.json` in your repository:
     "enabled": true,
     "ide": {
       "autoLaunch": true,
-      "editor": "code"
+      "editor": "vscode"
     },
     "dependencies": {
       "autoInstall": true
@@ -101,12 +97,6 @@ Create `.speck/config.json` in your repository:
 }
 ```
 
-**Option 3: Skip for Now**
-
-Worktree integration is completely optional. You can skip this step and use Speck with the traditional Git workflow (single working directory, branch switching).
-
-**Learn more**: [Worktree Integration Guide](/docs/advanced-features/worktrees)
-
 ## Your First Specification
 
 Now that Speck is installed, let's create your first feature specification.
@@ -114,7 +104,7 @@ Now that Speck is installed, let's create your first feature specification.
 ### 1. Start Claude Code
 
 ```bash
-# In your project directory
+# In your git project directory
 claude
 ```
 
@@ -123,12 +113,12 @@ claude
 In Claude Code, type:
 
 ```
-/speck.specify
+/speck:specify [Basic desciption of the feature you would like to build]
 ```
 
 ### 3. Describe Your Feature
 
-Claude will prompt you to describe your feature in natural language. For example:
+If you don't provide a description to the `speck:specify` command, Claude will prompt you to describe your feature in natural language. For example:
 
 ```
 Add a user authentication system with email and password login
@@ -153,18 +143,18 @@ In addition to slash commands, you can ask Speck questions naturally!
 Try asking:
 
 ```
-What user stories are in this spec?
+/speck:help What user stories are in this spec?
 ```
 
 ```
-What are the success criteria?
+/speck:help What are the success criteria?
 ```
 
 ```
-Show me all functional requirements
+/speck:help Show me all functional requirements
 ```
 
-The Speck skill understands your specs, plans, and tasks - ask it anything!
+The Speck skill understands your specs, plans, and tasks - ask it anything! (After the first `/speck:help` you can omit it for future questions.)
 
 ### Skill vs Commands: When to Use Each
 
@@ -174,30 +164,30 @@ The Speck skill understands your specs, plans, and tasks - ask it anything!
   - "What's the technical approach?"
 
 - **Use slash commands** for actions and generation:
-  - `/speck.specify` - Create new spec
-  - `/speck.plan` - Generate implementation plan
-  - `/speck.tasks` - Break down into tasks
+  - `/speck:specify` - Create new spec
+  - `/speck:plan` - Generate implementation plan
+  - `/speck:tasks` - Break down into tasks
 
 ## Next Steps
 
 Now that you've created your first specification, you can:
 
-1. **Clarify your spec**: Run `/speck.clarify` to identify underspecified areas
-2. **Plan implementation**: Run `/speck.plan` to generate technical design
-3. **Generate tasks**: Run `/speck.tasks` to break down the work
-4. **Implement**: Run `/speck.implement` to execute the plan
+1. **Clarify your spec**: Run `/speck:clarify` to identify underspecified areas
+2. **Plan implementation**: Run `/speck:plan` to generate technical research & design
+3. **Generate tasks**: Run `/speck:tasks` to break down the work
+4. **Implement**: Run `/speck:implement` to execute the plan
 
 Or ask the Speck skill:
 
 ```
-What should I do next in the Speck workflow?
+/speck:help What should I do next in the Speck workflow?
 ```
 
 ### Advanced Capabilities
 
 Ready to scale beyond single-repo projects? Speck supports:
 
-- **Multi-Repo Projects**: Share specifications across microservices with `/speck.link` - [Learn more](/docs/advanced-features/multi-repo-support)
+- **Multi-Repo Projects**: Share specifications across microservices with `/speck:link` - [Learn more](/docs/advanced-features/multi-repo-support)
 - **Monorepo Workspaces**: Manage multiple features within a monorepo - [Learn more](/docs/advanced-features/monorepos)
 - **Worktree Integration**: Work on multiple features in parallel with session handoff - [Learn more](/docs/advanced-features/worktrees)
 
@@ -211,33 +201,11 @@ Ready to scale beyond single-repo projects? Speck supports:
 
 ## Troubleshooting
 
-### Plugin not found
-
-If Speck doesn't appear in the marketplace:
-
-1. Verify Claude Code version: `claude --version` (must be 2.0.0+)
-2. Check that speck-market marketplace was added correctly
-3. Try refreshing: `/plugin` → Manage marketplaces → speck-market → Refresh
-
-### Commands not working
-
-If slash commands don't autocomplete:
-
-1. Verify installation: `/plugin` → View installed plugins → Check for "speck"
-2. Restart Claude Code
-3. If still not working, try reinstalling the plugin
-
-### Skill not responding
-
-If the Speck skill doesn't respond to questions:
-
-1. Ensure you're in a directory with a `specs/` folder
-2. Try asking more specific questions:
-   ```
-   List all specs in this project
-   ```
-3. Restart Claude Code if needed
+Having issues? See the [Troubleshooting Guide](/docs/getting-started/troubleshooting) for solutions to common problems including:
+- Plugin not found or commands not working
+- Skill not responding
+- Version compatibility issues
 
 ---
 
-**Need more help?** Check out the [full documentation](/docs/getting-started/installation) or open a GitHub Discussion.
+**Need more help?** Check out the [Setup Reference](/docs/getting-started/setup-reference) for detailed installation info, or open a GitHub Discussion.

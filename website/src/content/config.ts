@@ -18,12 +18,15 @@ const docsCollection = defineCollection({
       'advanced-features',
       'architecture',
       'reference',
+      'community',
     ], {
-      errorMap: () => ({ message: 'Category must be one of: getting-started, commands, concepts, examples, advanced-features, architecture, reference' }),
+      errorMap: () => ({ message: 'Category must be one of: getting-started, commands, concepts, examples, advanced-features, architecture, reference, community' }),
     }),
     order: z.number().int().positive({ message: 'Order must be a positive integer' }),
     lastUpdated: z.coerce.date().optional(),
     tags: z.array(z.string()).optional(),
+    draft: z.boolean().optional().default(false),
+    redirect: z.string().optional(),
   }),
 });
 
