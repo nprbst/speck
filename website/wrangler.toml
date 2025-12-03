@@ -12,13 +12,13 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "speck-inquiries"
-database_id = "<YOUR_DATABASE_ID>"  # Replace with actual database ID
+database_id = "339ad476-59de-4894-9f0f-8dc65fae7e76"
 
-# Environment-specific configuration for beta
-[env.beta]
-vars = { ENVIRONMENT = "beta" }
+# Environment-specific configuration for production
+[env.production]
+vars = { ENVIRONMENT = "production" }
 
-[[env.beta.d1_databases]]
+[[env.production.d1_databases]]
 binding = "DB"
 database_name = "speck-inquiries"
-database_id = "<YOUR_DATABASE_ID>"  # Replace with actual database ID
+database_id = "339ad476-59de-4894-9f0f-8dc65fae7e76"
