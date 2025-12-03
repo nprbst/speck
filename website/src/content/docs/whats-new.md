@@ -4,7 +4,8 @@ description: "Recent feature additions and improvements to Speck for Claude Code
 category: "reference"
 order: 2
 tags: ["changelog", "updates", "features", "releases"]
-lastUpdated: 2025-11-30
+lastUpdated: 2025-12-02
+draft: true
 ---
 
 # What's New in Speck
@@ -73,7 +74,7 @@ Work on multiple features simultaneously with Git worktrees, automatic IDE launc
 
 **Key Capabilities**:
 - **Automatic worktree creation**: `/speck:specify` creates isolated worktree directory
-- **IDE auto-launch**: Opens VSCode, Cursor, or WebStorm automatically
+- **IDE auto-launch**: Opens VSCode, Cursor, WebStorm, IntelliJ IDEA, or PyCharm (Claude Code integration requires VSCode or Cursor)
 - **Dependency auto-install**: Runs package manager before IDE opens
 - **Session handoff**: Handoff document passes context to new Claude sessions
 

@@ -5,7 +5,7 @@ category: advanced-features
 audience: [existing-users, evaluators]
 prerequisites: ["/docs/getting-started/quick-start", "/docs/core-concepts/workflow"]
 tags: ["worktrees", "parallel-development", "setup", "workflow"]
-lastUpdated: 2025-11-22
+lastUpdated: 2025-12-02
 relatedPages: ["/docs/commands/reference", "/docs/configuration/speck-config"]
 order: 4
 ---
@@ -50,7 +50,7 @@ Create or edit `.speck/config.json` in your repository:
     "enabled": true,
     "ide": {
       "autoLaunch": true,
-      "command": "code"
+      "editor": "vscode"
     },
     "dependencies": {
       "autoInstall": true
@@ -105,7 +105,7 @@ Enable or disable worktree integration:
 ```json
 {
   "worktree": {
-    "enabled": true  // Default: false
+    "enabled": true  // Default: true
   }
 }
 ```
@@ -121,11 +121,11 @@ Configure which IDE to launch automatically:
   "worktree": {
     "ide": {
       "autoLaunch": true,       // Default: false
-      "command": "code",         // VSCode (default)
+      "editor": "vscode"        // VSCode (default)
       // Alternative options:
       // "cursor" - Cursor editor
-      // "idea" - IntelliJ IDEA
       // "webstorm" - WebStorm
+      // "idea" - IntelliJ IDEA
       // "pycharm" - PyCharm
     }
   }
@@ -133,9 +133,11 @@ Configure which IDE to launch automatically:
 ```
 
 **Supported IDEs**:
-- **VSCode**: `code` (most common)
-- **Cursor**: `cursor`
-- **JetBrains IDEs**: `idea`, `webstorm`, `pycharm`, `rubymine`, `goland`, `clion`, `phpstorm`, `rider`
+- **VSCode**: `vscode` (recommended - full Claude Code integration)
+- **Cursor**: `cursor` (Claude Code integration)
+- **JetBrains IDEs**: `webstorm`, `idea`, `pycharm` (IDE launch only)
+
+> **Note**: Session handoff with automatic Claude Code launch only works with VSCode and Cursor. JetBrains IDEs will open the worktree but require manually starting Claude Code.
 
 ### Dependency Pre-Installation
 
@@ -304,18 +306,7 @@ Phase 3 of 5 in progress. Last task: T015 (Add login API endpoint)
 
 ### Configuration
 
-Session handoff is **enabled by default** when worktree integration is enabled. To disable:
-
-```json
-{
-  "worktree": {
-    "enabled": true,
-    "handoff": {
-      "enabled": false  // Disable session handoff
-    }
-  }
-}
-```
+Session handoff is **automatically enabled** when worktree integration is enabled. The handoff document (`.speck/handoff.md`) is always created in worktrees to provide context for new Claude Code sessions.
 
 ### Updating Handoff Documents
 
@@ -598,7 +589,7 @@ Creates worktrees without IDE launch or dependency install.
     "enabled": true,
     "ide": {
       "autoLaunch": true,
-      "command": "code"
+      "editor": "vscode"
     },
     "dependencies": {
       "autoInstall": true
@@ -626,11 +617,13 @@ Fully automated worktree creation with all features enabled.
     "enabled": true,
     "ide": {
       "autoLaunch": true,
-      "command": "webstorm"  // Or: idea, pycharm, goland, etc.
+      "editor": "webstorm"  // Or: idea, pycharm
     }
   }
 }
 ```
+
+> **Note**: JetBrains IDEs will open the worktree but don't support automatic Claude Code terminal launch. You'll need to start Claude Code manually.
 
 ### Conservative Disk Usage
 
