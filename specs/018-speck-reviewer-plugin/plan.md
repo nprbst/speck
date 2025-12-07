@@ -223,6 +223,53 @@ tests/
 - `bun preflight` passes with 0 introduced failures
 - All acceptance scenarios from spec pass manually
 
+### Phase 5b: POC Parity Restoration (P1)
+
+**Goal**: Restore full behavioral richness from the original claude-pr-review-extensions-poc that was lost during initial extraction. This phase addresses critical regressions identified in the POC comparison analysis.
+
+**Tasks**:
+1. **Output Formatting Module (FR-025)**: Extract and adapt `links.ts` from POC
+   - Action menu generation with lettered selection
+   - Review table formatting
+   - Shell-safe command escaping
+   - `formatActionMenu()`, `formatReviewTable()`, `getNavActions()`, `getReviewActions()`
+2. **Skill Content Expansion (FR-026)**: Expand SKILL.md from 155→1100+ lines
+   - Copy full content from POC SKILL.md
+   - Adapt CLI paths to use `${CLAUDE_PLUGIN_ROOT}`
+   - Add example session walkthrough
+   - Add output format guidance
+   - Add edge case documentation
+3. **Utility Commands (FR-027)**: Add missing commands
+   - `link <file> [line]` command
+   - `actions` command
+   - `run-actions` command
+   - `review-table` command
+   - `submit-actions` command
+   - `logs` command
+4. **Enhanced Clustering (FR-028)**: Add advanced analysis
+   - `analyzeImports()` for dependency detection
+   - `topologicalSort()` for ordering
+   - `detectTestPairs()` for [Has tests] annotation
+5. **Enhanced State Management (FR-029)**: Add immutable helpers
+   - `updateCommentState()` with history
+   - `recordCommentEdit()` for edit tracking
+   - `recordQuestion()` for Q&A persistence
+   - `isReviewComplete()` for completion detection
+6. **Enhanced GitHub Integration (FR-030)**: Add advanced features
+   - `ghGraphQL()` wrapper
+   - `fetchReviewThreadResolvedStatus()`
+   - Reply count tracking
+
+**Dependencies**: Phase 5 complete (need baseline working before enhancement)
+
+**Acceptance**:
+- links.ts module exists with all formatting functions
+- SKILL.md has ~1100 lines with full guidance
+- All 6 utility commands implemented and working
+- Clustering includes dependency analysis
+- State management has full edit history
+- GitHub integration has GraphQL support
+
 ## Risk Mitigation
 
 | Risk | Mitigation |

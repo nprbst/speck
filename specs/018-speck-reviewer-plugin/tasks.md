@@ -85,8 +85,8 @@ Based on plan.md monorepo structure:
 
 ### Implementation for User Story 2
 
-- [X] T018 [US2] Extract and adapt `state.ts` from POC to `plugins/speck-reviewer/cli/src/state.ts` with ReviewSession, atomic file writes, schema versioning
-- [X] T019 [US2] Extract and adapt `clustering.ts` from POC to `plugins/speck-reviewer/cli/src/clustering.ts` with two-stage heuristic clustering (FR-010)
+- [ ] T018 [US2] Extract and adapt `state.ts` from POC to `plugins/speck-reviewer/cli/src/state.ts` with ReviewSession, atomic file writes, schema versioning, AND immutable helpers per FR-029: `updateCommentState()`, `recordCommentEdit()`, `recordQuestion()`, `isReviewComplete()`, `setNarrative()`, `setClusters()` [UNCHECKED - needs FR-029 enhancement]
+- [ ] T019 [US2] Extract and adapt `clustering.ts` from POC to `plugins/speck-reviewer/cli/src/clustering.ts` with two-stage heuristic clustering (FR-010), AND advanced analysis per FR-028: `analyzeImports()`, `topologicalSort()`, `detectTestPairs()` [UNCHECKED - needs FR-028 enhancement]
 - [X] T020 [US2] Implement `analyze` command in `plugins/speck-reviewer/cli/src/index.ts` that outputs clustered JSON with narrative summary (FR-011, per contracts/cli-commands.md)
 - [X] T021 [US2] Implement `state show` command to display current session progress with cluster status
 - [X] T022 [US2] Implement `state clear` command to remove session state file
@@ -131,7 +131,7 @@ Based on plan.md monorepo structure:
 
 ### Implementation for User Story 4
 
-- [X] T032 [US4] Extract and adapt `github.ts` from POC to `plugins/speck-reviewer/cli/src/github.ts` with gh CLI wrapper functions
+- [ ] T032 [US4] Extract and adapt `github.ts` from POC to `plugins/speck-reviewer/cli/src/github.ts` with gh CLI wrapper functions, AND advanced features per FR-030: `ghGraphQL()`, `fetchReviewThreadResolvedStatus()`, `fetchExistingComments()` with reply counts [UNCHECKED - needs FR-030 enhancement]
 - [X] T033 [US4] Implement `comment <file> <line> <body>` command in index.ts for line comments (FR-015)
 - [X] T034 [US4] Implement `comment-reply <comment-id> <body>` command for thread replies
 - [X] T035 [US4] Implement `comment-delete <comment-id>` command
@@ -185,7 +185,7 @@ Based on plan.md monorepo structure:
 
 **Purpose**: Skill creation, integration testing, edge case handling, and final validation
 
-- [X] T051 Create `plugins/speck-reviewer/skills/pr-review/SKILL.md` with comprehensive review guidance (cluster analysis, comment management, guided walkthrough, CLI reference)
+- [ ] T051 Create `plugins/speck-reviewer/skills/pr-review/SKILL.md` with FULL comprehensive review guidance per FR-026 (~1100 lines): example session, output formats, cluster refinement, Q&A handling, edge cases, CLI reference, state schema, read-only mode, navigation commands, comment workflow [UNCHECKED - needs FR-026 POC content restoration]
 - [ ] T052 [P] [TEST] Create `tests/integration/cli-workflow.test.ts` with end-to-end CLI workflow tests [DEFERRED - requires live gh CLI]
 - [ ] T053 [P] Update root CLAUDE.md with speck-reviewer plugin information [See CLAUDE.md auto-update]
 - [X] T054 [P] Add edge case handling: gh CLI auth errors with clear instructions in github.ts
@@ -196,7 +196,42 @@ Based on plan.md monorepo structure:
 - [X] T059 Run `bun run lint` to verify code quality (pre-existing error in handoff.ts, speck-reviewer code clean)
 - [ ] T060 Verify plugin installation and coexistence manually (per SC-006) [Manual verification needed]
 
-**Implementation Complete**: 52/64 tasks completed, 8 deferred (integration tests, migration, manual verification), 4 new documentation tasks added
+**Implementation Status**: Tasks unchecked for POC parity restoration. See Phase 9b.
+
+---
+
+## Phase 9b: POC Parity Restoration (Priority: P1)
+
+**Purpose**: Restore full behavioral richness from the original claude-pr-review-extensions-poc that was lost during initial extraction. Addresses critical regressions identified in the POC comparison analysis.
+
+**POC Source**: `../claude-pr-review-extensions-poc`
+
+### Output Formatting Module (FR-025)
+
+- [ ] T065 [P] Create `plugins/speck-reviewer/cli/src/links.ts` with output formatting module extracted from POC:
+  - `formatActionMenu()` - Generate lettered action menus (a/b/c pattern)
+  - `formatReviewTable()` - Structured comment table with file:line references
+  - `getNavActions()` - Navigation action presets (files, comments, state)
+  - `getReviewActions()` - Review action presets (approve, request-changes, comment)
+  - `escapeForShell()` - Shell-safe command escaping
+  - `diffLink()`, `fileLink()`, `commentLink()` - Link generators
+
+### Utility Commands (FR-027)
+
+- [ ] T066 [P] Implement `link <file> [line]` command in index.ts - Generate file:line navigation reference
+- [ ] T067 [P] Implement `actions` command in index.ts - Display navigation action menu using links.ts
+- [ ] T068 [P] Implement `run-actions` command in index.ts - Display review action menu using links.ts
+- [ ] T069 [P] Implement `review-table [--example]` command in index.ts - Generate formatted comment table
+- [ ] T070 [P] Implement `submit-actions [body]` command in index.ts - Display submit review menu
+- [ ] T071 [P] Implement `logs` command in index.ts - Display log file locations and debug instructions
+
+### Tests for POC Parity
+
+- [ ] T072 [P] [TEST] Create `tests/unit/links.test.ts` with tests for action menu formatting, review tables, shell escaping
+- [ ] T073 [P] [TEST] Update `tests/unit/state.test.ts` with tests for immutable helpers: updateCommentState, recordCommentEdit, recordQuestion, isReviewComplete
+- [ ] T074 [P] [TEST] Update `tests/unit/clustering.test.ts` with tests for analyzeImports, topologicalSort, detectTestPairs
+
+**Checkpoint**: Full POC feature parity achieved ✓
 
 ---
 
@@ -226,7 +261,8 @@ Based on plan.md monorepo structure:
   - US4, US5 are P2 priority, depend on US2 (state management)
   - US6 is P3 priority, depends on US4 (github.ts)
 - **Polish (Phase 9)**: Depends on all user stories being complete
-- **Website Documentation (Phase 10)**: Depends on Phase 9 completion. REQUIRED by Constitution X and XII.
+- **POC Parity (Phase 9b)**: Depends on Phase 9 baseline. PRIORITY P1 - restores critical functionality
+- **Website Documentation (Phase 10)**: Depends on Phase 9b completion. REQUIRED by Constitution X and XII.
 
 ### User Story Dependencies
 
@@ -260,6 +296,11 @@ Based on plan.md monorepo structure:
 
 **Polish Phase Parallel**:
 - T052, T053, T054, T055, T056 can run in parallel
+
+**POC Parity Phase Parallel (Phase 9b)**:
+- T065 (links.ts) MUST complete first - other commands depend on it
+- T066, T067, T068, T069, T070, T071 can run in parallel (different commands)
+- T072, T073, T074 can run in parallel (different test files)
 
 **Website Documentation Phase Parallel (Phase 10)**:
 - T061, T062 can run in parallel (different documentation pages)
@@ -329,6 +370,8 @@ Task: "Implement files command"
 - Verify tests fail before implementing (red-green-refactor)
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
-- POC extraction files: state.ts (407 lines), clustering.ts (476 lines), github.ts (~300 lines)
+- POC extraction files: state.ts (407 lines), clustering.ts (476 lines), github.ts (~300 lines), links.ts (191 lines), SKILL.md (1114 lines)
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
-- Total tasks: 64 (T001-T064)
+- Total tasks: 74 (T001-T074)
+- POC parity tasks: T065-T074 (Phase 9b)
+- Unchecked for enhancement: T018, T019, T032, T051 (require FR-025 to FR-030 implementation)

@@ -173,6 +173,58 @@ A developer reviewing their own PR wants self-review mode where comments are pos
 - **FR-023**: Plugin MUST detect when the current user is the PR author.
 - **FR-024**: In self-review mode, plugin MUST hide approve/request-changes actions and post comments as issue comments.
 
+#### Output Formatting & Utility Commands (POC Parity)
+
+- **FR-025**: Plugin MUST include an output formatting module (`links.ts`) providing:
+  - Action menu generation with lettered selection (a/b/c pattern)
+  - Review table formatting for comment display with file:line references
+  - Shell-safe command escaping for comment bodies
+  - Navigation action presets (`getNavActions()`) and review action presets (`getReviewActions()`)
+  - `formatReviewTable()` for structured comment presentation
+  - `formatActionMenu()` for user-selectable actions
+
+- **FR-026**: Skill content (`SKILL.md`) MUST include comprehensive review guidance (~1000+ lines):
+  - Complete example session walkthrough demonstrating full review flow
+  - Output format guidance for both VSCode webview and terminal contexts
+  - Cluster semantic refinement instructions (transforming directory names to meaningful descriptions)
+  - Contextual Q&A handling guidelines for answering "why" questions during review
+  - Edge case handling documentation (merge conflicts, long threads, checkout issues, fork PRs)
+  - Full CLI command reference with usage examples
+  - State persistence schema documentation with JSON structure
+  - Read-only mode enforcement guidance (reviewer role constraints)
+  - Navigation command documentation (next, back, go to, where was I, show clusters)
+  - Comment refinement workflow (reword, soften, strengthen, combine, skip, restore)
+
+- **FR-027**: Plugin MUST include utility commands for terminal workflow:
+  - `link <file> [line]` - Generate file:line navigation reference
+  - `actions` - Display navigation action menu (list files, comments, state)
+  - `run-actions` - Display review action menu (approve, request-changes, comment)
+  - `review-table [--example]` - Generate formatted review comment table from JSON or example
+  - `submit-actions [body]` - Display submit review action menu with configurable body
+  - `logs` - Display log file locations and debug instructions
+
+#### Enhanced Clustering & State Management (POC Parity)
+
+- **FR-028**: Clustering algorithm MUST include advanced analysis:
+  - Diff-based file parsing with accurate addition/deletion line counts from `gh pr diff`
+  - Test-source pair detection marking files with `[Has tests]` annotation
+  - Dependency graph inference from directory nesting patterns via `analyzeImports()`
+  - Topological sort for review order based on dependencies via `topologicalSort()`
+  - Cross-cutting concern detection (config, deps, migrations, CI/CD, docs)
+
+- **FR-029**: State management MUST support full edit history:
+  - Immutable state update functions (`updateCommentState()`, `recordCommentEdit()`)
+  - Comment edit history preservation with action, timestamp, previous body, reason
+  - Q&A session persistence via `recordQuestion()` for contextual answers
+  - Review completion detection via `isReviewComplete()`
+  - Narrative and cluster setter functions (`setNarrative()`, `setClusters()`) for clean state updates
+
+- **FR-030**: GitHub integration MUST include advanced features:
+  - GraphQL API wrapper (`ghGraphQL()`) for complex queries
+  - Thread resolution status detection via `fetchReviewThreadResolvedStatus()`
+  - Reply count tracking for comment threads
+  - Existing comment context with full metadata via `fetchExistingComments()`
+
 ### Key Entities
 
 - **ReviewSession**: Represents an active PR review uniquely identified by `{owner}/{repo}#{prNumber}`. Contains clusters, comments, reviewedSections, narrative, and reviewMode.
