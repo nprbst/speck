@@ -34,9 +34,9 @@ Extract PR review functionality from `claude-pr-review-extensions-poc` into a st
 | VII. File Format Compatibility | N/A | Plugin uses own state format |
 | VIII. Command-Implementation Separation | ✅ | Commands delegate to CLI scripts |
 | IX. Preflight Gate | ✅ | Will run `bun preflight` before completion |
-| X. Website Documentation | ⚠️ | May require docs update for new plugin |
+| X. Website Documentation | ✅ | REQUIRED: New plugin pages for extensibility and speck-reviewer (T061-T063) |
 | XI. TDD | ✅ | Tests before implementation |
-| XII. Documentation Skill Sync | N/A | New plugin has own skill |
+| XII. Documentation Skill Sync | ✅ | REQUIRED: Update speck-help with plugin extensibility info (T064) |
 
 ## Project Structure
 
@@ -234,9 +234,14 @@ tests/
 
 ## Documentation Impact
 
-- **Website**: May need new page for speck-reviewer plugin installation
+Per Constitution Principles X and XII, this feature REQUIRES documentation updates:
+
+- **Website** (REQUIRED):
+  - New section: `plugins/index.md` - Describes Speck's optional plugin architecture
+  - New page: `plugins/speck-reviewer.md` - Installation and usage guide for speck-reviewer
+  - Navigation update: Add "Plugins" section to website navigation
 - **README**: Update to mention monorepo structure and both plugins
-- **speck-help skill**: N/A (new plugin has own skill)
+- **speck-help skill** (REQUIRED): Update to document plugin extensibility (speck-reviewer is the first optional plugin)
 
 ## Complexity Tracking
 

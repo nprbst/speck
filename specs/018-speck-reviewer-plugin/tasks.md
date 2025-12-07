@@ -196,7 +196,22 @@ Based on plan.md monorepo structure:
 - [X] T059 Run `bun run lint` to verify code quality (pre-existing error in handoff.ts, speck-reviewer code clean)
 - [ ] T060 Verify plugin installation and coexistence manually (per SC-006) [Manual verification needed]
 
-**Implementation Complete**: 52/60 tasks completed, 8 deferred (integration tests, migration, manual verification)
+**Implementation Complete**: 52/64 tasks completed, 8 deferred (integration tests, migration, manual verification), 4 new documentation tasks added
+
+---
+
+## Phase 10: Website Documentation (Constitution X & XII)
+
+**Purpose**: Document plugin extensibility and speck-reviewer on the website. Required by Constitution Principle X (Website Documentation Synchronization) and Principle XII (Documentation Skill Synchronization).
+
+**Rationale**: This feature adds user-facing commands (`/review`), a new plugin (`speck-reviewer`), and new capabilities (cluster-based PR review, Speck-aware reviews). Per constitution, these triggers MUST result in website documentation updates.
+
+- [ ] T061 [P] Create `website/src/content/docs/plugins/index.md` describing Speck's optional plugin architecture and extensibility model
+- [ ] T062 [P] Create `website/src/content/docs/plugins/speck-reviewer.md` with installation guide, usage examples, and feature overview
+- [ ] T063 Update website navigation (`website/src/config/navigation.ts` or equivalent) to include Plugins section
+- [ ] T064 Update `speck-help` skill (`.claude/skills/speck-help/SKILL.md`) to document that Speck can be extended with optional plugins, with speck-reviewer as the first example
+
+**Checkpoint**: Website documents plugin extensibility, speck-reviewer is discoverable ✓
 
 ---
 
@@ -211,6 +226,7 @@ Based on plan.md monorepo structure:
   - US4, US5 are P2 priority, depend on US2 (state management)
   - US6 is P3 priority, depends on US4 (github.ts)
 - **Polish (Phase 9)**: Depends on all user stories being complete
+- **Website Documentation (Phase 10)**: Depends on Phase 9 completion. REQUIRED by Constitution X and XII.
 
 ### User Story Dependencies
 
@@ -244,6 +260,11 @@ Based on plan.md monorepo structure:
 
 **Polish Phase Parallel**:
 - T052, T053, T054, T055, T056 can run in parallel
+
+**Website Documentation Phase Parallel (Phase 10)**:
+- T061, T062 can run in parallel (different documentation pages)
+- T063 depends on T061, T062 (navigation needs pages to exist)
+- T064 can run in parallel with T061-T063 (different file: speck-help skill)
 
 ---
 
@@ -310,4 +331,4 @@ Task: "Implement files command"
 - Stop at any checkpoint to validate story independently
 - POC extraction files: state.ts (407 lines), clustering.ts (476 lines), github.ts (~300 lines)
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
-- Total tasks: 60 (T001-T060)
+- Total tasks: 64 (T001-T064)
