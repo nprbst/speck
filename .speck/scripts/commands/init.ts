@@ -133,6 +133,12 @@ function createSpeckDirectory(repoRoot: string): { created: boolean; path: strin
       }
     }
 
+    // Create .speck/.gitignore with base header if it doesn't exist
+    const gitignorePath = join(speckDir, ".gitignore");
+    if (!existsSync(gitignorePath)) {
+      writeFileSync(gitignorePath, "# Machine-specific files\n");
+    }
+
     return { created: !alreadyExists, path: speckDir };
   } catch {
     return null;
