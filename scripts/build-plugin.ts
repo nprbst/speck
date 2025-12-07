@@ -9,7 +9,7 @@
  * Usage: bun run scripts/build-plugin.ts
  */
 
-import { mkdir, rm, readdir, copyFile, readFile, writeFile, stat } from 'fs/promises';
+import { mkdir, rm, readdir, copyFile, readFile, writeFile, stat, chmod } from 'fs/promises';
 import { join, relative, basename } from 'path';
 import { existsSync } from 'fs';
 
@@ -506,6 +506,7 @@ interface SpeckReviewerCounts {
   commands: number;
   skills: number;
   cli: boolean;
+  bootstrap: boolean;
 }
 
 /**
@@ -516,6 +517,7 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
     commands: 0,
     skills: 0,
     cli: false,
+    bootstrap: false,
   };
 
   const reviewerSourceDir = join(config.sourceRoot, 'plugins/speck-reviewer');
@@ -544,6 +546,18 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
       'speck-review CLI'
     );
     counts.cli = true;
+  }
+
+  // 1.5. Copy bootstrap.sh for global CLI installation
+  const bootstrapSourcePath = join(reviewerSourceDir, 'src/cli/bootstrap.sh');
+  if (existsSync(bootstrapSourcePath)) {
+    const srcCliDir = join(reviewerOutputDir, 'src/cli');
+    await ensureDir(srcCliDir);
+    const bootstrapDestPath = join(srcCliDir, 'bootstrap.sh');
+    await copyFile(bootstrapSourcePath, bootstrapDestPath);
+    // Make executable
+    await chmod(bootstrapDestPath, 0o755);
+    counts.bootstrap = true;
   }
 
   // 2. Copy plugin.json
@@ -913,6 +927,9 @@ async function main() {
     const reviewerCounts = await buildSpeckReviewerPlugin();
     if (reviewerCounts.cli) {
       console.log(`   ✓ Bundled CLI`);
+    }
+    if (reviewerCounts.bootstrap) {
+      console.log(`   ✓ Copied bootstrap.sh`);
     }
     console.log(`   ✓ Copied ${reviewerCounts.commands} commands`);
     console.log(`   ✓ Copied ${reviewerCounts.skills} skills`);
