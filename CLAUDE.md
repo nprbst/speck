@@ -11,6 +11,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 - File-based (`.speck/` directory, JSON metadata, Markdown artifacts) (016-atomic-transform-rollback)
 - TypeScript 5.7+ with Bun 1.0+ runtime, Astro 5.15+ + Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1 (database), Cloudflare Turnstile (spam prevention), Wrangler CLI (017-consulting-beta-deploy)
 - Cloudflare D1 (SQLite-based, serverless) (017-consulting-beta-deploy)
+- TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API, `gh` CLI (user-provided) (018-speck-reviewer-plugin)
+- File-based JSON (`.claude/review-state.json`) (018-speck-reviewer-plugin)
 
 ### Core Runtime & Languages
 - TypeScript 5.3+ with strict type checking
@@ -127,9 +129,9 @@ bun test                  # Run all tests (unit, visual, a11y)
 - **Parent spec**: The root specification directory referenced by `parentSpecId` field
 
 ## Recent Changes
+- 018-speck-reviewer-plugin: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API, `gh` CLI (user-provided)
+- 018-speck-reviewer-plugin: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API, `gh` CLI (user-provided)
 - 017-consulting-beta-deploy: Added TypeScript 5.7+ with Bun 1.0+ runtime, Astro 5.15+ + Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1 (database), Cloudflare Turnstile (spam prevention), Wrangler CLI
-- 016-atomic-transform-rollback: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (file operations), Zod (validation)
-- 015-scope-simplification: Added TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees)
 
 
 <!-- MANUAL ADDITIONS START -->
