@@ -98,8 +98,8 @@ specs/019-openspec-changes-plugin/
 
 upstream/openspec/                    # Pristine upstream storage
 ├── releases.json                     # Release metadata registry
-├── latest -> v1.2.0/                 # Symlink to active version
-└── v1.2.0/                           # Versioned release directories
+├── latest -> <version>/              # Symlink to active version
+└── <version>/                        # Versioned release directories (e.g., v0.16.0/)
     └── [OpenSpec CLI source]
 
 .speck/changes/                       # Active change proposals

@@ -73,7 +73,7 @@ A developer using Speck wants to propose a change to an existing feature. They r
 
 1. **Given** developer wants to propose a change, **When** they run `/speck-changes.propose <name>`, **Then** system creates `.speck/changes/<name>/` folder with `proposal.md` and `tasks.md` templates
 2. **Given** developer provides feature description, **When** Claude analyzes the request, **Then** system populates initial proposal content and suggests affected specs
-3. **Given** existing specs exist in `specs/` directory, **When** change affects those specs, **Then** system creates delta files in `.speck/changes/<name>/specs/` with `## ADDED`, `## MODIFIED`, or `## REMOVED` sections
+3. **Given** existing specs exist in `specs/` directory, **When** change affects those specs, **Then** system creates delta files in `.speck/changes/<name>/specs/` with `## ADDED Requirements`, `## MODIFIED Requirements`, or `## REMOVED Requirements` sections
 4. **Given** developer wants design documentation, **When** they specify `--with-design` flag, **Then** system also creates `design.md` template
 
 ---
@@ -173,10 +173,10 @@ An existing OpenSpec user wants to migrate their project to Speck while preservi
 - **FR-010**: System MUST provide `/speck-changes.propose <name>` command that creates change folder at `.speck/changes/<name>/` with `proposal.md`, `tasks.md`, and optional `design.md`
 - **FR-010a**: Change names MUST be kebab-case only (lowercase letters, numbers, hyphens); system rejects invalid names with specific error message
 - **FR-011**: System MUST support delta file format with `## ADDED Requirements`, `## MODIFIED Requirements`, and `## REMOVED Requirements` sections
-- **FR-012**: Each requirement in delta files MUST include at least one `#### Scenario:` block using SHALL/MUST language
+- **FR-012**: Each requirement in delta files MUST include at least one `#### Scenario:` block using SHALL/MUST language (per RFC 2119 normative keywords)
 - **FR-013**: System MUST provide `/speck-changes.list` command to display all active changes with names, dates, and status
 - **FR-014**: System MUST provide `/speck-changes.show <name>` command to display change details including proposal, tasks, and deltas
-- **FR-015**: System MUST provide `/speck-changes.validate <name>` command that checks proposal structure, delta formatting, and requirement syntax
+- **FR-015**: System MUST provide `/speck-changes.validate <name>` command that checks proposal structure, delta file formatting (ADDED/MODIFIED/REMOVED sections), and requirement syntax (FR-### IDs, scenario blocks, RFC 2119 normative keywords)
 
 #### Archive & Merge
 
@@ -195,7 +195,7 @@ An existing OpenSpec user wants to migrate their project to Speck while preservi
 ### Key Entities
 
 - **Change Proposal**: A folder in `.speck/changes/<name>/` containing proposal.md, tasks.md, optional design.md, and specs/ delta files representing a proposed modification to the system. Status is determined by folder location: `.speck/changes/` = active, `.speck/archive/` = archived (no separate status field)
-- **Delta File**: A specification file showing proposed changes using `## ADDED`, `## MODIFIED`, or `## REMOVED` sections with requirement-scenario pairs
+- **Delta File**: A markdown file in `.speck/changes/<name>/specs/` showing proposed changes using `## ADDED`, `## MODIFIED`, or `## REMOVED` sections with requirement-scenario pairs
 - **Proposal Document**: Markdown file explaining the rationale, scope, and expected outcomes of a proposed change
 - **Tasks List**: Markdown file containing implementation checklist for a change proposal
 - **Archive**: Directory at `.speck/archive/` containing completed change folders with merged history
@@ -207,12 +207,12 @@ An existing OpenSpec user wants to migrate their project to Speck while preservi
 ### Measurable Outcomes
 
 - **SC-001**: `/speck-changes.check-upstream` completes in under 10 seconds and displays all available release tags
-- **SC-002**: `/speck-changes.pull-upstream <version>` completes in under 2 minutes for typical releases
-- **SC-003**: `/speck-changes.transform-upstream` completes in under 5 minutes for typical releases
+- **SC-002**: `/speck-changes.pull-upstream <version>` completes in under 2 minutes for typical releases (typical = <50 files, <5MB total)
+- **SC-003**: `/speck-changes.transform-upstream` completes in under 5 minutes for typical releases (typical = <50 files, <5MB total)
 - **SC-004**: `/speck-changes.propose` creates a complete change folder structure in under 5 seconds
 - **SC-005**: `/speck-changes.validate` provides actionable feedback for 100% of formatting errors
 - **SC-006**: `/speck-changes.archive` successfully merges deltas into source specs without data loss
-- **SC-007**: Migration successfully imports 95% of OpenSpec projects without manual intervention
+- **SC-007**: Migration successfully imports 95% of OpenSpec projects without manual intervention (measured against sample of 20 public OpenSpec repos; success = zero validation errors post-migration)
 - **SC-008**: All generated commands work correctly in Claude Code environment
 
 ## Assumptions
