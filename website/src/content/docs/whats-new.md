@@ -4,13 +4,74 @@ description: "Recent feature additions and improvements to Speck for Claude Code
 category: "reference"
 order: 2
 tags: ["changelog", "updates", "features", "releases"]
-lastUpdated: 2025-12-02
+lastUpdated: 2025-12-07
 draft: true
 ---
 
 # What's New in Speck
 
 Track the latest features, improvements, and capabilities added to Speck.
+
+---
+
+## December 2025: Speck Reviewer Plugin (Spec 018)
+
+### Intelligent PR Reviews with Spec Awareness
+**Released**: December 2025
+
+A new Claude Code plugin for structured pull request reviews with semantic clustering, Speck integration, and intelligent comment management.
+
+**Key Capabilities**:
+- **Cluster-based review**: Automatically groups related files into semantic clusters for organized review
+- **Speck-aware context**: Loads associated feature specs to validate implementation alignment
+- **Comment staging**: Stage, refine, and batch-post comments to GitHub with approval actions
+- **Session persistence**: Resume interrupted reviews with full progress preservation
+
+**Review Commands**:
+- `/speck-reviewer:review [pr-number]`: Start a PR review with cluster analysis
+- Natural navigation: "next", "back", "go to [cluster]", "where was I?"
+- Comment refinement: "reword", "skip", "combine", "post all then approve"
+- Self-review mode for reviewing your own PRs
+
+**Benefits**:
+- Reduced cognitive load through semantic file grouping
+- Comments can reference spec requirements (e.g., "This implements FR-003")
+- No context switching—review entirely within Claude Code
+- Works with or without Speck specs (graceful degradation)
+
+**Installation**:
+```
+/plugin marketplace add https://raw.githubusercontent.com/nprbst/speck/main/.claude-plugin/marketplace.json
+/plugin install speck-reviewer@speck-market
+```
+
+**Learn More**:
+- [Commands Reference](/docs/commands/reference) - Complete review command documentation
+
+---
+
+## December 2025: Expert Help & Beta Deployment (Spec 017)
+
+### Community Expert Assistance
+**Released**: December 2025
+
+Expert help page for organizations adopting Spec-Driven AI development practices, with inquiry management via Claude Code.
+
+**Key Capabilities**:
+- **Expert help page**: Available at `/expert-help` for implementation guidance inquiries
+- **Inquiry capture**: Contact form with email, message, and spam prevention (Cloudflare Turnstile)
+- **Inquiry management**: `/speck.inquiries` command to list, view, and respond to inquiries
+- **Email responses**: Draft and send responses directly from Claude Code via Resend API
+
+**Deployment**:
+- Beta site live at [beta.speck.codes](https://beta.speck.codes)
+- Cloudflare D1 backend for inquiry storage
+- Automatic deployment on push to beta branch
+
+**For Maintainers**:
+- `speck.inquiries list` - View new inquiries
+- `speck.inquiries respond <id>` - Draft and send email response
+- Responses stored in database with full history
 
 ---
 

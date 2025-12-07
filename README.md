@@ -2,7 +2,7 @@
 
 **Claude Code-Native Spec-Driven Development**
 
-[![Version](https://img.shields.io/badge/version-1.9.5-blue.svg)](https://github.com/nprbst/speck/releases)
+[![Version](https://img.shields.io/badge/version-1.10.2-blue.svg)](https://github.com/nprbst/speck/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Bun](https://img.shields.io/badge/Bun-1.0+-black.svg)](https://bun.sh)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-2.0+-orange.svg)](https://claude.ai/code)
@@ -105,12 +105,13 @@ What tasks are pending?
 
 ## Advanced Features
 
-| Feature        | Description                                                                                                                               |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Multi-Repo** | Share specs across microservices or frontend/backend splits — [Learn more](https://speck.codes/docs/advanced-features/multi-repo-support) |
-| **Worktrees**  | Work on multiple features simultaneously with IDE auto-launch — [Learn more](https://speck.codes/docs/advanced-features/worktrees)        |
-| **Monorepos**  | Manage workspace projects with shared specifications — [Learn more](https://speck.codes/docs/advanced-features/monorepos)                 |
-| **spec-kit**   | 100% file format compatible with GitHub's spec-kit — [Learn more](https://speck.codes/docs/about/speck-and-spec-kit)                      |
+| Feature            | Description                                                                                                                               |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Speck Reviewer** | Cluster-based PR reviews with spec awareness — [Learn more](https://speck.codes/docs/whats-new#december-2025-speck-reviewer-plugin-spec-018) |
+| **Multi-Repo**     | Share specs across microservices or frontend/backend splits — [Learn more](https://speck.codes/docs/advanced-features/multi-repo-support)   |
+| **Worktrees**      | Work on multiple features simultaneously with IDE auto-launch — [Learn more](https://speck.codes/docs/advanced-features/worktrees)          |
+| **Monorepos**      | Manage workspace projects with shared specifications — [Learn more](https://speck.codes/docs/advanced-features/monorepos)                   |
+| **spec-kit**       | 100% file format compatible with GitHub's spec-kit — [Learn more](https://speck.codes/docs/about/speck-and-spec-kit)                        |
 
 ## Project Structure
 
