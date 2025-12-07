@@ -3,6 +3,7 @@
   "version": "1.10.2",
   "description": "Claude Code-Native Spec-Driven Development",
   "type": "module",
+  "workspaces": ["packages/*", "plugins/*"],
   "engines": {
     "bun": ">=1.0.0"
   },

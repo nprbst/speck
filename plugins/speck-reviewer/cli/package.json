@@ -20,6 +20,9 @@
   "engines": {
     "bun": ">=1.0.0"
   },
+  "dependencies": {
+    "@speck/common": "workspace:*"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "typescript": "^5.3.0"

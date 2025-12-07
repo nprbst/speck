@@ -6,7 +6,7 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync } from "fs";
 import { join, dirname } from "path";
 import type { ReviewSession, ReviewMode, FileCluster, CommentState, CommentEdit, EditAction } from "./types";
-import { logger } from "./logger";
+import { logger } from "@speck/common/logger";
 
 const STATE_SCHEMA_VERSION = "review-state-v1";
 const STATE_FILE_NAME = ".speck/review-state.json";

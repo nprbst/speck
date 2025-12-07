@@ -5,7 +5,7 @@
 
 import { existsSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
-import { logger } from "./logger";
+import { logger } from "@speck/common/logger";
 import type { SpecContext, ParsedRequirement, ParsedUserStory, UserStoryPriority } from "./types";
 
 /**

@@ -4,7 +4,7 @@
  */
 
 import { $ } from "bun";
-import { logger } from "./logger";
+import { logger } from "@speck/common/logger";
 import type { PRInfo, PRFile, GitHubComment, ChangeType } from "./types";
 
 /**

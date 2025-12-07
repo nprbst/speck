@@ -4,7 +4,7 @@
  */
 
 import type { PRFile, FileCluster, ClusterFile, ChangeType } from "./types";
-import { logger } from "./logger";
+import { logger } from "@speck/common/logger";
 
 // Directory patterns that indicate specific file types
 const DIRECTORY_PRIORITIES: Record<string, number> = {

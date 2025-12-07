@@ -4,7 +4,7 @@
  * AI-powered PR review with Speck-aware context
  */
 
-import { logger } from "./logger";
+import { logger } from "@speck/common/logger";
 import packageJson from "../package.json";
 
 const VERSION = packageJson.version;
