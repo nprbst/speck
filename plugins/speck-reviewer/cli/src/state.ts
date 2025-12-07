@@ -5,7 +5,7 @@
 
 import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync } from "fs";
 import { join, dirname } from "path";
-import type { ReviewSession, ReviewMode, FileCluster } from "./types";
+import type { ReviewSession, ReviewMode, FileCluster, CommentState, CommentEdit, EditAction } from "./types";
 import { logger } from "./logger";
 
 const STATE_SCHEMA_VERSION = "review-state-v1";
@@ -251,4 +251,190 @@ export function formatStateDisplay(session: ReviewSession): string {
   output += `\n### Comments: ${stagedComments} staged, ${postedComments} posted, ${skippedComments} skipped\n`;
 
   return output;
+}
+
+// ============================================================================
+// Immutable State Helpers (FR-029)
+// ============================================================================
+
+/**
+ * Update a comment's state in the review session (immutable).
+ */
+export function updateCommentState(
+  state: ReviewSession,
+  commentId: string,
+  newState: CommentState
+): ReviewSession {
+  const timestamp = new Date().toISOString();
+
+  const editAction: EditAction =
+    newState === "skipped" ? "skip" :
+    newState === "staged" ? "restore" :
+    newState === "posted" ? "post" : "restore";
+
+  return {
+    ...state,
+    comments: state.comments.map((comment) => {
+      if (comment.id !== commentId) return comment;
+
+      return {
+        ...comment,
+        state: newState,
+        updatedAt: timestamp,
+        history: [
+          ...comment.history,
+          { timestamp, action: editAction },
+        ],
+      };
+    }),
+    lastUpdated: timestamp,
+  };
+}
+
+/**
+ * Record a comment edit in the review session (immutable).
+ */
+export function recordCommentEdit(
+  state: ReviewSession,
+  commentId: string,
+  edit: CommentEdit,
+  newBody?: string
+): ReviewSession {
+  const timestamp = new Date().toISOString();
+
+  return {
+    ...state,
+    comments: state.comments.map((comment) => {
+      if (comment.id !== commentId) return comment;
+
+      return {
+        ...comment,
+        body: newBody ?? comment.body,
+        updatedAt: timestamp,
+        history: [...comment.history, { ...edit, timestamp }],
+      };
+    }),
+    lastUpdated: timestamp,
+  };
+}
+
+/**
+ * Record a Q&A entry in the review session (immutable).
+ */
+export function recordQuestion(
+  state: ReviewSession,
+  question: string,
+  answer: string,
+  context: string
+): ReviewSession {
+  const timestamp = new Date().toISOString();
+
+  return {
+    ...state,
+    questions: [
+      ...state.questions,
+      { question, answer, context, timestamp },
+    ],
+    lastUpdated: timestamp,
+  };
+}
+
+/**
+ * Check if all staged comments have been posted (review completion).
+ *
+ * Returns true when:
+ * - No staged comments remain AND
+ * - Either no comments exist OR at least one comment was posted
+ *
+ * Edge cases:
+ * - Empty comments array → true (nothing to post)
+ * - All comments skipped → false (no posts made, review incomplete)
+ * - Mixed skipped/posted → true (at least one posted, none staged)
+ */
+export function isReviewComplete(state: ReviewSession): boolean {
+  const stagedComments = state.comments.filter((c) => c.state === "staged");
+  const hasPostedOrNoComments =
+    state.comments.length === 0 || state.comments.some((c) => c.state === "posted");
+  return stagedComments.length === 0 && hasPostedOrNoComments;
+}
+
+/**
+ * Update the narrative in the review session (immutable).
+ */
+export function setNarrative(
+  state: ReviewSession,
+  narrative: string
+): ReviewSession {
+  const timestamp = new Date().toISOString();
+
+  return {
+    ...state,
+    narrative,
+    lastUpdated: timestamp,
+  };
+}
+
+/**
+ * Update clusters in the review session (immutable).
+ */
+export function setClusters(
+  state: ReviewSession,
+  clusters: FileCluster[]
+): ReviewSession {
+  const timestamp = new Date().toISOString();
+
+  return {
+    ...state,
+    clusters,
+    lastUpdated: timestamp,
+  };
+}
+
+/**
+ * Set the current cluster being reviewed (immutable).
+ * Also marks the cluster as in_progress.
+ */
+export function setCurrentCluster(
+  state: ReviewSession,
+  clusterId: string | null
+): ReviewSession {
+  const timestamp = new Date().toISOString();
+
+  const updatedClusters = clusterId
+    ? state.clusters.map((cluster) => {
+        if (cluster.id === clusterId) {
+          return { ...cluster, status: "in_progress" as const };
+        }
+        return cluster;
+      })
+    : state.clusters;
+
+  return {
+    ...state,
+    clusters: updatedClusters,
+    currentClusterId: clusterId ?? undefined,
+    lastUpdated: timestamp,
+  };
+}
+
+/**
+ * Mark a cluster as reviewed (immutable version).
+ */
+export function markClusterReviewedImmutable(
+  state: ReviewSession,
+  clusterId: string
+): ReviewSession {
+  const timestamp = new Date().toISOString();
+
+  return {
+    ...state,
+    clusters: state.clusters.map((cluster) => {
+      if (cluster.id !== clusterId) return cluster;
+      return { ...cluster, status: "reviewed" as const };
+    }),
+    reviewedSections: state.reviewedSections.includes(clusterId)
+      ? state.reviewedSections
+      : [...state.reviewedSections, clusterId],
+    lastUpdated: timestamp,
+  };
 }

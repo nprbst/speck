@@ -269,3 +269,225 @@ export async function postIssueComment(prNumber: number, body: string): Promise<
     return false;
   }
 }
+
+// ============================================================================
+// Advanced GitHub Features (FR-030)
+// ============================================================================
+
+/**
+ * Run a gh CLI command and return the output as text
+ */
+async function runGh(args: string[]): Promise<string> {
+  try {
+    const result = await $`gh ${args}`.text();
+    return result.trim();
+  } catch (e: unknown) {
+    const error = e as { stderr?: { toString(): string }; message?: string };
+    throw new Error(error.stderr?.toString() || error.message || `gh exited with error`);
+  }
+}
+
+/**
+ * Execute a GraphQL query via gh CLI
+ */
+export async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+  const args = ["api", "graphql"];
+
+  if (variables) {
+    for (const [key, value] of Object.entries(variables)) {
+      args.push("-F", `${key}=${typeof value === "string" ? value : JSON.stringify(value)}`);
+    }
+  }
+
+  args.push("-f", `query=${query}`);
+
+  const result = await runGh(args);
+  const parsed = JSON.parse(result);
+
+  if (parsed.errors?.length) {
+    throw new Error(parsed.errors[0].message);
+  }
+
+  return parsed.data as T;
+}
+
+/**
+ * Fetch resolved status for review threads via GraphQL
+ */
+export async function fetchReviewThreadResolvedStatus(
+  owner: string,
+  repo: string,
+  prNumber: number
+): Promise<Map<number, boolean>> {
+  const query = `
+    query($owner: String!, $repo: String!, $prNumber: Int!) {
+      repository(owner: $owner, name: $repo) {
+        pullRequest(number: $prNumber) {
+          reviewThreads(first: 100) {
+            nodes {
+              isResolved
+              comments(first: 1) {
+                nodes {
+                  databaseId
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  interface ThreadsResponse {
+    repository: {
+      pullRequest: {
+        reviewThreads: {
+          nodes: Array<{
+            isResolved: boolean;
+            comments: {
+              nodes: Array<{ databaseId: number }>;
+            };
+          }>;
+        };
+      };
+    };
+  }
+
+  const data = await ghGraphQL<ThreadsResponse>(query, {
+    owner,
+    repo,
+    prNumber,
+  });
+
+  const resolvedMap = new Map<number, boolean>();
+  for (const thread of data.repository.pullRequest.reviewThreads.nodes) {
+    const firstComment = thread.comments.nodes[0];
+    if (firstComment) {
+      resolvedMap.set(firstComment.databaseId, thread.isResolved);
+    }
+  }
+
+  return resolvedMap;
+}
+
+export interface ExistingPRComment {
+  id: number;
+  path: string;
+  line?: number;
+  body: string;
+  author: string;
+  createdAt: string;
+  updatedAt: string;
+  isResolved: boolean;
+  replyCount: number;
+}
+
+/**
+ * Fetch existing PR comments with resolved status and reply counts
+ */
+export async function fetchExistingComments(
+  owner: string,
+  repo: string,
+  prNumber: number
+): Promise<ExistingPRComment[]> {
+  // Use gh api to get comments
+  const result = await runGh([
+    "api",
+    `repos/${owner}/${repo}/pulls/${prNumber}/comments`,
+  ]);
+
+  const comments = JSON.parse(result) as Array<{
+    id: number;
+    path: string;
+    line?: number;
+    body: string;
+    user: { login: string };
+    created_at: string;
+    updated_at: string;
+    in_reply_to_id?: number;
+  }>;
+
+  // Fetch resolved status from GraphQL
+  const resolvedMap = await fetchReviewThreadResolvedStatus(owner, repo, prNumber);
+
+  // Group by thread and count replies
+  const threadMap = new Map<number, number>();
+  for (const c of comments) {
+    if (c.in_reply_to_id) {
+      threadMap.set(c.in_reply_to_id, (threadMap.get(c.in_reply_to_id) ?? 0) + 1);
+    }
+  }
+
+  return comments
+    .filter((c) => !c.in_reply_to_id) // Only top-level comments
+    .map((c) => ({
+      id: c.id,
+      path: c.path,
+      line: c.line,
+      body: c.body,
+      author: c.user.login,
+      createdAt: c.created_at,
+      updatedAt: c.updated_at,
+      isResolved: resolvedMap.get(c.id) ?? false,
+      replyCount: threadMap.get(c.id) ?? 0,
+    }));
+}
+
+/**
+ * Get PR diff output
+ */
+export async function getPRDiff(prNumber?: number): Promise<string> {
+  const args = ["pr", "diff"];
+  if (prNumber) {
+    args.push(String(prNumber));
+  }
+  return runGh(args);
+}
+
+export interface PRMetadata {
+  number: number;
+  title: string;
+  body: string;
+  author: { login: string };
+  baseRefName: string;
+  headRefName: string;
+}
+
+/**
+ * Get PR metadata including body
+ */
+export async function getPRMetadata(prNumber?: number): Promise<PRMetadata> {
+  const args = ["pr", "view"];
+  if (prNumber) {
+    args.push(String(prNumber));
+  }
+  args.push("--json", "number,title,body,author,baseRefName,headRefName");
+  const result = await runGh(args);
+  return JSON.parse(result);
+}
+
+/**
+ * Detect if the current user is reviewing their own PR
+ */
+export async function detectSelfReview(prAuthor: string): Promise<boolean> {
+  const ghUser = await runGh(["api", "user", "--jq", ".login"]);
+  return ghUser.toLowerCase() === prAuthor.toLowerCase();
+}
+
+/**
+ * Add an issue comment (for self-review mode via API)
+ */
+export async function addIssueComment(
+  owner: string,
+  repo: string,
+  prNumber: number,
+  body: string
+): Promise<{ id: number }> {
+  const result = await runGh([
+    "api",
+    `repos/${owner}/${repo}/issues/${prNumber}/comments`,
+    "-X", "POST",
+    "-f", `body=${body}`,
+  ]);
+  return JSON.parse(result);
+}

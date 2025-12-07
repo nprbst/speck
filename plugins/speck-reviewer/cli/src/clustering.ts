@@ -289,3 +289,216 @@ export function getClusterStats(cluster: FileCluster): {
     changeTypes,
   };
 }
+
+// ============================================================================
+// Advanced Analysis Functions (FR-028)
+// ============================================================================
+
+export interface DependencyGraph {
+  nodes: string[];
+  edges: Map<string, Set<string>>;
+}
+
+/**
+ * Analyze imports to detect file dependencies.
+ * Returns a dependency graph for topological sorting.
+ *
+ * NOTE: Current implementation infers dependencies from directory nesting only,
+ * not actual import/require statements. Files in nested directories are assumed
+ * to depend on files in parent directories.
+ */
+export function analyzeImports(files: ClusterFile[]): DependencyGraph {
+  const graph: DependencyGraph = {
+    nodes: files.map((f) => f.path),
+    edges: new Map(),
+  };
+
+  // Initialize edges for each file
+  for (const file of files) {
+    graph.edges.set(file.path, new Set());
+  }
+
+  // Infer dependencies from directory structure
+  // Files in nested directories depend on parent directories
+  for (const file of files) {
+    const parts = file.path.split("/");
+    if (parts.length > 2) {
+      const parentDir = parts.slice(0, -1).join("/");
+      for (const other of files) {
+        if (other.path !== file.path && file.path.startsWith(parentDir + "/")) {
+          const otherDir = other.path.split("/").slice(0, -1).join("/");
+          if (parentDir.startsWith(otherDir + "/") || parentDir === otherDir) {
+            graph.edges.get(file.path)?.add(other.path);
+          }
+        }
+      }
+    }
+  }
+
+  return graph;
+}
+
+/**
+ * Sort clusters by dependencies (topological order).
+ * Clusters with fewer dependencies come first.
+ */
+export function topologicalSort(clusters: FileCluster[]): FileCluster[] {
+  // Build cluster dependency graph
+  const clusterDeps = new Map<string, Set<string>>();
+  for (const cluster of clusters) {
+    clusterDeps.set(cluster.id, new Set(cluster.dependsOn));
+  }
+
+  const sorted: FileCluster[] = [];
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+
+  function visit(clusterId: string): void {
+    if (visited.has(clusterId)) return;
+    if (visiting.has(clusterId)) {
+      // Circular dependency - just skip
+      return;
+    }
+
+    visiting.add(clusterId);
+    const deps = clusterDeps.get(clusterId) ?? new Set();
+    for (const dep of deps) {
+      visit(dep);
+    }
+    visiting.delete(clusterId);
+    visited.add(clusterId);
+
+    const cluster = clusters.find((c) => c.id === clusterId);
+    if (cluster) {
+      sorted.push(cluster);
+    }
+  }
+
+  for (const cluster of clusters) {
+    visit(cluster.id);
+  }
+
+  // Update priority based on sorted order
+  return sorted.map((cluster, index) => ({
+    ...cluster,
+    priority: index + 1,
+  }));
+}
+
+/**
+ * Detect test/source file pairs within groups.
+ * Marks files that have corresponding test files.
+ */
+export function detectTestPairs(groups: Map<string, ClusterFile[]>): void {
+  // Common test file patterns
+  const testPatterns = [
+    /\.test\.(ts|tsx|js|jsx)$/,
+    /\.spec\.(ts|tsx|js|jsx)$/,
+    /_test\.(go|py|rb)$/,
+    /test_.*\.(py|rb)$/,
+    /Test\.java$/,
+  ];
+
+  // For each group, find test/source pairs
+  for (const [_dir, files] of groups) {
+    const testFiles = files.filter((f) =>
+      testPatterns.some((p) => p.test(f.path))
+    );
+    const sourceFiles = files.filter(
+      (f) => !testPatterns.some((p) => p.test(f.path))
+    );
+
+    // Mark source files that have corresponding tests
+    for (const source of sourceFiles) {
+      const baseName = getBaseName(source.path);
+      const hasTest = testFiles.some((test) => {
+        const testBase = getBaseName(test.path);
+        return (
+          testBase.includes(baseName) ||
+          baseName.includes(testBase.replace(/test_?/i, ""))
+        );
+      });
+
+      if (hasTest && source.reviewNotes) {
+        if (!source.reviewNotes.includes("[Has tests]")) {
+          source.reviewNotes += " [Has tests]";
+        }
+      } else if (hasTest) {
+        source.reviewNotes = "[Has tests]";
+      }
+    }
+  }
+}
+
+function getBaseName(path: string): string {
+  const fileName = path.split("/").pop() ?? "";
+  return fileName
+    .replace(/\.(test|spec)\.(ts|tsx|js|jsx)$/, "")
+    .replace(/\.(ts|tsx|js|jsx)$/, "")
+    .replace(/_test\.(go|py|rb)$/, "")
+    .replace(/test_/i, "")
+    .replace(/Test\.java$/, "");
+}
+
+/**
+ * Build file clusters using heuristic algorithm with advanced analysis.
+ * Combines directory grouping, test pair detection, and dependency analysis.
+ */
+export function buildHeuristicClusters(files: ClusterFile[]): FileCluster[] {
+  if (files.length === 0) {
+    return [];
+  }
+
+  // Step 1: Group by directory
+  const groups = new Map<string, ClusterFile[]>();
+  for (const file of files) {
+    const parts = file.path.split("/");
+    const dir = parts.length > 1 ? parts.slice(0, -1).join("/") : ".";
+
+    if (!groups.has(dir)) {
+      groups.set(dir, []);
+    }
+    groups.get(dir)!.push(file);
+  }
+
+  // Step 2: Detect test pairs
+  detectTestPairs(groups);
+
+  // Step 3: Create clusters from groups
+  const clusters: FileCluster[] = [];
+  let clusterIndex = 1;
+
+  // Sort directories for deterministic ordering
+  const sortedDirs = Array.from(groups.keys()).sort();
+
+  for (const dir of sortedDirs) {
+    const groupFiles = groups.get(dir)!;
+    const clusterId = `cluster-${clusterIndex++}`;
+
+    // Determine dependencies based on directory nesting
+    const dependsOn: string[] = [];
+    for (const otherDir of sortedDirs) {
+      if (otherDir !== dir && dir.startsWith(otherDir + "/")) {
+        const otherCluster = clusters.find((c) =>
+          c.files.some((f) => f.path.startsWith(otherDir + "/"))
+        );
+        if (otherCluster) {
+          dependsOn.push(otherCluster.id);
+        }
+      }
+    }
+
+    clusters.push({
+      id: clusterId,
+      name: generateClusterName(dir === "." ? "root" : dir),
+      description: `Changes in ${dir}`,
+      files: groupFiles,
+      priority: clusterIndex,
+      dependsOn,
+      status: "pending",
+    });
+  }
+
+  // Step 4: Topological sort by dependencies
+  return topologicalSort(clusters);
+}

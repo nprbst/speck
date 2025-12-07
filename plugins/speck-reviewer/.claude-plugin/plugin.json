@@ -1,6 +1,6 @@
 {
   "name": "speck-reviewer",
-  "description": "AI-powered PR review with Speck-aware context and structured walkthroughs",
+  "description": "AI-assisted PR review with Speck-aware context and structured walkthroughs",
   "version": "1.0.0",
   "author": {
     "name": "Nathan Prabst",

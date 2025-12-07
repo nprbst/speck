@@ -76,6 +76,37 @@ const commands: Record<string, CommandHandler> = {
     const { checkSelfReviewCommand } = await import("./commands/check-self-review");
     await checkSelfReviewCommand(args);
   },
+
+  // Phase 9b: POC Parity - Utility Commands (FR-027)
+  link: async (args) => {
+    const { linkCommand } = await import("./commands/link");
+    await linkCommand(args);
+  },
+
+  actions: async () => {
+    const { actionsCommand } = await import("./commands/actions");
+    await actionsCommand();
+  },
+
+  "run-actions": async () => {
+    const { runActionsCommand } = await import("./commands/actions");
+    await runActionsCommand();
+  },
+
+  "review-table": async (args) => {
+    const { reviewTableCommand } = await import("./commands/review-table");
+    await reviewTableCommand(args);
+  },
+
+  "submit-actions": async (args) => {
+    const { submitActionsCommand } = await import("./commands/actions");
+    await submitActionsCommand(args);
+  },
+
+  logs: async () => {
+    const { logsCommand } = await import("./commands/logs");
+    await logsCommand();
+  },
 };
 
 // Help text
@@ -100,6 +131,13 @@ COMMANDS:
 
   review <event> [body]     Submit review (approve|request-changes|comment)
   check-self-review <author> Check if current user is PR author
+
+  link <file> [line]        Generate file:line navigation reference
+  actions                   Display navigation action menu
+  run-actions               Display review action menu
+  review-table [--example]  Generate formatted comment table
+  submit-actions [body]     Display submit review menu
+  logs                      Display log file locations and debug info
 
   help, --help, -h          Show this help message
   version, --version, -v    Show version
@@ -139,6 +177,11 @@ async function main(): Promise<void> {
   const commandArgs = args.slice(1);
 
   logger.debug(`Running command: ${command}`, commandArgs);
+
+  if (!command) {
+    printHelp();
+    process.exit(0);
+  }
 
   const handler = commands[command];
   if (!handler) {

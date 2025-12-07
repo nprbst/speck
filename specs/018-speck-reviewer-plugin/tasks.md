@@ -85,8 +85,8 @@ Based on plan.md monorepo structure:
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Extract and adapt `state.ts` from POC to `plugins/speck-reviewer/cli/src/state.ts` with ReviewSession, atomic file writes, schema versioning, AND immutable helpers per FR-029: `updateCommentState()`, `recordCommentEdit()`, `recordQuestion()`, `isReviewComplete()`, `setNarrative()`, `setClusters()` [UNCHECKED - needs FR-029 enhancement]
-- [ ] T019 [US2] Extract and adapt `clustering.ts` from POC to `plugins/speck-reviewer/cli/src/clustering.ts` with two-stage heuristic clustering (FR-010), AND advanced analysis per FR-028: `analyzeImports()`, `topologicalSort()`, `detectTestPairs()` [UNCHECKED - needs FR-028 enhancement]
+- [X] T018 [US2] Extract and adapt `state.ts` from POC to `plugins/speck-reviewer/cli/src/state.ts` with ReviewSession, atomic file writes, schema versioning, AND immutable helpers per FR-029: `updateCommentState()`, `recordCommentEdit()`, `recordQuestion()`, `isReviewComplete()`, `setNarrative()`, `setClusters()`
+- [X] T019 [US2] Extract and adapt `clustering.ts` from POC to `plugins/speck-reviewer/cli/src/clustering.ts` with two-stage heuristic clustering (FR-010), AND advanced analysis per FR-028: `analyzeImports()`, `topologicalSort()`, `detectTestPairs()`
 - [X] T020 [US2] Implement `analyze` command in `plugins/speck-reviewer/cli/src/index.ts` that outputs clustered JSON with narrative summary (FR-011, per contracts/cli-commands.md)
 - [X] T021 [US2] Implement `state show` command to display current session progress with cluster status
 - [X] T022 [US2] Implement `state clear` command to remove session state file
@@ -131,7 +131,7 @@ Based on plan.md monorepo structure:
 
 ### Implementation for User Story 4
 
-- [ ] T032 [US4] Extract and adapt `github.ts` from POC to `plugins/speck-reviewer/cli/src/github.ts` with gh CLI wrapper functions, AND advanced features per FR-030: `ghGraphQL()`, `fetchReviewThreadResolvedStatus()`, `fetchExistingComments()` with reply counts [UNCHECKED - needs FR-030 enhancement]
+- [X] T032 [US4] Extract and adapt `github.ts` from POC to `plugins/speck-reviewer/cli/src/github.ts` with gh CLI wrapper functions, AND advanced features per FR-030: `ghGraphQL()`, `fetchReviewThreadResolvedStatus()`, `fetchExistingComments()` with reply counts
 - [X] T033 [US4] Implement `comment <file> <line> <body>` command in index.ts for line comments (FR-015)
 - [X] T034 [US4] Implement `comment-reply <comment-id> <body>` command for thread replies
 - [X] T035 [US4] Implement `comment-delete <comment-id>` command
@@ -185,7 +185,7 @@ Based on plan.md monorepo structure:
 
 **Purpose**: Skill creation, integration testing, edge case handling, and final validation
 
-- [ ] T051 Create `plugins/speck-reviewer/skills/pr-review/SKILL.md` with FULL comprehensive review guidance per FR-026 (~1100 lines): example session, output formats, cluster refinement, Q&A handling, edge cases, CLI reference, state schema, read-only mode, navigation commands, comment workflow [UNCHECKED - needs FR-026 POC content restoration]
+- [X] T051 Create `plugins/speck-reviewer/skills/pr-review/SKILL.md` with FULL comprehensive review guidance per FR-026 (~1100 lines): example session, output formats, cluster refinement, Q&A handling, edge cases, CLI reference, state schema, read-only mode, navigation commands, comment workflow
 - [ ] T052 [P] [TEST] Create `tests/integration/cli-workflow.test.ts` with end-to-end CLI workflow tests [DEFERRED - requires live gh CLI]
 - [ ] T053 [P] Update root CLAUDE.md with speck-reviewer plugin information [See CLAUDE.md auto-update]
 - [X] T054 [P] Add edge case handling: gh CLI auth errors with clear instructions in github.ts
@@ -208,7 +208,7 @@ Based on plan.md monorepo structure:
 
 ### Output Formatting Module (FR-025)
 
-- [ ] T065 [P] Create `plugins/speck-reviewer/cli/src/links.ts` with output formatting module extracted from POC:
+- [X] T065 [P] Create `plugins/speck-reviewer/cli/src/links.ts` with output formatting module extracted from POC:
   - `formatActionMenu()` - Generate lettered action menus (a/b/c pattern)
   - `formatReviewTable()` - Structured comment table with file:line references
   - `getNavActions()` - Navigation action presets (files, comments, state)
@@ -218,18 +218,18 @@ Based on plan.md monorepo structure:
 
 ### Utility Commands (FR-027)
 
-- [ ] T066 [P] Implement `link <file> [line]` command in index.ts - Generate file:line navigation reference
-- [ ] T067 [P] Implement `actions` command in index.ts - Display navigation action menu using links.ts
-- [ ] T068 [P] Implement `run-actions` command in index.ts - Display review action menu using links.ts
-- [ ] T069 [P] Implement `review-table [--example]` command in index.ts - Generate formatted comment table
-- [ ] T070 [P] Implement `submit-actions [body]` command in index.ts - Display submit review menu
-- [ ] T071 [P] Implement `logs` command in index.ts - Display log file locations and debug instructions
+- [X] T066 [P] Implement `link <file> [line]` command in index.ts - Generate file:line navigation reference
+- [X] T067 [P] Implement `actions` command in index.ts - Display navigation action menu using links.ts
+- [X] T068 [P] Implement `run-actions` command in index.ts - Display review action menu using links.ts
+- [X] T069 [P] Implement `review-table [--example]` command in index.ts - Generate formatted comment table
+- [X] T070 [P] Implement `submit-actions [body]` command in index.ts - Display submit review menu
+- [X] T071 [P] Implement `logs` command in index.ts - Display log file locations and debug instructions
 
 ### Tests for POC Parity
 
-- [ ] T072 [P] [TEST] Create `tests/unit/links.test.ts` with tests for action menu formatting, review tables, shell escaping
-- [ ] T073 [P] [TEST] Update `tests/unit/state.test.ts` with tests for immutable helpers: updateCommentState, recordCommentEdit, recordQuestion, isReviewComplete
-- [ ] T074 [P] [TEST] Update `tests/unit/clustering.test.ts` with tests for analyzeImports, topologicalSort, detectTestPairs
+- [X] T072 [P] [TEST] Create `plugins/speck-reviewer/cli/tests/links.test.ts` with tests for action menu formatting, review tables, shell escaping
+- [X] T073 [P] [TEST] Create `plugins/speck-reviewer/cli/tests/state.test.ts` with tests for immutable helpers: updateCommentState, recordCommentEdit, recordQuestion, isReviewComplete
+- [X] T074 [P] [TEST] Create `plugins/speck-reviewer/cli/tests/clustering.test.ts` with tests for analyzeImports, topologicalSort, detectTestPairs
 
 **Checkpoint**: Full POC feature parity achieved ✓
 
@@ -241,10 +241,10 @@ Based on plan.md monorepo structure:
 
 **Rationale**: This feature adds user-facing commands (`/review`), a new plugin (`speck-reviewer`), and new capabilities (cluster-based PR review, Speck-aware reviews). Per constitution, these triggers MUST result in website documentation updates.
 
-- [ ] T061 [P] Create `website/src/content/docs/plugins/index.md` describing Speck's optional plugin architecture and extensibility model
-- [ ] T062 [P] Create `website/src/content/docs/plugins/speck-reviewer.md` with installation guide, usage examples, and feature overview
-- [ ] T063 Update website navigation (`website/src/config/navigation.ts` or equivalent) to include Plugins section
-- [ ] T064 Update `speck-help` skill (`.claude/skills/speck-help/SKILL.md`) to document that Speck can be extended with optional plugins, with speck-reviewer as the first example
+- [X] T061 [P] Create `website/src/content/docs/plugins/index.md` describing Speck's optional plugin architecture and extensibility model
+- [X] T062 [P] Create `website/src/content/docs/plugins/speck-reviewer.md` with installation guide, usage examples, and feature overview
+- [X] T063 Update website navigation (`website/src/components/Sidebar.astro`) to include Plugins section
+- [X] T064 Update `speck-help` skill (`.claude/skills/speck-help/SKILL.md`) to document that Speck can be extended with optional plugins, with speck-reviewer as the first example
 
 **Checkpoint**: Website documents plugin extensibility, speck-reviewer is discoverable ✓
 
