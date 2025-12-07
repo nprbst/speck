@@ -43,6 +43,7 @@ After CLI installation succeeds, configure auto-allow permissions by adding thes
 {
   "permissions": {
     "allow": [
+      "Read(~/.claude/plugins/marketplaces/speck-market/speck-reviewer/skills/**)",
       "Bash(gh pr list:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
