@@ -3,49 +3,61 @@
 Auto-generated from all feature plans. Last updated: 2025-11-15
 
 ## Active Technologies
-- TypeScript 5.3+ with Bun 1.0+ runtime + Zod (schema validation), Git 2.5+ CLI (worktree support), Bun Shell API (012-worktree-integration)
-- File-based configuration (`.speck/config.json`), Git worktrees as peer directories of main repository (naming based on repository layout) (012-worktree-integration)
-- TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees) (015-scope-simplification)
-- File-based (`.speck/config.json`, `.speck/branches.json`, `.speck/handoff.md`) (015-scope-simplification)
-- TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (file operations), Zod (validation) (016-atomic-transform-rollback)
-- File-based (`.speck/` directory, JSON metadata, Markdown artifacts) (016-atomic-transform-rollback)
-- TypeScript 5.7+ with Bun 1.0+ runtime, Astro 5.15+ + Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1 (database), Cloudflare Turnstile (spam prevention), Wrangler CLI (017-consulting-beta-deploy)
-- Cloudflare D1 (SQLite-based, serverless) (017-consulting-beta-deploy)
+
+- TypeScript 5.3+ with Bun 1.0+ runtime + Zod (schema validation), Git 2.5+ CLI
+  (worktree support), Bun Shell API
+- Git worktrees as peer directories of main repository (naming based on
+  repository layout)
+- Astro 5.15+ + Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1
+  (database), Cloudflare Turnstile (spam prevention), Wrangler CLI
+- Cloudflare D1 (SQLite-based, serverless)
+- `gh` CLI (user-provided)
+- File-based configuration (`.speck/config.json`)
+- File-based JSON (`.speck/review-state.json`)
 
 ### Core Runtime & Languages
+
 - TypeScript 5.3+ with strict type checking
 - Bun 1.0+ runtime (primary)
 - Git 2.30+
 
 ### Core Architecture
-- File-based storage: Markdown specs, JSON tracking files in `.speck/` and `upstream/` directories
+
+- File-based storage: Markdown specs, JSON tracking files in `.speck/` and
+  `upstream/` directories
 - Symlink-based multi-repo detection (007)
 - Virtual command pattern with hook-based architecture (010)
 
 ### Claude Code Integration
-- Plugin system 2.0+: `.claude-plugin/plugin.json` manifest, marketplace.json listing
+
+- Plugin system 2.0+: `.claude-plugin/plugin.json` manifest, marketplace.json
+  listing
 - Markdown commands/agents/skills with YAML frontmatter
 - Hook integration for prerequisite checks and context pre-loading (010)
 - Commander.js CLI framework for dual-mode command execution (010)
 
 ### Build & Development Tools
+
 - Bun Shell API (filesystem operations, subprocess/stdio, symlinks)
 - JSON/YAML parsing
 - GitHub REST API (upstream release fetching)
 - Handlebars templates (`.specify/templates/`)
 
 ### Website Stack (004, 006, 011)
+
 - Astro 5.15+ (static site generator)
 - Cloudflare Pages (hosting)
 - Shiki 3.15+ (syntax highlighting)
 - Markdown content files in `website/src/content/docs/`
 
 ### Testing & Quality
+
 - Playwright (visual regression testing)
 - Axe-core (accessibility testing)
 - TypeScript type checking + ESLint validation
 
 ### Multi-Repo & Branching (007, 008, 009)
+
 - `.speck/branches.json` per repository (stacked PR tracking)
 - Per-repo constitutions with shared specs
 - GitHub CLI (optional, for PR automation)
@@ -115,22 +127,32 @@ bun test                  # Run all tests (unit, visual, a11y)
 
 ## Code Style
 
-- TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility (secondary): Follow standard conventions
-- Astro components: Use `.astro` file extension, TypeScript for scripts, CSS scoped styles
-- Component props: Define interfaces in `specs/004-public-website/contracts/components.ts`
+- TypeScript 5.3+ with Bun 1.0+ runtime (primary), Deno 1.40+ compatibility
+  (secondary): Follow standard conventions
+- Astro components: Use `.astro` file extension, TypeScript for scripts, CSS
+  scoped styles
+- Component props: Define interfaces in
+  `specs/004-public-website/contracts/components.ts`
 - File naming: PascalCase for components, kebab-case for pages/content
 
 ## Terminology Standards
 
-- **Child repo** (preferred): Use consistently instead of "multi-repo child", "child repository", "child repo context"
-- **Root repo** (preferred): Use instead of "multi-repo root", "parent repo" (reserve "parent" for parent spec)
-- **Parent spec**: The root specification directory referenced by `parentSpecId` field
+- **Child repo** (preferred): Use consistently instead of "multi-repo child",
+  "child repository", "child repo context"
+- **Root repo** (preferred): Use instead of "multi-repo root", "parent repo"
+  (reserve "parent" for parent spec)
+- **Parent spec**: The root specification directory referenced by `parentSpecId`
+  field
 
 ## Recent Changes
-- 017-consulting-beta-deploy: Added TypeScript 5.7+ with Bun 1.0+ runtime, Astro 5.15+ + Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1 (database), Cloudflare Turnstile (spam prevention), Wrangler CLI
-- 016-atomic-transform-rollback: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (file operations), Zod (validation)
-- 015-scope-simplification: Added TypeScript 5.3+ with Bun 1.0+ runtime + Commander.js (CLI), Zod (validation), Git 2.5+ (worktrees)
 
+- 018-speck-reviewer-plugin: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun
+  Shell API, `gh` CLI (user-provided)
+- 018-speck-reviewer-plugin: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun
+  Shell API, `gh` CLI (user-provided)
+- 017-consulting-beta-deploy: Added TypeScript 5.7+ with Bun 1.0+ runtime, Astro
+  5.15+ + Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1 (database),
+  Cloudflare Turnstile (spam prevention), Wrangler CLI
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

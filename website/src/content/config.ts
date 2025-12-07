@@ -19,6 +19,7 @@ const docsCollection = defineCollection({
       'architecture',
       'reference',
       'community',
+      'plugins',
     ], {
       errorMap: () => ({ message: 'Category must be one of: getting-started, commands, concepts, examples, advanced-features, architecture, reference, community' }),
     }),

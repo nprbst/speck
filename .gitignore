@@ -22,6 +22,7 @@ coverage/
 # Speck-specific
 .speck/sync-reports/
 .speck/handoff*.md
+.speck/review-state.json
 .test-workspace-*/
 dist/
 **/test-baseline.txt
