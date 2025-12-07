@@ -1,16 +1,42 @@
 #!/usr/bin/env bun
 
 /**
- * Version Management Script
+ * Version and Changelog Management Script
  *
- * Bumps version in package.json (speck) or plugin.json (speck-reviewer) and creates git tag
+ * Bumps version in package.json (speck) or plugin.json (speck-reviewer),
+ * generates changelog entry, and creates git tag.
  *
  * Usage:
+ *   bun run scripts/version.ts <patch|minor|major|1.2.3> [plugin] [flags]
+ *
+ * Plugins: speck (default), speck-reviewer, both
+ * Flags: --no-git, --allow-dirty, --no-push, --no-changelog
+ *
+ * Examples:
  *   bun run scripts/version.ts patch                  # bumps speck (package.json)
  *   bun run scripts/version.ts minor                  # bumps speck (package.json)
  *   bun run scripts/version.ts major                  # bumps speck (package.json)
  *   bun run scripts/version.ts patch speck-reviewer   # bumps speck-reviewer (plugin.json)
  *   bun run scripts/version.ts 1.2.3 speck-reviewer   # sets specific version
+ *
+ * Changelog Generation Flow:
+ *   1. Find previous version tag (v* or speck-reviewer-v*)
+ *   2. Get commits since that tag
+ *   3. Parse conventional commit format: type(scope): description
+ *   4. Categorize into changelog sections
+ *   5. Generate markdown entry with date
+ *   6. Insert into CHANGELOG.md before existing entries
+ *
+ * Commit Type → Changelog Section Mapping:
+ *   - feat           → Added
+ *   - fix            → Fixed
+ *   - refactor, perf → Changed
+ *   - remove         → Removed
+ *   - deprecate      → Deprecated
+ *   - security       → Security
+ *   - chore, docs, test, ci, build, style → Skipped (internal)
+ *
+ * Version bump commits (chore: bump version) are always filtered out.
  */
 
 import { readFile, writeFile } from 'fs/promises';
@@ -21,6 +47,28 @@ import { $ } from 'bun';
 type PluginTarget = 'speck' | 'speck-reviewer';
 
 type BumpType = 'patch' | 'minor' | 'major';
+
+// Changelog types
+interface RawCommit {
+  hash: string;
+  subject: string;
+}
+
+interface ParsedCommit {
+  type: string;
+  scope: string | null;
+  description: string;
+  isBreaking: boolean;
+}
+
+interface ChangelogSections {
+  added: string[];
+  changed: string[];
+  deprecated: string[];
+  removed: string[];
+  fixed: string[];
+  security: string[];
+}
 
 function parseVersion(version: string): [number, number, number] {
   const parts = version.split('.');
@@ -56,6 +104,237 @@ function getVersionFilePath(target: PluginTarget): string {
   }
   return join(process.cwd(), 'package.json');
 }
+
+// --- Changelog Generation Functions ---
+
+function parseConventionalCommit(subject: string): ParsedCommit | null {
+  // Pattern: type(scope)!: description OR type!: description OR type: description
+  const regex = /^(\w+)(?:\(([^)]+)\))?(!)?: (.+)$/;
+  const match = subject.match(regex);
+
+  if (!match) {
+    return null; // Not a conventional commit
+  }
+
+  return {
+    type: match[1],
+    scope: match[2] || null,
+    description: match[4],
+    isBreaking: match[3] === '!',
+  };
+}
+
+async function getPreviousTag(target: PluginTarget): Promise<string | null> {
+  const tagPrefix = target === 'speck-reviewer' ? 'speck-reviewer-v' : 'v';
+
+  try {
+    // Get all tags sorted by version (descending), then filter by prefix
+    const result = await $`git tag --sort=-version:refname`.text();
+    const allTags = result.trim().split('\n').filter(Boolean);
+
+    // Filter to only tags matching our prefix
+    const tags = allTags.filter(tag => tag.startsWith(tagPrefix));
+
+    // Return the most recent tag (first in sorted list)
+    return tags.length > 0 ? tags[0] : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getCommitsSinceTag(previousTag: string | null): Promise<RawCommit[]> {
+  let result: string;
+
+  try {
+    if (previousTag) {
+      // Get commits from previous tag to HEAD
+      result = await $`git log --format=%H%x00%s ${previousTag}..HEAD --no-merges`.text();
+    } else {
+      // First release - get recent commits (limit to prevent massive changelog)
+      result = await $`git log --format=%H%x00%s --no-merges -50`.text();
+    }
+  } catch {
+    return [];
+  }
+
+  const lines = result.trim().split('\n').filter(Boolean);
+  return lines.map(line => {
+    const [hash, subject] = line.split('\x00');
+    return { hash, subject };
+  });
+}
+
+function categorizeCommits(commits: RawCommit[]): ChangelogSections {
+  const sections: ChangelogSections = {
+    added: [],
+    changed: [],
+    deprecated: [],
+    removed: [],
+    fixed: [],
+    security: [],
+  };
+
+  const typeToSection: Record<string, keyof ChangelogSections> = {
+    feat: 'added',
+    fix: 'fixed',
+    refactor: 'changed',
+    perf: 'changed',
+    deprecate: 'deprecated',
+    remove: 'removed',
+    security: 'security',
+  };
+
+  // Types to skip in changelog (internal maintenance)
+  const skipTypes = new Set(['chore', 'docs', 'test', 'style', 'ci', 'build']);
+
+  for (const commit of commits) {
+    const parsed = parseConventionalCommit(commit.subject);
+
+    if (!parsed) {
+      // Non-conventional commit - skip
+      continue;
+    }
+
+    // Skip version bump commits (they create noise)
+    if (parsed.type === 'chore' && parsed.description.includes('bump version')) {
+      continue;
+    }
+
+    // Skip internal maintenance commits
+    if (skipTypes.has(parsed.type)) {
+      continue;
+    }
+
+    const section = typeToSection[parsed.type];
+    if (!section) {
+      continue;
+    }
+
+    // Format: description (optionally with scope for meaningful scopes)
+    let entry = parsed.description;
+    // Include scope if it's meaningful (not just feature numbers like 017, 018)
+    if (parsed.scope && !/^\d+$/.test(parsed.scope)) {
+      entry = `**${parsed.scope}**: ${entry}`;
+    }
+
+    sections[section].push(entry);
+  }
+
+  return sections;
+}
+
+function formatChangelogEntry(version: string, sections: ChangelogSections): string {
+  const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const lines: string[] = [];
+
+  lines.push(`## [${version}] - ${date}`);
+  lines.push('');
+
+  const sectionOrder: Array<[keyof ChangelogSections, string]> = [
+    ['added', 'Added'],
+    ['changed', 'Changed'],
+    ['deprecated', 'Deprecated'],
+    ['removed', 'Removed'],
+    ['fixed', 'Fixed'],
+    ['security', 'Security'],
+  ];
+
+  let hasContent = false;
+
+  for (const [key, title] of sectionOrder) {
+    if (sections[key].length > 0) {
+      hasContent = true;
+      lines.push(`### ${title}`);
+      lines.push('');
+      for (const item of sections[key]) {
+        lines.push(`- ${item}`);
+      }
+      lines.push('');
+    }
+  }
+
+  // If no meaningful changes, add a placeholder
+  if (!hasContent) {
+    lines.push('### Changed');
+    lines.push('');
+    lines.push('- Internal improvements and maintenance');
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+async function updateChangelogFile(entry: string, changelogPath: string): Promise<void> {
+  let content: string;
+
+  if (!existsSync(changelogPath)) {
+    // Create new changelog with proper header
+    content = `# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+${entry}`;
+  } else {
+    content = await readFile(changelogPath, 'utf-8');
+
+    // Find the first ## heading (existing version entry)
+    const firstVersionIndex = content.indexOf('\n## [');
+
+    if (firstVersionIndex === -1) {
+      // No existing versions - append after header
+      const headerEndMatch = content.match(/Semantic Versioning[^\n]*\n\n/);
+      if (headerEndMatch && headerEndMatch.index !== undefined) {
+        const insertIndex = headerEndMatch.index + headerEndMatch[0].length;
+        content = content.slice(0, insertIndex) + entry + content.slice(insertIndex);
+      } else {
+        // Fallback: append at end
+        content = content.trimEnd() + '\n\n' + entry;
+      }
+    } else {
+      // Insert before the first version entry (with trailing newline for separation)
+      content = content.slice(0, firstVersionIndex + 1) + entry + '\n' + content.slice(firstVersionIndex + 1);
+    }
+  }
+
+  await writeFile(changelogPath, content, 'utf-8');
+}
+
+async function generateChangelog(target: PluginTarget, newVersion: string): Promise<string | null> {
+  console.log('\n📝 Generating changelog entry...');
+
+  const previousTag = await getPreviousTag(target);
+  console.log(`   Previous tag: ${previousTag || '(none - first release)'}`);
+
+  const commits = await getCommitsSinceTag(previousTag);
+  console.log(`   Found ${commits.length} commits since previous release`);
+
+  if (commits.length === 0) {
+    console.log('   No commits found, skipping changelog');
+    return null;
+  }
+
+  const sections = categorizeCommits(commits);
+  const meaningfulCommits =
+    sections.added.length +
+    sections.changed.length +
+    sections.fixed.length +
+    sections.removed.length +
+    sections.deprecated.length +
+    sections.security.length;
+  console.log(`   ${meaningfulCommits} meaningful changes for changelog`);
+
+  const changelogEntry = formatChangelogEntry(newVersion, sections);
+  const changelogPath = join(process.cwd(), 'CHANGELOG.md');
+  await updateChangelogFile(changelogEntry, changelogPath);
+  console.log(`✓ Updated CHANGELOG.md with ${newVersion} entry`);
+
+  return changelogPath;
+}
+
+// --- Version File Functions ---
 
 async function updateVersionFile(newVersion: string, target: PluginTarget): Promise<string> {
   const filePath = getVersionFilePath(target);
@@ -147,7 +426,7 @@ async function promptForTarget(): Promise<PluginTarget | 'both' | null> {
   }
 }
 
-async function bumpPlugin(bump: string, target: PluginTarget, skipGit: boolean, skipPush: boolean, allowDirty: boolean): Promise<void> {
+async function bumpPlugin(bump: string, target: PluginTarget, skipGit: boolean, skipPush: boolean, allowDirty: boolean, skipChangelog: boolean): Promise<void> {
   // Check git status first (before making any changes)
   const useGit = await checkGitStatus(skipGit, allowDirty);
 
@@ -165,6 +444,12 @@ async function bumpPlugin(bump: string, target: PluginTarget, skipGit: boolean, 
   // Update version file
   const updatedFile = await updateVersionFile(newVersion, target);
 
+  // Generate changelog entry
+  let changelogPath: string | null = null;
+  if (!skipChangelog) {
+    changelogPath = await generateChangelog(target, newVersion);
+  }
+
   // Commit, tag, and push if using git
   if (useGit) {
     // Use plugin-specific tag for speck-reviewer
@@ -172,8 +457,12 @@ async function bumpPlugin(bump: string, target: PluginTarget, skipGit: boolean, 
     const tagName = `${tagPrefix}${newVersion}`;
 
     try {
-      // Commit the version change
-      await $`git add ${updatedFile}`;
+      // Commit the version change (and changelog if generated)
+      if (changelogPath) {
+        await $`git add ${updatedFile} ${changelogPath}`;
+      } else {
+        await $`git add ${updatedFile}`;
+      }
       await $`git commit -m ${'chore(' + target + '): bump version to v' + newVersion}`;
       console.log(`✓ Committed version bump: ${tagName}`);
 
@@ -200,8 +489,13 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.error('Usage: bun run scripts/version.ts <patch|minor|major|1.2.3> <plugin-name> [--no-git] [--allow-dirty]');
+    console.error('Usage: bun run scripts/version.ts <patch|minor|major|1.2.3> <plugin-name> [flags]');
     console.error('\nPlugins: speck, speck-reviewer, both');
+    console.error('\nFlags:');
+    console.error('  --no-git        Skip all git operations');
+    console.error('  --allow-dirty   Allow version bump with uncommitted changes');
+    console.error('  --no-push       Create commit and tag but do not push');
+    console.error('  --no-changelog  Skip automatic changelog generation');
     console.error('\nExamples:');
     console.error('  bun run scripts/version.ts patch speck           # bump speck');
     console.error('  bun run scripts/version.ts patch speck-reviewer  # bump speck-reviewer');
@@ -214,6 +508,7 @@ async function main() {
   const skipGit = args.includes('--no-git');
   const skipPush = args.includes('--no-push');
   const allowDirty = args.includes('--allow-dirty');
+  const skipChangelog = args.includes('--no-changelog');
 
   // If no plugin specified, prompt user
   if (target === null) {
@@ -228,10 +523,10 @@ async function main() {
     // Handle 'both' by bumping each plugin separately
     if (target === 'both') {
       console.log('\n📦 Bumping both plugins...\n');
-      await bumpPlugin(bump, 'speck', skipGit, skipPush, allowDirty);
-      await bumpPlugin(bump, 'speck-reviewer', skipGit, skipPush, allowDirty);
+      await bumpPlugin(bump, 'speck', skipGit, skipPush, allowDirty, skipChangelog);
+      await bumpPlugin(bump, 'speck-reviewer', skipGit, skipPush, allowDirty, skipChangelog);
     } else {
-      await bumpPlugin(bump, target, skipGit, skipPush, allowDirty);
+      await bumpPlugin(bump, target, skipGit, skipPush, allowDirty, skipChangelog);
     }
 
     console.log('\n✅ Version bump complete!');
