@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [marketplace v1.1.1] - 2025-12-07
+
+### Added
+
+- **version**: add marketplace target and improve changelog format
+- **version**: auto-generate CHANGELOG.md entries from conventional commits
+- **build**: add speck-reviewer plugin to marketplace build
+- complete POC parity restoration and website documentation
+- implement speck-reviewer plugin with full CLI
+- add speck-reviewer plugin specification
+- **website**: organic theme with tri-mode toggle and mobile nav improvements (#14)
+- Consulting beta deploy with expert-help page and inquiry system (#13)
+- **website**: add refresh-website command and document Spec 016
+- Atomic Transform Rollback (#12)
+- **version**: add --allow-dirty flag to proceed with uncommitted changes
+- Scope Simplification - Remove stacked PRs, consolidate CLI, add worktree handoff (#11)
+
+### Changed
+
+- move review state from .claude/ to .speck/
+- **cli**: normalize command interface with registry pattern
+
+### Fixed
+
+- **website**: add scroll-margin-top to headings for sticky header
+- **website**: improve sidebar scrollbar and TOC overflow
+- **website**: improve navigation and sidebar UX
+- **worktree**: preserve settings.json and copy settings.local.json during handoff
+- **cli**: use plugin-style command syntax (/speck:*) in user-facing messages
+- **cli**: expose next-feature command in canonical CLI
+- remove misleading warning about local specs/ in multi-repo mode
+- add VSCode extension hook fallback instructions to all slash commands
+- resolve 10 test failures in IDE launch and path resolution
+
 ## [speck v1.10.2] - 2025-12-07
 
 ### Added
