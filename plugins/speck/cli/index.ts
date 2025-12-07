@@ -35,15 +35,15 @@ interface CommandModule {
  * Single source of truth for all command module paths
  */
 const commandRegistry = {
-  'check-prerequisites': () => import('../../.speck/scripts/check-prerequisites.ts'),
-  'create-new-feature': () => import('../../.speck/scripts/create-new-feature.ts'),
-  env: () => import('../../.speck/scripts/env-command.ts'),
-  init: () => import('../../.speck/scripts/commands/init.ts'),
-  link: () => import('../../.speck/scripts/commands/link.ts'),
-  'launch-ide': () => import('../../.speck/scripts/worktree/cli-launch-ide.ts'),
-  'setup-plan': () => import('../../.speck/scripts/setup-plan.ts'),
-  'update-agent-context': () => import('../../.speck/scripts/update-agent-context.ts'),
-  'next-feature': () => import('../../.speck/scripts/next-feature.ts'),
+  'check-prerequisites': () => import('../scripts/check-prerequisites.ts'),
+  'create-new-feature': () => import('../scripts/create-new-feature.ts'),
+  env: () => import('../scripts/env-command.ts'),
+  init: () => import('../scripts/commands/init.ts'),
+  link: () => import('../scripts/commands/link.ts'),
+  'launch-ide': () => import('../scripts/worktree/cli-launch-ide.ts'),
+  'setup-plan': () => import('../scripts/setup-plan.ts'),
+  'update-agent-context': () => import('../scripts/update-agent-context.ts'),
+  'next-feature': () => import('../scripts/next-feature.ts'),
 } as const;
 
 type CommandName = keyof typeof commandRegistry;

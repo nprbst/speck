@@ -19,10 +19,10 @@ import { getCurrentBranch } from "./common/git-operations.ts";
 import { detectSpeckRoot, getMultiRepoContext, findChildReposWithNames, type SpeckConfig, type MultiRepoContextMetadata } from "./common/paths.ts";
 import {
   formatJsonOutput,
-  formatHookOutput,
   detectOutputMode,
   type OutputMode,
-} from "./lib/output-formatter";
+} from "@speck/common/output";
+import { formatHookOutput } from "./lib/output-formatter";
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";

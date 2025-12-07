@@ -50,7 +50,7 @@ describe('isIDEAvailable', () => {
   it('should return true when IDE command is in PATH', async () => {
     // Arrange
     mockedCommands.add('code');
-    const { isIDEAvailable } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { isIDEAvailable } = await import('../../plugins/speck/scripts/worktree/ide-launch');
 
     // Act
     const result = await isIDEAvailable('code');
@@ -61,7 +61,7 @@ describe('isIDEAvailable', () => {
 
   it('should return false when IDE command is not in PATH', async () => {
     // Arrange
-    const { isIDEAvailable } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { isIDEAvailable } = await import('../../plugins/speck/scripts/worktree/ide-launch');
 
     // Act
     const result = await isIDEAvailable('code');
@@ -74,7 +74,7 @@ describe('isIDEAvailable', () => {
     // Arrange
     mockedCommands.add('code');
     mockedCommands.add('cursor');
-    const { isIDEAvailable } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { isIDEAvailable } = await import('../../plugins/speck/scripts/worktree/ide-launch');
 
     // Act & Assert
     expect(await isIDEAvailable('code')).toBe(true);
@@ -89,7 +89,7 @@ describe('detectAvailableIDEs', () => {
     mockedCommands.add('code');
     mockedCommands.add('cursor');
     mockedCommands.add('webstorm');
-    const { detectAvailableIDEs } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { detectAvailableIDEs } = await import('../../plugins/speck/scripts/worktree/ide-launch');
 
     // Act
     const result = await detectAvailableIDEs();
@@ -103,7 +103,7 @@ describe('detectAvailableIDEs', () => {
 
   it('should return empty array when no IDEs are available', async () => {
     // Arrange
-    const { detectAvailableIDEs } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { detectAvailableIDEs } = await import('../../plugins/speck/scripts/worktree/ide-launch');
 
     // Act
     const result = await detectAvailableIDEs();
@@ -115,7 +115,7 @@ describe('detectAvailableIDEs', () => {
   it('should include IDE metadata (name, command, args)', async () => {
     // Arrange
     mockedCommands.add('code');
-    const { detectAvailableIDEs } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { detectAvailableIDEs } = await import('../../plugins/speck/scripts/worktree/ide-launch');
 
     // Act
     const result = await detectAvailableIDEs();
@@ -132,7 +132,7 @@ describe('detectAvailableIDEs', () => {
   it('should detect partial IDE availability', async () => {
     // Arrange
     mockedCommands.add('code');
-    const { detectAvailableIDEs } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { detectAvailableIDEs } = await import('../../plugins/speck/scripts/worktree/ide-launch');
 
     // Act
     const result = await detectAvailableIDEs();
@@ -146,7 +146,7 @@ describe('detectAvailableIDEs', () => {
 describe('getIDECommand', () => {
   it('should return correct command for VSCode with new window', () => {
     // Arrange
-    const { getIDECommand } = require('../../.speck/scripts/worktree/ide-launch');
+    const { getIDECommand } = require('../../plugins/speck/scripts/worktree/ide-launch');
     const worktreePath = '/path/to/worktree';
 
     // Act
@@ -158,7 +158,7 @@ describe('getIDECommand', () => {
 
   it('should return correct command for VSCode without new window', () => {
     // Arrange
-    const { getIDECommand } = require('../../.speck/scripts/worktree/ide-launch');
+    const { getIDECommand } = require('../../plugins/speck/scripts/worktree/ide-launch');
     const worktreePath = '/path/to/worktree';
 
     // Act
@@ -170,7 +170,7 @@ describe('getIDECommand', () => {
 
   it('should return correct command for Cursor', () => {
     // Arrange
-    const { getIDECommand } = require('../../.speck/scripts/worktree/ide-launch');
+    const { getIDECommand } = require('../../plugins/speck/scripts/worktree/ide-launch');
     const worktreePath = '/path/to/worktree';
 
     // Act
@@ -182,7 +182,7 @@ describe('getIDECommand', () => {
 
   it('should return correct command for WebStorm', () => {
     // Arrange
-    const { getIDECommand } = require('../../.speck/scripts/worktree/ide-launch');
+    const { getIDECommand } = require('../../plugins/speck/scripts/worktree/ide-launch');
     const worktreePath = '/path/to/worktree';
 
     // Act
@@ -194,7 +194,7 @@ describe('getIDECommand', () => {
 
   it('should return correct command for IntelliJ IDEA', () => {
     // Arrange
-    const { getIDECommand } = require('../../.speck/scripts/worktree/ide-launch');
+    const { getIDECommand } = require('../../plugins/speck/scripts/worktree/ide-launch');
     const worktreePath = '/path/to/worktree';
 
     // Act
@@ -206,7 +206,7 @@ describe('getIDECommand', () => {
 
   it('should return correct command for PyCharm', () => {
     // Arrange
-    const { getIDECommand } = require('../../.speck/scripts/worktree/ide-launch');
+    const { getIDECommand } = require('../../plugins/speck/scripts/worktree/ide-launch');
     const worktreePath = '/path/to/worktree';
 
     // Act
@@ -218,7 +218,7 @@ describe('getIDECommand', () => {
 
   it('should handle paths with spaces', () => {
     // Arrange
-    const { getIDECommand } = require('../../.speck/scripts/worktree/ide-launch');
+    const { getIDECommand } = require('../../plugins/speck/scripts/worktree/ide-launch');
     const worktreePath = '/path/with spaces/to/worktree';
 
     // Act
@@ -233,7 +233,7 @@ describe('launchIDE', () => {
   it('should successfully launch IDE when available', async () => {
     // Arrange
     mockedCommands.add('code');
-    const { launchIDE } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { launchIDE } = await import('../../plugins/speck/scripts/worktree/ide-launch');
     const options: LaunchIDEOptions = {
       worktreePath: '/path/to/worktree',
       editor: 'vscode',
@@ -252,7 +252,7 @@ describe('launchIDE', () => {
 
   it('should fail when IDE is not available', async () => {
     // Arrange
-    const { launchIDE } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { launchIDE } = await import('../../plugins/speck/scripts/worktree/ide-launch');
     const options: LaunchIDEOptions = {
       worktreePath: '/path/to/worktree',
       editor: 'vscode',
@@ -271,7 +271,7 @@ describe('launchIDE', () => {
   it('should use newWindow flag correctly', async () => {
     // Arrange
     mockedCommands.add('code');
-    const { launchIDE } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { launchIDE } = await import('../../plugins/speck/scripts/worktree/ide-launch');
     const options: LaunchIDEOptions = {
       worktreePath: '/path/to/worktree',
       editor: 'vscode',
@@ -289,7 +289,7 @@ describe('launchIDE', () => {
   it('should default newWindow to true when not specified', async () => {
     // Arrange
     mockedCommands.add('code');
-    const { launchIDE } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { launchIDE } = await import('../../plugins/speck/scripts/worktree/ide-launch');
     const options: LaunchIDEOptions = {
       worktreePath: '/path/to/worktree',
       editor: 'vscode',
@@ -306,7 +306,7 @@ describe('launchIDE', () => {
   it('should return immediately without waiting for IDE to close', async () => {
     // Arrange
     mockedCommands.add('code');
-    const { launchIDE } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { launchIDE } = await import('../../plugins/speck/scripts/worktree/ide-launch');
     const options: LaunchIDEOptions = {
       worktreePath: '/path/to/worktree',
       editor: 'vscode',
@@ -325,7 +325,7 @@ describe('launchIDE', () => {
 
   it('should provide actionable error messages', async () => {
     // Arrange
-    const { launchIDE } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { launchIDE } = await import('../../plugins/speck/scripts/worktree/ide-launch');
     const options: LaunchIDEOptions = {
       worktreePath: '/path/to/worktree',
       editor: 'vscode',
@@ -346,7 +346,7 @@ describe('launchIDE', () => {
     // Arrange
     mockedCommands.add('cursor');
     mockedCommands.add('webstorm');
-    const { launchIDE } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { launchIDE } = await import('../../plugins/speck/scripts/worktree/ide-launch');
 
     // Act & Assert - Cursor
     const cursorResult = await launchIDE({
@@ -371,7 +371,7 @@ describe('launchIDE', () => {
 describe('error handling', () => {
   it('should handle IDE launch failure gracefully', async () => {
     // Arrange
-    const { launchIDE } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { launchIDE } = await import('../../plugins/speck/scripts/worktree/ide-launch');
     const options: LaunchIDEOptions = {
       worktreePath: '/nonexistent/path',
       editor: 'vscode',
@@ -388,7 +388,7 @@ describe('error handling', () => {
 
   it('should provide error with cause, impact, and remediation', async () => {
     // Arrange
-    const { launchIDE } = await import('../../.speck/scripts/worktree/ide-launch');
+    const { launchIDE } = await import('../../plugins/speck/scripts/worktree/ide-launch');
     const options: LaunchIDEOptions = {
       worktreePath: '/path/to/worktree',
       editor: 'vscode',

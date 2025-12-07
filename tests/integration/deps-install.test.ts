@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { installDependencies } from '../../.speck/scripts/worktree/deps-install';
+import { installDependencies } from '../../plugins/speck/scripts/worktree/deps-install';
 
 describe('Dependency Installation Integration', () => {
   let tempDir: string;

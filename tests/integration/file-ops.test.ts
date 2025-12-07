@@ -9,8 +9,8 @@ import { mkdtemp, rm, writeFile, mkdir, readlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
-import { applyFileRules } from '../../.speck/scripts/worktree/file-ops';
-import type { FileRule } from '../../.speck/scripts/worktree/config-schema';
+import { applyFileRules } from '../../plugins/speck/scripts/worktree/file-ops';
+import type { FileRule } from '../../plugins/speck/scripts/worktree/config-schema';
 
 describe('File Operations Integration', () => {
   let repoDir: string;

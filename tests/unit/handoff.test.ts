@@ -15,7 +15,7 @@ import type { HandoffDocument } from '../../specs/015-scope-simplification/contr
 // Using dynamic import to handle module not existing yet during TDD
 const getHandoffModule = async () => {
   try {
-    return await import('../../.speck/scripts/worktree/handoff');
+    return await import('../../plugins/speck/scripts/worktree/handoff');
   } catch {
     return null;
   }

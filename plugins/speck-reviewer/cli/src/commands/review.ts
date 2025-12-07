@@ -2,7 +2,7 @@
  * review command - Submit PR review
  */
 
-import { logger } from "../logger";
+import { logger } from "@speck/common/logger";
 import { loadState, saveState } from "../state";
 import { submitReview, postComment, postIssueComment } from "../github";
 

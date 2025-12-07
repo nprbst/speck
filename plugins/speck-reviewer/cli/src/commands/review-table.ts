@@ -4,7 +4,7 @@
 
 import { formatReviewTable } from "../links";
 import { loadState, getStatePath } from "../state";
-import { logger } from "../logger";
+import { logger } from "@speck/common/logger";
 
 const EXAMPLE_COMMENTS = [
   {

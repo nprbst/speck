@@ -8,9 +8,9 @@
  */
 
 import { $ } from "bun";
-import type { CommandHandler } from "../lib/types";
+import type { CommandHandler } from "@speck/common/types";
 import path from "node:path";
-import { errorToResult } from "../lib/error-handler";
+import { errorToResult } from "@speck/common/errors";
 
 /**
  * Setup plan command handler arguments

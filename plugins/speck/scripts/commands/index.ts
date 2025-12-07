@@ -6,7 +6,7 @@
  * without hardcoding command names in the hook script.
  */
 
-import type { CommandRegistry, CommandRegistryEntry, MainFunction } from "../lib/types";
+import type { CommandRegistry, CommandRegistryEntry, MainFunction } from "@speck/common/types";
 import { echoHandler, parseEchoArgs } from "./echo";
 import { envHandler } from "./env";
 

@@ -10,8 +10,8 @@ import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
-import { loadConfig, saveConfig, migrateConfig } from '../../.speck/scripts/worktree/config';
-import type { SpeckConfig } from '../../.speck/scripts/worktree/config-schema';
+import { loadConfig, saveConfig, migrateConfig } from '../../plugins/speck/scripts/worktree/config';
+import type { SpeckConfig } from '../../plugins/speck/scripts/worktree/config-schema';
 
 describe('config.ts - Configuration Management', () => {
   let tempRepo: string;

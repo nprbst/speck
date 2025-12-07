@@ -24,7 +24,7 @@ import {
   migrateBranchMapping,
   validateBranchMapping,
   safeParseBranchMapping,
-} from '../../.speck/scripts/common/branch-mapper';
+} from '../../plugins/speck/scripts/common/branch-mapper';
 
 describe('Simplified BranchEntry Schema (T010)', () => {
   test('validates a minimal valid branch entry', () => {

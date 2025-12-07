@@ -2,7 +2,7 @@
  * state command - Manage review session state
  */
 
-import { logger } from "../logger";
+import { logger } from "@speck/common/logger";
 import { loadState, clearState, formatStateDisplay } from "../state";
 
 export async function stateCommand(args: string[]): Promise<void> {

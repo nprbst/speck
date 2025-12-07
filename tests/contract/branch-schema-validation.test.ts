@@ -26,7 +26,7 @@ import {
   addBranchEntry,
   needsMigration,
   migrateBranchMapping,
-} from '../../.speck/scripts/common/branch-mapper';
+} from '../../plugins/speck/scripts/common/branch-mapper';
 
 describe('Contract: Branch schema v2.0.0 validation', () => {
   let testDir: string;

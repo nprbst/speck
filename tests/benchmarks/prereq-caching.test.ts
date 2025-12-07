@@ -5,8 +5,8 @@
 
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { performance } from 'perf_hooks';
-import { runPrerequisiteCheck } from '../../.speck/scripts/lib/prereq-runner';
-import { invalidateCache, getCacheStats } from '../../.speck/scripts/lib/prereq-cache';
+import { runPrerequisiteCheck } from '../../plugins/speck/scripts/lib/prereq-runner';
+import { invalidateCache, getCacheStats } from '../../plugins/speck/scripts/lib/prereq-cache';
 
 describe('Prerequisite Caching Performance Benchmark', () => {
   beforeEach(() => {

@@ -60,7 +60,7 @@ describe('IDE Launch Integration', () => {
     mockedIDEs.add('code');
 
     // Create config with IDE auto-launch enabled
-    const { saveConfig } = await import('../../.speck/scripts/worktree/config');
+    const { saveConfig } = await import('../../plugins/speck/scripts/worktree/config');
     await saveConfig(testRepoPath, {
       version: '1.0.0',
       worktree: {
@@ -86,7 +86,7 @@ describe('IDE Launch Integration', () => {
     await Bun.$`cd ${testRepoPath} && git branch test-feature`.quiet();
 
     // Act
-    const { createWorktree } = await import('../../.speck/scripts/worktree/create');
+    const { createWorktree } = await import('../../plugins/speck/scripts/worktree/create');
     const result = await createWorktree({
       repoPath: testRepoPath,
       branchName: 'test-feature',
@@ -105,7 +105,7 @@ describe('IDE Launch Integration', () => {
     mockedIDEs.add('code');
 
     // Create config with IDE auto-launch enabled
-    const { saveConfig } = await import('../../.speck/scripts/worktree/config');
+    const { saveConfig } = await import('../../plugins/speck/scripts/worktree/config');
     await saveConfig(testRepoPath, {
       version: '1.0.0',
       worktree: {
@@ -131,7 +131,7 @@ describe('IDE Launch Integration', () => {
     await Bun.$`cd ${testRepoPath} && git branch test-feature`.quiet();
 
     // Act
-    const { createWorktree } = await import('../../.speck/scripts/worktree/create');
+    const { createWorktree } = await import('../../plugins/speck/scripts/worktree/create');
     const result = await createWorktree({
       repoPath: testRepoPath,
       branchName: 'test-feature',
@@ -149,7 +149,7 @@ describe('IDE Launch Integration', () => {
     // Don't add to mockedIDEs, so isIDEAvailable returns false
 
     // Create config with IDE auto-launch enabled
-    const { saveConfig } = await import('../../.speck/scripts/worktree/config');
+    const { saveConfig } = await import('../../plugins/speck/scripts/worktree/config');
     await saveConfig(testRepoPath, {
       version: '1.0.0',
       worktree: {
@@ -175,7 +175,7 @@ describe('IDE Launch Integration', () => {
     await Bun.$`cd ${testRepoPath} && git branch test-feature`.quiet();
 
     // Act
-    const { createWorktree } = await import('../../.speck/scripts/worktree/create');
+    const { createWorktree } = await import('../../plugins/speck/scripts/worktree/create');
     const result = await createWorktree({
       repoPath: testRepoPath,
       branchName: 'test-feature',
@@ -192,7 +192,7 @@ describe('IDE Launch Integration', () => {
     mockedIDEs.add('cursor');
 
     // Create config with Cursor and no new window
-    const { saveConfig } = await import('../../.speck/scripts/worktree/config');
+    const { saveConfig } = await import('../../plugins/speck/scripts/worktree/config');
     await saveConfig(testRepoPath, {
       version: '1.0.0',
       worktree: {
@@ -218,7 +218,7 @@ describe('IDE Launch Integration', () => {
     await Bun.$`cd ${testRepoPath} && git branch test-feature`.quiet();
 
     // Act
-    const { createWorktree } = await import('../../.speck/scripts/worktree/create');
+    const { createWorktree } = await import('../../plugins/speck/scripts/worktree/create');
     const result = await createWorktree({
       repoPath: testRepoPath,
       branchName: 'test-feature',
@@ -236,7 +236,7 @@ describe('IDE Launch Integration', () => {
     mockedIDEs.add('code');
 
     // Create config with IDE auto-launch disabled
-    const { saveConfig } = await import('../../.speck/scripts/worktree/config');
+    const { saveConfig } = await import('../../plugins/speck/scripts/worktree/config');
     await saveConfig(testRepoPath, {
       version: '1.0.0',
       worktree: {
@@ -262,7 +262,7 @@ describe('IDE Launch Integration', () => {
     await Bun.$`cd ${testRepoPath} && git branch test-feature`.quiet();
 
     // Act
-    const { createWorktree } = await import('../../.speck/scripts/worktree/create');
+    const { createWorktree } = await import('../../plugins/speck/scripts/worktree/create');
     const result = await createWorktree({
       repoPath: testRepoPath,
       branchName: 'test-feature',

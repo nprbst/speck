@@ -9,7 +9,7 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { checkUpstream } from '../../.speck/scripts/check-upstream';
+import { checkUpstream } from '../../plugins/speck/scripts/check-upstream';
 import { ExitCode } from '../../specs/001-speck-core-project/contracts/cli-interface';
 import type { CheckUpstreamOutput } from '../../specs/001-speck-core-project/contracts/cli-interface';
 import {

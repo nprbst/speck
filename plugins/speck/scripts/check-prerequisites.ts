@@ -38,12 +38,11 @@ import {
 import { ExitCode } from "./contracts/cli-interface";
 import {
   formatJsonOutput,
-  formatHookOutput,
-  readHookInput,
   detectInputMode,
   detectOutputMode,
   type OutputMode,
-} from "./lib/output-formatter";
+} from "@speck/common/output";
+import { formatHookOutput, readHookInput } from "./lib/output-formatter";
 
 /**
  * CLI options for check-prerequisites

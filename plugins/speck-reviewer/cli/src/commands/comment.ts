@@ -2,7 +2,7 @@
  * comment commands - Manage PR comments
  */
 
-import { logger } from "../logger";
+import { logger } from "@speck/common/logger";
 import { loadState, saveState } from "../state";
 import { postComment, replyToComment, deleteComment, listComments, postIssueComment } from "../github";
 import type { ReviewComment } from "../types";

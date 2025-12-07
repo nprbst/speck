@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "speck",
-      "source": "./speck",
+      "source": "./plugins/speck",
       "description": "Specification and planning workflow framework for Claude Code",
       "version": "1.0.0",
       "author": {
@@ -31,7 +31,7 @@
     },
     {
       "name": "speck-reviewer",
-      "source": "./speck-reviewer",
+      "source": "./plugins/speck-reviewer",
       "description": "AI-powered PR review with Speck-aware context and structured walkthroughs",
       "version": "1.0.0",
       "author": {

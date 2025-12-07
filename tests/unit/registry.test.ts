@@ -11,8 +11,8 @@ import {
   getCommand,
   hasCommand,
   listCommands,
-} from '../../.speck/scripts/commands/index';
-import type { CommandRegistry } from '../../.speck/scripts/lib/types';
+} from '../../plugins/speck/scripts/commands/index';
+import type { CommandRegistry } from '../../plugins/speck/scripts/lib/types';
 
 describe('Command Registry', () => {
   describe('Registry Structure', () => {

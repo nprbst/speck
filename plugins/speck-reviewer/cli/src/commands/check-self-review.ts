@@ -2,7 +2,7 @@
  * check-self-review command - Check if current user is PR author
  */
 
-import { logger } from "../logger";
+import { logger } from "@speck/common/logger";
 import { getCurrentUser } from "../github";
 import type { SelfReviewCheckOutput } from "../types";
 

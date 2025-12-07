@@ -4,9 +4,9 @@
  * Replaces test-hello for testing hook flow
  */
 
-import type { CommandHandler, ArgumentParser } from "../lib/types";
-import { ErrorMessages, errorToResult } from "../lib/error-handler";
-import { successResult } from "../lib/output-formatter";
+import type { CommandHandler, ArgumentParser } from "@speck/common/types";
+import { ErrorMessages, errorToResult } from "@speck/common/errors";
+import { successResult } from "@speck/common/output";
 
 /**
  * Parse echo command arguments

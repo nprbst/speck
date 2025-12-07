@@ -2,7 +2,7 @@
  * files command - List changed files with metadata
  */
 
-import { logger } from "../logger";
+import { logger } from "@speck/common/logger";
 import { loadState } from "../state";
 import { getPRFiles, getPRInfo } from "../github";
 

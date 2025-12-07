@@ -22,7 +22,7 @@ import {
   formatJsonOutput,
   detectOutputMode,
   type OutputMode,
-} from "./lib/output-formatter";
+} from "@speck/common/output";
 
 /**
  * CLI options for next-feature

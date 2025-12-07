@@ -2,7 +2,7 @@
  * analyze command - Analyze PR and output clustered file groupings
  */
 
-import { logger } from "../logger";
+import { logger } from "@speck/common/logger";
 import { getPRInfo, getPRFiles, checkGhAuth, getCurrentUser } from "../github";
 import { clusterFiles, detectCrossCuttingConcerns } from "../clustering";
 import { createSession, saveState, loadState } from "../state";

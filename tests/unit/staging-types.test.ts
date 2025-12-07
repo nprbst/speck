@@ -24,7 +24,7 @@ import {
   type StagingMetadata,
   type StagedFile,
   type StagingStatus,
-} from '../../.speck/scripts/common/staging-types';
+} from '../../plugins/speck/scripts/common/staging-types';
 
 describe('StagingStatusSchema', () => {
   it('accepts valid status values', () => {

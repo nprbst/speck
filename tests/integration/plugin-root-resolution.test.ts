@@ -13,7 +13,7 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import path from 'node:path';
 import type { MultiRepoTestFixture } from '../helpers/multi-repo-fixtures';
 import { createMultiRepoTestFixture } from '../helpers/multi-repo-fixtures';
-import { getPluginRoot, getTemplatesDir, getScriptsDir } from '../../.speck/scripts/common/paths';
+import { getPluginRoot, getTemplatesDir, getScriptsDir } from '../../plugins/speck/scripts/common/paths';
 
 describe('Integration: Plugin root resolution in multi-repo', () => {
   let fixture: MultiRepoTestFixture;

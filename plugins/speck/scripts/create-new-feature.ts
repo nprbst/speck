@@ -33,10 +33,10 @@ import { ExitCode } from "./contracts/cli-interface";
 import { getTemplatesDir, detectSpeckRoot } from "./common/paths";
 import {
   formatJsonOutput,
-  formatHookOutput,
   detectOutputMode,
   type OutputMode,
-} from "./lib/output-formatter";
+} from "@speck/common/output";
+import { formatHookOutput } from "./lib/output-formatter";
 import { loadConfig } from "./worktree/config";
 import { constructWorktreePath } from "./worktree/naming";
 import { writeWorktreeHandoff } from "./worktree/handoff";

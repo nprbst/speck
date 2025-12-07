@@ -3,10 +3,10 @@
  * Shows basic Speck environment information
  */
 
-import type { CommandHandler } from "../lib/types";
+import type { CommandHandler } from "@speck/common/types";
 import { detectSpeckRoot } from "../common/paths";
-import { errorToResult } from "../lib/error-handler";
-import { successResult } from "../lib/output-formatter";
+import { errorToResult } from "@speck/common/errors";
+import { successResult } from "@speck/common/output";
 
 /**
  * env command handler

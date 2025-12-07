@@ -17,7 +17,7 @@ import { $ } from 'bun';
 // Import the module we're testing (will be created later)
 const getHandoffModule = async () => {
   try {
-    return await import('../../.speck/scripts/worktree/handoff');
+    return await import('../../plugins/speck/scripts/worktree/handoff');
   } catch {
     return null;
   }

@@ -13,7 +13,7 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { $ } from 'bun';
 import { join } from 'node:path';
 import { existsSync, rmSync } from 'node:fs';
-import type { ReleaseRegistry } from '../../.speck/scripts/contracts/release-registry';
+import type { ReleaseRegistry } from '../../plugins/speck/scripts/contracts/release-registry';
 
 describe('Integration: Full upstream sync pipeline', () => {
   // Use a completely isolated test directory

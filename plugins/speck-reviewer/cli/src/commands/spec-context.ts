@@ -2,7 +2,7 @@
  * spec-context command - Load Speck specification for current branch
  */
 
-import { logger } from "../logger";
+import { logger } from "@speck/common/logger";
 import { getCurrentBranch } from "../github";
 import { loadSpecContext, formatSpecContextOutput } from "../speck";
 

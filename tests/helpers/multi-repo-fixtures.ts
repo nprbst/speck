@@ -17,7 +17,7 @@ import { mkdtemp, mkdir, writeFile, symlink, rm, cp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { $ } from 'bun';
-import type { BranchMapping, BranchEntry } from '../../.speck/scripts/common/branch-mapper.ts';
+import type { BranchMapping, BranchEntry } from '../../plugins/speck/scripts/common/branch-mapper.ts';
 
 /**
  * Copy Speck scripts into test fixture for isolation

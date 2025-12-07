@@ -20,7 +20,7 @@ import {
   readHookInput,
   detectInputMode,
   detectOutputMode,
-} from '../../.speck/scripts/lib/output-formatter';
+} from '../../plugins/speck/scripts/lib/output-formatter';
 
 describe('T030: JSON Output Format', () => {
   describe('formatJsonOutput()', () => {

@@ -36,11 +36,11 @@ interface BuildConfig {
 const config: BuildConfig = {
   sourceRoot: process.cwd(),
   outputDir: join(process.cwd(), 'dist/plugins/speck'),
-  commandsSourceDir: join(process.cwd(), '.claude/commands'),
-  agentsSourceDir: join(process.cwd(), '.claude/agents'),
-  skillsSourceDir: join(process.cwd(), '.claude/skills'),
-  templatesSourceDir: join(process.cwd(), '.speck/templates'),
-  scriptsSourceDir: join(process.cwd(), '.speck/scripts'),
+  commandsSourceDir: join(process.cwd(), 'plugins/speck/commands'),
+  agentsSourceDir: join(process.cwd(), 'plugins/speck/agents'),
+  skillsSourceDir: join(process.cwd(), 'plugins/speck/skills'),
+  templatesSourceDir: join(process.cwd(), 'plugins/speck/templates'),
+  scriptsSourceDir: join(process.cwd(), 'plugins/speck/scripts'),
   memorySourceDir: join(process.cwd(), 'upstream/latest/.specify/memory'),
   version: '', // Will be loaded from package.json
   maxSizeBytes: 5 * 1024 * 1024, // 5MB
@@ -182,9 +182,9 @@ function bundleScript(sourcePath: string, destPath: string, name: string): void 
  * This ensures the bundled scripts are always up-to-date with source changes.
  */
 async function rebuildHookBundles(): Promise<void> {
-  const hookSourceDir = join(config.sourceRoot, '.speck/scripts/hooks');
-  const cliSourceDir = join(config.sourceRoot, 'src/cli');
-  const distDir = join(config.sourceRoot, '.speck/dist');
+  const hookSourceDir = join(config.sourceRoot, 'plugins/speck/scripts/hooks');
+  const cliSourceDir = join(config.sourceRoot, 'plugins/speck/cli');
+  const distDir = join(config.sourceRoot, 'plugins/speck/dist');
 
   await ensureDir(distDir);
 
@@ -456,17 +456,17 @@ async function copyPluginFiles(): Promise<FileCounts> {
 
     // Copy dist/ directory containing the bundled hooks and CLI
     // (pre-prompt-submit-hook.js, speck-cli.js)
-    const distPath = join(config.scriptsSourceDir, '../dist');
+    const distPath = join(config.sourceRoot, 'plugins/speck/dist');
     if (existsSync(distPath)) {
       await copyDir(distPath, join(config.outputDir, 'dist'));
     }
 
     // Copy bootstrap.sh for CLI installation
-    const bootstrapPath = join(config.sourceRoot, 'src/cli/bootstrap.sh');
+    const bootstrapPath = join(config.sourceRoot, 'plugins/speck/cli/bootstrap.sh');
     if (existsSync(bootstrapPath)) {
-      const srcCliDir = join(config.outputDir, 'src/cli');
-      await ensureDir(srcCliDir);
-      await copyFile(bootstrapPath, join(srcCliDir, 'bootstrap.sh'));
+      const cliDestDir = join(config.outputDir, 'cli');
+      await ensureDir(cliDestDir);
+      await copyFile(bootstrapPath, join(cliDestDir, 'bootstrap.sh'));
     }
   }
 
@@ -481,7 +481,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
   }
 
   // T010i & T010j: Copy hooks/ directory (hooks.json and setup-env.sh)
-  const hooksSourceDir = join(config.sourceRoot, 'hooks');
+  const hooksSourceDir = join(config.sourceRoot, 'plugins/speck/hooks');
   if (existsSync(hooksSourceDir)) {
     const hooksDestDir = join(config.outputDir, 'hooks');
     await copyDir(hooksSourceDir, hooksDestDir);

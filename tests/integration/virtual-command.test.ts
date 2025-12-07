@@ -7,7 +7,7 @@ import { describe, test, expect } from 'bun:test';
 import { $ } from 'bun';
 import path from 'node:path';
 
-const CLI_PATH = path.join(import.meta.dir, '../../.speck/scripts/speck.ts');
+const CLI_PATH = path.join(import.meta.dir, '../../plugins/speck/scripts/speck.ts');
 
 describe('Virtual Command Invocation', () => {
   test('speck-env command works via CLI', async () => {

@@ -40,8 +40,8 @@ import {
   detectFileConflicts,
   generateFileManifest,
   loadStagingContext,
-} from '../../.speck/scripts/common/staging-manager';
-import type { StagingContext, StagingStatus } from '../../.speck/scripts/common/staging-types';
+} from '../../plugins/speck/scripts/common/staging-manager';
+import type { StagingContext, StagingStatus } from '../../plugins/speck/scripts/common/staging-types';
 
 describe('createStagingDirectory', () => {
   let env: StagingTestEnv;

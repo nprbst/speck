@@ -7,9 +7,9 @@
  */
 
 import { Command } from "commander";
-import type { CommandContext } from "./lib/types";
+import type { CommandContext } from "@speck/common/types";
 import { registry } from "./commands/index";
-import { CommandError, formatError } from "./lib/error-handler";
+import { CommandError, formatError } from "@speck/common/errors";
 
 /**
  * Helper to detect CLI mode
