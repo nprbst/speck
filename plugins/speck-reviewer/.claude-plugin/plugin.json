@@ -15,11 +15,5 @@
     "github",
     "spec-aware",
     "pr-review"
-  ],
-  "commands": {
-    "review": "commands/review.md"
-  },
-  "skills": {
-    "pr-review": "skills/pr-review/SKILL.md"
-  }
+  ]
 }

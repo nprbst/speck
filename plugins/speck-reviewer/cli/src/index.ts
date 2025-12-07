@@ -5,8 +5,9 @@
  */
 
 import { logger } from "./logger";
+import packageJson from "../package.json";
 
-const VERSION = "1.0.0";
+const VERSION = packageJson.version;
 
 // Command handlers type
 type CommandHandler = (args: string[]) => Promise<void>;

@@ -355,7 +355,7 @@ async function generateChangelog(target: PluginTarget, newVersion: string): Prom
 
 // --- Version File Functions ---
 
-async function updateVersionFile(newVersion: string, target: PluginTarget): Promise<string> {
+async function updateVersionFile(newVersion: string, target: PluginTarget): Promise<string[]> {
   const filePath = getVersionFilePath(target);
 
   if (!existsSync(filePath)) {
@@ -389,7 +389,23 @@ async function updateVersionFile(newVersion: string, target: PluginTarget): Prom
   };
   console.log(`✓ Updated ${fileNames[target]}: ${oldVersion} → ${newVersion}`);
 
-  return filePath;
+  const updatedFiles = [filePath];
+
+  // For speck-reviewer, also update the CLI package.json
+  if (target === 'speck-reviewer') {
+    const cliPackagePath = join(process.cwd(), 'plugins/speck-reviewer/cli/package.json');
+    if (existsSync(cliPackagePath)) {
+      const cliContent = await readFile(cliPackagePath, 'utf-8');
+      const cliJson = JSON.parse(cliContent);
+      const cliOldVersion = cliJson.version;
+      cliJson.version = newVersion;
+      await writeFile(cliPackagePath, JSON.stringify(cliJson, null, 2) + '\n', 'utf-8');
+      console.log(`✓ Updated cli/package.json: ${cliOldVersion} → ${newVersion}`);
+      updatedFiles.push(cliPackagePath);
+    }
+  }
+
+  return updatedFiles;
 }
 
 async function checkGitStatus(skipGit: boolean, allowDirty: boolean): Promise<boolean> {
@@ -479,8 +495,8 @@ async function bumpPlugin(bump: string, target: PluginTarget, skipGit: boolean, 
 
   console.log(`\n📦 Version Bump (${target}): ${currentVersion} → ${newVersion}\n`);
 
-  // Update version file
-  const updatedFile = await updateVersionFile(newVersion, target);
+  // Update version file(s)
+  const updatedFiles = await updateVersionFile(newVersion, target);
 
   // Generate changelog entry
   let changelogPath: string | null = null;
@@ -494,11 +510,8 @@ async function bumpPlugin(bump: string, target: PluginTarget, skipGit: boolean, 
 
     try {
       // Commit the version change (and changelog if generated)
-      if (changelogPath) {
-        await $`git add ${updatedFile} ${changelogPath}`;
-      } else {
-        await $`git add ${updatedFile}`;
-      }
+      const filesToAdd = changelogPath ? [...updatedFiles, changelogPath] : updatedFiles;
+      await $`git add ${filesToAdd}`;
       await $`git commit -m ${'chore(' + target + '): bump version to v' + newVersion}`;
       console.log(`✓ Committed version bump: ${tagName}`);
 

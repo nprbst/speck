@@ -1,6 +1,6 @@
 {
   "name": "speck-review-cli",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "CLI for AI-powered PR review with Speck-aware context",
   "type": "module",
   "main": "src/index.ts",
