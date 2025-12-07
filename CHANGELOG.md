@@ -3,7 +3,16 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [marketplace v1.1.1] - 2025-12-07
+
+### Added
+
+- **version**: add marketplace target and improve changelog format
+- **version**: auto-generate CHANGELOG.md entries from conventional commits
+- **build**: add speck-reviewer plugin to marketplace build
 
 ## [marketplace v1.1.1] - 2025-12-07
 
@@ -58,7 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - complete POC parity restoration and website documentation
 - implement speck-reviewer plugin with full CLI
 - add speck-reviewer plugin specification
-- **website**: organic theme with tri-mode toggle and mobile nav improvements (#14)
+- **website**: organic theme with tri-mode toggle and mobile nav improvements
+  (#14)
 - Consulting beta deploy with expert-help page and inquiry system (#13)
 
 ### Changed
@@ -85,12 +95,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - complete POC parity restoration and website documentation
 - implement speck-reviewer plugin with full CLI
 - add speck-reviewer plugin specification
-- **website**: organic theme with tri-mode toggle and mobile nav improvements (#14)
+- **website**: organic theme with tri-mode toggle and mobile nav improvements
+  (#14)
 - Consulting beta deploy with expert-help page and inquiry system (#13)
 - **website**: add refresh-website command and document Spec 016
 - Atomic Transform Rollback (#12)
 - **version**: add --allow-dirty flag to proceed with uncommitted changes
-- Scope Simplification - Remove stacked PRs, consolidate CLI, add worktree handoff (#11)
+- Scope Simplification - Remove stacked PRs, consolidate CLI, add worktree
+  handoff (#11)
 
 ### Changed
 
@@ -103,7 +115,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **website**: add scroll-margin-top to headings for sticky header
 - **website**: improve sidebar scrollbar and TOC overflow
 - **website**: improve navigation and sidebar UX
-- **worktree**: preserve settings.json and copy settings.local.json during handoff
+- **worktree**: preserve settings.json and copy settings.local.json during
+  handoff
 - **cli**: use plugin-style command syntax (/speck:*) in user-facing messages
 - **cli**: expose next-feature command in canonical CLI
 - remove misleading warning about local specs/ in multi-repo mode
@@ -119,7 +132,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **worktree**: preserve settings.json and copy settings.local.json during handoff
+- **worktree**: preserve settings.json and copy settings.local.json during
+  handoff
 
 ## [speck v1.9.4] - 2025-11-30
 
@@ -157,7 +171,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Scope Simplification - Remove stacked PRs, consolidate CLI, add worktree handoff (#11)
+- Scope Simplification - Remove stacked PRs, consolidate CLI, add worktree
+  handoff (#11)
 
 ## [speck v1.8.39] - 2025-11-30
 
@@ -197,7 +212,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **prereq**: add TEMPLATE_DIR to SPECK_PREREQ_CONTEXT for robust template path resolution
+- **prereq**: add TEMPLATE_DIR to SPECK_PREREQ_CONTEXT for robust template path
+  resolution
 
 ## [speck v1.8.33] - 2025-11-30
 
@@ -344,7 +360,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **init**: create config.json with interactive prompts and worktree enabled by default
+- **init**: create config.json with interactive prompts and worktree enabled by
+  default
 
 ## [speck v1.8.10] - 2025-11-29
 
@@ -356,7 +373,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **commands**: use Commander.js CLI pattern for create-new-feature and update-agent-context
+- **commands**: use Commander.js CLI pattern for create-new-feature and
+  update-agent-context
 
 ## [speck v1.8.8] - 2025-11-29
 
@@ -600,7 +618,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add tasks.md and apply analysis remediation
 - add implementation plan and design artifacts for website update
 - add website feature update specification
-- implement multi-repo support, stacked PRs, and virtual command pattern (specs 007-010) (#8)
+- implement multi-repo support, stacked PRs, and virtual command pattern (specs
+  007-010) (#8)
 
 ### Fixed
 
@@ -658,7 +677,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - implement Speck Workflow Skill (45/47 tasks complete)
-- complete planning and task generation for Speck Workflow Skill (005-speck-skill)
+- complete planning and task generation for Speck Workflow Skill
+  (005-speck-skill)
 - add Speck Workflow Skill specification (005-speck-skill)
 - add Claude Plugin packaging specification (#2)
 
@@ -740,9 +760,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add Claude Plugin packaging specification
 - add non-interactive worktree management scripts
 - **transform**: transform upstream v0.0.84 and v0.0.85
-- **FR-013**: implement transformation history tracking and enforce speck. prefix
+- **FR-013**: implement transformation history tracking and enforce speck.
+  prefix
 - **optimization**: add diff-aware transformation for incremental releases
-- **transform-agents**: add incremental update support with SPECK-EXTENSION priority
+- **transform-agents**: add incremental update support with SPECK-EXTENSION
+  priority
 - **transform-agent**: add test generation and validation requirements
 - **phase-3**: transform upstream v0.0.83 to Bun TypeScript (T070-T090)
 - **phase-3**: implement /speck.transform-upstream command (T048-T069)
