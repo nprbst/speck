@@ -553,6 +553,20 @@ export async function main(args: string[]): Promise<number> {
       if (outputMode === "human") {
         console.log(`[speck] Recorded branch mapping: ${branchName} → ${specId}`);
       }
+
+      // Commit branches.json so the new worktree has it in history
+      try {
+        await $`git add .speck/branches.json`.quiet();
+        await $`git commit -m "chore: update branches.json for ${branchName}"`.quiet();
+        if (outputMode === "human") {
+          console.log(`[speck] Committed branches.json`);
+        }
+      } catch {
+        // Non-fatal: warn but continue (file might already be committed or no changes)
+        if (outputMode === "human") {
+          console.error(`[speck] Warning: Could not commit branches.json (may already be up to date)`);
+        }
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       // Non-fatal: warn but continue
