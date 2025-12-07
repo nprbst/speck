@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-11-15
 
 ## Active Technologies
+- TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (filesystem, subprocess), GitHub REST API (releases), `gh` CLI (authentication) (019-openspec-changes-plugin)
+- File-based (`.speck/changes/`, `.speck/archive/`, `upstream/openspec/`, `releases.json`) (019-openspec-changes-plugin)
 
 - TypeScript 5.3+ with Bun 1.0+ runtime + Zod (schema validation), Git 2.5+ CLI
   (worktree support), Bun Shell API
@@ -159,12 +161,12 @@ bun test                  # Run all tests (unit, visual, a11y)
   field
 
 ## Recent Changes
+- 019-openspec-changes-plugin: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun Shell API (filesystem, subprocess), GitHub REST API (releases), `gh` CLI (authentication)
 
 - 018-speck-reviewer-plugin: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun
   Shell API, `gh` CLI (user-provided)
 - 018-speck-reviewer-plugin: Added TypeScript 5.3+ with Bun 1.0+ runtime + Bun
   Shell API, `gh` CLI (user-provided)
-- 017-consulting-beta-deploy: Added TypeScript 5.7+ with Bun 1.0+ runtime, Astro
   5.15+ + Astro (SSG), Cloudflare Pages (hosting), Cloudflare D1 (database),
   Cloudflare Turnstile (spam prevention), Wrangler CLI
 
