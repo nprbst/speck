@@ -466,7 +466,10 @@ async function promptForTarget(): Promise<PluginTarget | 'all' | null> {
   process.stdout.write('\nChoice [1-5]: ');
 
   const response = await new Promise<string>((resolve) => {
-    process.stdin.once('data', (data) => resolve(data.toString().trim()));
+    process.stdin.once('data', (data) => {
+      process.stdin.unref(); // Allow process to exit
+      resolve(data.toString().trim());
+    });
   });
 
   switch (response) {
