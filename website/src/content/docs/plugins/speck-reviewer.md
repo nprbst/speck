@@ -112,14 +112,21 @@ speck-review analyze [pr-number]
 speck-review state show
 speck-review state clear
 
+# Speck context (loads spec for current branch)
+speck-review spec-context
+
 # Comment operations
 speck-review comment <file> <line> <body>
 speck-review comment-reply <id> <body>
+speck-review comment-delete <id>
 speck-review list-comments
 
 # Review submission
 speck-review review approve [body]
 speck-review review request-changes <body>
+
+# Self-review detection
+speck-review check-self-review <author>
 
 # Utilities
 speck-review files
