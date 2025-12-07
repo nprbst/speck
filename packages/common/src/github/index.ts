@@ -16,7 +16,7 @@ export type {
   GitHubComment,
   ChangeType,
   RepoInfo,
-} from "./types";
+} from './types';
 
 export {
   parseRateLimitHeaders,
@@ -25,7 +25,7 @@ export {
   filterStableReleases,
   sortReleasesByDate,
   extractNotesSummary,
-} from "./types";
+} from './types';
 
 // CLI utilities (requires gh)
 export {
@@ -42,12 +42,7 @@ export {
   ghApiGet,
   ghApiPost,
   ghApiDelete,
-} from "./cli";
+} from './cli';
 
 // REST API client (direct fetch)
-export {
-  GitHubApiClientError,
-  fetchReleases,
-  fetchReleaseByTag,
-  downloadTarball,
-} from "./api";
+export { GitHubApiClientError, fetchReleases, fetchReleaseByTag, downloadTarball } from './api';

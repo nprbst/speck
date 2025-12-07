@@ -90,7 +90,10 @@ async function main() {
     }
 
     // Read speck-reviewer version
-    const reviewerPluginPath = join(process.cwd(), 'plugins/speck-reviewer/.claude-plugin/plugin.json');
+    const reviewerPluginPath = join(
+      process.cwd(),
+      'plugins/speck-reviewer/.claude-plugin/plugin.json'
+    );
     let reviewerVersion = 'unknown';
     if (existsSync(reviewerPluginPath)) {
       const reviewerJson = JSON.parse(await readFile(reviewerPluginPath, 'utf-8'));
@@ -129,7 +132,6 @@ Plugins:
     console.log('✅ Publishing complete!\n');
     console.log('📍 Plugins published to: https://github.com/nprbst/speck-market');
     console.log(`📍 Installation: /marketplace install https://github.com/nprbst/speck-market\n`);
-
   } catch (error) {
     console.error('\n❌ Publishing failed:');
     console.error(error instanceof Error ? error.message : String(error));

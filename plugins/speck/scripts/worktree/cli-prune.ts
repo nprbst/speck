@@ -7,8 +7,8 @@
  * Supports dry-run mode to preview changes without making them.
  */
 
-import { pruneWorktrees } from "./git";
-import { WorktreeError } from "./errors";
+import { pruneWorktrees } from './git';
+import { WorktreeError } from './errors';
 
 export interface PruneCommandOptions {
   repoPath: string;
@@ -19,9 +19,7 @@ export interface PruneCommandOptions {
 /**
  * Execute the prune command
  */
-export async function executePruneCommand(
-  options: PruneCommandOptions
-): Promise<void> {
+export async function executePruneCommand(options: PruneCommandOptions): Promise<void> {
   const { repoPath, dryRun, json } = options;
 
   try {
@@ -44,12 +42,10 @@ export async function executePruneCommand(
       );
     } else {
       if (result.prunedCount === 0) {
-        console.log("✓ No stale worktrees found");
+        console.log('✓ No stale worktrees found');
       } else {
         if (dryRun) {
-          console.log(
-            `Would prune ${result.prunedCount} stale worktree(s):`
-          );
+          console.log(`Would prune ${result.prunedCount} stale worktree(s):`);
         } else {
           console.log(`✓ Pruned ${result.prunedCount} stale worktree(s):`);
         }

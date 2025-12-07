@@ -17,14 +17,11 @@
  * - Configurable behavior via options instead of interactive prompts
  */
 
-import { $ } from "bun";
-import path from "node:path";
-import { existsSync, cpSync, mkdirSync } from "node:fs";
-import type {
-  CreateWorktreeOptions,
-  CreateWorktreeOutput,
-} from "./contracts/cli-interface";
-import { ExitCode } from "./contracts/cli-interface";
+import { $ } from 'bun';
+import path from 'node:path';
+import { existsSync, cpSync, mkdirSync } from 'node:fs';
+import type { CreateWorktreeOptions, CreateWorktreeOutput } from './contracts/cli-interface';
+import { ExitCode } from './contracts/cli-interface';
 
 interface WorktreeConfig {
   currentDir: string;
@@ -39,20 +36,14 @@ interface WorktreeConfig {
  * Items to copy (independent per worktree)
  * These files are gitignored and should be independent per worktree
  */
-const ITEMS_TO_COPY = [
-  ".env",
-  ".envrc",
-  ".claude/settings.local.json",
-];
+const ITEMS_TO_COPY = ['.env', '.envrc', '.claude/settings.local.json'];
 
 /**
  * Items to symlink (shared across worktrees)
  * These are gitignored directories that should be shared
  * Note: .claude/ is checked into git, so it's copied by git worktree automatically
  */
-const ITEMS_TO_LINK = [
-  ".vscode",
-];
+const ITEMS_TO_LINK = ['.vscode'];
 
 /**
  * Parse command line arguments
@@ -60,13 +51,13 @@ const ITEMS_TO_LINK = [
 function parseArgs(): CreateWorktreeOptions {
   const args = process.argv.slice(2);
 
-  if (args.includes("--help") || args.includes("-h") || args.length === 0) {
+  if (args.includes('--help') || args.includes('-h') || args.length === 0) {
     printUsage();
     process.exit(ExitCode.SUCCESS);
   }
 
   const options: CreateWorktreeOptions = {
-    branchName: "",
+    branchName: '',
     createNew: false,
     skipInstall: false,
     skipVscode: false,
@@ -79,27 +70,27 @@ function parseArgs(): CreateWorktreeOptions {
     const arg = args[i];
 
     switch (arg) {
-      case "--new":
-      case "-n":
+      case '--new':
+      case '-n':
         options.createNew = true;
         break;
-      case "--skip-install":
+      case '--skip-install':
         options.skipInstall = true;
         break;
-      case "--skip-vscode":
+      case '--skip-vscode':
         options.skipVscode = true;
         break;
-      case "--auto-confirm":
-      case "-y":
+      case '--auto-confirm':
+      case '-y':
         options.autoConfirm = true;
         break;
-      case "--json":
+      case '--json':
         options.json = true;
         break;
       default:
-        if (!options.branchName && arg && !arg.startsWith("-")) {
+        if (!options.branchName && arg && !arg.startsWith('-')) {
           options.branchName = arg;
-        } else if (arg && !arg.startsWith("-")) {
+        } else if (arg && !arg.startsWith('-')) {
           console.error(`Error: Unknown argument '${arg}'`);
           process.exit(ExitCode.USER_ERROR);
         }
@@ -108,7 +99,7 @@ function parseArgs(): CreateWorktreeOptions {
   }
 
   if (!options.branchName) {
-    console.error("Error: Branch name is required");
+    console.error('Error: Branch name is required');
     printUsage();
     process.exit(ExitCode.USER_ERROR);
   }
@@ -153,17 +144,17 @@ Notes:
  * Validate branch name is not empty and sanitize for directory use
  */
 function sanitizeBranchName(branchName: string): string {
-  if (!branchName || branchName.trim() === "") {
-    throw new Error("Branch name cannot be empty");
+  if (!branchName || branchName.trim() === '') {
+    throw new Error('Branch name cannot be empty');
   }
 
   // Replace problematic characters
   return branchName
-    .replace(/\//g, "-")
-    .replace(/:/g, "-")
-    .replace(/\\/g, "-")
-    .replace(/\*/g, "-")
-    .replace(/\?/g, "-");
+    .replace(/\//g, '-')
+    .replace(/:/g, '-')
+    .replace(/\\/g, '-')
+    .replace(/\*/g, '-')
+    .replace(/\?/g, '-');
 }
 
 /**
@@ -173,7 +164,7 @@ async function checkGitRepo(): Promise<void> {
   try {
     await $`git rev-parse --git-dir`.quiet();
   } catch {
-    throw new Error("Not in a git repository");
+    throw new Error('Not in a git repository');
   }
 }
 
@@ -182,8 +173,8 @@ async function checkGitRepo(): Promise<void> {
  * Looks for package.json or .git as indicators
  */
 function checkRepoRoot(): void {
-  const hasPackageJson = existsSync("package.json");
-  const hasGitDir = existsSync(".git");
+  const hasPackageJson = existsSync('package.json');
+  const hasGitDir = existsSync('.git');
 
   if (!hasPackageJson && !hasGitDir) {
     throw new Error(
@@ -210,13 +201,13 @@ async function getGitConfig(): Promise<{
 
   // Check if directory name matches branch (for main/master worktrees)
   if (
-    (currentDirName === "main" || currentDirName === "master") &&
-    currentBranch !== "main" &&
-    currentBranch !== "master"
+    (currentDirName === 'main' || currentDirName === 'master') &&
+    currentBranch !== 'main' &&
+    currentBranch !== 'master'
   ) {
     throw new Error(
       `Directory is named '${currentDirName}' but current branch is '${currentBranch}'\n` +
-      `This script expects to be run from your main worktree on the main/master branch.`
+        `This script expects to be run from your main worktree on the main/master branch.`
     );
   }
 
@@ -233,7 +224,7 @@ function calculateWorktreePath(
 ): { worktreeDirName: string; worktreePath: string } {
   let worktreeDirName: string;
 
-  if (currentDirName === "main" || currentDirName === "master") {
+  if (currentDirName === 'main' || currentDirName === 'master') {
     worktreeDirName = safeBranchName;
   } else {
     worktreeDirName = `${currentDirName}-${safeBranchName}`;
@@ -264,12 +255,10 @@ async function ensureBranchExists(
   try {
     const worktreeList = await $`git worktree list`.quiet();
     if (worktreeList.text().includes(`[${branchName}]`)) {
-      throw new Error(
-        `Branch '${branchName}' is already checked out in another worktree`
-      );
+      throw new Error(`Branch '${branchName}' is already checked out in another worktree`);
     }
   } catch (error) {
-    if (error instanceof Error && error.message.includes("already checked out")) {
+    if (error instanceof Error && error.message.includes('already checked out')) {
       throw error;
     }
   }
@@ -287,37 +276,32 @@ async function ensureBranchExists(
     const remoteBranches = await $`git branch -r`.quiet();
     const remoteMatch = remoteBranches
       .text()
-      .split("\n")
-      .find(
-        (line) =>
-          line.trim().startsWith("origin/") && line.includes(branchName)
-      );
+      .split('\n')
+      .find((line) => line.trim().startsWith('origin/') && line.includes(branchName));
 
     if (remoteMatch) {
       if (!autoConfirm) {
         console.log(`Found remote branch: ${remoteMatch.trim()}`);
-        console.log(
-          "Use --auto-confirm to automatically fetch and create tracking branch"
-        );
+        console.log('Use --auto-confirm to automatically fetch and create tracking branch');
         throw new Error(
-          "Branch exists on remote but not locally. Use --auto-confirm to fetch automatically."
+          'Branch exists on remote but not locally. Use --auto-confirm to fetch automatically.'
         );
       }
 
-      console.log("Fetching from remote...");
+      console.log('Fetching from remote...');
       await $`git fetch origin ${branchName}:${branchName}`;
-      console.log("Branch fetched successfully");
+      console.log('Branch fetched successfully');
       return;
     }
   } catch (error) {
-    if (error instanceof Error && error.message.includes("auto-confirm")) {
+    if (error instanceof Error && error.message.includes('auto-confirm')) {
       throw error;
     }
   }
 
   // Try general fetch
   if (autoConfirm) {
-    console.log("Fetching from remote...");
+    console.log('Fetching from remote...');
     await $`git fetch`;
 
     // Check again after fetch
@@ -331,15 +315,12 @@ async function ensureBranchExists(
     const remoteBranches = await $`git branch -r`.quiet();
     const remoteMatch = remoteBranches
       .text()
-      .split("\n")
-      .find(
-        (line) =>
-          line.trim().startsWith("origin/") && line.includes(branchName)
-      );
+      .split('\n')
+      .find((line) => line.trim().startsWith('origin/') && line.includes(branchName));
 
     if (remoteMatch) {
       await $`git fetch origin ${branchName}:${branchName}`;
-      console.log("Branch fetched successfully");
+      console.log('Branch fetched successfully');
       return;
     }
   }
@@ -377,13 +358,10 @@ async function createWorktree(
 /**
  * Copy git-ignored files to new worktree
  */
-function copyFiles(
-  currentDir: string,
-  worktreePath: string
-): { copied: string[] } {
+function copyFiles(currentDir: string, worktreePath: string): { copied: string[] } {
   const copied: string[] = [];
 
-  console.log("\nCopying git-ignored files...");
+  console.log('\nCopying git-ignored files...');
 
   for (const item of ITEMS_TO_COPY) {
     const sourcePath = path.join(currentDir, item);
@@ -417,7 +395,7 @@ async function createSymlinks(
 ): Promise<{ symlinked: string[] }> {
   const symlinked: string[] = [];
 
-  console.log("\nCreating symlinks for shared directories...");
+  console.log('\nCreating symlinks for shared directories...');
 
   for (const item of ITEMS_TO_LINK) {
     const sourcePath = path.join(currentDir, item);
@@ -437,9 +415,9 @@ async function createSymlinks(
     const itemDepth = (item.match(/\//g) || []).length;
     const upLevels = itemDepth + 1;
 
-    let relativePrefix = "";
+    let relativePrefix = '';
     for (let i = 0; i < upLevels; i++) {
-      relativePrefix += "../";
+      relativePrefix += '../';
     }
 
     const relativePath = `${relativePrefix}${currentDirName}/${item}`;
@@ -461,24 +439,21 @@ async function createSymlinks(
 /**
  * Install dependencies in the new worktree
  */
-async function installDependencies(
-  worktreePath: string,
-  skipInstall: boolean
-): Promise<boolean> {
+async function installDependencies(worktreePath: string, skipInstall: boolean): Promise<boolean> {
   if (skipInstall) {
-    console.log("\nSkipping dependency installation (--skip-install)");
+    console.log('\nSkipping dependency installation (--skip-install)');
     return false;
   }
 
-  console.log("\nInstalling dependencies...");
-  console.log("Running: bun install --frozen-lockfile");
+  console.log('\nInstalling dependencies...');
+  console.log('Running: bun install --frozen-lockfile');
 
   try {
     await $`cd ${worktreePath} && bun install --frozen-lockfile`;
-    console.log("Dependencies installed successfully");
+    console.log('Dependencies installed successfully');
     return true;
   } catch {
-    console.log("Warning: bun install failed");
+    console.log('Warning: bun install failed');
     console.log("You may need to run 'bun install' manually in the new worktree.");
     return false;
   }
@@ -487,10 +462,7 @@ async function installDependencies(
 /**
  * Open worktree in VS Code
  */
-async function openInVSCode(
-  worktreePath: string,
-  skipVscode: boolean
-): Promise<boolean> {
+async function openInVSCode(worktreePath: string, skipVscode: boolean): Promise<boolean> {
   if (skipVscode) {
     return false;
   }
@@ -499,9 +471,9 @@ async function openInVSCode(
     // Check if code command exists
     await $`which code`.quiet();
 
-    console.log("Opening worktree in VS Code...");
+    console.log('Opening worktree in VS Code...');
     await $`code ${worktreePath}`;
-    console.log("VS Code opened successfully");
+    console.log('VS Code opened successfully');
     return true;
   } catch {
     // VS Code not available or failed to open
@@ -520,12 +492,12 @@ function outputResults(
   if (jsonFormat) {
     console.log(JSON.stringify(output, null, 2));
   } else {
-    console.log("\nWorktree created successfully!");
-    console.log("");
-    console.log("To switch to the new worktree, run:");
+    console.log('\nWorktree created successfully!');
+    console.log('');
+    console.log('To switch to the new worktree, run:');
     console.log(`  cd ../${config.worktreeDirName}`);
-    console.log("");
-    console.log("To remove the worktree when done, run:");
+    console.log('');
+    console.log('To remove the worktree when done, run:');
     console.log(`  bun .speck/scripts/remove-worktree.ts ../${config.worktreeDirName}`);
     console.log(`  # or: git worktree remove ../${config.worktreeDirName}`);
   }
@@ -566,11 +538,7 @@ async function main(): Promise<void> {
     console.log(`Creating worktree at: ${worktreePath}`);
 
     // Create worktree
-    await createWorktree(
-      worktreePath,
-      options.branchName,
-      options.createNew || false
-    );
+    await createWorktree(worktreePath, options.branchName, options.createNew || false);
 
     // Copy files and create symlinks
     const { copied } = copyFiles(gitConfig.currentDir, worktreePath);
@@ -587,10 +555,7 @@ async function main(): Promise<void> {
     );
 
     // Open in VS Code
-    const vscodeOpened = await openInVSCode(
-      worktreePath,
-      options.skipVscode || false
-    );
+    const vscodeOpened = await openInVSCode(worktreePath, options.skipVscode || false);
 
     // Output results
     const output: CreateWorktreeOutput = {

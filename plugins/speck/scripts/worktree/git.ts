@@ -5,8 +5,8 @@
  * listing, creating, removing, and pruning.
  */
 
-import { $ } from "bun";
-import type { GitWorktreeInfo, PruneWorktreesResult } from "./types";
+import { $ } from 'bun';
+import type { GitWorktreeInfo, PruneWorktreesResult } from './types';
 
 /**
  * List all worktrees in the repository
@@ -16,34 +16,32 @@ import type { GitWorktreeInfo, PruneWorktreesResult } from "./types";
  * @param repoPath - Absolute path to repository root
  * @returns Array of worktree information
  */
-export async function listWorktrees(
-  repoPath: string
-): Promise<GitWorktreeInfo[]> {
+export async function listWorktrees(repoPath: string): Promise<GitWorktreeInfo[]> {
   try {
     const result = await $`git -C ${repoPath} worktree list --porcelain`.quiet();
     const output = result.stdout.toString();
 
     const worktrees: GitWorktreeInfo[] = [];
-    const lines = output.split("\n");
+    const lines = output.split('\n');
     let current: Partial<GitWorktreeInfo> = {};
 
     for (const line of lines) {
-      if (line.startsWith("worktree ")) {
+      if (line.startsWith('worktree ')) {
         // Save previous worktree if complete
         if (current.path && current.branch && current.commit) {
           worktrees.push(current as GitWorktreeInfo);
         }
         // Start new worktree
         current = { path: line.substring(9) };
-      } else if (line.startsWith("HEAD ")) {
+      } else if (line.startsWith('HEAD ')) {
         current.commit = line.substring(5, 12); // Short hash (7 chars)
-      } else if (line.startsWith("branch ")) {
-        current.branch = line.substring(7).replace(/^refs\/heads\//, "");
-      } else if (line.startsWith("detached")) {
-        current.branch = "detached HEAD";
-      } else if (line.startsWith("prunable ")) {
+      } else if (line.startsWith('branch ')) {
+        current.branch = line.substring(7).replace(/^refs\/heads\//, '');
+      } else if (line.startsWith('detached')) {
+        current.branch = 'detached HEAD';
+      } else if (line.startsWith('prunable ')) {
         current.prunable = line.substring(9);
-      } else if (line === "") {
+      } else if (line === '') {
         // Empty line marks end of worktree entry
         if (current.path && current.branch && current.commit) {
           worktrees.push(current as GitWorktreeInfo);
@@ -98,7 +96,7 @@ export async function getWorktreePath(
 export async function isWorktree(path: string): Promise<boolean> {
   try {
     // Check if .git exists and is a file (not a directory)
-    const { existsSync, statSync } = await import("fs");
+    const { existsSync, statSync } = await import('fs');
     const gitPath = `${path}/.git`;
 
     if (!existsSync(gitPath)) {
@@ -130,9 +128,7 @@ export async function pruneWorktrees(
   try {
     // First, get list of prunable worktrees
     const worktrees = await listWorktrees(repoPath);
-    const prunablePaths = worktrees
-      .filter(w => w.prunable)
-      .map(w => w.path);
+    const prunablePaths = worktrees.filter((w) => w.prunable).map((w) => w.path);
 
     if (dryRun) {
       return {
@@ -201,7 +197,7 @@ export async function removeWorktreeGit(
   force: boolean = false
 ): Promise<void> {
   try {
-    const forceFlag = force ? "--force" : "";
+    const forceFlag = force ? '--force' : '';
     if (force) {
       await $`git -C ${repoPath} worktree remove ${forceFlag} ${worktreePath}`.quiet();
     } else {
@@ -209,8 +205,6 @@ export async function removeWorktreeGit(
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Failed to remove worktree at ${worktreePath}: ${errorMessage}`
-    );
+    throw new Error(`Failed to remove worktree at ${worktreePath}: ${errorMessage}`);
   }
 }

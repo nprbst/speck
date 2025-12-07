@@ -8,9 +8,9 @@
  * Transformation status for an upstream release
  */
 export enum ReleaseStatus {
-  PULLED = "pulled",
-  TRANSFORMED = "transformed",
-  FAILED = "failed",
+  PULLED = 'pulled',
+  TRANSFORMED = 'transformed',
+  FAILED = 'failed',
 }
 
 /**
@@ -53,7 +53,7 @@ export interface ReleaseRegistry {
 export class ReleaseRegistryError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "ReleaseRegistryError";
+    this.name = 'ReleaseRegistryError';
   }
 }
 
@@ -61,58 +61,50 @@ export class ReleaseRegistryError extends Error {
  * Validate UpstreamRelease object
  */
 export function validateUpstreamRelease(release: unknown): UpstreamRelease {
-  if (typeof release !== "object" || release === null) {
-    throw new ReleaseRegistryError("Release must be an object");
+  if (typeof release !== 'object' || release === null) {
+    throw new ReleaseRegistryError('Release must be an object');
   }
 
   const r = release as Record<string, unknown>;
 
   // Validate version (semantic versioning pattern)
-  if (typeof r.version !== "string" || !/^v\d+\.\d+\.\d+/.test(r.version)) {
+  if (typeof r.version !== 'string' || !/^v\d+\.\d+\.\d+/.test(r.version)) {
     throw new ReleaseRegistryError(
       `Invalid version format: ${String(r.version)} (must match vX.Y.Z)`
     );
   }
 
   // Validate commit (40 hex characters)
-  if (typeof r.commit !== "string" || !/^[0-9a-f]{40}$/.test(r.commit)) {
+  if (typeof r.commit !== 'string' || !/^[0-9a-f]{40}$/.test(r.commit)) {
     throw new ReleaseRegistryError(
       `Invalid commit SHA: ${String(r.commit)} (must be 40 hex chars)`
     );
   }
 
   // Validate pullDate (ISO 8601)
-  if (typeof r.pullDate !== "string" || isNaN(Date.parse(r.pullDate))) {
-    throw new ReleaseRegistryError(
-      `Invalid pullDate: ${String(r.pullDate)} (must be ISO 8601)`
-    );
+  if (typeof r.pullDate !== 'string' || isNaN(Date.parse(r.pullDate))) {
+    throw new ReleaseRegistryError(`Invalid pullDate: ${String(r.pullDate)} (must be ISO 8601)`);
   }
 
   // Validate releaseNotesUrl
-  if (typeof r.releaseNotesUrl !== "string") {
-    throw new ReleaseRegistryError("releaseNotesUrl must be a string");
+  if (typeof r.releaseNotesUrl !== 'string') {
+    throw new ReleaseRegistryError('releaseNotesUrl must be a string');
   }
 
   // Validate status (enum value)
-  if (
-    !Object.values(ReleaseStatus).includes(r.status as ReleaseStatus)
-  ) {
+  if (!Object.values(ReleaseStatus).includes(r.status as ReleaseStatus)) {
     throw new ReleaseRegistryError(
       `Invalid status: ${String(r.status)} (must be pulled, transformed, or failed)`
     );
   }
 
   // Validate errorDetails (required iff status is failed)
-  if (r.status === ReleaseStatus.FAILED && typeof r.errorDetails !== "string") {
-    throw new ReleaseRegistryError(
-      "errorDetails required when status is failed"
-    );
+  if (r.status === ReleaseStatus.FAILED && typeof r.errorDetails !== 'string') {
+    throw new ReleaseRegistryError('errorDetails required when status is failed');
   }
 
   if (r.status !== ReleaseStatus.FAILED && r.errorDetails !== undefined) {
-    throw new ReleaseRegistryError(
-      "errorDetails must not be present when status is not failed"
-    );
+    throw new ReleaseRegistryError('errorDetails must not be present when status is not failed');
   }
 
   return r as unknown as UpstreamRelease;
@@ -122,20 +114,20 @@ export function validateUpstreamRelease(release: unknown): UpstreamRelease {
  * Validate ReleaseRegistry object
  */
 export function validateReleaseRegistry(registry: unknown): ReleaseRegistry {
-  if (typeof registry !== "object" || registry === null) {
-    throw new ReleaseRegistryError("Registry must be an object");
+  if (typeof registry !== 'object' || registry === null) {
+    throw new ReleaseRegistryError('Registry must be an object');
   }
 
   const reg = registry as Record<string, unknown>;
 
   // Validate latest
-  if (typeof reg.latest !== "string") {
-    throw new ReleaseRegistryError("latest must be a string");
+  if (typeof reg.latest !== 'string') {
+    throw new ReleaseRegistryError('latest must be a string');
   }
 
   // Validate releases array
   if (!Array.isArray(reg.releases)) {
-    throw new ReleaseRegistryError("releases must be an array");
+    throw new ReleaseRegistryError('releases must be an array');
   }
 
   // Validate each release
@@ -144,7 +136,7 @@ export function validateReleaseRegistry(registry: unknown): ReleaseRegistry {
   // Check no duplicates
   const versions = new Set(releases.map((r) => r.version));
   if (versions.size !== releases.length) {
-    throw new ReleaseRegistryError("Duplicate versions found in releases");
+    throw new ReleaseRegistryError('Duplicate versions found in releases');
   }
 
   // Check sorted by pullDate descending
@@ -155,9 +147,7 @@ export function validateReleaseRegistry(registry: unknown): ReleaseRegistry {
     const prev = new Date(prevRelease.pullDate);
     const curr = new Date(currRelease.pullDate);
     if (curr > prev) {
-      throw new ReleaseRegistryError(
-        "Releases must be sorted by pullDate descending"
-      );
+      throw new ReleaseRegistryError('Releases must be sorted by pullDate descending');
     }
   }
 
@@ -176,7 +166,7 @@ export function validateReleaseRegistry(registry: unknown): ReleaseRegistry {
  */
 export function createEmptyRegistry(): ReleaseRegistry {
   return {
-    latest: "",
+    latest: '',
     releases: [],
   };
 }
@@ -190,9 +180,7 @@ export function addReleaseToRegistry(
 ): ReleaseRegistry {
   // Check for duplicate version
   if (registry.releases.some((r) => r.version === release.version)) {
-    throw new ReleaseRegistryError(
-      `Release ${release.version} already exists in registry`
-    );
+    throw new ReleaseRegistryError(`Release ${release.version} already exists in registry`);
   }
 
   // Add to beginning (most recent)
@@ -221,15 +209,11 @@ export function updateReleaseStatus(
 
   // Validate errorDetails presence based on status
   if (status === ReleaseStatus.FAILED && !errorDetails) {
-    throw new ReleaseRegistryError(
-      "errorDetails required when status is failed"
-    );
+    throw new ReleaseRegistryError('errorDetails required when status is failed');
   }
 
   if (status !== ReleaseStatus.FAILED && errorDetails) {
-    throw new ReleaseRegistryError(
-      "errorDetails must not be present when status is not failed"
-    );
+    throw new ReleaseRegistryError('errorDetails must not be present when status is not failed');
   }
 
   const updatedReleases = [...registry.releases];
@@ -262,8 +246,6 @@ export function getReleaseByVersion(
 /**
  * Get latest release (first in array)
  */
-export function getLatestRelease(
-  registry: ReleaseRegistry
-): UpstreamRelease | null {
+export function getLatestRelease(registry: ReleaseRegistry): UpstreamRelease | null {
   return registry.releases[0] || null;
 }

@@ -3,10 +3,10 @@
  * Detects and parses Speck specs for PR branches
  */
 
-import { existsSync, readFileSync, readdirSync } from "fs";
-import { join } from "path";
-import { logger } from "@speck/common/logger";
-import type { SpecContext, ParsedRequirement, ParsedUserStory, UserStoryPriority } from "./types";
+import { existsSync, readFileSync, readdirSync } from 'fs';
+import { join } from 'path';
+import { logger } from '@speck/common/logger';
+import type { SpecContext, ParsedRequirement, ParsedUserStory, UserStoryPriority } from './types';
 
 /**
  * Find spec for a given branch name
@@ -16,51 +16,51 @@ export async function findSpecForBranch(
   branchName: string,
   repoRoot: string
 ): Promise<{ featureId: string; specPath: string } | null> {
-  logger.debug("Finding spec for branch:", branchName);
+  logger.debug('Finding spec for branch:', branchName);
 
   // Try direct branch name match
-  const directPath = join(repoRoot, "specs", branchName, "spec.md");
+  const directPath = join(repoRoot, 'specs', branchName, 'spec.md');
   if (existsSync(directPath)) {
-    logger.debug("Found spec via direct path:", directPath);
+    logger.debug('Found spec via direct path:', directPath);
     return { featureId: branchName, specPath: directPath };
   }
 
   // Try branches.json mapping
-  const branchesPath = join(repoRoot, ".speck", "branches.json");
+  const branchesPath = join(repoRoot, '.speck', 'branches.json');
   if (existsSync(branchesPath)) {
     try {
-      const content = readFileSync(branchesPath, "utf-8");
+      const content = readFileSync(branchesPath, 'utf-8');
       const branches = JSON.parse(content);
 
       const mapping = branches.branches?.[branchName];
       if (mapping?.specId) {
-        const mappedPath = join(repoRoot, "specs", mapping.specId, "spec.md");
+        const mappedPath = join(repoRoot, 'specs', mapping.specId, 'spec.md');
         if (existsSync(mappedPath)) {
-          logger.debug("Found spec via branches.json:", mappedPath);
+          logger.debug('Found spec via branches.json:', mappedPath);
           return { featureId: mapping.specId, specPath: mappedPath };
         }
       }
     } catch (error) {
-      logger.debug("Failed to parse branches.json:", error);
+      logger.debug('Failed to parse branches.json:', error);
     }
   }
 
   // Try partial matching (branch might be NNN-name or feature/NNN-name)
-  const specsDir = join(repoRoot, "specs");
+  const specsDir = join(repoRoot, 'specs');
   if (existsSync(specsDir)) {
     const entries = readdirSync(specsDir);
     for (const entry of entries) {
-      if (branchName.includes(entry) || entry.includes(branchName.replace(/^feature\//, ""))) {
-        const specPath = join(specsDir, entry, "spec.md");
+      if (branchName.includes(entry) || entry.includes(branchName.replace(/^feature\//, ''))) {
+        const specPath = join(specsDir, entry, 'spec.md');
         if (existsSync(specPath)) {
-          logger.debug("Found spec via partial match:", specPath);
+          logger.debug('Found spec via partial match:', specPath);
           return { featureId: entry, specPath };
         }
       }
     }
   }
 
-  logger.debug("No spec found for branch:", branchName);
+  logger.debug('No spec found for branch:', branchName);
   return null;
 }
 
@@ -83,12 +83,16 @@ export function parseSpecContent(content: string): {
   while ((match = reqPattern.exec(content)) !== null) {
     const id = match[1]!;
     const text = match[2]!.trim();
-    const category = id.startsWith("FR") ? "Functional" :
-                     id.startsWith("NFR") ? "Non-functional" :
-                     id.startsWith("SC") ? "Success Criteria" : "Other";
+    const category = id.startsWith('FR')
+      ? 'Functional'
+      : id.startsWith('NFR')
+        ? 'Non-functional'
+        : id.startsWith('SC')
+          ? 'Success Criteria'
+          : 'Other';
 
     // Success criteria go to separate array
-    if (id.startsWith("SC")) {
+    if (id.startsWith('SC')) {
       successCriteria.push(`${id}: ${text}`);
     } else {
       requirements.push({ id, text, category });
@@ -143,7 +147,7 @@ export async function loadSpecContext(
   }
 
   try {
-    const content = readFileSync(specInfo.specPath, "utf-8");
+    const content = readFileSync(specInfo.specPath, 'utf-8');
     const parsed = parseSpecContent(content);
 
     return {
@@ -155,7 +159,7 @@ export async function loadSpecContext(
       successCriteria: parsed.successCriteria,
     };
   } catch (error) {
-    logger.warn("Failed to load spec content:", error);
+    logger.warn('Failed to load spec content:', error);
     return null;
   }
 }
@@ -174,7 +178,7 @@ export function formatSpecContextOutput(context: SpecContext | null): {
   if (!context) {
     return {
       found: false,
-      reason: "No spec found for current branch",
+      reason: 'No spec found for current branch',
     };
   }
 
@@ -183,7 +187,7 @@ export function formatSpecContextOutput(context: SpecContext | null): {
     featureId: context.featureId,
     specPath: context.specPath,
     requirements: context.requirements,
-    userStories: context.userStories.map(s => ({
+    userStories: context.userStories.map((s) => ({
       id: s.id,
       title: s.title,
       priority: s.priority,

@@ -7,10 +7,10 @@
  * @module commands/link-repo
  */
 
-import { $ } from "bun";
-import type { CommandHandler } from "@speck/common/types";
-import path from "node:path";
-import { errorToResult } from "@speck/common/errors";
+import { $ } from 'bun';
+import type { CommandHandler } from '@speck/common/types';
+import path from 'node:path';
+import { errorToResult } from '@speck/common/errors';
 
 /**
  * Link repo command handler arguments
@@ -37,7 +37,7 @@ export function parseLinkRepoArgs(commandString: string): LinkRepoArgs {
  */
 export const linkRepoHandler: CommandHandler<LinkRepoArgs> = async (args) => {
   try {
-    const scriptPath = path.resolve(import.meta.dir, "..", "link-repo.ts");
+    const scriptPath = path.resolve(import.meta.dir, '..', 'link-repo.ts');
     const result = await $`bun run ${scriptPath} ${args.args}`.nothrow();
 
     return {

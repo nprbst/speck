@@ -5,12 +5,12 @@
  * with user interactions and branch management.
  */
 
-import prompts from "prompts";
-import { createWorktree } from "./create";
-import { loadConfig } from "./config";
-import { constructBranchName } from "./naming";
-import { isValidBranchName } from "./validation";
-import type { CreateWorktreeOptions } from "./types";
+import prompts from 'prompts';
+import { createWorktree } from './create';
+import { loadConfig } from './config';
+import { constructBranchName } from './naming';
+import { isValidBranchName } from './validation';
+import type { CreateWorktreeOptions } from './types';
 
 /**
  * Create a branch with worktree, with optional user approval prompt
@@ -53,8 +53,8 @@ export async function createBranchWithWorktree(
   // Prompt for approval if requested (T028)
   if (promptForApproval) {
     const response = await prompts({
-      type: "confirm",
-      name: "approved",
+      type: 'confirm',
+      name: 'approved',
       message: `Create worktree for branch '${fullBranchName}'?`,
       initial: true,
     });
@@ -97,11 +97,10 @@ export async function interactiveCreateWorktree(
 
   // Prompt for branch name
   const branchResponse = await prompts({
-    type: "text",
-    name: "branchName",
-    message: "Branch name:",
-    validate: (value: string) =>
-      isValidBranchName(value) || "Invalid branch name format",
+    type: 'text',
+    name: 'branchName',
+    message: 'Branch name:',
+    validate: (value: string) => isValidBranchName(value) || 'Invalid branch name format',
   });
 
   const branchName = branchResponse.branchName as string | undefined;
@@ -111,15 +110,12 @@ export async function interactiveCreateWorktree(
   }
 
   // Construct full branch name with prefix
-  const fullBranchName = constructBranchName(
-    branchName,
-    config.worktree.branchPrefix
-  );
+  const fullBranchName = constructBranchName(branchName, config.worktree.branchPrefix);
 
   // Confirm creation
   const confirmResponse = await prompts({
-    type: "confirm",
-    name: "confirmed",
+    type: 'confirm',
+    name: 'confirmed',
     message: `Create worktree for '${fullBranchName}'?`,
     initial: true,
   });

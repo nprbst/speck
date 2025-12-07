@@ -3,8 +3,8 @@
  * Groups related files into semantic clusters for structured review
  */
 
-import type { PRFile, FileCluster, ClusterFile, ChangeType } from "./types";
-import { logger } from "@speck/common/logger";
+import type { PRFile, FileCluster, ClusterFile, ChangeType } from './types';
+import { logger } from '@speck/common/logger';
 
 // Directory patterns that indicate specific file types
 const DIRECTORY_PRIORITIES: Record<string, number> = {
@@ -35,11 +35,11 @@ const DIRECTORY_PRIORITIES: Record<string, number> = {
 
 // Cross-cutting concern patterns
 const CROSS_CUTTING_PATTERNS = {
-  "Configuration changes": [/package\.json$/, /\.env/, /config\.(ts|js|json)$/, /tsconfig\.json$/],
-  "New dependencies": [/package\.json$/, /package-lock\.json$/, /yarn\.lock$/, /bun\.lockb?$/],
-  "Database migrations": [/migrations?\//i, /\.sql$/],
-  "CI/CD changes": [/\.github\//, /\.gitlab-ci/, /Dockerfile/, /docker-compose/],
-  "Documentation": [/README/, /CHANGELOG/, /docs\//],
+  'Configuration changes': [/package\.json$/, /\.env/, /config\.(ts|js|json)$/, /tsconfig\.json$/],
+  'New dependencies': [/package\.json$/, /package-lock\.json$/, /yarn\.lock$/, /bun\.lockb?$/],
+  'Database migrations': [/migrations?\//i, /\.sql$/],
+  'CI/CD changes': [/\.github\//, /\.gitlab-ci/, /Dockerfile/, /docker-compose/],
+  Documentation: [/README/, /CHANGELOG/, /docs\//],
 };
 
 const MAX_CLUSTER_SIZE = 50;
@@ -60,7 +60,7 @@ export function clusterFiles(files: PRFile[]): FileCluster[] {
   });
 
   // Subdivide large clusters
-  clusters = clusters.flatMap(cluster => {
+  clusters = clusters.flatMap((cluster) => {
     if (cluster.files.length > MAX_CLUSTER_SIZE) {
       return subdivideCluster(cluster);
     }
@@ -101,13 +101,13 @@ function groupByDirectory(files: PRFile[]): Record<string, PRFile[]> {
  * Get the parent directory of a file path
  */
 function getParentDirectory(path: string): string {
-  const parts = path.split("/");
+  const parts = path.split('/');
   if (parts.length <= 1) {
-    return "root";
+    return 'root';
   }
   // Use parent directory, or grandparent if parent is too generic
-  const parent = parts.slice(0, -1).join("/");
-  return parent || "root";
+  const parent = parts.slice(0, -1).join('/');
+  return parent || 'root';
 }
 
 /**
@@ -129,7 +129,7 @@ function getDirectoryPriority(dir: string): number {
  * Create a file cluster from a group of files
  */
 function createCluster(dir: string, files: PRFile[], index: number, priority: number): FileCluster {
-  const clusterFiles: ClusterFile[] = files.map(f => ({
+  const clusterFiles: ClusterFile[] = files.map((f) => ({
     path: f.path,
     changeType: f.changeType,
     additions: f.additions,
@@ -144,7 +144,7 @@ function createCluster(dir: string, files: PRFile[], index: number, priority: nu
     files: clusterFiles,
     priority,
     dependsOn: [],
-    status: "pending",
+    status: 'pending',
   };
 }
 
@@ -155,9 +155,9 @@ function subdivideCluster(cluster: FileCluster): FileCluster[] {
   const subGroups: Record<string, ClusterFile[]> = {};
 
   for (const file of cluster.files) {
-    const parts = file.path.split("/");
+    const parts = file.path.split('/');
     // Use deeper subdirectory for subdivision
-    const subDir = parts.length > 2 ? parts.slice(0, 3).join("/") : parts.slice(0, 2).join("/");
+    const subDir = parts.length > 2 ? parts.slice(0, 3).join('/') : parts.slice(0, 2).join('/');
 
     if (!subGroups[subDir]) {
       subGroups[subDir] = [];
@@ -168,16 +168,18 @@ function subdivideCluster(cluster: FileCluster): FileCluster[] {
   return Object.entries(subGroups).map(([subDir, files], index) => ({
     id: `${cluster.id}-${index + 1}`,
     name: generateClusterName(subDir),
-    description: getClusterDescription(files.map(f => ({
-      path: f.path,
-      changeType: f.changeType,
-      additions: f.additions,
-      deletions: f.deletions,
-    }))),
+    description: getClusterDescription(
+      files.map((f) => ({
+        path: f.path,
+        changeType: f.changeType,
+        additions: f.additions,
+        deletions: f.deletions,
+      }))
+    ),
     files,
     priority: cluster.priority,
     dependsOn: [],
-    status: "pending" as const,
+    status: 'pending' as const,
   }));
 }
 
@@ -185,19 +187,19 @@ function subdivideCluster(cluster: FileCluster): FileCluster[] {
  * Generate a human-readable cluster name from directory path
  */
 export function generateClusterName(dir: string): string {
-  if (dir === "root") {
-    return "Root Files";
+  if (dir === 'root') {
+    return 'Root Files';
   }
 
   // Get the last meaningful part of the path
-  const parts = dir.split("/").filter(p => p && p !== "src" && p !== "lib");
+  const parts = dir.split('/').filter((p) => p && p !== 'src' && p !== 'lib');
   const lastPart = parts[parts.length - 1] || dir;
 
   // Convert to title case
   const titleCase = lastPart
     .split(/[-_]/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 
   return titleCase;
 }
@@ -210,10 +212,10 @@ export function getClusterDescription(files: PRFile[] | ClusterFile[]): string {
   const additions = files.reduce((sum, f) => sum + f.additions, 0);
   const deletions = files.reduce((sum, f) => sum + f.deletions, 0);
 
-  const changeTypes = new Set(files.map(f => f.changeType));
-  const changeList = Array.from(changeTypes).join(", ");
+  const changeTypes = new Set(files.map((f) => f.changeType));
+  const changeList = Array.from(changeTypes).join(', ');
 
-  let description = `${fileCount} file${fileCount !== 1 ? "s" : ""} (${changeList})`;
+  let description = `${fileCount} file${fileCount !== 1 ? 's' : ''} (${changeList})`;
 
   if (additions > 0 || deletions > 0) {
     description += ` - +${additions}/-${deletions} lines`;
@@ -228,19 +230,19 @@ export function getClusterDescription(files: PRFile[] | ClusterFile[]): string {
 function getReviewNotes(file: PRFile): string | undefined {
   const notes: string[] = [];
 
-  if (file.path.includes("test") || file.path.includes("spec")) {
-    notes.push("[Has tests]");
+  if (file.path.includes('test') || file.path.includes('spec')) {
+    notes.push('[Has tests]');
   }
 
-  if (file.changeType === "added") {
-    notes.push("[New file]");
+  if (file.changeType === 'added') {
+    notes.push('[New file]');
   }
 
   if (file.additions + file.deletions > 100) {
-    notes.push("[Large change]");
+    notes.push('[Large change]');
   }
 
-  return notes.length > 0 ? notes.join(" ") : undefined;
+  return notes.length > 0 ? notes.join(' ') : undefined;
 }
 
 /**
@@ -250,9 +252,7 @@ export function detectCrossCuttingConcerns(files: PRFile[]): string[] {
   const concerns: string[] = [];
 
   for (const [concern, patterns] of Object.entries(CROSS_CUTTING_PATTERNS)) {
-    const hasMatch = files.some(file =>
-      patterns.some(pattern => pattern.test(file.path))
-    );
+    const hasMatch = files.some((file) => patterns.some((pattern) => pattern.test(file.path)));
 
     if (hasMatch) {
       concerns.push(concern);
@@ -321,13 +321,13 @@ export function analyzeImports(files: ClusterFile[]): DependencyGraph {
   // Infer dependencies from directory structure
   // Files in nested directories depend on parent directories
   for (const file of files) {
-    const parts = file.path.split("/");
+    const parts = file.path.split('/');
     if (parts.length > 2) {
-      const parentDir = parts.slice(0, -1).join("/");
+      const parentDir = parts.slice(0, -1).join('/');
       for (const other of files) {
-        if (other.path !== file.path && file.path.startsWith(parentDir + "/")) {
-          const otherDir = other.path.split("/").slice(0, -1).join("/");
-          if (parentDir.startsWith(otherDir + "/") || parentDir === otherDir) {
+        if (other.path !== file.path && file.path.startsWith(parentDir + '/')) {
+          const otherDir = other.path.split('/').slice(0, -1).join('/');
+          if (parentDir.startsWith(otherDir + '/') || parentDir === otherDir) {
             graph.edges.get(file.path)?.add(other.path);
           }
         }
@@ -401,43 +401,36 @@ export function detectTestPairs(groups: Map<string, ClusterFile[]>): void {
 
   // For each group, find test/source pairs
   for (const [_dir, files] of groups) {
-    const testFiles = files.filter((f) =>
-      testPatterns.some((p) => p.test(f.path))
-    );
-    const sourceFiles = files.filter(
-      (f) => !testPatterns.some((p) => p.test(f.path))
-    );
+    const testFiles = files.filter((f) => testPatterns.some((p) => p.test(f.path)));
+    const sourceFiles = files.filter((f) => !testPatterns.some((p) => p.test(f.path)));
 
     // Mark source files that have corresponding tests
     for (const source of sourceFiles) {
       const baseName = getBaseName(source.path);
       const hasTest = testFiles.some((test) => {
         const testBase = getBaseName(test.path);
-        return (
-          testBase.includes(baseName) ||
-          baseName.includes(testBase.replace(/test_?/i, ""))
-        );
+        return testBase.includes(baseName) || baseName.includes(testBase.replace(/test_?/i, ''));
       });
 
       if (hasTest && source.reviewNotes) {
-        if (!source.reviewNotes.includes("[Has tests]")) {
-          source.reviewNotes += " [Has tests]";
+        if (!source.reviewNotes.includes('[Has tests]')) {
+          source.reviewNotes += ' [Has tests]';
         }
       } else if (hasTest) {
-        source.reviewNotes = "[Has tests]";
+        source.reviewNotes = '[Has tests]';
       }
     }
   }
 }
 
 function getBaseName(path: string): string {
-  const fileName = path.split("/").pop() ?? "";
+  const fileName = path.split('/').pop() ?? '';
   return fileName
-    .replace(/\.(test|spec)\.(ts|tsx|js|jsx)$/, "")
-    .replace(/\.(ts|tsx|js|jsx)$/, "")
-    .replace(/_test\.(go|py|rb)$/, "")
-    .replace(/test_/i, "")
-    .replace(/Test\.java$/, "");
+    .replace(/\.(test|spec)\.(ts|tsx|js|jsx)$/, '')
+    .replace(/\.(ts|tsx|js|jsx)$/, '')
+    .replace(/_test\.(go|py|rb)$/, '')
+    .replace(/test_/i, '')
+    .replace(/Test\.java$/, '');
 }
 
 /**
@@ -452,8 +445,8 @@ export function buildHeuristicClusters(files: ClusterFile[]): FileCluster[] {
   // Step 1: Group by directory
   const groups = new Map<string, ClusterFile[]>();
   for (const file of files) {
-    const parts = file.path.split("/");
-    const dir = parts.length > 1 ? parts.slice(0, -1).join("/") : ".";
+    const parts = file.path.split('/');
+    const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '.';
 
     if (!groups.has(dir)) {
       groups.set(dir, []);
@@ -478,9 +471,9 @@ export function buildHeuristicClusters(files: ClusterFile[]): FileCluster[] {
     // Determine dependencies based on directory nesting
     const dependsOn: string[] = [];
     for (const otherDir of sortedDirs) {
-      if (otherDir !== dir && dir.startsWith(otherDir + "/")) {
+      if (otherDir !== dir && dir.startsWith(otherDir + '/')) {
         const otherCluster = clusters.find((c) =>
-          c.files.some((f) => f.path.startsWith(otherDir + "/"))
+          c.files.some((f) => f.path.startsWith(otherDir + '/'))
         );
         if (otherCluster) {
           dependsOn.push(otherCluster.id);
@@ -490,12 +483,12 @@ export function buildHeuristicClusters(files: ClusterFile[]): FileCluster[] {
 
     clusters.push({
       id: clusterId,
-      name: generateClusterName(dir === "." ? "root" : dir),
+      name: generateClusterName(dir === '.' ? 'root' : dir),
       description: `Changes in ${dir}`,
       files: groupFiles,
       priority: clusterIndex,
       dependsOn,
-      status: "pending",
+      status: 'pending',
     });
   }
 

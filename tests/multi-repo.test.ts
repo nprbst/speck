@@ -17,7 +17,7 @@ import {
   detectSpeckRoot,
   clearSpeckCache,
   getFeaturePaths,
-} from '../.speck/scripts/common/paths.ts';
+} from '../plugins/speck/scripts/common/paths.ts';
 
 // Test helper to create directory structure
 async function createTestDir(name: string): Promise<string> {

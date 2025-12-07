@@ -8,7 +8,7 @@
  * Version: 1.0 (spec 012)
  */
 
-import { z } from "zod";
+import { z } from 'zod';
 
 // ============================================================================
 // Zod Schemas (Runtime Validation)
@@ -18,58 +18,74 @@ import { z } from "zod";
  * File rule: defines how a file/directory should be handled in worktrees
  */
 export const FileRuleSchema = z.object({
-  pattern: z.string().min(1, "Pattern cannot be empty"),
-  action: z.enum(["copy", "symlink", "ignore"], {
-    errorMap: () => ({ message: "Action must be 'copy', 'symlink', or 'ignore'" })
+  pattern: z.string().min(1, 'Pattern cannot be empty'),
+  action: z.enum(['copy', 'symlink', 'ignore'], {
+    errorMap: () => ({ message: "Action must be 'copy', 'symlink', or 'ignore'" }),
   }),
 });
 
 /**
  * File configuration: rules for file/directory operations
  */
-export const FileConfigSchema = z.object({
-  rules: z.array(FileRuleSchema).default([]),
-  includeUntracked: z.boolean().default(true),
-}).default({});
+export const FileConfigSchema = z
+  .object({
+    rules: z.array(FileRuleSchema).default([]),
+    includeUntracked: z.boolean().default(true),
+  })
+  .default({});
 
 /**
  * Dependency configuration: package installation settings
  */
-export const DependencyConfigSchema = z.object({
-  autoInstall: z.boolean().default(false),
-  packageManager: z.enum(["npm", "yarn", "pnpm", "bun", "auto"], {
-    errorMap: () => ({ message: "Package manager must be 'npm', 'yarn', 'pnpm', 'bun', or 'auto'" })
-  }).default("auto"),
-}).default({});
+export const DependencyConfigSchema = z
+  .object({
+    autoInstall: z.boolean().default(false),
+    packageManager: z
+      .enum(['npm', 'yarn', 'pnpm', 'bun', 'auto'], {
+        errorMap: () => ({
+          message: "Package manager must be 'npm', 'yarn', 'pnpm', 'bun', or 'auto'",
+        }),
+      })
+      .default('auto'),
+  })
+  .default({});
 
 /**
  * IDE configuration: auto-launch and editor preferences
  */
-export const IDEConfigSchema = z.object({
-  autoLaunch: z.boolean().default(false),
-  editor: z.enum(["vscode", "cursor", "webstorm", "idea", "pycharm"], {
-    errorMap: () => ({ message: "Editor must be one of: vscode, cursor, webstorm, idea, pycharm" })
-  }).default("vscode"),
-  newWindow: z.boolean().default(true),
-}).default({});
+export const IDEConfigSchema = z
+  .object({
+    autoLaunch: z.boolean().default(false),
+    editor: z
+      .enum(['vscode', 'cursor', 'webstorm', 'idea', 'pycharm'], {
+        errorMap: () => ({
+          message: 'Editor must be one of: vscode, cursor, webstorm, idea, pycharm',
+        }),
+      })
+      .default('vscode'),
+    newWindow: z.boolean().default(true),
+  })
+  .default({});
 
 /**
  * Worktree configuration: all worktree integration settings
  */
-export const WorktreeConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  worktreePath: z.string().default("../"),
-  branchPrefix: z.string().optional(),
-  ide: IDEConfigSchema,
-  dependencies: DependencyConfigSchema,
-  files: FileConfigSchema,
-}).default({});
+export const WorktreeConfigSchema = z
+  .object({
+    enabled: z.boolean().default(true),
+    worktreePath: z.string().default('../'),
+    branchPrefix: z.string().optional(),
+    ide: IDEConfigSchema,
+    dependencies: DependencyConfigSchema,
+    files: FileConfigSchema,
+  })
+  .default({});
 
 /**
  * Root Speck configuration: top-level config object
  */
 export const SpeckConfigSchema = z.object({
-  version: z.string().default("1.0"),
+  version: z.string().default('1.0'),
   worktree: WorktreeConfigSchema,
 });
 
@@ -119,38 +135,38 @@ export type SpeckConfig = z.infer<typeof SpeckConfigSchema>;
  */
 export const DEFAULT_WORKTREE_CONFIG: WorktreeConfig = {
   enabled: true,
-  worktreePath: "../",
+  worktreePath: '../',
   ide: {
     autoLaunch: false,
-    editor: "vscode",
+    editor: 'vscode',
     newWindow: true,
   },
   dependencies: {
     autoInstall: false,
-    packageManager: "auto",
+    packageManager: 'auto',
   },
   files: {
     rules: [
       // Copy configuration files (isolation per worktree)
-      { pattern: ".env*", action: "copy" },
-      { pattern: "*.config.js", action: "copy" },
-      { pattern: "*.config.ts", action: "copy" },
-      { pattern: "*.config.json", action: "copy" },
-      { pattern: ".nvmrc", action: "copy" },
-      { pattern: ".node-version", action: "copy" },
+      { pattern: '.env*', action: 'copy' },
+      { pattern: '*.config.js', action: 'copy' },
+      { pattern: '*.config.ts', action: 'copy' },
+      { pattern: '*.config.json', action: 'copy' },
+      { pattern: '.nvmrc', action: 'copy' },
+      { pattern: '.node-version', action: 'copy' },
       // Claude Code local settings (untracked, machine-specific)
-      { pattern: ".claude/settings.local.json", action: "copy" },
+      { pattern: '.claude/settings.local.json', action: 'copy' },
 
       // Symlink large dependency directories (shared across worktrees)
-      { pattern: "node_modules", action: "symlink" },
-      { pattern: ".bun", action: "symlink" },
-      { pattern: ".cache", action: "symlink" },
+      { pattern: 'node_modules', action: 'symlink' },
+      { pattern: '.bun', action: 'symlink' },
+      { pattern: '.cache', action: 'symlink' },
 
       // Ignore (don't copy or symlink - handled by git or not needed)
-      { pattern: ".git", action: "ignore" },
-      { pattern: ".speck", action: "ignore" },
-      { pattern: "dist", action: "ignore" },
-      { pattern: "build", action: "ignore" },
+      { pattern: '.git', action: 'ignore' },
+      { pattern: '.speck', action: 'ignore' },
+      { pattern: 'dist', action: 'ignore' },
+      { pattern: 'build', action: 'ignore' },
     ],
     includeUntracked: true,
   },
@@ -160,7 +176,7 @@ export const DEFAULT_WORKTREE_CONFIG: WorktreeConfig = {
  * Default Speck configuration
  */
 export const DEFAULT_SPECK_CONFIG: SpeckConfig = {
-  version: "1.0",
+  version: '1.0',
   worktree: DEFAULT_WORKTREE_CONFIG,
 };
 
@@ -172,22 +188,22 @@ export const DEFAULT_SPECK_CONFIG: SpeckConfig = {
  * Supported package managers (detected from lockfiles or explicitly configured)
  * "auto" means auto-detect from lockfiles
  */
-export type PackageManager = "bun" | "pnpm" | "yarn" | "npm" | "auto";
+export type PackageManager = 'bun' | 'pnpm' | 'yarn' | 'npm' | 'auto';
 
 /**
  * Supported IDE editors
  */
-export type IDEEditor = "vscode" | "cursor" | "webstorm" | "idea" | "pycharm";
+export type IDEEditor = 'vscode' | 'cursor' | 'webstorm' | 'idea' | 'pycharm';
 
 /**
  * Worktree lifecycle states (runtime only, not persisted)
  */
 export type WorktreeState =
-  | "creating"           // Git worktree add in progress
-  | "copying_files"      // Applying file rules
-  | "installing_deps"    // Installing dependencies
-  | "ready"              // Ready for use
-  | "error";             // Creation failed
+  | 'creating' // Git worktree add in progress
+  | 'copying_files' // Applying file rules
+  | 'installing_deps' // Installing dependencies
+  | 'ready' // Ready for use
+  | 'error'; // Creation failed
 
 /**
  * Worktree metadata (runtime only, not persisted in config)
@@ -207,18 +223,18 @@ export interface BranchMetadata {
   branchName: string;
   hasWorktree: boolean;
   worktreePath?: string; // Relative to repo root
-  specNumber: string;    // e.g., "002"
-  shortName: string;     // e.g., "user-auth"
+  specNumber: string; // e.g., "002"
+  shortName: string; // e.g., "user-auth"
 }
 
 /**
  * IDE information (for detection and availability)
  */
 export interface IDEInfo {
-  name: string;          // Display name (e.g., "VSCode")
-  command: string;       // CLI command (e.g., "code")
-  args: string[];        // Default args (e.g., ["-n"] for new window)
-  available: boolean;    // Whether command is in PATH
+  name: string; // Display name (e.g., "VSCode")
+  command: string; // CLI command (e.g., "code")
+  args: string[]; // Default args (e.g., ["-n"] for new window)
+  available: boolean; // Whether command is in PATH
 }
 
 // ============================================================================
@@ -238,12 +254,10 @@ export function validateSpeckConfig(data: unknown): SpeckConfig {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const messages = error.errors
-        .map(err => `  - ${err.path.join(".")}: ${err.message}`)
-        .join("\n");
+        .map((err) => `  - ${err.path.join('.')}: ${err.message}`)
+        .join('\n');
 
-      throw new Error(
-        `Invalid configuration in .speck/config.json:\n${messages}`
-      );
+      throw new Error(`Invalid configuration in .speck/config.json:\n${messages}`);
     }
     throw error;
   }

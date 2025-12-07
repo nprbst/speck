@@ -230,7 +230,11 @@ export const PRODUCTION_DIRS: Record<FileCategory, string> = {
 /**
  * Get production path for a staged file
  */
-export function getProductionPath(rootDir: string, category: FileCategory, relativePath: string): string {
+export function getProductionPath(
+  rootDir: string,
+  category: FileCategory,
+  relativePath: string
+): string {
   return `${rootDir}/${PRODUCTION_DIRS[category]}/${relativePath}`;
 }
 

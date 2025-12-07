@@ -4,7 +4,7 @@
  * Provides consistent error handling across CLI and hook modes.
  */
 
-import type { ExecutionMode } from "./logger";
+import type { ExecutionMode } from './logger';
 
 /**
  * Outcome of executing a command handler
@@ -27,7 +27,7 @@ export interface CommandResult {
 export class StackedModeError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "StackedModeError";
+    this.name = 'StackedModeError';
   }
 }
 
@@ -37,7 +37,7 @@ export class StackedModeError extends Error {
 export class ValidationError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "ValidationError";
+    this.name = 'ValidationError';
   }
 }
 
@@ -47,7 +47,7 @@ export class ValidationError extends Error {
 export class GitError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "GitError";
+    this.name = 'GitError';
   }
 }
 
@@ -62,7 +62,7 @@ export class CommandError extends Error {
     public readonly metadata?: Record<string, unknown>
   ) {
     super(message);
-    this.name = "CommandError";
+    this.name = 'CommandError';
     Error.captureStackTrace?.(this, CommandError);
   }
 }
@@ -100,7 +100,7 @@ export function formatHookError(error: Error | CommandError): CommandResult {
 
   return {
     success: false,
-    output: "",
+    output: '',
     errorOutput: error.message,
     exitCode,
     metadata: metadata ?? null,
@@ -115,7 +115,7 @@ export function formatError(
   error: Error | CommandError,
   mode: ExecutionMode
 ): CommandResult | string {
-  if (mode === "hook") {
+  if (mode === 'hook') {
     return formatHookError(error);
   }
   return formatCliError(error);
@@ -146,7 +146,7 @@ export function withErrorHandling<TArgs>(
       // Handle non-Error throws
       return {
         success: false,
-        output: "",
+        output: '',
         errorOutput: String(error),
         exitCode: 1,
         metadata: null,

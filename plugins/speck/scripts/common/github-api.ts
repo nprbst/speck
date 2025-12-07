@@ -10,15 +10,11 @@ import type {
   RateLimitInfo,
   GitHubApiOptions,
   FetchReleasesResult,
-} from "../contracts/github-api";
-import {
-  parseRateLimitHeaders,
-  isRateLimitLow,
-  secondsUntilReset,
-} from "../contracts/github-api";
+} from '../contracts/github-api';
+import { parseRateLimitHeaders, isRateLimitLow, secondsUntilReset } from '../contracts/github-api';
 
-const DEFAULT_BASE_URL = "https://api.github.com";
-const DEFAULT_USER_AGENT = "speck-upstream-sync";
+const DEFAULT_BASE_URL = 'https://api.github.com';
+const DEFAULT_USER_AGENT = 'speck-upstream-sync';
 const DEFAULT_TIMEOUT = 10000; // 10 seconds
 
 /**
@@ -31,7 +27,7 @@ export class GitHubApiClientError extends Error {
     public readonly rateLimit?: RateLimitInfo
   ) {
     super(message);
-    this.name = "GitHubApiClientError";
+    this.name = 'GitHubApiClientError';
   }
 }
 
@@ -64,8 +60,8 @@ export async function fetchReleases(
 
   const url = `${baseUrl}/repos/${owner}/${repo}/releases`;
   const headers: Record<string, string> = {
-    Accept: "application/vnd.github.v3+json",
-    "User-Agent": userAgent,
+    Accept: 'application/vnd.github.v3+json',
+    'User-Agent': userAgent,
   };
 
   if (token) {
@@ -103,7 +99,7 @@ export async function fetchReleases(
     }
 
     const releases = (await response.json()) as GitHubRelease[];
-    const etag = response.headers.get("ETag") || undefined;
+    const etag = response.headers.get('ETag') || undefined;
 
     return {
       releases,
@@ -116,15 +112,13 @@ export async function fetchReleases(
     }
 
     if (error instanceof Error) {
-      if (error.name === "AbortError") {
-        throw new GitHubApiClientError(
-          `Request timeout after ${timeout}ms`
-        );
+      if (error.name === 'AbortError') {
+        throw new GitHubApiClientError(`Request timeout after ${timeout}ms`);
       }
       throw new GitHubApiClientError(`Network error: ${error.message}`);
     }
 
-    throw new GitHubApiClientError("Unknown error fetching releases");
+    throw new GitHubApiClientError('Unknown error fetching releases');
   }
 }
 
@@ -155,7 +149,7 @@ export async function downloadTarball(
   } = options;
 
   const headers: Record<string, string> = {
-    "User-Agent": userAgent,
+    'User-Agent': userAgent,
   };
 
   if (token) {
@@ -169,7 +163,7 @@ export async function downloadTarball(
     const response = await fetch(tarballUrl, {
       headers,
       signal: controller.signal,
-      redirect: "follow",
+      redirect: 'follow',
     });
 
     clearTimeout(timeoutId);
@@ -189,14 +183,12 @@ export async function downloadTarball(
     }
 
     if (error instanceof Error) {
-      if (error.name === "AbortError") {
-        throw new GitHubApiClientError(
-          `Download timeout after ${timeout}ms`
-        );
+      if (error.name === 'AbortError') {
+        throw new GitHubApiClientError(`Download timeout after ${timeout}ms`);
       }
       throw new GitHubApiClientError(`Download error: ${error.message}`);
     }
 
-    throw new GitHubApiClientError("Unknown error downloading tarball");
+    throw new GitHubApiClientError('Unknown error downloading tarball');
   }
 }

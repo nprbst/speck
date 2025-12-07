@@ -14,27 +14,21 @@
  *   2 - System/network error
  */
 
-import { fetchReleases, GitHubApiClientError } from "./common/github-api";
+import { fetchReleases, GitHubApiClientError } from './common/github-api';
 import {
   filterStableReleases,
   sortReleasesByDate,
   extractNotesSummary,
   isRateLimitLow,
   secondsUntilReset,
-} from "./contracts/github-api";
-import type { GitHubRelease } from "./contracts/github-api";
-import {
-  ExitCode,
-  formatCliError,
-} from "./contracts/cli-interface";
-import type {
-  CliResult,
-  CheckUpstreamOutput,
-} from "./contracts/cli-interface";
+} from './contracts/github-api';
+import type { GitHubRelease } from './contracts/github-api';
+import { ExitCode, formatCliError } from './contracts/cli-interface';
+import type { CliResult, CheckUpstreamOutput } from './contracts/cli-interface';
 
 // Upstream repository configuration
-const UPSTREAM_OWNER = "github";
-const UPSTREAM_REPO = "spec-kit";
+const UPSTREAM_OWNER = 'github';
+const UPSTREAM_REPO = 'spec-kit';
 
 /**
  * Parse command line arguments
@@ -45,9 +39,9 @@ function parseArgs(args: string[]): {
   version: boolean;
 } {
   return {
-    json: args.includes("--json"),
-    help: args.includes("--help"),
-    version: args.includes("--version"),
+    json: args.includes('--json'),
+    help: args.includes('--help'),
+    version: args.includes('--version'),
   };
 }
 
@@ -78,7 +72,7 @@ Exit codes:
  * Show version information
  */
 function showVersion(): string {
-  return "check-upstream v1.0.0 (Speck upstream sync tool)";
+  return 'check-upstream v1.0.0 (Speck upstream sync tool)';
 }
 
 /**
@@ -86,19 +80,19 @@ function showVersion(): string {
  */
 function formatHumanReadable(releases: GitHubRelease[]): string {
   if (releases.length === 0) {
-    return "No releases found.\n";
+    return 'No releases found.\n';
   }
 
-  let output = "Available spec-kit releases:\n\n";
-  output += "Version       | Published          | Summary\n";
-  output += "--------------|--------------------|-----------------------------------------\n";
+  let output = 'Available spec-kit releases:\n\n';
+  output += 'Version       | Published          | Summary\n';
+  output += '--------------|--------------------|-----------------------------------------\n';
 
   for (const release of releases) {
     const version = release.tag_name.padEnd(13);
     const publishedDate = new Date(release.published_at)
       .toISOString()
       .substring(0, 19)
-      .replace("T", " ");
+      .replace('T', ' ');
     const summary = extractNotesSummary(release.body, 40);
 
     output += `${version} | ${publishedDate} | ${summary}\n`;
@@ -152,7 +146,7 @@ export async function checkUpstream(
     return {
       exitCode: ExitCode.SUCCESS,
       stdout: showHelp(),
-      stderr: "",
+      stderr: '',
     };
   }
 
@@ -161,7 +155,7 @@ export async function checkUpstream(
     return {
       exitCode: ExitCode.SUCCESS,
       stdout: showVersion(),
-      stderr: "",
+      stderr: '',
     };
   }
 
@@ -185,7 +179,7 @@ export async function checkUpstream(
     const sortedReleases = sortReleasesByDate(stableReleases);
 
     // Check rate limit and warn if low
-    let stderrOutput = "";
+    let stderrOutput = '';
     if (isRateLimitLow(rateLimit)) {
       const seconds = secondsUntilReset(rateLimit);
       const minutes = Math.ceil(seconds / 60);
@@ -193,13 +187,9 @@ export async function checkUpstream(
     }
 
     // Format output
-    const stdout = options.json
-      ? formatJson(sortedReleases)
-      : formatHumanReadable(sortedReleases);
+    const stdout = options.json ? formatJson(sortedReleases) : formatHumanReadable(sortedReleases);
 
-    const outputData = options.json
-      ? JSON.parse(stdout) as CheckUpstreamOutput
-      : undefined;
+    const outputData = options.json ? (JSON.parse(stdout) as CheckUpstreamOutput) : undefined;
 
     return {
       exitCode: ExitCode.SUCCESS,
@@ -209,7 +199,7 @@ export async function checkUpstream(
     };
   } catch (error) {
     // Handle errors
-    let errorMessage = "Unknown error";
+    let errorMessage = 'Unknown error';
     if (error instanceof GitHubApiClientError) {
       errorMessage = error.message;
     } else if (error instanceof Error) {
@@ -218,11 +208,8 @@ export async function checkUpstream(
 
     return {
       exitCode: ExitCode.SYSTEM_ERROR,
-      stdout: "",
-      stderr: formatCliError(
-        "Failed to check upstream releases",
-        errorMessage
-      ),
+      stdout: '',
+      stderr: formatCliError('Failed to check upstream releases', errorMessage),
     };
   }
 }

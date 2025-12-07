@@ -99,7 +99,11 @@ export async function initializeStaging(version: string): Promise<OrchestrationR
     const previousVersion = await getLatestTransformedVersion(historyPath);
 
     // Create staging directory
-    const context = await createStagingDirectory(projectRoot, version, previousVersion ?? undefined);
+    const context = await createStagingDirectory(
+      projectRoot,
+      version,
+      previousVersion ?? undefined
+    );
 
     // Capture production baseline for conflict detection
     const withBaseline = await captureProductionBaseline(context);
@@ -455,14 +459,20 @@ async function main(): Promise<void> {
       }
       const result = await initializeStaging(version);
       if (result.success) {
-        console.log(JSON.stringify({
-          success: true,
-          rootDir: result.context!.rootDir,
-          scriptsDir: result.context!.scriptsDir,
-          commandsDir: result.context!.commandsDir,
-          agentsDir: result.context!.agentsDir,
-          skillsDir: result.context!.skillsDir,
-        }, null, 2));
+        console.log(
+          JSON.stringify(
+            {
+              success: true,
+              rootDir: result.context!.rootDir,
+              scriptsDir: result.context!.scriptsDir,
+              commandsDir: result.context!.commandsDir,
+              agentsDir: result.context!.agentsDir,
+              skillsDir: result.context!.skillsDir,
+            },
+            null,
+            2
+          )
+        );
       } else {
         console.error(JSON.stringify({ success: false, error: result.error }));
         process.exit(1);
@@ -475,10 +485,12 @@ async function main(): Promise<void> {
       if (orphans.length === 0) {
         console.log(JSON.stringify({ orphans: [], message: 'No orphaned staging directories' }));
       } else {
-        const orphanInfo = await Promise.all(orphans.map(async (dir) => ({
-          path: dir,
-          info: await getOrphanInfo(dir),
-        })));
+        const orphanInfo = await Promise.all(
+          orphans.map(async (dir) => ({
+            path: dir,
+            info: await getOrphanInfo(dir),
+          }))
+        );
         console.log(JSON.stringify({ orphans: orphanInfo }));
       }
       break;
@@ -488,7 +500,9 @@ async function main(): Promise<void> {
       const dir = args[1];
       const action = args[2] as RecoveryAction;
       if (!dir || !action || !['commit', 'rollback', 'inspect'].includes(action)) {
-        console.error('Usage: bun run .speck/scripts/transform-upstream/index.ts recover <dir> <commit|rollback|inspect>');
+        console.error(
+          'Usage: bun run .speck/scripts/transform-upstream/index.ts recover <dir> <commit|rollback|inspect>'
+        );
         process.exit(1);
       }
       const result = await recoverOrphanedStaging(dir, action);
@@ -498,7 +512,9 @@ async function main(): Promise<void> {
     }
 
     default:
-      console.error('Usage: bun run .speck/scripts/transform-upstream/index.ts <init|status|recover> [args...]');
+      console.error(
+        'Usage: bun run .speck/scripts/transform-upstream/index.ts <init|status|recover> [args...]'
+      );
       process.exit(1);
   }
 }

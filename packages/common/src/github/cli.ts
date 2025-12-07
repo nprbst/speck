@@ -4,8 +4,8 @@
  * Common operations using the gh CLI tool.
  */
 
-import { $ } from "bun";
-import type { RepoInfo } from "./types";
+import { $ } from 'bun';
+import type { RepoInfo } from './types';
 
 /**
  * GitHub CLI error
@@ -16,7 +16,7 @@ export class GhCliError extends Error {
     public readonly stderr?: string
   ) {
     super(message);
-    this.name = "GhCliError";
+    this.name = 'GhCliError';
   }
 }
 
@@ -29,10 +29,7 @@ export async function runGh(args: string[]): Promise<string> {
     return result.trim();
   } catch (e: unknown) {
     const error = e as { stderr?: { toString(): string }; message?: string };
-    throw new GhCliError(
-      error.message || "gh CLI error",
-      error.stderr?.toString()
-    );
+    throw new GhCliError(error.message || 'gh CLI error', error.stderr?.toString());
   }
 }
 
@@ -93,8 +90,7 @@ export async function getGitHubToken(): Promise<string | null> {
  */
 export async function getRepoFullName(): Promise<string | null> {
   try {
-    const result =
-      await $`gh repo view --json nameWithOwner --jq .nameWithOwner`.text();
+    const result = await $`gh repo view --json nameWithOwner --jq .nameWithOwner`.text();
     return result.trim();
   } catch {
     return null;
@@ -108,7 +104,7 @@ export async function getRepoInfo(): Promise<RepoInfo | null> {
   const fullName = await getRepoFullName();
   if (!fullName) return null;
 
-  const [owner, repo] = fullName.split("/");
+  const [owner, repo] = fullName.split('/');
   if (!owner || !repo) return null;
 
   return { owner, repo };
@@ -149,22 +145,16 @@ export async function getCurrentBranch(): Promise<string | null> {
  * console.log(data.viewer.login);
  * ```
  */
-export async function ghGraphQL<T>(
-  query: string,
-  variables?: Record<string, unknown>
-): Promise<T> {
-  const args = ["api", "graphql"];
+export async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+  const args = ['api', 'graphql'];
 
   if (variables) {
     for (const [key, value] of Object.entries(variables)) {
-      args.push(
-        "-F",
-        `${key}=${typeof value === "string" ? value : JSON.stringify(value)}`
-      );
+      args.push('-F', `${key}=${typeof value === 'string' ? value : JSON.stringify(value)}`);
     }
   }
 
-  args.push("-f", `query=${query}`);
+  args.push('-f', `query=${query}`);
 
   const result = await runGh(args);
   const parsed = JSON.parse(result);
@@ -186,13 +176,10 @@ export async function ghGraphQL<T>(
  * @param endpoint - API endpoint (e.g., "repos/owner/repo")
  * @param jqFilter - Optional jq filter for response
  */
-export async function ghApiGet<T>(
-  endpoint: string,
-  jqFilter?: string
-): Promise<T> {
-  const args = ["api", endpoint];
+export async function ghApiGet<T>(endpoint: string, jqFilter?: string): Promise<T> {
+  const args = ['api', endpoint];
   if (jqFilter) {
-    args.push("--jq", jqFilter);
+    args.push('--jq', jqFilter);
   }
   const result = await runGh(args);
   return JSON.parse(result) as T;
@@ -208,12 +195,12 @@ export async function ghApiPost<T>(
   endpoint: string,
   fields: Record<string, string | number | boolean>
 ): Promise<T> {
-  const args = ["api", endpoint, "-X", "POST"];
+  const args = ['api', endpoint, '-X', 'POST'];
   for (const [key, value] of Object.entries(fields)) {
-    if (typeof value === "number") {
-      args.push("-F", `${key}=${value}`);
+    if (typeof value === 'number') {
+      args.push('-F', `${key}=${value}`);
     } else {
-      args.push("-f", `${key}=${String(value)}`);
+      args.push('-f', `${key}=${String(value)}`);
     }
   }
   const result = await runGh(args);

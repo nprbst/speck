@@ -17,7 +17,10 @@ import { mkdtemp, mkdir, writeFile, symlink, rm, cp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { $ } from 'bun';
-import type { BranchMapping, BranchEntry } from '../../plugins/speck/scripts/common/branch-mapper.ts';
+import type {
+  BranchMapping,
+  BranchEntry,
+} from '../../plugins/speck/scripts/common/branch-mapper.ts';
 
 /**
  * Copy Speck scripts into test fixture for isolation
@@ -25,8 +28,8 @@ import type { BranchMapping, BranchEntry } from '../../plugins/speck/scripts/com
  * @param targetDir - Directory to copy scripts into (test root)
  */
 async function copySpeckScripts(targetDir: string): Promise<void> {
-  const sourceScriptsDir = path.join(process.cwd(), '.speck/scripts');
-  const targetScriptsDir = path.join(targetDir, '.speck/scripts');
+  const sourceScriptsDir = path.join(process.cwd(), 'plugins/speck/scripts');
+  const targetScriptsDir = path.join(targetDir, 'plugins/speck/scripts');
 
   // Copy entire scripts directory recursively
   await cp(sourceScriptsDir, targetScriptsDir, { recursive: true });
@@ -115,7 +118,7 @@ export async function createMultiRepoTestFixture(
 
   // Copy Speck scripts into test root for isolation
   await copySpeckScripts(rootDir);
-  const scriptsDir = path.join(rootDir, '.speck/scripts');
+  const scriptsDir = path.join(rootDir, 'plugins/speck/scripts');
 
   // Create initial commit in root
   await $`git -C ${rootDir} add .`.quiet();

@@ -2,19 +2,19 @@
  * state command - Manage review session state
  */
 
-import { logger } from "@speck/common/logger";
-import { loadState, clearState, formatStateDisplay } from "../state";
+import { logger } from '@speck/common/logger';
+import { loadState, clearState, formatStateDisplay } from '../state';
 
 export async function stateCommand(args: string[]): Promise<void> {
-  const subcommand = args[0] || "show";
+  const subcommand = args[0] || 'show';
 
-  logger.debug("state command", { subcommand });
+  logger.debug('state command', { subcommand });
 
   switch (subcommand) {
-    case "show":
+    case 'show':
       await showState();
       break;
-    case "clear":
+    case 'clear':
       await clearStateCmd();
       break;
     default:
@@ -27,8 +27,8 @@ async function showState(): Promise<void> {
   const session = await loadState(repoRoot);
 
   if (!session) {
-    console.log("No active review session found.");
-    console.log("Start a review with: speck-review analyze <pr-number>");
+    console.log('No active review session found.');
+    console.log('Start a review with: speck-review analyze <pr-number>');
     return;
   }
 
@@ -41,7 +41,7 @@ async function clearStateCmd(): Promise<void> {
   const session = await loadState(repoRoot);
 
   if (!session) {
-    console.log("No review state to clear.");
+    console.log('No review state to clear.');
     return;
   }
 

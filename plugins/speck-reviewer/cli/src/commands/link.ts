@@ -2,7 +2,7 @@
  * link command - Generate file:line navigation reference
  */
 
-import { diffLink, fileLink } from "../links";
+import { diffLink, fileLink } from '../links';
 
 export async function linkCommand(args: string[]): Promise<void> {
   const file = args[0];
@@ -10,7 +10,7 @@ export async function linkCommand(args: string[]): Promise<void> {
   const endLine = args[2] ? parseInt(args[2], 10) : undefined;
 
   if (!file) {
-    console.error("Usage: speck-review link <file> [line] [endLine]");
+    console.error('Usage: speck-review link <file> [line] [endLine]');
     process.exit(1);
   }
 

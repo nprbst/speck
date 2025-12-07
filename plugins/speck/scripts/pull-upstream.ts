@@ -15,31 +15,25 @@
  *   2 - System/network error
  */
 
-import { mkdirSync, existsSync } from "fs";
-import { join } from "path";
-import { downloadTarball, GitHubApiClientError } from "./common/github-api";
-import { addRelease, releaseExists } from "./common/json-tracker";
-import { updateSymlink } from "./common/symlink-manager";
-import { createTempDir, removeDirectory, atomicMove } from "./common/file-ops";
-import { ReleaseStatus } from "./contracts/release-registry";
-import type { UpstreamRelease } from "./contracts/release-registry";
-import {
-  ExitCode,
-  formatCliError,
-} from "./contracts/cli-interface";
-import type {
-  CliResult,
-  PullUpstreamOutput,
-} from "./contracts/cli-interface";
+import { mkdirSync, existsSync } from 'fs';
+import { join } from 'path';
+import { downloadTarball, GitHubApiClientError } from './common/github-api';
+import { addRelease, releaseExists } from './common/json-tracker';
+import { updateSymlink } from './common/symlink-manager';
+import { createTempDir, removeDirectory, atomicMove } from './common/file-ops';
+import { ReleaseStatus } from './contracts/release-registry';
+import type { UpstreamRelease } from './contracts/release-registry';
+import { ExitCode, formatCliError } from './contracts/cli-interface';
+import type { CliResult, PullUpstreamOutput } from './contracts/cli-interface';
 
 // Paths
-const UPSTREAM_DIR = "upstream";
-const RELEASES_JSON = join(UPSTREAM_DIR, "releases.json");
-const LATEST_SYMLINK = join(UPSTREAM_DIR, "latest");
+const UPSTREAM_DIR = 'upstream';
+const RELEASES_JSON = join(UPSTREAM_DIR, 'releases.json');
+const LATEST_SYMLINK = join(UPSTREAM_DIR, 'latest');
 
 // Upstream repository configuration
-const UPSTREAM_OWNER = "github";
-const UPSTREAM_REPO = "spec-kit";
+const UPSTREAM_OWNER = 'github';
+const UPSTREAM_REPO = 'spec-kit';
 
 /**
  * Parse command line arguments
@@ -49,12 +43,12 @@ function parseArgs(args: string[]): {
   json: boolean;
   help: boolean;
 } {
-  const nonFlagArgs = args.filter((arg) => !arg.startsWith("--"));
+  const nonFlagArgs = args.filter((arg) => !arg.startsWith('--'));
 
   return {
     version: nonFlagArgs[0] || null,
-    json: args.includes("--json"),
-    help: args.includes("--help"),
+    json: args.includes('--json'),
+    help: args.includes('--help'),
   };
 }
 
@@ -96,12 +90,9 @@ Exit codes:
  *
  * Uses Bun Shell API for ZIP extraction
  */
-async function extractZip(
-  zipPath: string,
-  destDir: string
-): Promise<void> {
+async function extractZip(zipPath: string, destDir: string): Promise<void> {
   try {
-    const { $ } = await import("bun");
+    const { $ } = await import('bun');
 
     // Create destination directory
     mkdirSync(destDir, { recursive: true });
@@ -110,7 +101,7 @@ async function extractZip(
     await $`unzip -q ${zipPath} -d ${destDir}`.quiet();
   } catch (error) {
     throw new Error(
-      `Failed to extract ZIP file: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to extract ZIP file: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -160,8 +151,8 @@ async function fetchReleaseMetadata(
       `https://api.github.com/repos/${UPSTREAM_OWNER}/${UPSTREAM_REPO}/releases/tags/${version}`,
       {
         headers: {
-          "Accept": "application/vnd.github.v3+json",
-          "User-Agent": "speck-upstream-sync",
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'speck-upstream-sync',
         },
       }
     );
@@ -173,7 +164,7 @@ async function fetchReleaseMetadata(
       throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json() as GitHubReleaseResponse;
+    const data = (await response.json()) as GitHubReleaseResponse;
 
     // Resolve tag to commit SHA if target_commitish is not a valid SHA
     let commit = data.target_commitish;
@@ -185,8 +176,8 @@ async function fetchReleaseMetadata(
         `https://api.github.com/repos/${UPSTREAM_OWNER}/${UPSTREAM_REPO}/git/refs/tags/${version}`,
         {
           headers: {
-            "Accept": "application/vnd.github.v3+json",
-            "User-Agent": "speck-upstream-sync",
+            Accept: 'application/vnd.github.v3+json',
+            'User-Agent': 'speck-upstream-sync',
           },
         }
       );
@@ -195,7 +186,7 @@ async function fetchReleaseMetadata(
         throw new Error(`Failed to resolve tag ${version} to commit SHA`);
       }
 
-      const tagData = await tagResponse.json() as GitHubTagResponse;
+      const tagData = (await tagResponse.json()) as GitHubTagResponse;
       commit = tagData.object.sha;
     }
 
@@ -207,18 +198,14 @@ async function fetchReleaseMetadata(
     if (error instanceof Error) {
       throw error;
     }
-    throw new Error("Failed to fetch release metadata");
+    throw new Error('Failed to fetch release metadata');
   }
 }
 
 /**
  * Format output as human-readable
  */
-function formatHumanReadable(
-  version: string,
-  commit: string,
-  directory: string
-): string {
+function formatHumanReadable(version: string, commit: string, directory: string): string {
   let output = `Successfully pulled ${version}\n\n`;
   output += `Commit:    ${commit.substring(0, 7)}\n`;
   output += `Directory: ${directory}\n`;
@@ -236,7 +223,7 @@ function formatJson(release: UpstreamRelease, directory: string): string {
     version: release.version,
     commit: release.commit,
     pullDate: release.pullDate,
-    status: "pulled",
+    status: 'pulled',
     directory,
   };
 
@@ -299,7 +286,7 @@ export async function pullUpstream(
     return {
       exitCode: ExitCode.SUCCESS,
       stdout: showHelp(),
-      stderr: "",
+      stderr: '',
     };
   }
 
@@ -307,9 +294,9 @@ export async function pullUpstream(
   if (!options.version) {
     return {
       exitCode: ExitCode.USER_ERROR,
-      stdout: "",
+      stdout: '',
       stderr: formatCliError(
-        "Missing version argument",
+        'Missing version argument',
         "Usage: pull-upstream <version>\n\nRun 'pull-upstream --help' for more information."
       ),
     };
@@ -321,9 +308,9 @@ export async function pullUpstream(
   if (!validateVersion(version)) {
     return {
       exitCode: ExitCode.USER_ERROR,
-      stdout: "",
+      stdout: '',
       stderr: formatCliError(
-        "Invalid version format",
+        'Invalid version format',
         `Version must match semantic versioning pattern (e.g., v1.0.0).\nGot: ${version}`
       ),
     };
@@ -344,10 +331,10 @@ export async function pullUpstream(
         if (registry.releases.some((r) => r.version === version)) {
           return {
             exitCode: ExitCode.USER_ERROR,
-            stdout: "",
+            stdout: '',
             stderr: formatCliError(
               `Release ${version} already exists`,
-              "This release has already been pulled. Check upstream/releases.json for details."
+              'This release has already been pulled. Check upstream/releases.json for details.'
             ),
           };
         }
@@ -358,10 +345,10 @@ export async function pullUpstream(
       if (exists) {
         return {
           exitCode: ExitCode.USER_ERROR,
-          stdout: "",
+          stdout: '',
           stderr: formatCliError(
             `Release ${version} already exists`,
-            "This release has already been pulled. Check upstream/releases.json for details."
+            'This release has already been pulled. Check upstream/releases.json for details.'
           ),
         };
       }
@@ -378,7 +365,7 @@ export async function pullUpstream(
       await fs.mkdir(UPSTREAM_DIR);
       await fs.mkdir(versionDir);
       // Mark the version directory as existing by writing a marker file
-      await fs.writeFile(`${versionDir}/.exists`, "");
+      await fs.writeFile(`${versionDir}/.exists`, '');
 
       // Create mock registry
       const release: UpstreamRelease = {
@@ -414,12 +401,12 @@ export async function pullUpstream(
         ? formatJson(release, versionDir)
         : formatHumanReadable(version, commit, versionDir);
 
-      const outputData = options.json ? JSON.parse(stdout) as PullUpstreamOutput : undefined;
+      const outputData = options.json ? (JSON.parse(stdout) as PullUpstreamOutput) : undefined;
 
       return {
         exitCode: ExitCode.SUCCESS,
         stdout,
-        stderr: "",
+        stderr: '',
         data: outputData,
       };
     }
@@ -433,8 +420,8 @@ export async function pullUpstream(
         `https://api.github.com/repos/${UPSTREAM_OWNER}/${UPSTREAM_REPO}/releases/tags/${version}`,
         {
           headers: {
-            "Accept": "application/vnd.github.v3+json",
-            "User-Agent": "speck-upstream-sync",
+            Accept: 'application/vnd.github.v3+json',
+            'User-Agent': 'speck-upstream-sync',
           },
         }
       );
@@ -452,7 +439,7 @@ export async function pullUpstream(
         assets?: GitHubAsset[];
       }
 
-      const releaseData = await releaseResponse.json() as GitHubReleaseData;
+      const releaseData = (await releaseResponse.json()) as GitHubReleaseData;
 
       // Find the spec-kit-template-claude-sh artifact
       const artifactName = `spec-kit-template-claude-sh-${version}.zip`;
@@ -461,7 +448,7 @@ export async function pullUpstream(
       if (!asset) {
         throw new Error(
           `Release artifact not found: ${artifactName}\n` +
-          `Available assets: ${releaseData.assets?.map((a) => a.name).join(', ') || 'none'}`
+            `Available assets: ${releaseData.assets?.map((a) => a.name).join(', ') || 'none'}`
         );
       }
 
@@ -470,7 +457,7 @@ export async function pullUpstream(
       await downloadTarball(asset.browser_download_url, artifactPath);
 
       // Extract to temp directory
-      const extractDir = join(tempDir, "extracted");
+      const extractDir = join(tempDir, 'extracted');
       await extractZip(artifactPath, extractDir);
 
       // Ensure upstream directory exists
@@ -504,12 +491,12 @@ export async function pullUpstream(
         ? formatJson(release, versionDir)
         : formatHumanReadable(version, commit, versionDir);
 
-      const outputData = options.json ? JSON.parse(stdout) as PullUpstreamOutput : undefined;
+      const outputData = options.json ? (JSON.parse(stdout) as PullUpstreamOutput) : undefined;
 
       return {
         exitCode: ExitCode.SUCCESS,
         stdout,
-        stderr: "",
+        stderr: '',
         data: outputData,
       };
     } catch (error) {
@@ -521,7 +508,7 @@ export async function pullUpstream(
     }
   } catch (error) {
     // Handle errors
-    let errorMessage = "Unknown error";
+    let errorMessage = 'Unknown error';
     let exitCode = ExitCode.SYSTEM_ERROR;
 
     if (error instanceof GitHubApiClientError) {
@@ -530,15 +517,15 @@ export async function pullUpstream(
       errorMessage = error.message;
 
       // Check if it's a user error (e.g., release not found)
-      if (errorMessage.includes("not found")) {
+      if (errorMessage.includes('not found')) {
         exitCode = ExitCode.SYSTEM_ERROR; // Network/API error, not user error
       }
     }
 
     return {
       exitCode,
-      stdout: "",
-      stderr: formatCliError("Failed to pull upstream release", errorMessage),
+      stdout: '',
+      stderr: formatCliError('Failed to pull upstream release', errorMessage),
     };
   }
 }

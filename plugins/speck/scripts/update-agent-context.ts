@@ -22,23 +22,23 @@
  *   - Upstream multi-agent features (including new "bob" support) are intentionally NOT ported
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import path from "node:path";
-import { getFeaturePaths, getTemplatesDir } from "./common/paths";
-import { ExitCode } from "./contracts/cli-interface";
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+import { getFeaturePaths, getTemplatesDir } from './common/paths';
+import { ExitCode } from './contracts/cli-interface';
 
 /**
  * Extract plan field by pattern
  */
 function extractPlanField(fieldPattern: string, planContent: string): string {
-  const regex = new RegExp(`^\\*\\*${fieldPattern}\\*\\*: (.+)$`, "m");
+  const regex = new RegExp(`^\\*\\*${fieldPattern}\\*\\*: (.+)$`, 'm');
   const match = planContent.match(regex);
-  if (!match || !match[1]) return "";
+  if (!match || !match[1]) return '';
 
   const value = match[1].trim();
   // Filter out NEEDS CLARIFICATION and N/A
-  if (value === "NEEDS CLARIFICATION" || value === "N/A") {
-    return "";
+  if (value === 'NEEDS CLARIFICATION' || value === 'N/A') {
+    return '';
   }
   return value;
 }
@@ -57,25 +57,25 @@ function parsePlanData(planFile: string): {
     process.exit(ExitCode.USER_ERROR);
   }
 
-  const content = readFileSync(planFile, "utf-8");
+  const content = readFileSync(planFile, 'utf-8');
 
-  const lang = extractPlanField("Language/Version", content);
-  const framework = extractPlanField("Primary Dependencies", content);
-  const db = extractPlanField("Storage", content);
-  const projectType = extractPlanField("Project Type", content);
+  const lang = extractPlanField('Language/Version', content);
+  const framework = extractPlanField('Primary Dependencies', content);
+  const db = extractPlanField('Storage', content);
+  const projectType = extractPlanField('Project Type', content);
 
   // Log what we found
   if (lang) {
     console.log(`INFO: Found language: ${lang}`);
   } else {
-    console.error("WARNING: No language information found in plan");
+    console.error('WARNING: No language information found in plan');
   }
 
   if (framework) {
     console.log(`INFO: Found framework: ${framework}`);
   }
 
-  if (db && db !== "N/A") {
+  if (db && db !== 'N/A') {
     console.log(`INFO: Found database: ${db}`);
   }
 
@@ -92,37 +92,37 @@ function parsePlanData(planFile: string): {
 function formatTechnologyStack(lang: string | undefined, framework: string | undefined): string {
   const parts: string[] = [];
 
-  if (lang && lang !== "NEEDS CLARIFICATION") {
+  if (lang && lang !== 'NEEDS CLARIFICATION') {
     parts.push(lang);
   }
 
-  if (framework && framework !== "NEEDS CLARIFICATION" && framework !== "N/A") {
+  if (framework && framework !== 'NEEDS CLARIFICATION' && framework !== 'N/A') {
     parts.push(framework);
   }
 
-  return parts.join(" + ");
+  return parts.join(' + ');
 }
 
 /**
  * Get project structure based on project type
  */
 function getProjectStructure(projectType: string | undefined): string {
-  if (projectType?.toLowerCase().includes("web")) {
-    return "backend/\nfrontend/\ntests/";
+  if (projectType?.toLowerCase().includes('web')) {
+    return 'backend/\nfrontend/\ntests/';
   }
-  return "src/\ntests/";
+  return 'src/\ntests/';
 }
 
 /**
  * Get commands for language
  */
 function getCommandsForLanguage(lang: string | undefined): string {
-  if (lang?.includes("Python")) {
-    return "cd src && pytest && ruff check .";
-  } else if (lang?.includes("Rust")) {
-    return "cargo test && cargo clippy";
-  } else if (lang?.includes("JavaScript") || lang?.includes("TypeScript")) {
-    return "npm test && npm run lint";
+  if (lang?.includes('Python')) {
+    return 'cd src && pytest && ruff check .';
+  } else if (lang?.includes('Rust')) {
+    return 'cargo test && cargo clippy';
+  } else if (lang?.includes('JavaScript') || lang?.includes('TypeScript')) {
+    return 'npm test && npm run lint';
   }
   return `# Add commands for ${lang ?? 'Unknown'}`;
 }
@@ -152,13 +152,13 @@ function createNewClaudeFile(
     process.exit(ExitCode.USER_ERROR);
   }
 
-  console.log("INFO: Creating new CLAUDE.md from template...");
+  console.log('INFO: Creating new CLAUDE.md from template...');
 
-  let content = readFileSync(templateFile, "utf-8");
+  let content = readFileSync(templateFile, 'utf-8');
 
   // Build technology stack and recent change strings
-  let techStack = "";
-  let recentChange = "";
+  let techStack = '';
+  let recentChange = '';
 
   if (lang && framework) {
     techStack = `- ${lang} + ${framework} (${currentBranch})`;
@@ -184,10 +184,13 @@ function createNewClaudeFile(
   content = content.replace(/\[EXTRACTED FROM ALL PLAN\.MD FILES\]/g, techStack);
   content = content.replace(/\[ACTUAL STRUCTURE FROM PLANS\]/g, projectStructure);
   content = content.replace(/\[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES\]/g, commands);
-  content = content.replace(/\[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE\]/g, languageConventions);
+  content = content.replace(
+    /\[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE\]/g,
+    languageConventions
+  );
   content = content.replace(/\[LAST 3 FEATURES AND WHAT THEY ADDED\]/g, recentChange);
 
-  writeFileSync(targetFile, content, "utf-8");
+  writeFileSync(targetFile, content, 'utf-8');
   console.log(`✓ Created CLAUDE.md`);
 }
 
@@ -202,29 +205,29 @@ function updateExistingClaudeFile(
   framework: string | undefined,
   db: string | undefined
 ): void {
-  console.log("INFO: Updating existing CLAUDE.md...");
+  console.log('INFO: Updating existing CLAUDE.md...');
 
-  const content = readFileSync(targetFile, "utf-8");
-  const lines = content.split("\n");
+  const content = readFileSync(targetFile, 'utf-8');
+  const lines = content.split('\n');
   const output: string[] = [];
 
   const techStack = formatTechnologyStack(lang, framework);
   const newTechEntries: string[] = [];
-  let newChangeEntry = "";
+  let newChangeEntry = '';
 
   // Prepare new technology entries
   if (techStack && !content.includes(techStack)) {
     newTechEntries.push(`- ${techStack} (${currentBranch})`);
   }
 
-  if (db && db !== "N/A" && db !== "NEEDS CLARIFICATION" && !content.includes(db)) {
+  if (db && db !== 'N/A' && db !== 'NEEDS CLARIFICATION' && !content.includes(db)) {
     newTechEntries.push(`- ${db} (${currentBranch})`);
   }
 
   // Prepare new change entry
   if (techStack) {
     newChangeEntry = `- ${currentBranch}: Added ${techStack}`;
-  } else if (db && db !== "N/A" && db !== "NEEDS CLARIFICATION") {
+  } else if (db && db !== 'N/A' && db !== 'NEEDS CLARIFICATION') {
     newChangeEntry = `- ${currentBranch}: Added ${db}`;
   }
 
@@ -239,7 +242,7 @@ function updateExistingClaudeFile(
     if (line === undefined) continue;
 
     // Handle Active Technologies section
-    if (line === "## Active Technologies") {
+    if (line === '## Active Technologies') {
       output.push(line);
       inTechSection = true;
       continue;
@@ -252,7 +255,7 @@ function updateExistingClaudeFile(
       output.push(line);
       inTechSection = false;
       continue;
-    } else if (inTechSection && line === "") {
+    } else if (inTechSection && line === '') {
       // Add new tech entries before empty line in tech section
       if (!techEntriesAdded && newTechEntries.length > 0) {
         output.push(...newTechEntries);
@@ -263,7 +266,7 @@ function updateExistingClaudeFile(
     }
 
     // Handle Recent Changes section
-    if (line === "## Recent Changes") {
+    if (line === '## Recent Changes') {
       output.push(line);
       // Add new change entry right after the heading
       if (newChangeEntry) {
@@ -275,7 +278,7 @@ function updateExistingClaudeFile(
       output.push(line);
       inChangesSection = false;
       continue;
-    } else if (inChangesSection && line.startsWith("- ")) {
+    } else if (inChangesSection && line.startsWith('- ')) {
       // Keep only first 2 existing changes
       if (existingChangesCount < 2) {
         output.push(line);
@@ -292,7 +295,7 @@ function updateExistingClaudeFile(
     }
   }
 
-  writeFileSync(targetFile, output.join("\n"), "utf-8");
+  writeFileSync(targetFile, output.join('\n'), 'utf-8');
   console.log(`✓ Updated CLAUDE.md`);
 }
 
@@ -307,17 +310,26 @@ function updateClaudeFile(
   db: string | undefined,
   projectType: string | undefined
 ): void {
-  const targetFile = path.join(repoRoot, "CLAUDE.md");
+  const targetFile = path.join(repoRoot, 'CLAUDE.md');
   console.log(`INFO: Updating CLAUDE.md: ${targetFile}`);
 
   const projectName = path.basename(repoRoot);
-  const currentDate = new Date().toISOString().split("T")[0]!;
+  const currentDate = new Date().toISOString().split('T')[0]!;
 
-  const templateFile = path.join(getTemplatesDir(), "agent-file-template.md");
+  const templateFile = path.join(getTemplatesDir(), 'agent-file-template.md');
 
   if (!existsSync(targetFile)) {
     // Create new file from template
-    createNewClaudeFile(targetFile, templateFile, projectName, currentDate, currentBranch, lang, framework, projectType);
+    createNewClaudeFile(
+      targetFile,
+      templateFile,
+      projectName,
+      currentDate,
+      currentBranch,
+      lang,
+      framework,
+      projectType
+    );
   } else {
     // Update existing file
     updateExistingClaudeFile(targetFile, currentDate, currentBranch, lang, framework, db);
@@ -327,9 +339,13 @@ function updateClaudeFile(
 /**
  * Print summary
  */
-function printSummary(lang: string | undefined, framework: string | undefined, db: string | undefined): void {
-  console.log("");
-  console.log("INFO: Summary of changes:");
+function printSummary(
+  lang: string | undefined,
+  framework: string | undefined,
+  db: string | undefined
+): void {
+  console.log('');
+  console.log('INFO: Summary of changes:');
 
   if (lang) {
     console.log(`  - Added language: ${lang}`);
@@ -339,7 +355,7 @@ function printSummary(lang: string | undefined, framework: string | undefined, d
     console.log(`  - Added framework: ${framework}`);
   }
 
-  if (db && db !== "N/A") {
+  if (db && db !== 'N/A') {
     console.log(`  - Added database: ${db}`);
   }
 }
@@ -353,11 +369,11 @@ export async function main(_args: string[]): Promise<number> {
 
   // Validate environment
   if (!paths.CURRENT_BRANCH) {
-    console.error("ERROR: Unable to determine current feature");
-    if (paths.HAS_GIT === "true") {
+    console.error('ERROR: Unable to determine current feature');
+    if (paths.HAS_GIT === 'true') {
       console.log("INFO: Make sure you're on a feature branch");
     } else {
-      console.log("INFO: Set SPECIFY_FEATURE environment variable or create a feature first");
+      console.log('INFO: Set SPECIFY_FEATURE environment variable or create a feature first');
     }
     return ExitCode.USER_ERROR;
   }
@@ -365,8 +381,10 @@ export async function main(_args: string[]): Promise<number> {
   if (!existsSync(paths.IMPL_PLAN)) {
     console.error(`ERROR: No plan.md found at ${paths.IMPL_PLAN}`);
     console.log("INFO: Make sure you're working on a feature with a corresponding spec directory");
-    if (paths.HAS_GIT !== "true") {
-      console.log("INFO: Use: export SPECIFY_FEATURE=your-feature-name or create a new feature first");
+    if (paths.HAS_GIT !== 'true') {
+      console.log(
+        'INFO: Use: export SPECIFY_FEATURE=your-feature-name or create a new feature first'
+      );
     }
     return ExitCode.USER_ERROR;
   }
@@ -389,8 +407,8 @@ export async function main(_args: string[]): Promise<number> {
   // Print summary
   printSummary(planData.lang, planData.framework, planData.db);
 
-  console.log("");
-  console.log("✓ CLAUDE.md update completed successfully");
+  console.log('');
+  console.log('✓ CLAUDE.md update completed successfully');
   return ExitCode.SUCCESS;
 }
 

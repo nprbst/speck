@@ -5,15 +5,19 @@
  * in worktree operations.
  */
 
-import type { PackageManager, IDEEditor } from "./config-schema";
+import type { PackageManager, IDEEditor } from './config-schema';
 
 /**
  * Base error class for worktree operations
  */
 export class WorktreeError extends Error {
-  constructor(message: string, public code?: string, public context?: unknown) {
+  constructor(
+    message: string,
+    public code?: string,
+    public context?: unknown
+  ) {
     super(message);
-    this.name = "WorktreeError";
+    this.name = 'WorktreeError';
   }
 }
 
@@ -21,9 +25,12 @@ export class WorktreeError extends Error {
  * Error when Git worktree operation fails
  */
 export class GitWorktreeError extends WorktreeError {
-  constructor(message: string, public gitOutput?: string) {
-    super(message, "GIT_WORKTREE_ERROR");
-    this.name = "GitWorktreeError";
+  constructor(
+    message: string,
+    public gitOutput?: string
+  ) {
+    super(message, 'GIT_WORKTREE_ERROR');
+    this.name = 'GitWorktreeError';
   }
 }
 
@@ -31,9 +38,12 @@ export class GitWorktreeError extends WorktreeError {
  * Error when file operations fail
  */
 export class FileOperationError extends WorktreeError {
-  constructor(message: string, public path?: string) {
-    super(message, "FILE_OPERATION_ERROR", { path });
-    this.name = "FileOperationError";
+  constructor(
+    message: string,
+    public path?: string
+  ) {
+    super(message, 'FILE_OPERATION_ERROR', { path });
+    this.name = 'FileOperationError';
   }
 }
 
@@ -46,8 +56,8 @@ export class DependencyInstallError extends WorktreeError {
     public packageManager: PackageManager,
     public installOutput?: string
   ) {
-    super(message, "DEPENDENCY_INSTALL_ERROR", { packageManager });
-    this.name = "DependencyInstallError";
+    super(message, 'DEPENDENCY_INSTALL_ERROR', { packageManager });
+    this.name = 'DependencyInstallError';
   }
 }
 
@@ -55,9 +65,12 @@ export class DependencyInstallError extends WorktreeError {
  * Error when IDE launch fails (non-fatal)
  */
 export class IDELaunchError extends WorktreeError {
-  constructor(message: string, public editor: IDEEditor) {
-    super(message, "IDE_LAUNCH_ERROR", { editor });
-    this.name = "IDELaunchError";
+  constructor(
+    message: string,
+    public editor: IDEEditor
+  ) {
+    super(message, 'IDE_LAUNCH_ERROR', { editor });
+    this.name = 'IDELaunchError';
   }
 }
 
@@ -70,8 +83,8 @@ export class DiskSpaceError extends WorktreeError {
     public required: number,
     public available: number
   ) {
-    super(message, "DISK_SPACE_ERROR", { required, available });
-    this.name = "DiskSpaceError";
+    super(message, 'DISK_SPACE_ERROR', { required, available });
+    this.name = 'DiskSpaceError';
   }
 }
 
@@ -79,8 +92,11 @@ export class DiskSpaceError extends WorktreeError {
  * Error when configuration is invalid
  */
 export class ConfigValidationError extends WorktreeError {
-  constructor(message: string, public validationErrors?: string[]) {
-    super(message, "CONFIG_VALIDATION_ERROR", { validationErrors });
-    this.name = "ConfigValidationError";
+  constructor(
+    message: string,
+    public validationErrors?: string[]
+  ) {
+    super(message, 'CONFIG_VALIDATION_ERROR', { validationErrors });
+    this.name = 'ConfigValidationError';
   }
 }

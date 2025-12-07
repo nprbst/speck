@@ -138,7 +138,7 @@ test.describe('Inquiry Form Submission', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          message: "Thank you for your inquiry.",
+          message: 'Thank you for your inquiry.',
         }),
       });
     });

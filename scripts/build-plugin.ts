@@ -160,12 +160,10 @@ function bundleScript(sourcePath: string, destPath: string, name: string): void 
     return;
   }
 
-  const result = Bun.spawnSync([
-    'bun', 'build',
-    sourcePath,
-    '--outfile', destPath,
-    '--target', 'bun',
-  ], { cwd: config.sourceRoot });
+  const result = Bun.spawnSync(
+    ['bun', 'build', sourcePath, '--outfile', destPath, '--target', 'bun'],
+    { cwd: config.sourceRoot }
+  );
 
   if (result.exitCode !== 0) {
     throw buildFailedError(
@@ -196,11 +194,7 @@ async function rebuildHookBundles(): Promise<void> {
   );
 
   // Bundle the main CLI (includes all commands: init, env, etc.)
-  bundleScript(
-    join(cliSourceDir, 'index.ts'),
-    join(distDir, 'speck-cli.js'),
-    'speck CLI'
-  );
+  bundleScript(join(cliSourceDir, 'index.ts'), join(distDir, 'speck-cli.js'), 'speck CLI');
 }
 
 // ============================================================================
@@ -222,13 +216,7 @@ async function generatePluginManifest(): Promise<void> {
     homepage: 'https://github.com/nprbst/speck',
     repository: 'https://github.com/nprbst/speck',
     license: 'MIT',
-    keywords: [
-      'specification',
-      'planning',
-      'workflow',
-      'feature-management',
-      'development-tools',
-    ],
+    keywords: ['specification', 'planning', 'workflow', 'feature-management', 'development-tools'],
     hooks: {
       UserPromptSubmit: [
         {
@@ -270,11 +258,16 @@ async function generateMarketplaceManifest(): Promise<void> {
   }
 
   // Update speck-reviewer plugin version from its plugin.json
-  const reviewerPluginJsonPath = join(config.sourceRoot, 'plugins/speck-reviewer/.claude-plugin/plugin.json');
+  const reviewerPluginJsonPath = join(
+    config.sourceRoot,
+    'plugins/speck-reviewer/.claude-plugin/plugin.json'
+  );
   if (existsSync(reviewerPluginJsonPath)) {
     const reviewerPluginContent = await readFile(reviewerPluginJsonPath, 'utf-8');
     const reviewerPluginJson = JSON.parse(reviewerPluginContent);
-    const reviewerPlugin = marketplace.plugins.find((p: { name: string }) => p.name === 'speck-reviewer');
+    const reviewerPlugin = marketplace.plugins.find(
+      (p: { name: string }) => p.name === 'speck-reviewer'
+    );
     if (reviewerPlugin) {
       reviewerPlugin.version = reviewerPluginJson.version;
     }
@@ -325,21 +318,21 @@ async function copyPluginFiles(): Promise<FileCounts> {
     await ensureDir(commandsDestDir);
 
     const sourceFiles = await readdir(config.commandsSourceDir);
-    const mdFiles = sourceFiles.filter(f => f.endsWith('.md'));
+    const mdFiles = sourceFiles.filter((f) => f.endsWith('.md'));
 
     for (const file of mdFiles) {
       // Exclude speckit.* aliases, upstream management commands, and project-local commands
-      if (file.startsWith('speckit.') ||
+      if (
+        file.startsWith('speckit.') ||
         file.includes('-upstream') ||
-        file.includes('refresh-website')) {
+        file.includes('refresh-website')
+      ) {
         continue;
       }
 
       // Strip 'speck.' prefix from filename for published plugin
       // e.g., speck.tasks.md -> tasks.md
-      const destFilename = file.startsWith('speck.')
-        ? file.substring('speck.'.length)
-        : file;
+      const destFilename = file.startsWith('speck.') ? file.substring('speck.'.length) : file;
 
       // Read the source file
       const sourcePath = join(config.commandsSourceDir, file);
@@ -362,7 +355,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
     await ensureDir(agentsDestDir);
 
     const sourceFiles = await readdir(config.agentsSourceDir);
-    const mdFiles = sourceFiles.filter(f => f.endsWith('.md'));
+    const mdFiles = sourceFiles.filter((f) => f.endsWith('.md'));
 
     for (const file of mdFiles) {
       // Exclude transform agents (development-only tools)
@@ -399,7 +392,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
     }
 
     // Count skill directories (each directory contains SKILL.md)
-    counts.skills = entries.filter(entry => entry.isDirectory()).length;
+    counts.skills = entries.filter((entry) => entry.isDirectory()).length;
   }
 
   // T015: Copy templates
@@ -408,7 +401,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
     const templatesDestDir = join(config.outputDir, 'templates');
     await copyDir(config.templatesSourceDir, templatesDestDir);
     const files = await readdir(templatesDestDir, { recursive: true });
-    counts.templates = files.filter(f => typeof f === 'string').length;
+    counts.templates = files.filter((f) => typeof f === 'string').length;
   }
 
   // T016: Copy scripts (only scripts needed by published commands/agents)
@@ -540,11 +533,7 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
   if (existsSync(cliSourcePath)) {
     const cliDestDir = join(reviewerOutputDir, 'dist');
     await ensureDir(cliDestDir);
-    bundleScript(
-      cliSourcePath,
-      join(cliDestDir, 'speck-review.js'),
-      'speck-review CLI'
-    );
+    bundleScript(cliSourcePath, join(cliDestDir, 'speck-review.js'), 'speck-review CLI');
     counts.cli = true;
   }
 
@@ -572,7 +561,7 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
     const commandsDestDir = join(reviewerOutputDir, 'commands');
     await copyDir(commandsSourceDir, commandsDestDir);
     const files = await readdir(commandsDestDir);
-    counts.commands = files.filter(f => f.endsWith('.md')).length;
+    counts.commands = files.filter((f) => f.endsWith('.md')).length;
   }
 
   // 4. Copy skills
@@ -581,7 +570,7 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
     const skillsDestDir = join(reviewerOutputDir, 'skills');
     await copyDir(skillsSourceDir, skillsDestDir);
     const entries = await readdir(skillsDestDir, { withFileTypes: true });
-    counts.skills = entries.filter(e => e.isDirectory()).length;
+    counts.skills = entries.filter((e) => e.isDirectory()).length;
   }
 
   return counts;
@@ -716,7 +705,7 @@ async function validateCommands(): Promise<void> {
   }
 
   const files = await readdir(commandsDir);
-  const mdFiles = files.filter(f => f.endsWith('.md'));
+  const mdFiles = files.filter((f) => f.endsWith('.md'));
 
   if (mdFiles.length === 0) {
     throw buildFailedError(
@@ -751,7 +740,7 @@ async function validateAgents(): Promise<void> {
   }
 
   const files = await readdir(agentsDir);
-  const mdFiles = files.filter(f => f.endsWith('.md'));
+  const mdFiles = files.filter((f) => f.endsWith('.md'));
 
   for (const file of mdFiles) {
     const content = await readFile(join(agentsDir, file), 'utf-8');
@@ -783,7 +772,9 @@ async function validateManifests(): Promise<void> {
       throw new Error('plugin.json missing required fields');
     }
   } catch (error) {
-    throw new Error(`plugin.json validation failed: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `plugin.json validation failed: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 
   // Validate marketplace.json
@@ -798,7 +789,9 @@ async function validateManifests(): Promise<void> {
       throw new Error('marketplace.json missing required fields');
     }
   } catch (error) {
-    throw new Error(`marketplace.json validation failed: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `marketplace.json validation failed: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 
@@ -818,9 +811,12 @@ async function validateRequiredFiles(): Promise<void> {
   const reviewerSourceDir = join(config.sourceRoot, 'plugins/speck-reviewer');
   if (existsSync(reviewerSourceDir)) {
     requiredDirs.push(
-      { path: join(marketplaceRoot, 'speck-reviewer/.claude-plugin'), name: 'speck-reviewer/.claude-plugin' },
+      {
+        path: join(marketplaceRoot, 'speck-reviewer/.claude-plugin'),
+        name: 'speck-reviewer/.claude-plugin',
+      },
       { path: join(marketplaceRoot, 'speck-reviewer/commands'), name: 'speck-reviewer/commands' },
-      { path: join(marketplaceRoot, 'speck-reviewer/skills'), name: 'speck-reviewer/skills' },
+      { path: join(marketplaceRoot, 'speck-reviewer/skills'), name: 'speck-reviewer/skills' }
     );
   }
 
@@ -839,8 +835,14 @@ async function validateRequiredFiles(): Promise<void> {
   // Speck-reviewer plugin required files (if source exists)
   if (existsSync(reviewerSourceDir)) {
     requiredFiles.push(
-      { path: join(marketplaceRoot, 'speck-reviewer/.claude-plugin/plugin.json'), name: 'speck-reviewer/plugin.json' },
-      { path: join(marketplaceRoot, 'speck-reviewer/dist/speck-review.js'), name: 'speck-reviewer CLI bundle' },
+      {
+        path: join(marketplaceRoot, 'speck-reviewer/.claude-plugin/plugin.json'),
+        name: 'speck-reviewer/plugin.json',
+      },
+      {
+        path: join(marketplaceRoot, 'speck-reviewer/dist/speck-review.js'),
+        name: 'speck-reviewer CLI bundle',
+      }
     );
   }
 
@@ -960,7 +962,6 @@ async function main() {
     console.log('');
 
     console.log('✅ Build completed successfully!\n');
-
   } catch (error) {
     console.error('\n❌ Build failed:');
     console.error(error instanceof Error ? error.message : String(error));

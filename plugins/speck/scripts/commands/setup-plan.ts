@@ -7,10 +7,10 @@
  * @module commands/setup-plan
  */
 
-import { $ } from "bun";
-import type { CommandHandler } from "@speck/common/types";
-import path from "node:path";
-import { errorToResult } from "@speck/common/errors";
+import { $ } from 'bun';
+import type { CommandHandler } from '@speck/common/types';
+import path from 'node:path';
+import { errorToResult } from '@speck/common/errors';
 
 /**
  * Setup plan command handler arguments
@@ -37,7 +37,7 @@ export function parseSetupPlanArgs(commandString: string): SetupPlanArgs {
  */
 export const setupPlanHandler: CommandHandler<SetupPlanArgs> = async (args) => {
   try {
-    const scriptPath = path.resolve(import.meta.dir, "..", "setup-plan.ts");
+    const scriptPath = path.resolve(import.meta.dir, '..', 'setup-plan.ts');
     const result = await $`bun run ${scriptPath} ${args.args}`.nothrow();
 
     return {

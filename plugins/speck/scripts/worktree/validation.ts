@@ -5,9 +5,9 @@
  * disk space checks, and worktree path validation.
  */
 
-import { existsSync, statfs } from "fs";
-import { readdir } from "fs/promises";
-import { $ } from "bun";
+import { existsSync, statfs } from 'fs';
+import { readdir } from 'fs/promises';
+import { $ } from 'bun';
 
 /**
  * Check if Git version supports worktrees (Git 2.5+)
@@ -53,13 +53,13 @@ export function isValidBranchName(branchName: string): boolean {
 
   // Check for invalid patterns
   const invalidPatterns = [
-    /\s/,           // No spaces
-    /\.\./,         // No double dots
-    /^[.]/,         // Cannot start with dot
-    /[/.]$/,        // Cannot end with slash or dot
+    /\s/, // No spaces
+    /\.\./, // No double dots
+    /^[.]/, // Cannot start with dot
+    /[/.]$/, // Cannot end with slash or dot
     /[~^:\\?*[\]@{]/, // No special Git ref characters
-    /\/\//,         // No consecutive slashes
-    /^-/,           // Cannot start with dash
+    /\/\//, // No consecutive slashes
+    /^-/, // Cannot start with dash
   ];
 
   for (const pattern of invalidPatterns) {
@@ -77,11 +77,9 @@ export function isValidBranchName(branchName: string): boolean {
  * @param path - Absolute path to check
  * @returns "empty" | "exists" | "not_found"
  */
-export async function checkWorktreePath(
-  path: string
-): Promise<"empty" | "exists" | "not_found"> {
+export async function checkWorktreePath(path: string): Promise<'empty' | 'exists' | 'not_found'> {
   if (!existsSync(path)) {
-    return "not_found";
+    return 'not_found';
   }
 
   try {
@@ -89,19 +87,19 @@ export async function checkWorktreePath(
 
     // Directory exists but is empty (or only contains hidden files)
     if (entries.length === 0) {
-      return "empty";
+      return 'empty';
     }
 
     // Check if it only contains .git file (which is OK for worktrees)
-    if (entries.length === 1 && entries[0] === ".git") {
-      return "empty";
+    if (entries.length === 1 && entries[0] === '.git') {
+      return 'empty';
     }
 
     // Directory has content
-    return "exists";
+    return 'exists';
   } catch (error) {
     // If we can't read the directory, treat it as existing with content
-    return "exists";
+    return 'exists';
   }
 }
 
@@ -120,7 +118,7 @@ export async function hasSufficientDiskSpace(
     // Use parent directory if path doesn't exist yet
     let checkPath = path;
     if (!existsSync(path)) {
-      checkPath = path.split("/").slice(0, -1).join("/") || "/";
+      checkPath = path.split('/').slice(0, -1).join('/') || '/';
     }
 
     // Get filesystem stats
@@ -149,10 +147,7 @@ export async function hasSufficientDiskSpace(
  * @param branchName - Branch name to check
  * @returns true if branch exists
  */
-export async function branchExists(
-  repoPath: string,
-  branchName: string
-): Promise<boolean> {
+export async function branchExists(repoPath: string, branchName: string): Promise<boolean> {
   try {
     await $`git -C ${repoPath} rev-parse --verify refs/heads/${branchName}`.quiet();
     return true;

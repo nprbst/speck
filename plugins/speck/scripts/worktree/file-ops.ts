@@ -4,20 +4,20 @@
  * Handles file copy/symlink operations for worktree setup
  */
 
-import { mkdir, copyFile, symlink, access } from "node:fs/promises";
-import { join, relative, dirname } from "node:path";
-import { constants } from "node:fs";
-import { Glob } from "bun";
-import { $ } from "bun";
-import type { FileRule } from "./config-schema";
+import { mkdir, copyFile, symlink, access } from 'node:fs/promises';
+import { join, relative, dirname } from 'node:path';
+import { constants } from 'node:fs';
+import { Glob } from 'bun';
+import { $ } from 'bun';
+import type { FileRule } from './config-schema';
 
 /**
  * Options for file operations
  */
 export interface ApplyFileRulesOptions {
-  sourcePath: string;         // Absolute path to source (main repo)
-  destPath: string;           // Absolute path to destination (worktree)
-  rules: FileRule[];          // File rules to apply
+  sourcePath: string; // Absolute path to source (main repo)
+  destPath: string; // Absolute path to destination (worktree)
+  rules: FileRule[]; // File rules to apply
   includeUntracked?: boolean; // Include untracked files in copy operations
   onProgress?: (message: string) => void; // Progress callback
 }
@@ -26,11 +26,12 @@ export interface ApplyFileRulesOptions {
  * Result of file operations
  */
 export interface ApplyFileRulesResult {
-  copiedCount: number;        // Number of files copied
-  copiedPaths: string[];      // Relative paths of copied files
-  symlinkedCount: number;     // Number of directories symlinked
-  symlinkedPaths: string[];   // Relative paths of symlinked directories
-  errors: Array<{             // Non-fatal errors
+  copiedCount: number; // Number of files copied
+  copiedPaths: string[]; // Relative paths of copied files
+  symlinkedCount: number; // Number of directories symlinked
+  symlinkedPaths: string[]; // Relative paths of symlinked directories
+  errors: Array<{
+    // Non-fatal errors
     path: string;
     error: string;
   }>;
@@ -47,11 +48,14 @@ async function getTrackedFiles(repoPath: string): Promise<string[]> {
     // Use git ls-files to get tracked files
     const result = await $`cd ${repoPath} && git ls-files`.text();
 
-    if (!result || result.trim() === "") {
+    if (!result || result.trim() === '') {
       return [];
     }
 
-    return result.trim().split("\n").filter(line => line.trim() !== "");
+    return result
+      .trim()
+      .split('\n')
+      .filter((line) => line.trim() !== '');
   } catch (error) {
     // If git command fails, return empty array
     return [];
@@ -67,10 +71,7 @@ async function getTrackedFiles(repoPath: string): Promise<string[]> {
  * @param patterns - Array of glob patterns
  * @returns Array of relative paths matching patterns
  */
-export async function matchFiles(
-  basePath: string,
-  patterns: string[]
-): Promise<string[]> {
+export async function matchFiles(basePath: string, patterns: string[]): Promise<string[]> {
   if (patterns.length === 0) {
     return [];
   }
@@ -104,11 +105,14 @@ export async function getUntrackedFiles(repoPath: string): Promise<string[]> {
     // Use git ls-files to get untracked files
     const result = await $`cd ${repoPath} && git ls-files --others --exclude-standard`.text();
 
-    if (!result || result.trim() === "") {
+    if (!result || result.trim() === '') {
       return [];
     }
 
-    return result.trim().split("\n").filter(line => line.trim() !== "");
+    return result
+      .trim()
+      .split('\n')
+      .filter((line) => line.trim() !== '');
   } catch (error) {
     // If git command fails, return empty array
     return [];
@@ -184,7 +188,7 @@ export async function symlinkDirectories(
     const relativePath = relative(dirname(destDir), sourceDir);
 
     // Create symlink
-    await symlink(relativePath, destDir, "dir");
+    await symlink(relativePath, destDir, 'dir');
   }
 }
 
@@ -204,20 +208,14 @@ export async function symlinkDirectories(
 export async function applyFileRules(
   options: ApplyFileRulesOptions
 ): Promise<ApplyFileRulesResult> {
-  const {
-    sourcePath,
-    destPath,
-    rules,
-    includeUntracked = false,
-    onProgress
-  } = options;
+  const { sourcePath, destPath, rules, includeUntracked = false, onProgress } = options;
 
   const result: ApplyFileRulesResult = {
     copiedCount: 0,
     copiedPaths: [],
     symlinkedCount: 0,
     symlinkedPaths: [],
-    errors: []
+    errors: [],
   };
 
   if (rules.length === 0) {
@@ -225,9 +223,9 @@ export async function applyFileRules(
   }
 
   // Separate rules by action
-  const copyRules = rules.filter(r => r.action === "copy");
-  const symlinkRules = rules.filter(r => r.action === "symlink");
-  const ignoreRules = rules.filter(r => r.action === "ignore");
+  const copyRules = rules.filter((r) => r.action === 'copy');
+  const symlinkRules = rules.filter((r) => r.action === 'symlink');
+  const ignoreRules = rules.filter((r) => r.action === 'ignore');
 
   // Get untracked files if needed
   let untrackedFiles: string[] = [];
@@ -237,14 +235,14 @@ export async function applyFileRules(
 
   // Process copy rules
   if (copyRules.length > 0) {
-    onProgress?.("Matching files to copy...");
+    onProgress?.('Matching files to copy...');
 
-    const copyPatterns = copyRules.map(r => r.pattern);
+    const copyPatterns = copyRules.map((r) => r.pattern);
     const matchedFiles = await matchFiles(sourcePath, copyPatterns);
 
     // Filter out ignored patterns
-    const ignorePatterns = ignoreRules.map(r => r.pattern);
-    const filesToCopy = matchedFiles.filter(file => {
+    const ignorePatterns = ignoreRules.map((r) => r.pattern);
+    const filesToCopy = matchedFiles.filter((file) => {
       // Check if file matches any ignore pattern
       for (const pattern of ignorePatterns) {
         const glob = new Glob(pattern);
@@ -293,8 +291,8 @@ export async function applyFileRules(
         result.copiedPaths = filesToCopy;
       } catch (error) {
         result.errors.push({
-          path: "copy-operation",
-          error: error instanceof Error ? error.message : String(error)
+          path: 'copy-operation',
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -302,7 +300,7 @@ export async function applyFileRules(
 
   // Process symlink rules
   if (symlinkRules.length > 0) {
-    onProgress?.("Creating symlinks...");
+    onProgress?.('Creating symlinks...');
 
     for (const rule of symlinkRules) {
       try {
@@ -325,13 +323,13 @@ export async function applyFileRules(
       } catch (error) {
         result.errors.push({
           path: rule.pattern,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
   }
 
-  onProgress?.("File operations complete");
+  onProgress?.('File operations complete');
 
   return result;
 }

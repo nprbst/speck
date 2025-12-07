@@ -10,9 +10,9 @@
  * @module prereq-runner
  */
 
-import { main as checkPrerequisites } from "../check-prerequisites";
-import type { ValidationOutput } from "../check-prerequisites";
-import { getCachedResult, cacheResult } from "./prereq-cache";
+import { main as checkPrerequisites } from '../check-prerequisites';
+import type { ValidationOutput } from '../check-prerequisites';
+import { getCachedResult, cacheResult } from './prereq-cache';
 
 /**
  * Result of running prerequisite checks
@@ -34,15 +34,15 @@ async function captureOutput(fn: () => Promise<number>): Promise<{
 }> {
   const originalLog = console.log;
   const originalError = console.error;
-  let stdout = "";
-  let stderr = "";
+  let stdout = '';
+  let stderr = '';
 
   console.log = (...args): void => {
-    stdout += args.join(" ") + "\n";
+    stdout += args.join(' ') + '\n';
   };
 
   console.error = (...args): void => {
-    stderr += args.join(" ") + "\n";
+    stderr += args.join(' ') + '\n';
   };
 
   try {
@@ -91,25 +91,26 @@ export async function runPrerequisiteCheck(
 
   try {
     // Build command arguments
-    const args = ["--json"];
-    if (options.requireTasks) args.push("--require-tasks");
-    if (options.includeTasks) args.push("--include-tasks");
-    if (options.skipFeatureCheck) args.push("--skip-feature-check");
-    if (options.skipPlanCheck) args.push("--skip-plan-check");
-    if (options.includeFileContents) args.push("--include-file-contents");
-    if (options.includeWorkflowMode) args.push("--include-workflow-mode");
+    const args = ['--json'];
+    if (options.requireTasks) args.push('--require-tasks');
+    if (options.includeTasks) args.push('--include-tasks');
+    if (options.skipFeatureCheck) args.push('--skip-feature-check');
+    if (options.skipPlanCheck) args.push('--skip-plan-check');
+    if (options.includeFileContents) args.push('--include-file-contents');
+    if (options.includeWorkflowMode) args.push('--include-workflow-mode');
 
     // Execute check-prerequisites directly (no subprocess)
-    const { exitCode, stdout, stderr } = await captureOutput(() =>
-      checkPrerequisites(args)
-    );
+    const { exitCode, stdout, stderr } = await captureOutput(() => checkPrerequisites(args));
 
     if (exitCode === 0) {
       // Parse JSON output - handle wrapped {ok: true, result: {...}} format
       try {
-        const parsed = JSON.parse(stdout) as { ok?: boolean; result?: ValidationOutput } | ValidationOutput;
+        const parsed = JSON.parse(stdout) as
+          | { ok?: boolean; result?: ValidationOutput }
+          | ValidationOutput;
         // Unwrap .result if present (from formatJsonOutput wrapper)
-        const output = ('result' in parsed && parsed.result) ? parsed.result : parsed as ValidationOutput;
+        const output =
+          'result' in parsed && parsed.result ? parsed.result : (parsed as ValidationOutput);
         const result: PrereqCheckResult = {
           success: true,
           output,
@@ -204,10 +205,11 @@ export async function runPrerequisiteCheck(
  */
 export function formatPrereqContext(result: PrereqCheckResult): string {
   if (!result.success || !result.output) {
-    return "";
+    return '';
   }
 
-  const { FEATURE_DIR, AVAILABLE_DOCS, MODE, WORKFLOW_MODE, IMPL_PLAN, TASKS, REPO_ROOT } = result.output;
+  const { FEATURE_DIR, AVAILABLE_DOCS, MODE, WORKFLOW_MODE, IMPL_PLAN, TASKS, REPO_ROOT } =
+    result.output;
 
   const contextData: Record<string, unknown> = {
     MODE,

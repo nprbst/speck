@@ -10,26 +10,26 @@
  * Updated: 2025-11-29
  */
 
-import fs from "node:fs/promises";
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { z } from "zod";
+import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { z } from 'zod';
 
 // ===========================
 // Constants
 // ===========================
 
 /** Current schema version */
-export const SCHEMA_VERSION = "2.0.0";
+export const SCHEMA_VERSION = '2.0.0';
 
 /** Legacy schema version prefix (for migration detection) */
-export const LEGACY_SCHEMA_VERSION_PREFIX = "1.";
+export const LEGACY_SCHEMA_VERSION_PREFIX = '1.';
 
 /** Pattern for valid spec IDs (NNN-short-name) */
 export const SPEC_ID_PATTERN = /^\d{3}-[a-z0-9-]+$/;
 
 /** Location of branches.json within repository */
-export const BRANCHES_FILE_PATH = ".speck/branches.json";
+export const BRANCHES_FILE_PATH = '.speck/branches.json';
 
 // ===========================
 // Type Definitions
@@ -79,7 +79,7 @@ export interface BranchMapping {
 // ===========================
 
 /** Legacy branch status from v1.x */
-export type LegacyBranchStatus = "active" | "submitted" | "merged" | "abandoned";
+export type LegacyBranchStatus = 'active' | 'submitted' | 'merged' | 'abandoned';
 
 /** Legacy branch entry from v1.x (with stacked PR fields) */
 export interface LegacyBranchEntry {
@@ -103,19 +103,14 @@ export interface LegacyBranchEntry {
 export const BranchEntrySchema = z.object({
   name: z
     .string()
-    .min(1, "Branch name is required")
-    .regex(
-      /^[a-zA-Z0-9._/-]+$/,
-      "Branch name contains invalid characters"
-    ),
-  specId: z
-    .string()
-    .regex(SPEC_ID_PATTERN, "Spec ID must match NNN-short-name format"),
-  createdAt: z.string().datetime("Invalid ISO timestamp for createdAt"),
-  updatedAt: z.string().datetime("Invalid ISO timestamp for updatedAt"),
+    .min(1, 'Branch name is required')
+    .regex(/^[a-zA-Z0-9._/-]+$/, 'Branch name contains invalid characters'),
+  specId: z.string().regex(SPEC_ID_PATTERN, 'Spec ID must match NNN-short-name format'),
+  createdAt: z.string().datetime('Invalid ISO timestamp for createdAt'),
+  updatedAt: z.string().datetime('Invalid ISO timestamp for updatedAt'),
   parentSpecId: z
     .string()
-    .regex(SPEC_ID_PATTERN, "Parent spec ID must match NNN-short-name format")
+    .regex(SPEC_ID_PATTERN, 'Parent spec ID must match NNN-short-name format')
     .optional(),
 });
 
@@ -123,7 +118,7 @@ export const BranchEntrySchema = z.object({
  * Zod schema for BranchMapping validation
  */
 export const BranchMappingSchema = z.object({
-  version: z.string().min(1, "Version is required"),
+  version: z.string().min(1, 'Version is required'),
   branches: z.array(BranchEntrySchema),
   specIndex: z.record(z.string(), z.array(z.string())),
 });
@@ -135,7 +130,7 @@ export const LegacyBranchEntrySchema = z.object({
   name: z.string(),
   specId: z.string(),
   baseBranch: z.string().optional(),
-  status: z.enum(["active", "submitted", "merged", "abandoned"]).optional(),
+  status: z.enum(['active', 'submitted', 'merged', 'abandoned']).optional(),
   pr: z.number().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -203,10 +198,7 @@ function rebuildSpecIndex(branches: BranchEntry[]): Record<string, string[]> {
  * Add a branch entry to the mapping
  * Updates specIndex automatically
  */
-export function addBranchEntry(
-  mapping: BranchMapping,
-  entry: BranchEntry
-): BranchMapping {
+export function addBranchEntry(mapping: BranchMapping, entry: BranchEntry): BranchMapping {
   // Check for duplicate
   if (mapping.branches.some((b) => b.name === entry.name)) {
     throw new Error(`Branch "${entry.name}" already exists in mapping`);
@@ -225,10 +217,7 @@ export function addBranchEntry(
 /**
  * Remove a branch entry from the mapping
  */
-export function removeBranchEntry(
-  mapping: BranchMapping,
-  branchName: string
-): BranchMapping {
+export function removeBranchEntry(mapping: BranchMapping, branchName: string): BranchMapping {
   const branches = mapping.branches.filter((b) => b.name !== branchName);
   const specIndex = rebuildSpecIndex(branches);
 
@@ -242,10 +231,7 @@ export function removeBranchEntry(
 /**
  * Get the spec ID for a branch name
  */
-export function getSpecForBranch(
-  mapping: BranchMapping,
-  branchName: string
-): string | undefined {
+export function getSpecForBranch(mapping: BranchMapping, branchName: string): string | undefined {
   const entry = mapping.branches.find((b) => b.name === branchName);
   return entry?.specId;
 }
@@ -253,20 +239,14 @@ export function getSpecForBranch(
 /**
  * Get all branch names for a spec ID
  */
-export function getBranchesForSpec(
-  mapping: BranchMapping,
-  specId: string
-): string[] {
+export function getBranchesForSpec(mapping: BranchMapping, specId: string): string[] {
   return mapping.specIndex[specId] || [];
 }
 
 /**
  * Find branch entry by name
  */
-export function findBranchEntry(
-  mapping: BranchMapping,
-  branchName: string
-): BranchEntry | null {
+export function findBranchEntry(mapping: BranchMapping, branchName: string): BranchEntry | null {
   return mapping.branches.find((b) => b.name === branchName) || null;
 }
 
@@ -287,9 +267,10 @@ export function needsMigration(mapping: { version: string }): boolean {
  * Removes: baseBranch, status, pr fields
  * Keeps: name, specId, createdAt, updatedAt, parentSpecId
  */
-export function migrateBranchMapping(
-  legacy: { version: string; branches: LegacyBranchEntry[] }
-): BranchMapping {
+export function migrateBranchMapping(legacy: {
+  version: string;
+  branches: LegacyBranchEntry[];
+}): BranchMapping {
   const branches: BranchEntry[] = legacy.branches.map((entry) => ({
     name: entry.name,
     specId: entry.specId,
@@ -349,15 +330,15 @@ export async function readBranches(repoRoot: string): Promise<BranchMapping> {
   }
 
   try {
-    const content = await fs.readFile(filePath, "utf-8");
+    const content = await fs.readFile(filePath, 'utf-8');
     const data = JSON.parse(content) as unknown;
 
     // Check if migration is needed
     if (
-      typeof data === "object" &&
+      typeof data === 'object' &&
       data !== null &&
-      "version" in data &&
-      typeof (data as { version: unknown }).version === "string"
+      'version' in data &&
+      typeof (data as { version: unknown }).version === 'string'
     ) {
       const versionedData = data as { version: string; branches?: unknown[] };
 
@@ -414,10 +395,7 @@ export async function readBranches(repoRoot: string): Promise<BranchMapping> {
  * @param repoRoot - Repository root directory
  * @param mapping - BranchMapping to write
  */
-export async function writeBranches(
-  repoRoot: string,
-  mapping: BranchMapping
-): Promise<void> {
+export async function writeBranches(repoRoot: string, mapping: BranchMapping): Promise<void> {
   const filePath = path.join(repoRoot, BRANCHES_FILE_PATH);
   const tempPath = `${filePath}.tmp`;
 
@@ -428,14 +406,14 @@ export async function writeBranches(
   }
 
   // Ensure .speck directory exists
-  const speckDir = path.join(repoRoot, ".speck");
+  const speckDir = path.join(repoRoot, '.speck');
   if (!existsSync(speckDir)) {
     await fs.mkdir(speckDir, { recursive: true });
   }
 
   // Write to temp file
   const content = JSON.stringify(mapping, null, 2);
-  await fs.writeFile(tempPath, content, "utf-8");
+  await fs.writeFile(tempPath, content, 'utf-8');
 
   // Atomic rename
   await fs.rename(tempPath, filePath);
@@ -475,13 +453,13 @@ export async function getAggregatedBranchStatus(
   speckRoot: string,
   _repoRoot: string
 ): Promise<AggregatedBranchStatus> {
-  const { findChildReposWithNames } = await import("./paths");
+  const { findChildReposWithNames } = await import('./paths');
 
   let rootRepo: RepoBranchSummary | null = null;
   try {
     const rootMapping = await readBranches(speckRoot);
     if (rootMapping.branches.length > 0) {
-      rootRepo = buildRepoBranchSummary(speckRoot, "root", rootMapping);
+      rootRepo = buildRepoBranchSummary(speckRoot, 'root', rootMapping);
     }
   } catch {
     // Root may not have branches.json - not an error

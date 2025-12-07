@@ -11,7 +11,7 @@
 export class StackedModeError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "StackedModeError";
+    this.name = 'StackedModeError';
   }
 }
 
@@ -21,7 +21,7 @@ export class StackedModeError extends Error {
 export class ValidationError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "ValidationError";
+    this.name = 'ValidationError';
   }
 }
 
@@ -31,6 +31,6 @@ export class ValidationError extends Error {
 export class GitError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "GitError";
+    this.name = 'GitError';
   }
 }

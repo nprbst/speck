@@ -7,10 +7,10 @@
  * @module commands/check-prerequisites
  */
 
-import { $ } from "bun";
-import type { CommandHandler } from "@speck/common/types";
-import path from "node:path";
-import { errorToResult } from "@speck/common/errors";
+import { $ } from 'bun';
+import type { CommandHandler } from '@speck/common/types';
+import path from 'node:path';
+import { errorToResult } from '@speck/common/errors';
 
 /**
  * Check prerequisites command handler arguments
@@ -36,10 +36,13 @@ export function parseCheckPrerequisitesArgs(commandString: string): CheckPrerequ
 /**
  * Check prerequisites command handler - delegates to existing check-prerequisites script
  */
-export const checkPrerequisitesHandler: CommandHandler<CheckPrerequisitesArgs> = async (args, _context) => {
+export const checkPrerequisitesHandler: CommandHandler<CheckPrerequisitesArgs> = async (
+  args,
+  _context
+) => {
   try {
     // Use relative path from current script location
-    const scriptPath = path.resolve(import.meta.dir, "..", "check-prerequisites.ts");
+    const scriptPath = path.resolve(import.meta.dir, '..', 'check-prerequisites.ts');
 
     // Execute the check-prerequisites script
     const result = await $`bun run ${scriptPath} ${args.args}`.nothrow();

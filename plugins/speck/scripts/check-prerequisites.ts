@@ -27,22 +27,22 @@
  * - Preserved all CLI flags and exit codes exactly
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, basename, relative } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, basename, relative } from 'node:path';
 import {
   getFeaturePaths,
   checkFeatureBranch,
   getTemplatesDir,
   type FeaturePaths,
-} from "./common/paths";
-import { ExitCode } from "./contracts/cli-interface";
+} from './common/paths';
+import { ExitCode } from './contracts/cli-interface';
 import {
   formatJsonOutput,
   detectInputMode,
   detectOutputMode,
   type OutputMode,
-} from "@speck/common/output";
-import { formatHookOutput, readHookInput } from "./lib/output-formatter";
+} from '@speck/common/output';
+import { formatHookOutput, readHookInput } from './lib/output-formatter';
 
 /**
  * CLI options for check-prerequisites
@@ -137,17 +137,17 @@ function collectAllFiles(dirPath: string, fileList: string[] = []): string[] {
  */
 function parseArgs(args: string[]): CheckPrerequisitesOptions {
   return {
-    json: args.includes("--json"),
-    hook: args.includes("--hook"),
-    requireTasks: args.includes("--require-tasks"),
-    includeTasks: args.includes("--include-tasks"),
-    pathsOnly: args.includes("--paths-only"),
-    skipFeatureCheck: args.includes("--skip-feature-check"),
-    skipPlanCheck: args.includes("--skip-plan-check"),
-    help: args.includes("--help") || args.includes("-h"),
-    includeFileContents: args.includes("--include-file-contents"),
-    includeWorkflowMode: args.includes("--include-workflow-mode"),
-    validateCodeQuality: args.includes("--validate-code-quality"),
+    json: args.includes('--json'),
+    hook: args.includes('--hook'),
+    requireTasks: args.includes('--require-tasks'),
+    includeTasks: args.includes('--include-tasks'),
+    pathsOnly: args.includes('--paths-only'),
+    skipFeatureCheck: args.includes('--skip-feature-check'),
+    skipPlanCheck: args.includes('--skip-plan-check'),
+    help: args.includes('--help') || args.includes('-h'),
+    includeFileContents: args.includes('--include-file-contents'),
+    includeWorkflowMode: args.includes('--include-workflow-mode'),
+    validateCodeQuality: args.includes('--validate-code-quality'),
   };
 }
 
@@ -229,21 +229,21 @@ function outputPathsOnly(paths: FeaturePaths, jsonMode: boolean): void {
  */
 function checkForUnknownOptions(args: string[], _outputMode: OutputMode): string | null {
   const validOptions = [
-    "--json",
-    "--hook",
-    "--require-tasks",
-    "--include-tasks",
-    "--paths-only",
-    "--skip-feature-check",
-    "--skip-plan-check",
-    "--help",
-    "-h",
-    "--include-file-contents",
-    "--include-workflow-mode",
-    "--validate-code-quality"
+    '--json',
+    '--hook',
+    '--require-tasks',
+    '--include-tasks',
+    '--paths-only',
+    '--skip-feature-check',
+    '--skip-plan-check',
+    '--help',
+    '-h',
+    '--include-file-contents',
+    '--include-workflow-mode',
+    '--validate-code-quality',
   ];
   for (const arg of args) {
-    if (arg.startsWith("--") || arg.startsWith("-")) {
+    if (arg.startsWith('--') || arg.startsWith('-')) {
       if (!validOptions.includes(arg)) {
         return `Unknown option '${arg}'. Use --help for usage information.`;
       }
@@ -269,7 +269,7 @@ const FILE_SIZE_LIMITS = {
  */
 function loadFileContent(filePath: string, totalSize: { value: number }): string {
   if (!existsSync(filePath)) {
-    return "NOT_FOUND";
+    return 'NOT_FOUND';
   }
 
   try {
@@ -278,20 +278,20 @@ function loadFileContent(filePath: string, totalSize: { value: number }): string
 
     // Check single file size limit
     if (fileSize > FILE_SIZE_LIMITS.maxSingleFile) {
-      return "TOO_LARGE";
+      return 'TOO_LARGE';
     }
 
     // Check total size limit
     if (totalSize.value + fileSize > FILE_SIZE_LIMITS.maxTotalFiles) {
-      return "TOO_LARGE";
+      return 'TOO_LARGE';
     }
 
     // Read file content
-    const content = readFileSync(filePath, "utf-8");
+    const content = readFileSync(filePath, 'utf-8');
     totalSize.value += fileSize;
     return content;
   } catch (error) {
-    return "NOT_FOUND";
+    return 'NOT_FOUND';
   }
 }
 
@@ -301,15 +301,17 @@ function loadFileContent(filePath: string, totalSize: { value: number }): string
  * Runs typecheck and lint to ensure zero errors and warnings.
  * Returns error message if validation fails, null if passes.
  */
-async function validateCodeQuality(repoRoot: string): Promise<{ passed: boolean; message: string }> {
-  const { $ } = await import("bun");
+async function validateCodeQuality(
+  repoRoot: string
+): Promise<{ passed: boolean; message: string }> {
+  const { $ } = await import('bun');
 
   // Run typecheck
   const typecheckResult = await $`bun run typecheck`.cwd(repoRoot).nothrow().quiet();
   if (typecheckResult.exitCode !== 0) {
     return {
       passed: false,
-      message: `❌ TypeScript validation failed (exit code ${typecheckResult.exitCode})\n${typecheckResult.stderr.toString()}`
+      message: `❌ TypeScript validation failed (exit code ${typecheckResult.exitCode})\n${typecheckResult.stderr.toString()}`,
     };
   }
 
@@ -319,13 +321,13 @@ async function validateCodeQuality(repoRoot: string): Promise<{ passed: boolean;
     const output = lintResult.stdout.toString();
     return {
       passed: false,
-      message: `❌ ESLint validation failed (exit code ${lintResult.exitCode})\n${output}`
+      message: `❌ ESLint validation failed (exit code ${lintResult.exitCode})\n${output}`,
     };
   }
 
   return {
     passed: true,
-    message: "✅ Code quality validation passed (0 typecheck errors, 0 lint errors/warnings)"
+    message: '✅ Code quality validation passed (0 typecheck errors, 0 lint errors/warnings)',
   };
 }
 
@@ -338,11 +340,13 @@ async function validateCodeQuality(repoRoot: string): Promise<{ passed: boolean;
  */
 function determineWorkflowMode(featureDir: string, repoRoot: string): string {
   // First, check plan.md
-  const planPath = join(featureDir, "plan.md");
+  const planPath = join(featureDir, 'plan.md');
   if (existsSync(planPath)) {
     try {
-      const planContent = readFileSync(planPath, "utf-8");
-      const workflowMatch = planContent.match(/\*\*Workflow Mode\*\*:\s*(stacked-pr|single-branch)/);
+      const planContent = readFileSync(planPath, 'utf-8');
+      const workflowMatch = planContent.match(
+        /\*\*Workflow Mode\*\*:\s*(stacked-pr|single-branch)/
+      );
       if (workflowMatch && workflowMatch[1]) {
         return workflowMatch[1];
       }
@@ -352,11 +356,13 @@ function determineWorkflowMode(featureDir: string, repoRoot: string): string {
   }
 
   // Second, check constitution.md
-  const constitutionPath = join(repoRoot, ".speck", "memory", "constitution.md");
+  const constitutionPath = join(repoRoot, '.speck', 'memory', 'constitution.md');
   if (existsSync(constitutionPath)) {
     try {
-      const constitutionContent = readFileSync(constitutionPath, "utf-8");
-      const workflowMatch = constitutionContent.match(/\*\*Default Workflow Mode\*\*:\s*(stacked-pr|single-branch)/);
+      const constitutionContent = readFileSync(constitutionPath, 'utf-8');
+      const workflowMatch = constitutionContent.match(
+        /\*\*Default Workflow Mode\*\*:\s*(stacked-pr|single-branch)/
+      );
       if (workflowMatch && workflowMatch[1]) {
         return workflowMatch[1];
       }
@@ -366,7 +372,7 @@ function determineWorkflowMode(featureDir: string, repoRoot: string): string {
   }
 
   // Default
-  return "single-branch";
+  return 'single-branch';
 }
 
 /**
@@ -379,21 +385,21 @@ function outputError(
   outputMode: OutputMode,
   startTime: number
 ): void {
-  if (outputMode === "json") {
+  if (outputMode === 'json') {
     const output = formatJsonOutput({
       success: false,
       error: { code, message, recovery },
-      command: "check-prerequisites",
+      command: 'check-prerequisites',
       startTime,
     });
     console.log(JSON.stringify(output));
-  } else if (outputMode === "hook") {
+  } else if (outputMode === 'hook') {
     // For hook mode errors, output human-readable to stderr
     console.error(`ERROR: ${message}`);
-    recovery.forEach(r => console.error(r));
+    recovery.forEach((r) => console.error(r));
   } else {
     console.error(`ERROR: ${message}`);
-    recovery.forEach(r => console.error(r));
+    recovery.forEach((r) => console.error(r));
   }
 }
 
@@ -408,14 +414,16 @@ export async function main(args: string[]): Promise<number> {
   // DEPRECATION WARNING: This individual script is deprecated
   // Prerequisite checks are now automatically performed by PrePromptSubmit hook
   // For manual checks, use: bun .speck/scripts/speck.ts env
-  if (outputMode === "human" && process.stdout.isTTY) {
-    console.warn("\x1b[33m⚠️  DEPRECATION WARNING: Direct invocation deprecated. Prerequisites are now auto-checked via PrePromptSubmit hook.\x1b[0m\n");
+  if (outputMode === 'human' && process.stdout.isTTY) {
+    console.warn(
+      '\x1b[33m⚠️  DEPRECATION WARNING: Direct invocation deprecated. Prerequisites are now auto-checked via PrePromptSubmit hook.\x1b[0m\n'
+    );
   }
 
   // Check for unknown options first
   const unknownOptionError = checkForUnknownOptions(args, outputMode);
   if (unknownOptionError) {
-    outputError("INVALID_ARGS", unknownOptionError, [], outputMode, startTime);
+    outputError('INVALID_ARGS', unknownOptionError, [], outputMode, startTime);
     return ExitCode.USER_ERROR;
   }
 
@@ -425,24 +433,24 @@ export async function main(args: string[]): Promise<number> {
   }
 
   // Read hook input if in hook mode (for future use)
-  if (detectInputMode(options) === "hook") {
+  if (detectInputMode(options) === 'hook') {
     // Hook input can be read here for context-aware behavior
     await readHookInput();
   }
 
   // Get feature paths and validate branch
   const paths = await getFeaturePaths();
-  const hasGitRepo = paths.HAS_GIT === "true";
+  const hasGitRepo = paths.HAS_GIT === 'true';
 
   // Require git repository for all Speck operations
   if (!hasGitRepo) {
     outputError(
-      "NO_GIT_REPO",
-      "Not in a git repository",
+      'NO_GIT_REPO',
+      'Not in a git repository',
       [
-        "Speck requires a git repository to function.",
-        "Initialize a git repository first: git init",
-        "Or navigate to an existing git repository.",
+        'Speck requires a git repository to function.',
+        'Initialize a git repository first: git init',
+        'Or navigate to an existing git repository.',
       ],
       outputMode,
       startTime
@@ -454,9 +462,9 @@ export async function main(args: string[]): Promise<number> {
   if (!options.skipFeatureCheck) {
     if (!(await checkFeatureBranch(paths.CURRENT_BRANCH, hasGitRepo, paths.REPO_ROOT))) {
       outputError(
-        "NOT_ON_FEATURE_BRANCH",
+        'NOT_ON_FEATURE_BRANCH',
         `Not on a feature branch: ${paths.CURRENT_BRANCH}`,
-        ["Switch to a feature branch (e.g., git checkout 001-feature-name)"],
+        ['Switch to a feature branch (e.g., git checkout 001-feature-name)'],
         outputMode,
         startTime
       );
@@ -473,9 +481,9 @@ export async function main(args: string[]): Promise<number> {
   // Validate required directories and files
   if (!existsSync(paths.FEATURE_DIR)) {
     outputError(
-      "FEATURE_DIR_NOT_FOUND",
+      'FEATURE_DIR_NOT_FOUND',
       `Feature directory not found: ${paths.FEATURE_DIR}`,
-      ["Run /speck:specify first to create the feature structure."],
+      ['Run /speck:specify first to create the feature structure.'],
       outputMode,
       startTime
     );
@@ -485,9 +493,9 @@ export async function main(args: string[]): Promise<number> {
   // Check plan.md unless --skip-plan-check is set
   if (!options.skipPlanCheck && !existsSync(paths.IMPL_PLAN)) {
     outputError(
-      "PLAN_NOT_FOUND",
+      'PLAN_NOT_FOUND',
       `plan.md not found in ${paths.FEATURE_DIR}`,
-      ["Run /speck:plan first to create the implementation plan."],
+      ['Run /speck:plan first to create the implementation plan.'],
       outputMode,
       startTime
     );
@@ -497,9 +505,9 @@ export async function main(args: string[]): Promise<number> {
   // Check for tasks.md if required
   if (options.requireTasks && !existsSync(paths.TASKS)) {
     outputError(
-      "TASKS_NOT_FOUND",
+      'TASKS_NOT_FOUND',
       `tasks.md not found in ${paths.FEATURE_DIR}`,
-      ["Run /speck:tasks first to create the task list."],
+      ['Run /speck:tasks first to create the task list.'],
       outputMode,
       startTime
     );
@@ -515,19 +523,19 @@ export async function main(args: string[]): Promise<number> {
   absoluteDocs.push(...rootFeatureFiles);
 
   // 2. Add linked-repos.md from root repo .speck directory (if exists)
-  const linkedReposPath = join(paths.SPECK_ROOT, ".speck", "linked-repos.md");
+  const linkedReposPath = join(paths.SPECK_ROOT, '.speck', 'linked-repos.md');
   if (existsSync(linkedReposPath)) {
     absoluteDocs.push(linkedReposPath);
   }
 
   // 3. Add constitution.md from root repo (if exists)
-  const rootConstitutionPath = join(paths.SPECK_ROOT, ".speck", "memory", "constitution.md");
+  const rootConstitutionPath = join(paths.SPECK_ROOT, '.speck', 'memory', 'constitution.md');
   if (existsSync(rootConstitutionPath)) {
     absoluteDocs.push(rootConstitutionPath);
   }
 
   // 4. Add constitution.md from child repo (if exists and different from root)
-  const childConstitutionPath = join(paths.REPO_ROOT, ".speck", "memory", "constitution.md");
+  const childConstitutionPath = join(paths.REPO_ROOT, '.speck', 'memory', 'constitution.md');
   if (childConstitutionPath !== rootConstitutionPath && existsSync(childConstitutionPath)) {
     absoluteDocs.push(childConstitutionPath);
   }
@@ -536,7 +544,7 @@ export async function main(args: string[]): Promise<number> {
   // In multi-repo mode, this is different from FEATURE_DIR
   // In single-repo mode, this is the same as FEATURE_DIR (so we'll dedupe)
   const featureName = basename(paths.FEATURE_DIR);
-  const localFeatureDir = join(paths.REPO_ROOT, "specs", featureName);
+  const localFeatureDir = join(paths.REPO_ROOT, 'specs', featureName);
 
   if (localFeatureDir !== paths.FEATURE_DIR) {
     // Multi-repo mode: collect files from child repo
@@ -548,14 +556,14 @@ export async function main(args: string[]): Promise<number> {
   // This will create paths like:
   // - "specs/001-feature/plan.md" for local files
   // - "../../8-specs/specs/001-feature/spec.md" for root repo files
-  const relativeDocs = absoluteDocs.map(absolutePath => {
+  const relativeDocs = absoluteDocs.map((absolutePath) => {
     return relative(paths.REPO_ROOT, absolutePath);
   });
 
   // 7. Filter out tasks.md unless --include-tasks is set
   const filteredDocs = options.includeTasks
     ? relativeDocs
-    : relativeDocs.filter(filePath => !filePath.endsWith("tasks.md"));
+    : relativeDocs.filter((filePath) => !filePath.endsWith('tasks.md'));
 
   // Load file contents if requested
   let fileContents: Record<string, string> | undefined;
@@ -564,20 +572,20 @@ export async function main(args: string[]): Promise<number> {
     const totalSize = { value: 0 };
 
     // High priority files (always attempt)
-    fileContents["tasks.md"] = loadFileContent(paths.TASKS, totalSize);
-    fileContents["plan.md"] = loadFileContent(paths.IMPL_PLAN, totalSize);
-    fileContents["spec.md"] = loadFileContent(paths.FEATURE_SPEC, totalSize);
+    fileContents['tasks.md'] = loadFileContent(paths.TASKS, totalSize);
+    fileContents['plan.md'] = loadFileContent(paths.IMPL_PLAN, totalSize);
+    fileContents['spec.md'] = loadFileContent(paths.FEATURE_SPEC, totalSize);
 
     // Medium priority files (always attempt)
-    const constitutionPath = join(paths.REPO_ROOT, ".speck", "memory", "constitution.md");
-    fileContents["constitution.md"] = loadFileContent(constitutionPath, totalSize);
-    fileContents["data-model.md"] = loadFileContent(paths.DATA_MODEL, totalSize);
-    fileContents["research.md"] = loadFileContent(paths.RESEARCH, totalSize);
+    const constitutionPath = join(paths.REPO_ROOT, '.speck', 'memory', 'constitution.md');
+    fileContents['constitution.md'] = loadFileContent(constitutionPath, totalSize);
+    fileContents['data-model.md'] = loadFileContent(paths.DATA_MODEL, totalSize);
+    fileContents['research.md'] = loadFileContent(paths.RESEARCH, totalSize);
 
     // Load checklist files (shared from root repo)
     if (existsSync(paths.CHECKLISTS_DIR)) {
       try {
-        const checklistFiles = readdirSync(paths.CHECKLISTS_DIR).filter(f => f.endsWith(".md"));
+        const checklistFiles = readdirSync(paths.CHECKLISTS_DIR).filter((f) => f.endsWith('.md'));
         for (const file of checklistFiles) {
           const checklistPath = join(paths.CHECKLISTS_DIR, file);
           fileContents[`checklists/${file}`] = loadFileContent(checklistPath, totalSize);
@@ -590,7 +598,7 @@ export async function main(args: string[]): Promise<number> {
 
   // Determine workflow mode (always include for hook mode, otherwise only if requested)
   let workflowMode: string | undefined;
-  if (options.includeWorkflowMode || outputMode === "hook") {
+  if (options.includeWorkflowMode || outputMode === 'hook') {
     workflowMode = determineWorkflowMode(paths.FEATURE_DIR, paths.REPO_ROOT);
   }
 
@@ -599,16 +607,19 @@ export async function main(args: string[]): Promise<number> {
     const qualityResult = await validateCodeQuality(paths.REPO_ROOT);
     if (!qualityResult.passed) {
       outputError(
-        "CODE_QUALITY_FAILED",
+        'CODE_QUALITY_FAILED',
         qualityResult.message,
-        ["Constitution Principle IX requires zero typecheck errors and zero lint errors/warnings.", "Fix all issues before marking the feature complete."],
+        [
+          'Constitution Principle IX requires zero typecheck errors and zero lint errors/warnings.',
+          'Fix all issues before marking the feature complete.',
+        ],
         outputMode,
         startTime
       );
       return ExitCode.USER_ERROR;
     }
-    if (outputMode === "human") {
-      console.log("\n" + qualityResult.message + "\n");
+    if (outputMode === 'human') {
+      console.log('\n' + qualityResult.message + '\n');
     }
   }
 
@@ -631,26 +642,26 @@ export async function main(args: string[]): Promise<number> {
   };
 
   // Output results based on mode
-  if (outputMode === "json") {
+  if (outputMode === 'json') {
     const output = formatJsonOutput({
       success: true,
       data: validationData,
-      command: "check-prerequisites",
+      command: 'check-prerequisites',
       startTime,
     });
     console.log(JSON.stringify(output));
-  } else if (outputMode === "hook") {
+  } else if (outputMode === 'hook') {
     // Hook mode: output context for Claude Code hook injection
     const hookContext = buildHookContext(validationData);
     const hookOutput = formatHookOutput({
-      hookType: "UserPromptSubmit",
+      hookType: 'UserPromptSubmit',
       context: hookContext,
     });
     console.log(JSON.stringify(hookOutput));
   } else {
     // Human-readable text output
     console.log(`FEATURE_DIR:${paths.FEATURE_DIR}`);
-    console.log("AVAILABLE_DOCS:");
+    console.log('AVAILABLE_DOCS:');
 
     // Show all discovered files
     for (const filePath of filteredDocs) {
@@ -666,7 +677,7 @@ export async function main(args: string[]): Promise<number> {
  */
 function buildHookContext(data: ValidationOutput): string {
   const lines = [
-    "<!-- SPECK_PREREQ_CONTEXT",
+    '<!-- SPECK_PREREQ_CONTEXT',
     JSON.stringify({
       MODE: data.MODE,
       FEATURE_DIR: data.FEATURE_DIR,
@@ -677,9 +688,9 @@ function buildHookContext(data: ValidationOutput): string {
       REPO_ROOT: data.REPO_ROOT,
       TEMPLATE_DIR: data.TEMPLATE_DIR,
     }),
-    "-->",
+    '-->',
   ];
-  return lines.join("\n");
+  return lines.join('\n');
 }
 
 /**

@@ -4,8 +4,8 @@
  * Provides consistent output formatting across CLI and hook modes.
  */
 
-import type { ExecutionMode } from "./logger";
-import type { CommandResult } from "./errors";
+import type { ExecutionMode } from './logger';
+import type { CommandResult } from './errors';
 
 // =============================================================================
 // Output Mode Types
@@ -17,14 +17,14 @@ import type { CommandResult } from "./errors";
  * - "json": Structured JSON for LLM parsing
  * - "hook": Hook-formatted output for Claude Code hooks
  */
-export type OutputMode = "human" | "json" | "hook";
+export type OutputMode = 'human' | 'json' | 'hook';
 
 /**
  * Input mode for CLI commands
  * - "default": Standard CLI invocation (args from command line only)
  * - "hook": Hook invocation (JSON payload from stdin + command line args)
  */
-export type InputMode = "default" | "hook";
+export type InputMode = 'default' | 'hook';
 
 /**
  * Standard JSON output envelope
@@ -52,20 +52,17 @@ export interface JsonOutput<T = unknown> {
  * Detect input mode from CLI options
  */
 export function detectInputMode(options: { hook?: boolean }): InputMode {
-  return options.hook ? "hook" : "default";
+  return options.hook ? 'hook' : 'default';
 }
 
 /**
  * Detect output mode from CLI options
  * --hook takes precedence over --json
  */
-export function detectOutputMode(options: {
-  json?: boolean;
-  hook?: boolean;
-}): OutputMode {
-  if (options.hook) return "hook";
-  if (options.json) return "json";
-  return "human";
+export function detectOutputMode(options: { json?: boolean; hook?: boolean }): OutputMode {
+  if (options.hook) return 'hook';
+  if (options.json) return 'json';
+  return 'human';
 }
 
 // =============================================================================
@@ -90,9 +87,7 @@ export interface FormatJsonInput<T = unknown> {
 /**
  * Format command result as standard JSON output
  */
-export function formatJsonOutput<T = unknown>(
-  input: FormatJsonInput<T>
-): JsonOutput<T> {
+export function formatJsonOutput<T = unknown>(input: FormatJsonInput<T>): JsonOutput<T> {
   const now = Date.now();
   const duration = input.startTime ? now - input.startTime : 0;
 
@@ -133,15 +128,15 @@ export function formatJsonOutput<T = unknown>(
 export function formatCliOutput(result: CommandResult): void {
   if (result.output) {
     process.stdout.write(result.output);
-    if (!result.output.endsWith("\n")) {
-      process.stdout.write("\n");
+    if (!result.output.endsWith('\n')) {
+      process.stdout.write('\n');
     }
   }
 
   if (result.errorOutput) {
     process.stderr.write(result.errorOutput);
-    if (!result.errorOutput.endsWith("\n")) {
-      process.stderr.write("\n");
+    if (!result.errorOutput.endsWith('\n')) {
+      process.stderr.write('\n');
     }
   }
 }
@@ -149,11 +144,8 @@ export function formatCliOutput(result: CommandResult): void {
 /**
  * Format output based on execution mode
  */
-export function formatOutput(
-  result: CommandResult,
-  mode: ExecutionMode
-): CommandResult | void {
-  if (mode === "hook") {
+export function formatOutput(result: CommandResult, mode: ExecutionMode): CommandResult | void {
+  if (mode === 'hook') {
     return result;
   }
   formatCliOutput(result);
@@ -166,10 +158,7 @@ export function formatOutput(
 /**
  * Create a success CommandResult
  */
-export function successResult(
-  output: string,
-  metadata?: Record<string, unknown>
-): CommandResult {
+export function successResult(output: string, metadata?: Record<string, unknown>): CommandResult {
   return {
     success: true,
     output,
@@ -189,7 +178,7 @@ export function failureResult(
 ): CommandResult {
   return {
     success: false,
-    output: "",
+    output: '',
     errorOutput,
     exitCode,
     metadata: metadata ?? null,
@@ -210,8 +199,8 @@ export function formatJson(data: unknown, pretty: boolean = false): string {
 /**
  * Format a list of items as a bulleted list
  */
-export function formatList(items: string[], bullet: string = "-"): string {
-  return items.map((item) => `${bullet} ${item}`).join("\n");
+export function formatList(items: string[], bullet: string = '-'): string {
+  return items.map((item) => `${bullet} ${item}`).join('\n');
 }
 
 /**
@@ -220,24 +209,22 @@ export function formatList(items: string[], bullet: string = "-"): string {
 export function formatTable(headers: string[], rows: string[][]): string {
   // Calculate column widths
   const widths = headers.map((header, i) => {
-    const maxRowWidth = Math.max(...rows.map((row) => (row[i] || "").length));
+    const maxRowWidth = Math.max(...rows.map((row) => (row[i] || '').length));
     return Math.max(header.length, maxRowWidth);
   });
 
   // Format header row
-  const headerRow = headers
-    .map((header, i) => header.padEnd(widths[i] ?? 0))
-    .join(" | ");
+  const headerRow = headers.map((header, i) => header.padEnd(widths[i] ?? 0)).join(' | ');
 
   // Format separator row
-  const separator = widths.map((width) => "-".repeat(width ?? 0)).join("-|-");
+  const separator = widths.map((width) => '-'.repeat(width ?? 0)).join('-|-');
 
   // Format data rows
   const dataRows = rows.map((row) =>
-    row.map((cell, i) => (cell || "").padEnd(widths[i] ?? 0)).join(" | ")
+    row.map((cell, i) => (cell || '').padEnd(widths[i] ?? 0)).join(' | ')
   );
 
-  return [headerRow, separator, ...dataRows].join("\n");
+  return [headerRow, separator, ...dataRows].join('\n');
 }
 
 /**
@@ -245,39 +232,35 @@ export function formatTable(headers: string[], rows: string[][]): string {
  */
 export function colorize(
   text: string,
-  color: "red" | "green" | "yellow" | "blue" | "gray",
+  color: 'red' | 'green' | 'yellow' | 'blue' | 'gray',
   mode: ExecutionMode
 ): string {
   // Don't colorize in hook mode or if not a TTY
-  if (mode === "hook" || !process.stdout.isTTY) {
+  if (mode === 'hook' || !process.stdout.isTTY) {
     return text;
   }
 
   const colors = {
-    red: "\x1b[31m",
-    green: "\x1b[32m",
-    yellow: "\x1b[33m",
-    blue: "\x1b[34m",
-    gray: "\x1b[90m",
+    red: '\x1b[31m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue: '\x1b[34m',
+    gray: '\x1b[90m',
   };
 
-  const reset = "\x1b[0m";
+  const reset = '\x1b[0m';
   return `${colors[color]}${text}${reset}`;
 }
 
 /**
  * Format progress indicator
  */
-export function formatProgress(
-  current: number,
-  total: number,
-  label?: string
-): string {
+export function formatProgress(current: number, total: number, label?: string): string {
   const percentage = Math.round((current / total) * 100);
-  const progressBar = "=".repeat(Math.floor(percentage / 5));
-  const emptyBar = " ".repeat(20 - Math.floor(percentage / 5));
+  const progressBar = '='.repeat(Math.floor(percentage / 5));
+  const emptyBar = ' '.repeat(20 - Math.floor(percentage / 5));
 
-  const labelText = label ? `${label}: ` : "";
+  const labelText = label ? `${label}: ` : '';
   return `${labelText}[${progressBar}${emptyBar}] ${percentage}% (${current}/${total})`;
 }
 
@@ -288,11 +271,7 @@ export function formatProgress(
 /**
  * Create a file path with optional line number
  */
-export function fileLink(
-  file: string,
-  line?: number,
-  endLine?: number
-): string {
+export function fileLink(file: string, line?: number, endLine?: number): string {
   if (line && endLine) return `${file}:${line}-${endLine}`;
   if (line) return `${file}:${line}`;
   return file;
@@ -317,23 +296,20 @@ export interface Action {
   command: string;
 }
 
-const LETTERS = "abcdefghijklmnopqrstuvwxyz";
+const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
 
 /**
  * Format a lettered action menu
  */
 export function formatActionMenu(actions: Action[]): string {
   const lines = actions.map((a, i) => `  ${LETTERS[i]}) ${a.label}`);
-  return lines.join("\n");
+  return lines.join('\n');
 }
 
 /**
  * Get the command for a given letter selection
  */
-export function getActionCommand(
-  actions: Action[],
-  letter: string
-): string | undefined {
+export function getActionCommand(actions: Action[], letter: string): string | undefined {
   const index = letter.toLowerCase().charCodeAt(0) - 97; // 'a' = 0
   if (index >= 0 && index < actions.length) {
     return actions[index]?.command;

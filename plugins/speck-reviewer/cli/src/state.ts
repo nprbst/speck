@@ -3,13 +3,20 @@
  * Handles persistence to .speck/review-state.json with atomic writes
  */
 
-import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync } from "fs";
-import { join, dirname } from "path";
-import type { ReviewSession, ReviewMode, FileCluster, CommentState, CommentEdit, EditAction } from "./types";
-import { logger } from "@speck/common/logger";
+import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync } from 'fs';
+import { join, dirname } from 'path';
+import type {
+  ReviewSession,
+  ReviewMode,
+  FileCluster,
+  CommentState,
+  CommentEdit,
+  EditAction,
+} from './types';
+import { logger } from '@speck/common/logger';
 
-const STATE_SCHEMA_VERSION = "review-state-v1";
-const STATE_FILE_NAME = ".speck/review-state.json";
+const STATE_SCHEMA_VERSION = 'review-state-v1';
+const STATE_FILE_NAME = '.speck/review-state.json';
 
 export interface CreateSessionParams {
   prNumber: number;
@@ -35,8 +42,8 @@ export function createSession(params: CreateSessionParams): ReviewSession {
     baseBranch: params.baseBranch,
     title: params.title,
     author: params.author,
-    reviewMode: params.reviewMode || "normal",
-    narrative: "",
+    reviewMode: params.reviewMode || 'normal',
+    narrative: '',
     clusters: [],
     comments: [],
     currentClusterId: undefined,
@@ -60,7 +67,7 @@ export function getStatePath(repoRoot: string): string {
 export async function saveState(session: ReviewSession, repoRoot: string): Promise<void> {
   const statePath = getStatePath(repoRoot);
   const stateDir = dirname(statePath);
-  const tempPath = statePath + ".tmp";
+  const tempPath = statePath + '.tmp';
 
   // Ensure directory exists
   if (!existsSync(stateDir)) {
@@ -75,7 +82,7 @@ export async function saveState(session: ReviewSession, repoRoot: string): Promi
 
   // Write to temp file first (atomic write pattern)
   const content = JSON.stringify(sessionToSave, null, 2);
-  writeFileSync(tempPath, content, "utf-8");
+  writeFileSync(tempPath, content, 'utf-8');
 
   // Rename temp to actual (atomic on most filesystems)
   renameSync(tempPath, statePath);
@@ -96,7 +103,7 @@ export async function loadState(repoRoot: string): Promise<ReviewSession | null>
   }
 
   try {
-    const content = readFileSync(statePath, "utf-8");
+    const content = readFileSync(statePath, 'utf-8');
     const state = JSON.parse(content) as ReviewSession;
 
     // Check schema version
@@ -136,12 +143,12 @@ export function hasState(repoRoot: string): boolean {
  * Get the next pending cluster after the current one
  */
 export function getNextCluster(session: ReviewSession): FileCluster | undefined {
-  const currentIndex = session.clusters.findIndex(c => c.id === session.currentClusterId);
+  const currentIndex = session.clusters.findIndex((c) => c.id === session.currentClusterId);
 
   // Find next cluster with pending or in_progress status
   for (let i = currentIndex + 1; i < session.clusters.length; i++) {
     const cluster = session.clusters[i];
-    if (cluster && (cluster.status === "pending" || cluster.status === "in_progress")) {
+    if (cluster && (cluster.status === 'pending' || cluster.status === 'in_progress')) {
       return cluster;
     }
   }
@@ -149,7 +156,7 @@ export function getNextCluster(session: ReviewSession): FileCluster | undefined 
   // If no next cluster found, look from the beginning
   for (let i = 0; i <= currentIndex; i++) {
     const cluster = session.clusters[i];
-    if (cluster && cluster.status === "pending") {
+    if (cluster && cluster.status === 'pending') {
       return cluster;
     }
   }
@@ -161,7 +168,7 @@ export function getNextCluster(session: ReviewSession): FileCluster | undefined 
  * Get the previous cluster before the current one
  */
 export function getPreviousCluster(session: ReviewSession): FileCluster | undefined {
-  const currentIndex = session.clusters.findIndex(c => c.id === session.currentClusterId);
+  const currentIndex = session.clusters.findIndex((c) => c.id === session.currentClusterId);
 
   if (currentIndex <= 0) {
     return undefined;
@@ -175,14 +182,14 @@ export function getPreviousCluster(session: ReviewSession): FileCluster | undefi
  */
 export function getClusterByName(session: ReviewSession, name: string): FileCluster | undefined {
   const lowerName = name.toLowerCase();
-  return session.clusters.find(c => c.name.toLowerCase().includes(lowerName));
+  return session.clusters.find((c) => c.name.toLowerCase().includes(lowerName));
 }
 
 /**
  * Get a cluster by its ID
  */
 export function getClusterById(session: ReviewSession, id: string): FileCluster | undefined {
-  return session.clusters.find(c => c.id === id);
+  return session.clusters.find((c) => c.id === id);
 }
 
 /**
@@ -190,9 +197,9 @@ export function getClusterById(session: ReviewSession, id: string): FileCluster 
  * @deprecated Use markClusterReviewedImmutable for new code
  */
 export function markClusterReviewed(session: ReviewSession, clusterId: string): void {
-  const cluster = session.clusters.find(c => c.id === clusterId);
+  const cluster = session.clusters.find((c) => c.id === clusterId);
   if (cluster) {
-    cluster.status = "reviewed";
+    cluster.status = 'reviewed';
     if (!session.reviewedSections.includes(clusterId)) {
       session.reviewedSections.push(clusterId);
     }
@@ -204,9 +211,9 @@ export function markClusterReviewed(session: ReviewSession, clusterId: string): 
  * @deprecated Use setCurrentCluster for new code (immutable)
  */
 export function markClusterInProgress(session: ReviewSession, clusterId: string): void {
-  const cluster = session.clusters.find(c => c.id === clusterId);
+  const cluster = session.clusters.find((c) => c.id === clusterId);
   if (cluster) {
-    cluster.status = "in_progress";
+    cluster.status = 'in_progress';
     session.currentClusterId = clusterId;
   }
 }
@@ -221,9 +228,9 @@ export function getProgressSummary(session: ReviewSession): {
   inProgress: number;
 } {
   const total = session.clusters.length;
-  const reviewed = session.clusters.filter(c => c.status === "reviewed").length;
-  const inProgress = session.clusters.filter(c => c.status === "in_progress").length;
-  const pending = session.clusters.filter(c => c.status === "pending").length;
+  const reviewed = session.clusters.filter((c) => c.status === 'reviewed').length;
+  const inProgress = session.clusters.filter((c) => c.status === 'in_progress').length;
+  const pending = session.clusters.filter((c) => c.status === 'pending').length;
 
   return { total, reviewed, pending, inProgress };
 }
@@ -233,9 +240,9 @@ export function getProgressSummary(session: ReviewSession): {
  */
 export function formatStateDisplay(session: ReviewSession): string {
   const progress = getProgressSummary(session);
-  const stagedComments = session.comments.filter(c => c.state === "staged").length;
-  const postedComments = session.comments.filter(c => c.state === "posted").length;
-  const skippedComments = session.comments.filter(c => c.state === "skipped").length;
+  const stagedComments = session.comments.filter((c) => c.state === 'staged').length;
+  const postedComments = session.comments.filter((c) => c.state === 'posted').length;
+  const skippedComments = session.comments.filter((c) => c.state === 'skipped').length;
 
   let output = `## Active Review Session\n\n`;
   output += `- **PR**: #${session.prNumber} - ${session.title}\n`;
@@ -248,8 +255,7 @@ export function formatStateDisplay(session: ReviewSession): string {
   output += `### Progress: ${progress.reviewed}/${progress.total} clusters reviewed\n\n`;
 
   for (const cluster of session.clusters) {
-    const icon = cluster.status === "reviewed" ? "✓" :
-                 cluster.status === "in_progress" ? "→" : "○";
+    const icon = cluster.status === 'reviewed' ? '✓' : cluster.status === 'in_progress' ? '→' : '○';
     output += `- ${icon} **${cluster.name}** (${cluster.files.length} files)\n`;
   }
 
@@ -273,9 +279,13 @@ export function updateCommentState(
   const timestamp = new Date().toISOString();
 
   const editAction: EditAction =
-    newState === "skipped" ? "skip" :
-    newState === "staged" ? "restore" :
-    newState === "posted" ? "post" : "restore";
+    newState === 'skipped'
+      ? 'skip'
+      : newState === 'staged'
+        ? 'restore'
+        : newState === 'posted'
+          ? 'post'
+          : 'restore';
 
   return {
     ...state,
@@ -286,10 +296,7 @@ export function updateCommentState(
         ...comment,
         state: newState,
         updatedAt: timestamp,
-        history: [
-          ...comment.history,
-          { timestamp, action: editAction },
-        ],
+        history: [...comment.history, { timestamp, action: editAction }],
       };
     }),
     lastUpdated: timestamp,
@@ -336,10 +343,7 @@ export function recordQuestion(
 
   return {
     ...state,
-    questions: [
-      ...state.questions,
-      { question, answer, context, timestamp },
-    ],
+    questions: [...state.questions, { question, answer, context, timestamp }],
     lastUpdated: timestamp,
   };
 }
@@ -357,19 +361,16 @@ export function recordQuestion(
  * - Mixed skipped/posted → true (at least one posted, none staged)
  */
 export function isReviewComplete(state: ReviewSession): boolean {
-  const stagedComments = state.comments.filter((c) => c.state === "staged");
+  const stagedComments = state.comments.filter((c) => c.state === 'staged');
   const hasPostedOrNoComments =
-    state.comments.length === 0 || state.comments.some((c) => c.state === "posted");
+    state.comments.length === 0 || state.comments.some((c) => c.state === 'posted');
   return stagedComments.length === 0 && hasPostedOrNoComments;
 }
 
 /**
  * Update the narrative in the review session (immutable).
  */
-export function setNarrative(
-  state: ReviewSession,
-  narrative: string
-): ReviewSession {
+export function setNarrative(state: ReviewSession, narrative: string): ReviewSession {
   const timestamp = new Date().toISOString();
 
   return {
@@ -382,10 +383,7 @@ export function setNarrative(
 /**
  * Update clusters in the review session (immutable).
  */
-export function setClusters(
-  state: ReviewSession,
-  clusters: FileCluster[]
-): ReviewSession {
+export function setClusters(state: ReviewSession, clusters: FileCluster[]): ReviewSession {
   const timestamp = new Date().toISOString();
 
   return {
@@ -399,16 +397,13 @@ export function setClusters(
  * Set the current cluster being reviewed (immutable).
  * Also marks the cluster as in_progress.
  */
-export function setCurrentCluster(
-  state: ReviewSession,
-  clusterId: string | null
-): ReviewSession {
+export function setCurrentCluster(state: ReviewSession, clusterId: string | null): ReviewSession {
   const timestamp = new Date().toISOString();
 
   const updatedClusters = clusterId
     ? state.clusters.map((cluster) => {
         if (cluster.id === clusterId) {
-          return { ...cluster, status: "in_progress" as const };
+          return { ...cluster, status: 'in_progress' as const };
         }
         return cluster;
       })
@@ -435,7 +430,7 @@ export function markClusterReviewedImmutable(
     ...state,
     clusters: state.clusters.map((cluster) => {
       if (cluster.id !== clusterId) return cluster;
-      return { ...cluster, status: "reviewed" as const };
+      return { ...cluster, status: 'reviewed' as const };
     }),
     reviewedSections: state.reviewedSections.includes(clusterId)
       ? state.reviewedSections

@@ -41,14 +41,14 @@
     }
   },
   "include": [
-    "src/**/*",
-    ".speck/**/*",
+    "packages/**/*",
+    "plugins/**/*",
+    "scripts/**/*",
     "tests/**/*",
     "specs/*/contracts/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    ".speck/test-logs"
+    "dist"
   ]
 }

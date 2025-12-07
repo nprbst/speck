@@ -3,7 +3,7 @@
  * Provides mode-aware logging with debug mode support
  */
 
-import type { ExecutionMode } from "./types";
+import type { ExecutionMode } from './types';
 
 /**
  * Log levels for filtering
@@ -31,7 +31,7 @@ interface LoggerConfig {
  */
 const defaultConfig: LoggerConfig = {
   level: LogLevel.INFO,
-  mode: "cli",
+  mode: 'cli',
   enableColors: true,
   enableTimestamps: false,
 };
@@ -48,7 +48,7 @@ export function configureLogger(config: Partial<LoggerConfig>): void {
   currentConfig = { ...currentConfig, ...config };
 
   // Disable colors in hook mode or if not TTY
-  if (currentConfig.mode === "hook" || !process.stderr.isTTY) {
+  if (currentConfig.mode === 'hook' || !process.stderr.isTTY) {
     currentConfig.enableColors = false;
   }
 }
@@ -77,12 +77,8 @@ export function isDebugEnabled(): boolean {
 /**
  * Format log message with optional timestamp and color
  */
-function formatMessage(
-  level: LogLevel,
-  message: string,
-  data?: unknown
-): string {
-  let formatted = "";
+function formatMessage(level: LogLevel, message: string, data?: unknown): string {
+  let formatted = '';
 
   // Add timestamp if enabled
   if (currentConfig.enableTimestamps) {
@@ -116,15 +112,15 @@ function formatMessage(
 function getLevelColor(level: LogLevel): string {
   switch (level) {
     case LogLevel.DEBUG:
-      return "\x1b[90m"; // Gray
+      return '\x1b[90m'; // Gray
     case LogLevel.INFO:
-      return "\x1b[36m"; // Cyan
+      return '\x1b[36m'; // Cyan
     case LogLevel.WARN:
-      return "\x1b[33m"; // Yellow
+      return '\x1b[33m'; // Yellow
     case LogLevel.ERROR:
-      return "\x1b[31m"; // Red
+      return '\x1b[31m'; // Red
     default:
-      return "\x1b[0m"; // Reset
+      return '\x1b[0m'; // Reset
   }
 }
 
@@ -145,7 +141,7 @@ export function info(message: string, data?: unknown): void {
   if (getLogLevel() <= LogLevel.INFO) {
     const formatted = formatMessage(LogLevel.INFO, message, data);
     // Use stderr in hook mode to avoid polluting JSON output
-    if (currentConfig.mode === "hook") {
+    if (currentConfig.mode === 'hook') {
       console.error(formatted);
     } else {
       console.log(formatted);
@@ -183,22 +179,17 @@ export function createScopedLogger(scope: string): {
   error: (message: string, data?: unknown) => void;
 } {
   return {
-    debug: (message: string, data?: unknown): void =>
-      debug(`[${scope}] ${message}`, data),
+    debug: (message: string, data?: unknown): void => debug(`[${scope}] ${message}`, data),
     info: (message: string, data?: unknown): void => info(`[${scope}] ${message}`, data),
     warn: (message: string, data?: unknown): void => warn(`[${scope}] ${message}`, data),
-    error: (message: string, data?: unknown): void =>
-      error(`[${scope}] ${message}`, data),
+    error: (message: string, data?: unknown): void => error(`[${scope}] ${message}`, data),
   };
 }
 
 /**
  * Log function execution time (for debugging performance)
  */
-export async function logExecutionTime<T>(
-  label: string,
-  fn: () => Promise<T>
-): Promise<T> {
+export async function logExecutionTime<T>(label: string, fn: () => Promise<T>): Promise<T> {
   if (!isDebugEnabled()) {
     return fn();
   }

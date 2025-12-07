@@ -15,7 +15,7 @@ interface LogEvent {
   [key: string]: unknown;
 }
 
-const hookInput = await Bun.stdin.json() as HookInput;
+const hookInput = (await Bun.stdin.json()) as HookInput;
 const { session_id, cwd } = hookInput;
 
 // Read session log
@@ -38,7 +38,9 @@ try {
 
 // Extract feature IDs and commands
 const featureIds = events
-  .filter((e): e is LogEvent & { featureId: string } => e.type === 'session-context' && !!e.featureId)
+  .filter(
+    (e): e is LogEvent & { featureId: string } => e.type === 'session-context' && !!e.featureId
+  )
   .map((e) => e.featureId);
 
 const commands = events

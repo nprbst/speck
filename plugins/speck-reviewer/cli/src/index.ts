@@ -4,8 +4,8 @@
  * AI-powered PR review with Speck-aware context
  */
 
-import { logger } from "@speck/common/logger";
-import packageJson from "../package.json";
+import { logger } from '@speck/common/logger';
+import packageJson from '../package.json';
 
 const VERSION = packageJson.version;
 
@@ -24,88 +24,88 @@ const commands: Record<string, CommandHandler> = {
 
   // Phase 4: User Story 2 - Cluster Analysis
   analyze: async (args) => {
-    const { analyzeCommand } = await import("./commands/analyze");
+    const { analyzeCommand } = await import('./commands/analyze');
     await analyzeCommand(args);
   },
 
   // State management
   state: async (args) => {
-    const { stateCommand } = await import("./commands/state");
+    const { stateCommand } = await import('./commands/state');
     await stateCommand(args);
   },
 
   // File listing
   files: async (args) => {
-    const { filesCommand } = await import("./commands/files");
+    const { filesCommand } = await import('./commands/files');
     await filesCommand(args);
   },
 
   // Phase 5: User Story 3 - Speck Context
-  "spec-context": async () => {
-    const { specContextCommand } = await import("./commands/spec-context");
+  'spec-context': async () => {
+    const { specContextCommand } = await import('./commands/spec-context');
     await specContextCommand();
   },
 
   // Phase 6: User Story 4 - Comment Management
   comment: async (args) => {
-    const { commentCommand } = await import("./commands/comment");
+    const { commentCommand } = await import('./commands/comment');
     await commentCommand(args);
   },
 
-  "comment-reply": async (args) => {
-    const { commentReplyCommand } = await import("./commands/comment");
+  'comment-reply': async (args) => {
+    const { commentReplyCommand } = await import('./commands/comment');
     await commentReplyCommand(args);
   },
 
-  "comment-delete": async (args) => {
-    const { commentDeleteCommand } = await import("./commands/comment");
+  'comment-delete': async (args) => {
+    const { commentDeleteCommand } = await import('./commands/comment');
     await commentDeleteCommand(args);
   },
 
-  "list-comments": async () => {
-    const { listCommentsCommand } = await import("./commands/comment");
+  'list-comments': async () => {
+    const { listCommentsCommand } = await import('./commands/comment');
     await listCommentsCommand();
   },
 
   review: async (args) => {
-    const { reviewCommand } = await import("./commands/review");
+    const { reviewCommand } = await import('./commands/review');
     await reviewCommand(args);
   },
 
   // Phase 8: User Story 6 - Self-Review Mode
-  "check-self-review": async (args) => {
-    const { checkSelfReviewCommand } = await import("./commands/check-self-review");
+  'check-self-review': async (args) => {
+    const { checkSelfReviewCommand } = await import('./commands/check-self-review');
     await checkSelfReviewCommand(args);
   },
 
   // Phase 9b: POC Parity - Utility Commands (FR-027)
   link: async (args) => {
-    const { linkCommand } = await import("./commands/link");
+    const { linkCommand } = await import('./commands/link');
     await linkCommand(args);
   },
 
   actions: async () => {
-    const { actionsCommand } = await import("./commands/actions");
+    const { actionsCommand } = await import('./commands/actions');
     await actionsCommand();
   },
 
-  "run-actions": async () => {
-    const { runActionsCommand } = await import("./commands/actions");
+  'run-actions': async () => {
+    const { runActionsCommand } = await import('./commands/actions');
     await runActionsCommand();
   },
 
-  "review-table": async (args) => {
-    const { reviewTableCommand } = await import("./commands/review-table");
+  'review-table': async (args) => {
+    const { reviewTableCommand } = await import('./commands/review-table');
     await reviewTableCommand(args);
   },
 
-  "submit-actions": async (args) => {
-    const { submitActionsCommand } = await import("./commands/actions");
+  'submit-actions': async (args) => {
+    const { submitActionsCommand } = await import('./commands/actions');
     await submitActionsCommand(args);
   },
 
   logs: async () => {
-    const { logsCommand } = await import("./commands/logs");
+    const { logsCommand } = await import('./commands/logs');
     await logsCommand();
   },
 };
@@ -163,14 +163,14 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
   // Handle --version/-v
-  if (args.includes("--version") || args.includes("-v")) {
-    await commands.version([]);
+  if (args.includes('--version') || args.includes('-v')) {
+    await commands['version']!([]);
     return;
   }
 
   // Handle --help/-h
-  if (args.includes("--help") || args.includes("-h") || args.length === 0) {
-    await commands.help([]);
+  if (args.includes('--help') || args.includes('-h') || args.length === 0) {
+    await commands['help']!([]);
     return;
   }
 
@@ -196,7 +196,7 @@ async function main(): Promise<void> {
   } catch (error) {
     if (error instanceof Error) {
       logger.error(error.message);
-      logger.debug("Stack trace:", error.stack);
+      logger.debug('Stack trace:', error.stack);
     } else {
       logger.error(String(error));
     }

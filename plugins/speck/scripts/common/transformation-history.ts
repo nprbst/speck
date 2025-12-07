@@ -8,15 +8,15 @@
  * and maintain consistency across versions.
  */
 
-import { existsSync } from "fs";
-import { mkdir } from "fs/promises";
-import { dirname } from "path";
+import { existsSync } from 'fs';
+import { mkdir } from 'fs/promises';
+import { dirname } from 'path';
 import type {
   TransformationHistory,
   TransformationHistoryEntry,
   FactoringMapping,
   ArtifactType,
-} from "../../../../specs/001-speck-core-project/contracts/transformation-history";
+} from '../../../../specs/001-speck-core-project/contracts/transformation-history';
 import {
   createEmptyHistory,
   createHistoryEntry,
@@ -24,15 +24,18 @@ import {
   getEntryByVersion,
   getLatestSuccessfulTransformation,
   validateHistory,
-} from "../../../../specs/001-speck-core-project/contracts/transformation-history";
+} from '../../../../specs/001-speck-core-project/contracts/transformation-history';
 
 /**
  * Custom error for transformation history operations
  */
 export class TransformationHistoryError extends Error {
-  constructor(message: string, public readonly cause?: Error) {
+  constructor(
+    message: string,
+    public readonly cause?: Error
+  ) {
     super(message);
-    this.name = "TransformationHistoryError";
+    this.name = 'TransformationHistoryError';
   }
 }
 
@@ -49,9 +52,7 @@ export class TransformationHistoryError extends Error {
  * console.log(`Latest version: ${history.latestVersion}`);
  * ```
  */
-export async function readHistory(
-  historyPath: string
-): Promise<TransformationHistory> {
+export async function readHistory(historyPath: string): Promise<TransformationHistory> {
   if (!existsSync(historyPath)) {
     // Return empty history if file doesn't exist
     return createEmptyHistory();
@@ -59,7 +60,7 @@ export async function readHistory(
 
   try {
     const file = Bun.file(historyPath);
-    const data = await file.json() as unknown;
+    const data = (await file.json()) as unknown;
 
     if (!validateHistory(data)) {
       throw new TransformationHistoryError(
@@ -101,9 +102,7 @@ export async function writeHistory(
 ): Promise<void> {
   // Validate before writing
   if (!validateHistory(history)) {
-    throw new TransformationHistoryError(
-      "Cannot write invalid transformation history structure"
-    );
+    throw new TransformationHistoryError('Cannot write invalid transformation history structure');
   }
 
   try {
@@ -122,7 +121,7 @@ export async function writeHistory(
 
     // Clean up temp file
     try {
-      await Bun.write(tempPath, ""); // Clear content
+      await Bun.write(tempPath, ''); // Clear content
     } catch {
       // Ignore cleanup errors
     }
@@ -162,7 +161,7 @@ export async function addTransformationEntry(
   historyPath: string,
   version: string,
   commitSha: string,
-  status: "transformed" | "failed" | "partial",
+  status: 'transformed' | 'failed' | 'partial',
   mappings: FactoringMapping[] = []
 ): Promise<void> {
   const history = await readHistory(historyPath);
@@ -200,16 +199,14 @@ export async function addTransformationEntry(
 export async function updateTransformationStatus(
   historyPath: string,
   version: string,
-  status: "transformed" | "failed" | "partial",
+  status: 'transformed' | 'failed' | 'partial',
   errorDetails?: string
 ): Promise<void> {
   const history = await readHistory(historyPath);
 
   const entry = getEntryByVersion(history, version);
   if (!entry) {
-    throw new TransformationHistoryError(
-      `Version ${version} not found in transformation history`
-    );
+    throw new TransformationHistoryError(`Version ${version} not found in transformation history`);
   }
 
   entry.status = status;
@@ -252,9 +249,7 @@ export async function addFactoringMapping(
 
   const entry = getEntryByVersion(history, version);
   if (!entry) {
-    throw new TransformationHistoryError(
-      `Version ${version} not found in transformation history`
-    );
+    throw new TransformationHistoryError(`Version ${version} not found in transformation history`);
   }
 
   addMapping(entry, mapping);
@@ -338,9 +333,4 @@ export {
 /**
  * Export types from contract
  */
-export type {
-  TransformationHistory,
-  TransformationHistoryEntry,
-  FactoringMapping,
-  ArtifactType,
-};
+export type { TransformationHistory, TransformationHistoryEntry, FactoringMapping, ArtifactType };

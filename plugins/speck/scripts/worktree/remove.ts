@@ -5,12 +5,12 @@
  * the worktree directory and optionally the branch.
  */
 
-import { existsSync } from "fs";
-import { rm } from "fs/promises";
-import { $ } from "bun";
-import { removeWorktreeGit, getWorktreePath } from "./git";
-import { GitWorktreeError } from "./errors";
-import type { RemoveWorktreeOptions, RemoveWorktreeResult } from "./types";
+import { existsSync } from 'fs';
+import { rm } from 'fs/promises';
+import { $ } from 'bun';
+import { removeWorktreeGit, getWorktreePath } from './git';
+import { GitWorktreeError } from './errors';
+import type { RemoveWorktreeOptions, RemoveWorktreeResult } from './types';
 
 /**
  * Remove a Git worktree
@@ -28,21 +28,14 @@ import type { RemoveWorktreeOptions, RemoveWorktreeResult } from "./types";
 export async function removeWorktree(
   options: RemoveWorktreeOptions
 ): Promise<RemoveWorktreeResult> {
-  const {
-    repoPath,
-    branchName,
-    force = false,
-    deleteBranch = false,
-  } = options;
+  const { repoPath, branchName, force = false, deleteBranch = false } = options;
 
   try {
     // Step 1: Find worktree path for this branch
     const worktreePath = await getWorktreePath(repoPath, branchName);
 
     if (!worktreePath) {
-      throw new GitWorktreeError(
-        `No worktree found for branch '${branchName}'`
-      );
+      throw new GitWorktreeError(`No worktree found for branch '${branchName}'`);
     }
 
     // Step 2: Remove worktree using Git
@@ -59,7 +52,7 @@ export async function removeWorktree(
     let branchDeleted = false;
     if (deleteBranch) {
       try {
-        const deleteFlag = force ? "-D" : "-d";
+        const deleteFlag = force ? '-D' : '-d';
         await $`git -C ${repoPath} branch ${deleteFlag} ${branchName}`.quiet();
         branchDeleted = true;
       } catch (error) {
@@ -75,10 +68,7 @@ export async function removeWorktree(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new GitWorktreeError(
-      `Failed to remove worktree: ${errorMessage}`,
-      errorMessage
-    );
+    throw new GitWorktreeError(`Failed to remove worktree: ${errorMessage}`, errorMessage);
   }
 }
 
@@ -88,14 +78,10 @@ export async function removeWorktree(
  * @param repoPath - Absolute path to repository root
  * @returns Array of worktree paths that can be removed
  */
-export async function listRemovableWorktrees(
-  repoPath: string
-): Promise<string[]> {
-  const { listWorktrees } = await import("./git");
+export async function listRemovableWorktrees(repoPath: string): Promise<string[]> {
+  const { listWorktrees } = await import('./git');
   const worktrees = await listWorktrees(repoPath);
 
   // Filter out the main worktree (first entry)
-  return worktrees
-    .slice(1)
-    .map(w => w.path);
+  return worktrees.slice(1).map((w) => w.path);
 }

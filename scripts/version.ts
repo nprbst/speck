@@ -98,7 +98,9 @@ function bumpVersion(current: string, bump: BumpType | string): string {
     case 'patch':
       return `${major}.${minor}.${patch + 1}`;
     default:
-      throw new Error(`Invalid bump type: ${bump}. Use 'major', 'minor', 'patch', or a version number like '1.2.3'`);
+      throw new Error(
+        `Invalid bump type: ${bump}. Use 'major', 'minor', 'patch', or a version number like '1.2.3'`
+      );
   }
 }
 
@@ -152,7 +154,7 @@ async function getPreviousTag(target: PluginTarget): Promise<string | null> {
     const allTags = result.trim().split('\n').filter(Boolean);
 
     // Filter to only tags matching our prefix
-    const tags = allTags.filter(tag => tag.startsWith(tagPrefix));
+    const tags = allTags.filter((tag) => tag.startsWith(tagPrefix));
 
     // Return the most recent tag (first in sorted list)
     return tags.length > 0 ? tags[0] : null;
@@ -177,7 +179,7 @@ async function getCommitsSinceTag(previousTag: string | null): Promise<RawCommit
   }
 
   const lines = result.trim().split('\n').filter(Boolean);
-  return lines.map(line => {
+  return lines.map((line) => {
     const [hash, subject] = line.split('\x00');
     return { hash, subject };
   });
@@ -242,7 +244,11 @@ function categorizeCommits(commits: RawCommit[]): ChangelogSections {
   return sections;
 }
 
-function formatChangelogEntry(target: PluginTarget, version: string, sections: ChangelogSections): string {
+function formatChangelogEntry(
+  target: PluginTarget,
+  version: string,
+  sections: ChangelogSections
+): string {
   const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
   const lines: string[] = [];
 
@@ -314,7 +320,11 @@ ${entry}`;
       }
     } else {
       // Insert before the first version entry (with trailing newline for separation)
-      content = content.slice(0, firstVersionIndex + 1) + entry + '\n' + content.slice(firstVersionIndex + 1);
+      content =
+        content.slice(0, firstVersionIndex + 1) +
+        entry +
+        '\n' +
+        content.slice(firstVersionIndex + 1);
     }
   }
 
@@ -376,16 +386,12 @@ async function updateVersionFile(newVersion: string, target: PluginTarget): Prom
     json.version = newVersion;
   }
 
-  await writeFile(
-    filePath,
-    JSON.stringify(json, null, 2) + '\n',
-    'utf-8'
-  );
+  await writeFile(filePath, JSON.stringify(json, null, 2) + '\n', 'utf-8');
 
   const fileNames: Record<PluginTarget, string> = {
-    'speck': 'package.json',
+    speck: 'package.json',
     'speck-reviewer': 'plugin.json',
-    'marketplace': 'marketplace.json',
+    marketplace: 'marketplace.json',
   };
   console.log(`✓ Updated ${fileNames[target]}: ${oldVersion} → ${newVersion}`);
 
@@ -440,7 +446,7 @@ async function checkGitStatus(skipGit: boolean, allowDirty: boolean): Promise<bo
 
 function parseTarget(args: string[]): PluginTarget | 'all' | null {
   // Look for known target names in positional args (not flags)
-  const positionalArgs = args.filter(arg => !arg.startsWith('--'));
+  const positionalArgs = args.filter((arg) => !arg.startsWith('--'));
   if (positionalArgs.includes('speck-reviewer')) {
     return 'speck-reviewer';
   }
@@ -473,15 +479,27 @@ async function promptForTarget(): Promise<PluginTarget | 'all' | null> {
   });
 
   switch (response) {
-    case '1': return 'speck';
-    case '2': return 'speck-reviewer';
-    case '3': return 'marketplace';
-    case '4': return 'all';
-    default: return null;
+    case '1':
+      return 'speck';
+    case '2':
+      return 'speck-reviewer';
+    case '3':
+      return 'marketplace';
+    case '4':
+      return 'all';
+    default:
+      return null;
   }
 }
 
-async function bumpPlugin(bump: string, target: PluginTarget, skipGit: boolean, skipPush: boolean, allowDirty: boolean, skipChangelog: boolean): Promise<void> {
+async function bumpPlugin(
+  bump: string,
+  target: PluginTarget,
+  skipGit: boolean,
+  skipPush: boolean,
+  allowDirty: boolean,
+  skipChangelog: boolean
+): Promise<void> {
   // Check git status first (before making any changes)
   const useGit = await checkGitStatus(skipGit, allowDirty);
 
@@ -489,9 +507,8 @@ async function bumpPlugin(bump: string, target: PluginTarget, skipGit: boolean, 
   const versionFilePath = getVersionFilePath(target);
   const content = await readFile(versionFilePath, 'utf-8');
   const json = JSON.parse(content);
-  const currentVersion = target === 'marketplace'
-    ? (json.metadata?.version || '0.0.0')
-    : json.version;
+  const currentVersion =
+    target === 'marketplace' ? json.metadata?.version || '0.0.0' : json.version;
 
   // Calculate new version
   const newVersion = bumpVersion(currentVersion, bump);
@@ -531,7 +548,9 @@ async function bumpPlugin(bump: string, target: PluginTarget, skipGit: boolean, 
         console.log(`✓ Pushed tag ${tagName} to remote`);
       }
     } catch (error) {
-      console.error(`⚠ Warning: Git operations failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(
+        `⚠ Warning: Git operations failed: ${error instanceof Error ? error.message : String(error)}`
+      );
       throw error;
     }
   }
@@ -587,7 +606,6 @@ async function main() {
     console.log('\nNext steps:');
     console.log('  1. Build plugin: bun run build-plugin');
     console.log('  2. Publish: bun run publish-plugin\n');
-
   } catch (error) {
     console.error('\n❌ Version bump failed:');
     console.error(error instanceof Error ? error.message : String(error));

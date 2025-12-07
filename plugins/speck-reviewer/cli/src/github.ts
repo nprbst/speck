@@ -3,9 +3,9 @@
  * Wraps gh CLI commands for PR operations
  */
 
-import { $ } from "bun";
-import { logger } from "@speck/common/logger";
-import type { PRInfo, PRFile, GitHubComment, ChangeType } from "./types";
+import { $ } from 'bun';
+import { logger } from '@speck/common/logger';
+import type { PRInfo, PRFile, GitHubComment, ChangeType } from './types';
 
 /**
  * Check if gh CLI is available and authenticated
@@ -27,7 +27,7 @@ export async function getCurrentUser(): Promise<string | null> {
     const result = await $`gh api user --jq .login`.text();
     return result.trim();
   } catch (error) {
-    logger.error("Failed to get current user:", error);
+    logger.error('Failed to get current user:', error);
     return null;
   }
 }
@@ -37,8 +37,8 @@ export async function getCurrentUser(): Promise<string | null> {
  */
 export async function getPRInfo(prNumber?: number): Promise<PRInfo | null> {
   try {
-    const prArg = prNumber ? String(prNumber) : "";
-    const jsonFields = "number,title,author,headRefName,baseRefName,url";
+    const prArg = prNumber ? String(prNumber) : '';
+    const jsonFields = 'number,title,author,headRefName,baseRefName,url';
 
     const cmd = prArg
       ? $`gh pr view ${prArg} --json ${jsonFields}`
@@ -52,14 +52,14 @@ export async function getPRInfo(prNumber?: number): Promise<PRInfo | null> {
     return {
       number: result.number,
       title: result.title,
-      author: result.author?.login || "unknown",
+      author: result.author?.login || 'unknown',
       headBranch: result.headRefName,
       baseBranch: result.baseRefName,
-      repoFullName: repoFullName || "unknown/unknown",
+      repoFullName: repoFullName || 'unknown/unknown',
       url: result.url,
     };
   } catch (error) {
-    logger.error("Failed to get PR info:", error);
+    logger.error('Failed to get PR info:', error);
     return null;
   }
 }
@@ -72,7 +72,7 @@ export async function getRepoFullName(): Promise<string | null> {
     const result = await $`gh repo view --json nameWithOwner --jq .nameWithOwner`.text();
     return result.trim();
   } catch (error) {
-    logger.debug("Failed to get repo name:", error);
+    logger.debug('Failed to get repo name:', error);
     return null;
   }
 }
@@ -82,27 +82,22 @@ export async function getRepoFullName(): Promise<string | null> {
  */
 export async function getPRFiles(prNumber?: number): Promise<PRFile[]> {
   try {
-    const prArg = prNumber ? String(prNumber) : "";
+    const prArg = prNumber ? String(prNumber) : '';
 
-    const cmd = prArg
-      ? $`gh pr view ${prArg} --json files`
-      : $`gh pr view --json files`;
+    const cmd = prArg ? $`gh pr view ${prArg} --json files` : $`gh pr view --json files`;
 
     const result = await cmd.json();
 
-    return (result.files || []).map((file: {
-      path: string;
-      additions: number;
-      deletions: number;
-      status?: string;
-    }) => ({
-      path: file.path,
-      changeType: mapChangeType(file.status || "modified"),
-      additions: file.additions || 0,
-      deletions: file.deletions || 0,
-    }));
+    return (result.files || []).map(
+      (file: { path: string; additions: number; deletions: number; status?: string }) => ({
+        path: file.path,
+        changeType: mapChangeType(file.status || 'modified'),
+        additions: file.additions || 0,
+        deletions: file.deletions || 0,
+      })
+    );
   } catch (error) {
-    logger.error("Failed to get PR files:", error);
+    logger.error('Failed to get PR files:', error);
     return [];
   }
 }
@@ -112,18 +107,18 @@ export async function getPRFiles(prNumber?: number): Promise<PRFile[]> {
  */
 function mapChangeType(status: string): ChangeType {
   switch (status.toLowerCase()) {
-    case "added":
-    case "a":
-      return "added";
-    case "removed":
-    case "deleted":
-    case "d":
-      return "deleted";
-    case "renamed":
-    case "r":
-      return "renamed";
+    case 'added':
+    case 'a':
+      return 'added';
+    case 'removed':
+    case 'deleted':
+    case 'd':
+      return 'deleted';
+    case 'renamed':
+    case 'r':
+      return 'renamed';
     default:
-      return "modified";
+      return 'modified';
   }
 }
 
@@ -135,7 +130,7 @@ export async function getCurrentBranch(): Promise<string | null> {
     const result = await $`git rev-parse --abbrev-ref HEAD`.text();
     return result.trim();
   } catch (error) {
-    logger.debug("Failed to get current branch:", error);
+    logger.debug('Failed to get current branch:', error);
     return null;
   }
 }
@@ -152,7 +147,7 @@ export async function postComment(
   try {
     const repoFullName = await getRepoFullName();
     if (!repoFullName) {
-      logger.error("Failed to get repository name");
+      logger.error('Failed to get repository name');
       return null;
     }
 
@@ -167,7 +162,7 @@ export async function postComment(
 
     return parseInt(result.trim(), 10);
   } catch (error) {
-    logger.error("Failed to post comment:", error);
+    logger.error('Failed to post comment:', error);
     return null;
   }
 }
@@ -183,7 +178,7 @@ export async function replyToComment(
   try {
     const repoFullName = await getRepoFullName();
     if (!repoFullName) {
-      logger.error("Failed to get repository name");
+      logger.error('Failed to get repository name');
       return false;
     }
 
@@ -191,7 +186,7 @@ export async function replyToComment(
       -f body=${body}`.quiet();
     return true;
   } catch (error) {
-    logger.error("Failed to reply to comment:", error);
+    logger.error('Failed to reply to comment:', error);
     return false;
   }
 }
@@ -203,14 +198,14 @@ export async function deleteComment(commentId: number): Promise<boolean> {
   try {
     const repoFullName = await getRepoFullName();
     if (!repoFullName) {
-      logger.error("Failed to get repository name");
+      logger.error('Failed to get repository name');
       return false;
     }
 
     await $`gh api repos/${repoFullName}/pulls/comments/${commentId} -X DELETE`.quiet();
     return true;
   } catch (error) {
-    logger.error("Failed to delete comment:", error);
+    logger.error('Failed to delete comment:', error);
     return false;
   }
 }
@@ -220,7 +215,7 @@ export async function deleteComment(commentId: number): Promise<boolean> {
  */
 export async function listComments(prNumber?: number): Promise<GitHubComment[]> {
   try {
-    const prArg = prNumber ? String(prNumber) : "";
+    const prArg = prNumber ? String(prNumber) : '';
 
     const cmd = prArg
       ? $`gh pr view ${prArg} --json reviewComments`
@@ -228,25 +223,27 @@ export async function listComments(prNumber?: number): Promise<GitHubComment[]> 
 
     const result = await cmd.json();
 
-    return (result.reviewComments || []).map((comment: {
-      id: number;
-      path: string;
-      line?: number;
-      body: string;
-      author?: { login: string };
-      state?: string;
-      createdAt: string;
-    }) => ({
-      id: comment.id,
-      path: comment.path,
-      line: comment.line || 0,
-      body: comment.body,
-      author: comment.author?.login || "unknown",
-      state: (comment.state === "resolved" ? "resolved" : "open") as "open" | "resolved",
-      createdAt: comment.createdAt,
-    }));
+    return (result.reviewComments || []).map(
+      (comment: {
+        id: number;
+        path: string;
+        line?: number;
+        body: string;
+        author?: { login: string };
+        state?: string;
+        createdAt: string;
+      }) => ({
+        id: comment.id,
+        path: comment.path,
+        line: comment.line || 0,
+        body: comment.body,
+        author: comment.author?.login || 'unknown',
+        state: (comment.state === 'resolved' ? 'resolved' : 'open') as 'open' | 'resolved',
+        createdAt: comment.createdAt,
+      })
+    );
   } catch (error) {
-    logger.error("Failed to list comments:", error);
+    logger.error('Failed to list comments:', error);
     return [];
   }
 }
@@ -256,13 +253,16 @@ export async function listComments(prNumber?: number): Promise<GitHubComment[]> 
  */
 export async function submitReview(
   prNumber: number,
-  event: "APPROVE" | "REQUEST_CHANGES" | "COMMENT",
+  event: 'APPROVE' | 'REQUEST_CHANGES' | 'COMMENT',
   body?: string
 ): Promise<boolean> {
   try {
-    const eventFlag = event === "APPROVE" ? "--approve" :
-                      event === "REQUEST_CHANGES" ? "--request-changes" :
-                      "--comment";
+    const eventFlag =
+      event === 'APPROVE'
+        ? '--approve'
+        : event === 'REQUEST_CHANGES'
+          ? '--request-changes'
+          : '--comment';
 
     const cmd = body
       ? $`gh pr review ${prNumber} ${eventFlag} --body ${body}`
@@ -271,7 +271,7 @@ export async function submitReview(
     await cmd.quiet();
     return true;
   } catch (error) {
-    logger.error("Failed to submit review:", error);
+    logger.error('Failed to submit review:', error);
     return false;
   }
 }
@@ -284,7 +284,7 @@ export async function postIssueComment(prNumber: number, body: string): Promise<
     await $`gh pr comment ${prNumber} --body ${body}`.quiet();
     return true;
   } catch (error) {
-    logger.error("Failed to post issue comment:", error);
+    logger.error('Failed to post issue comment:', error);
     return false;
   }
 }
@@ -310,15 +310,15 @@ async function runGh(args: string[]): Promise<string> {
  * Execute a GraphQL query via gh CLI
  */
 export async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
-  const args = ["api", "graphql"];
+  const args = ['api', 'graphql'];
 
   if (variables) {
     for (const [key, value] of Object.entries(variables)) {
-      args.push("-F", `${key}=${typeof value === "string" ? value : JSON.stringify(value)}`);
+      args.push('-F', `${key}=${typeof value === 'string' ? value : JSON.stringify(value)}`);
     }
   }
 
-  args.push("-f", `query=${query}`);
+  args.push('-f', `query=${query}`);
 
   const result = await runGh(args);
   const parsed = JSON.parse(result);
@@ -410,10 +410,7 @@ export async function fetchExistingComments(
   prNumber: number
 ): Promise<ExistingPRComment[]> {
   // Use gh api to get comments
-  const result = await runGh([
-    "api",
-    `repos/${owner}/${repo}/pulls/${prNumber}/comments`,
-  ]);
+  const result = await runGh(['api', `repos/${owner}/${repo}/pulls/${prNumber}/comments`]);
 
   const comments = JSON.parse(result) as Array<{
     id: number;
@@ -456,7 +453,7 @@ export async function fetchExistingComments(
  * Get PR diff output
  */
 export async function getPRDiff(prNumber?: number): Promise<string> {
-  const args = ["pr", "diff"];
+  const args = ['pr', 'diff'];
   if (prNumber) {
     args.push(String(prNumber));
   }
@@ -476,11 +473,11 @@ export interface PRMetadata {
  * Get PR metadata including body
  */
 export async function getPRMetadata(prNumber?: number): Promise<PRMetadata> {
-  const args = ["pr", "view"];
+  const args = ['pr', 'view'];
   if (prNumber) {
     args.push(String(prNumber));
   }
-  args.push("--json", "number,title,body,author,baseRefName,headRefName");
+  args.push('--json', 'number,title,body,author,baseRefName,headRefName');
   const result = await runGh(args);
   return JSON.parse(result);
 }
@@ -489,7 +486,7 @@ export async function getPRMetadata(prNumber?: number): Promise<PRMetadata> {
  * Detect if the current user is reviewing their own PR
  */
 export async function detectSelfReview(prAuthor: string): Promise<boolean> {
-  const ghUser = await runGh(["api", "user", "--jq", ".login"]);
+  const ghUser = await runGh(['api', 'user', '--jq', '.login']);
   return ghUser.toLowerCase() === prAuthor.toLowerCase();
 }
 
@@ -503,10 +500,12 @@ export async function addIssueComment(
   body: string
 ): Promise<{ id: number }> {
   const result = await runGh([
-    "api",
+    'api',
     `repos/${owner}/${repo}/issues/${prNumber}/comments`,
-    "-X", "POST",
-    "-f", `body=${body}`,
+    '-X',
+    'POST',
+    '-f',
+    `body=${body}`,
   ]);
   return JSON.parse(result);
 }

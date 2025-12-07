@@ -10,7 +10,7 @@
  * @module prereq-cache
  */
 
-import type { ValidationOutput } from "../check-prerequisites";
+import type { ValidationOutput } from '../check-prerequisites';
 
 /**
  * Cached prerequisite check result

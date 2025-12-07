@@ -4,12 +4,12 @@
  * Manages upstream/releases.json file for tracking pulled spec-kit releases.
  */
 
-import { existsSync } from "fs";
+import { existsSync } from 'fs';
 import type {
   ReleaseRegistry,
   UpstreamRelease,
   ReleaseStatus,
-} from "../contracts/release-registry";
+} from '../contracts/release-registry';
 import {
   validateReleaseRegistry,
   createEmptyRegistry,
@@ -18,7 +18,7 @@ import {
   getReleaseByVersion,
   getLatestRelease,
   ReleaseRegistryError,
-} from "../contracts/release-registry";
+} from '../contracts/release-registry';
 
 /**
  * Read release registry from upstream/releases.json
@@ -33,9 +33,7 @@ import {
  * console.log(`Latest release: ${registry.latest}`);
  * ```
  */
-export async function readRegistry(
-  registryPath: string
-): Promise<ReleaseRegistry> {
+export async function readRegistry(registryPath: string): Promise<ReleaseRegistry> {
   if (!existsSync(registryPath)) {
     // Return empty registry if file doesn't exist
     return createEmptyRegistry();
@@ -43,14 +41,14 @@ export async function readRegistry(
 
   try {
     const file = Bun.file(registryPath);
-    const data = await file.json() as unknown;
+    const data = (await file.json()) as unknown;
     return validateReleaseRegistry(data);
   } catch (error) {
     if (error instanceof ReleaseRegistryError) {
       throw error;
     }
     throw new ReleaseRegistryError(
-      `Failed to read registry: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to read registry: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -82,7 +80,7 @@ export async function writeRegistry(
       throw error;
     }
     throw new ReleaseRegistryError(
-      `Failed to write registry: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to write registry: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -167,9 +165,7 @@ export async function getRelease(
  * @param registryPath - Path to releases.json file
  * @returns Latest release if any exist, null otherwise
  */
-export async function getLatest(
-  registryPath: string
-): Promise<UpstreamRelease | null> {
+export async function getLatest(registryPath: string): Promise<UpstreamRelease | null> {
   const registry = await readRegistry(registryPath);
   return getLatestRelease(registry);
 }
@@ -181,10 +177,7 @@ export async function getLatest(
  * @param version - Version to check
  * @returns true if release exists, false otherwise
  */
-export async function releaseExists(
-  registryPath: string,
-  version: string
-): Promise<boolean> {
+export async function releaseExists(registryPath: string, version: string): Promise<boolean> {
   const release = await getRelease(registryPath, version);
   return release !== null;
 }

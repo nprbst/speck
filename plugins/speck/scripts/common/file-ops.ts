@@ -5,10 +5,10 @@
  * and atomic renames to ensure "all or nothing" transformations.
  */
 
-import { mkdtemp, rm } from "fs/promises";
-import { existsSync, renameSync, rmSync } from "fs";
-import { tmpdir } from "os";
-import { join } from "path";
+import { mkdtemp, rm } from 'fs/promises';
+import { existsSync, renameSync, rmSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 /**
  * Atomic file operations error
@@ -16,7 +16,7 @@ import { join } from "path";
 export class AtomicFileOpsError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "AtomicFileOpsError";
+    this.name = 'AtomicFileOpsError';
   }
 }
 
@@ -32,13 +32,13 @@ export class AtomicFileOpsError extends Error {
  * console.log(tempDir); // "/tmp/speck-transform-abc123"
  * ```
  */
-export async function createTempDir(prefix = "speck-"): Promise<string> {
+export async function createTempDir(prefix = 'speck-'): Promise<string> {
   try {
     const tempDir = await mkdtemp(join(tmpdir(), prefix));
     return tempDir;
   } catch (error) {
     throw new AtomicFileOpsError(
-      `Failed to create temp directory: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to create temp directory: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -54,15 +54,12 @@ export async function createTempDir(prefix = "speck-"): Promise<string> {
  * await removeDirectory("/tmp/speck-temp-abc123");
  * ```
  */
-export async function removeDirectory(
-  dirPath: string,
-  force = true
-): Promise<void> {
+export async function removeDirectory(dirPath: string, force = true): Promise<void> {
   try {
     await rm(dirPath, { recursive: true, force });
   } catch (error) {
     throw new AtomicFileOpsError(
-      `Failed to remove directory: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to remove directory: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -81,11 +78,7 @@ export async function removeDirectory(
  * await atomicMove("/tmp/speck-temp-abc123", ".speck/scripts");
  * ```
  */
-export function atomicMove(
-  sourcePath: string,
-  destPath: string,
-  removeExisting = false
-): void {
+export function atomicMove(sourcePath: string, destPath: string, removeExisting = false): void {
   try {
     // Check if destination exists
     if (existsSync(destPath)) {
@@ -105,7 +98,7 @@ export function atomicMove(
       throw error;
     }
     throw new AtomicFileOpsError(
-      `Failed to move directory atomically: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to move directory atomically: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -133,7 +126,7 @@ export function atomicMove(
  */
 export async function withTempDir<T>(
   callback: (tempDir: string) => Promise<T>,
-  prefix = "speck-"
+  prefix = 'speck-'
 ): Promise<T> {
   const tempDir = await createTempDir(prefix);
 
@@ -178,7 +171,7 @@ export async function atomicWrite(
     }
 
     throw new AtomicFileOpsError(
-      `Failed to write file atomically: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to write file atomically: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -194,17 +187,14 @@ export async function atomicWrite(
  * await copyDirectory("upstream/v1.0.0", "/tmp/speck-temp");
  * ```
  */
-export async function copyDirectory(
-  sourcePath: string,
-  destPath: string
-): Promise<void> {
+export async function copyDirectory(sourcePath: string, destPath: string): Promise<void> {
   try {
     // Use Bun Shell API for recursive copy
-    const { $ } = await import("bun");
+    const { $ } = await import('bun');
     await $`cp -r ${sourcePath} ${destPath}`.quiet();
   } catch (error) {
     throw new AtomicFileOpsError(
-      `Failed to copy directory: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to copy directory: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }

@@ -7,13 +7,13 @@
  * Used by slash commands (/speck:specify, /speck:branch) to create worktrees.
  */
 
-import { parseArgs } from "util";
-import { executeCreateCommand } from "./cli-create";
-import { executeRemoveCommand } from "./cli-remove";
-import { executeListCommand } from "./cli-list";
-import { executePruneCommand } from "./cli-prune";
-import { executeInitCommand } from "./cli-init";
-import { executeLaunchIDECommand } from "./cli-launch-ide";
+import { parseArgs } from 'util';
+import { executeCreateCommand } from './cli-create';
+import { executeRemoveCommand } from './cli-remove';
+import { executeListCommand } from './cli-list';
+import { executePruneCommand } from './cli-prune';
+import { executeInitCommand } from './cli-init';
+import { executeLaunchIDECommand } from './cli-launch-ide';
 
 const USAGE = `
 Speck Worktree CLI
@@ -85,14 +85,14 @@ Examples:
 interface CliArgs {
   command?: string;
   branch?: string;
-  "repo-path"?: string;
-  "worktree-path"?: string;
-  "no-ide"?: boolean;
-  "no-deps"?: boolean;
+  'repo-path'?: string;
+  'worktree-path'?: string;
+  'no-ide'?: boolean;
+  'no-deps'?: boolean;
   reuse?: boolean;
   force?: boolean;
   verbose?: boolean;
-  "dry-run"?: boolean;
+  'dry-run'?: boolean;
   defaults?: boolean;
   minimal?: boolean;
   json?: boolean;
@@ -103,15 +103,15 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
   // Show help if no args
-  if (args.length === 0 || args.includes("--help") || args.includes("-h")) {
+  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
     console.log(USAGE);
     process.exit(0);
   }
 
   // Parse command (first positional arg)
   const command = args[0];
-  if (!command || !["create", "remove", "list", "prune", "init", "launch-ide"].includes(command)) {
-    console.error(`Error: Unknown command '${command || "(none)"}'`);
+  if (!command || !['create', 'remove', 'list', 'prune', 'init', 'launch-ide'].includes(command)) {
+    console.error(`Error: Unknown command '${command || '(none)'}'`);
     console.log(USAGE);
     process.exit(1);
   }
@@ -120,29 +120,29 @@ async function main(): Promise<void> {
   const { values } = parseArgs({
     args: args.slice(1),
     options: {
-      branch: { type: "string" },
-      "repo-path": { type: "string" },
-      "worktree-path": { type: "string" },
-      "no-ide": { type: "boolean", default: false },
-      "no-deps": { type: "boolean", default: false },
-      reuse: { type: "boolean", default: false },
-      force: { type: "boolean", default: false },
-      verbose: { type: "boolean", default: false },
-      "dry-run": { type: "boolean", default: false },
-      defaults: { type: "boolean", default: false },
-      minimal: { type: "boolean", default: false },
-      json: { type: "boolean", default: false },
-      help: { type: "boolean", default: false },
+      branch: { type: 'string' },
+      'repo-path': { type: 'string' },
+      'worktree-path': { type: 'string' },
+      'no-ide': { type: 'boolean', default: false },
+      'no-deps': { type: 'boolean', default: false },
+      reuse: { type: 'boolean', default: false },
+      force: { type: 'boolean', default: false },
+      verbose: { type: 'boolean', default: false },
+      'dry-run': { type: 'boolean', default: false },
+      defaults: { type: 'boolean', default: false },
+      minimal: { type: 'boolean', default: false },
+      json: { type: 'boolean', default: false },
+      help: { type: 'boolean', default: false },
     },
     strict: true,
     allowPositionals: false,
   }) as { values: CliArgs };
 
-  const repoPath = values["repo-path"] || ".";
+  const repoPath = values['repo-path'] || '.';
 
   try {
     switch (command) {
-      case "create": {
+      case 'create': {
         if (!values.branch) {
           throw new Error("--branch is required for 'create' command");
         }
@@ -150,16 +150,16 @@ async function main(): Promise<void> {
         await executeCreateCommand({
           branch: values.branch,
           repoPath,
-          worktreePath: values["worktree-path"],
-          skipIDE: values["no-ide"],
-          skipDeps: values["no-deps"],
+          worktreePath: values['worktree-path'],
+          skipIDE: values['no-ide'],
+          skipDeps: values['no-deps'],
           reuseExisting: values.reuse ?? false,
           json: values.json ?? false,
         });
         break;
       }
 
-      case "remove": {
+      case 'remove': {
         if (!values.branch) {
           throw new Error("--branch is required for 'remove' command");
         }
@@ -173,7 +173,7 @@ async function main(): Promise<void> {
         break;
       }
 
-      case "list": {
+      case 'list': {
         await executeListCommand({
           repoPath,
           json: values.json ?? false,
@@ -182,16 +182,16 @@ async function main(): Promise<void> {
         break;
       }
 
-      case "prune": {
+      case 'prune': {
         await executePruneCommand({
           repoPath,
-          dryRun: values["dry-run"] ?? false,
+          dryRun: values['dry-run'] ?? false,
           json: values.json ?? false,
         });
         break;
       }
 
-      case "init": {
+      case 'init': {
         await executeInitCommand({
           repoPath,
           defaults: values.defaults ?? false,
@@ -201,13 +201,13 @@ async function main(): Promise<void> {
         break;
       }
 
-      case "launch-ide": {
-        if (!values["worktree-path"]) {
+      case 'launch-ide': {
+        if (!values['worktree-path']) {
           throw new Error("--worktree-path is required for 'launch-ide' command");
         }
 
         await executeLaunchIDECommand({
-          worktreePath: values["worktree-path"],
+          worktreePath: values['worktree-path'],
           repoPath,
           json: values.json ?? false,
         });

@@ -7,8 +7,8 @@
  * Created: 2025-11-18
  */
 
-import { $ } from "bun";
-import { GitError } from "./errors.js";
+import { $ } from 'bun';
+import { GitError } from './errors.js';
 
 // T092 - Cache for default branch detection per repo (module-level for command session)
 const defaultBranchCache = new Map<string, string | null>();
@@ -21,11 +21,7 @@ const defaultBranchCache = new Map<string, string | null>();
  * @param repoRoot - Repository root directory
  * @throws GitError if operation fails
  */
-export async function createGitBranch(
-  name: string,
-  base: string,
-  repoRoot: string
-): Promise<void> {
+export async function createGitBranch(name: string, base: string, repoRoot: string): Promise<void> {
   // Validate base exists
   const baseCheck = await $`git -C ${repoRoot} rev-parse --verify ${base}`.quiet();
   if (baseCheck.exitCode !== 0) {
@@ -68,8 +64,8 @@ export async function checkBranchMerged(
 
     const output = result.text();
     const mergedBranches = output
-      .split("\n")
-      .map(line => line.trim().replace(/^\*\s*/, ""))
+      .split('\n')
+      .map((line) => line.trim().replace(/^\*\s*/, ''))
       .filter(Boolean);
 
     return mergedBranches.includes(branchName);
@@ -104,11 +100,11 @@ export async function listGitBranches(
 
     const output = result.stdout.toString();
     return output
-      .split("\n")
+      .split('\n')
       .filter(Boolean)
-      .map(line => {
-        const [name, upstream] = line.split("|");
-        if (!name) throw new GitError("Invalid branch line format");
+      .map((line) => {
+        const [name, upstream] = line.split('|');
+        if (!name) throw new GitError('Invalid branch line format');
         return {
           name: name.trim(),
           upstream: upstream?.trim() || null,
@@ -127,10 +123,7 @@ export async function listGitBranches(
  * @param repoRoot - Repository root directory
  * @throws GitError if operation fails
  */
-export async function checkoutBranch(
-  name: string,
-  repoRoot: string
-): Promise<void> {
+export async function checkoutBranch(name: string, repoRoot: string): Promise<void> {
   const result = await $`git -C ${repoRoot} checkout ${name}`.quiet();
   if (result.exitCode !== 0) {
     const stderr = result.stderr.toString();
@@ -148,12 +141,12 @@ export async function checkoutBranch(
 export async function getCurrentBranch(repoRoot: string): Promise<string> {
   const result = await $`git -C ${repoRoot} rev-parse --abbrev-ref HEAD`.quiet();
   if (result.exitCode !== 0) {
-    throw new GitError("Failed to get current branch");
+    throw new GitError('Failed to get current branch');
   }
 
   const branch = result.stdout.toString().trim();
-  if (branch === "HEAD") {
-    throw new GitError("Currently in detached HEAD state");
+  if (branch === 'HEAD') {
+    throw new GitError('Currently in detached HEAD state');
   }
 
   return branch;
@@ -166,10 +159,7 @@ export async function getCurrentBranch(repoRoot: string): Promise<string> {
  * @param repoRoot - Repository root directory
  * @returns true if branch exists, false otherwise
  */
-export async function branchExists(
-  name: string,
-  repoRoot: string
-): Promise<boolean> {
+export async function branchExists(name: string, repoRoot: string): Promise<boolean> {
   try {
     const result = await $`git -C ${repoRoot} rev-parse --verify ${name}`.quiet();
     return result.exitCode === 0;
@@ -189,10 +179,7 @@ export async function branchExists(
  * @param repoRoot - Repository root directory
  * @throws GitError with suggested alternatives if validation fails
  */
-export async function validateBaseBranch(
-  baseBranch: string,
-  repoRoot: string
-): Promise<void> {
+export async function validateBaseBranch(baseBranch: string, repoRoot: string): Promise<void> {
   // Get all local git branches
   const result = await $`git -C ${repoRoot} branch --list ${baseBranch}`.quiet();
 
@@ -200,11 +187,11 @@ export async function validateBaseBranch(
     // Branch doesn't exist locally
     throw new GitError(
       `Base branch '${baseBranch}' does not exist in current repository.\n\n` +
-      `Cross-repo branch dependencies are not supported.\n\n` +
-      `Alternatives:\n` +
-      `  1. Complete work in other repo first and merge to main\n` +
-      `  2. Use shared contracts/APIs for coordination\n` +
-      `  3. Manually coordinate PR merge order across repos`
+        `Cross-repo branch dependencies are not supported.\n\n` +
+        `Alternatives:\n` +
+        `  1. Complete work in other repo first and merge to main\n` +
+        `  2. Use shared contracts/APIs for coordination\n` +
+        `  3. Manually coordinate PR merge order across repos`
     );
   }
 }

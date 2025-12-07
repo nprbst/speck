@@ -4,9 +4,9 @@
  * Replaces test-hello for testing hook flow
  */
 
-import type { CommandHandler, ArgumentParser } from "@speck/common/types";
-import { ErrorMessages, errorToResult } from "@speck/common/errors";
-import { successResult } from "@speck/common/output";
+import type { CommandHandler, ArgumentParser } from '@speck/common/types';
+import { ErrorMessages, errorToResult } from '@speck/common/errors';
+import { successResult } from '@speck/common/output';
 
 /**
  * Parse echo command arguments
@@ -24,7 +24,7 @@ export const parseEchoArgs: ArgumentParser<{ message: string }> = (commandString
   }
 
   // Join remaining parts as the message
-  const message = parts.join(" ");
+  const message = parts.join(' ');
 
   return { message };
 };
@@ -42,7 +42,7 @@ export const echoHandler: CommandHandler<{ message: string }> = async (args) => 
   try {
     // Validate arguments
     if (!args.message) {
-      throw ErrorMessages.MISSING_REQUIRED_ARG("message");
+      throw ErrorMessages.MISSING_REQUIRED_ARG('message');
     }
 
     const output = args.message;

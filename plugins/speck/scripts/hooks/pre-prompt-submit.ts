@@ -16,14 +16,10 @@
  * @see research.md decision 7 for caching strategy
  */
 
-import {
-  runPrerequisiteCheck,
-  formatPrereqContext,
-  formatPrereqError,
-} from "../lib/prereq-runner";
-import { appendFile } from "fs/promises";
+import { runPrerequisiteCheck, formatPrereqContext, formatPrereqError } from '../lib/prereq-runner';
+import { appendFile } from 'fs/promises';
 
-const LOG_FILE = "/private/tmp/.claude-hook-test/speck-hook-log.txt";
+const LOG_FILE = '/private/tmp/.claude-hook-test/speck-hook-log.txt';
 
 const log = async (msg: string): Promise<void> => {
   await appendFile(LOG_FILE, `[${new Date().toISOString()}] [PrePromptSubmit] ${msg}\n`);
@@ -41,10 +37,10 @@ interface HookInput {
  * UserPromptSubmit hook output structure
  */
 interface HookOutput {
-  decision?: "block";
+  decision?: 'block';
   reason?: string;
   hookSpecificOutput?: {
-    hookEventName: "UserPromptSubmit";
+    hookEventName: 'UserPromptSubmit';
     additionalContext?: string;
   };
 }
@@ -82,32 +78,32 @@ function getCheckOptions(prompt: string): {
 } {
   // Extract the slash command name (supports both . and : separators)
   const match = prompt.match(/^\/speck[.:](\w+)/);
-  const command = match?.[1] ?? "";
+  const command = match?.[1] ?? '';
 
   // Commands that require tasks.md to exist
-  const requireTasksCommands = ["implement"];
+  const requireTasksCommands = ['implement'];
 
   // Commands that should include tasks.md in available docs
-  const includeTasksCommands = ["implement", "analyze"];
+  const includeTasksCommands = ['implement', 'analyze'];
 
   // Commands that should skip feature check (e.g., /speck.specify runs before feature exists)
-  const skipFeatureCheckCommands = ["specify", "constitution", "env", "link", "init"];
+  const skipFeatureCheckCommands = ['specify', 'constitution', 'env', 'link', 'init'];
 
   // Commands that should skip plan.md check (e.g., /speck.plan creates plan.md, /speck.clarify runs before plan)
-  const skipPlanCheckCommands = ["plan", "clarify", "constitution", "env", "link", "init"];
+  const skipPlanCheckCommands = ['plan', 'clarify', 'constitution', 'env', 'link', 'init'];
 
   // Commands that should pre-load file contents (high/medium priority files)
   const includeFileContentsCommands = [
-    "implement",  // existing: reads tasks, plan, constitution, data-model, checklists
-    "analyze",    // new: reads spec, plan, tasks, constitution
-    "plan",       // new: reads spec, constitution
-    "tasks",      // new: reads plan, spec, data-model, research
-    "checklist",  // new: reads spec, plan, tasks
-    "clarify",    // new: reads spec
+    'implement', // existing: reads tasks, plan, constitution, data-model, checklists
+    'analyze', // new: reads spec, plan, tasks, constitution
+    'plan', // new: reads spec, constitution
+    'tasks', // new: reads plan, spec, data-model, research
+    'checklist', // new: reads spec, plan, tasks
+    'clarify', // new: reads spec
   ];
 
   // Commands that should pre-determine workflow mode
-  const includeWorkflowModeCommands = ["implement"];
+  const includeWorkflowModeCommands = ['implement'];
 
   return {
     requireTasks: requireTasksCommands.includes(command),
@@ -159,7 +155,7 @@ async function main(): Promise<void> {
 
       const output: HookOutput = {
         hookSpecificOutput: {
-          hookEventName: "UserPromptSubmit",
+          hookEventName: 'UserPromptSubmit',
           additionalContext: context,
         },
       };
@@ -168,14 +164,14 @@ async function main(): Promise<void> {
       console.log(JSON.stringify(output));
     } else {
       // Block execution with error message
-      const errorMessage = formatPrereqError(result.error || "Unknown error");
+      const errorMessage = formatPrereqError(result.error || 'Unknown error');
       await log(`Blocking with error: ${result.error}`);
 
       const output: HookOutput = {
-        decision: "block",
+        decision: 'block',
         reason: errorMessage,
         hookSpecificOutput: {
-          hookEventName: "UserPromptSubmit",
+          hookEventName: 'UserPromptSubmit',
         },
       };
 

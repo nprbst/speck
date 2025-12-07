@@ -101,9 +101,9 @@ export interface FetchReleasesResult {
  */
 export function parseRateLimitHeaders(headers: Headers): RateLimitInfo {
   return {
-    remaining: parseInt(headers.get("X-RateLimit-Remaining") || "0", 10),
-    limit: parseInt(headers.get("X-RateLimit-Limit") || "60", 10),
-    reset: parseInt(headers.get("X-RateLimit-Reset") || "0", 10),
+    remaining: parseInt(headers.get('X-RateLimit-Remaining') || '0', 10),
+    limit: parseInt(headers.get('X-RateLimit-Limit') || '60', 10),
+    reset: parseInt(headers.get('X-RateLimit-Reset') || '0', 10),
   };
 }
 
@@ -134,8 +134,7 @@ export function filterStableReleases(releases: GitHubRelease[]): GitHubRelease[]
  */
 export function sortReleasesByDate(releases: GitHubRelease[]): GitHubRelease[] {
   return releases.sort(
-    (a, b) =>
-      new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
+    (a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
   );
 }
 
@@ -144,11 +143,11 @@ export function sortReleasesByDate(releases: GitHubRelease[]): GitHubRelease[] {
  */
 export function extractNotesSummary(body: string, maxLength = 200): string {
   // Get first paragraph (split on double newline)
-  const firstParagraph = body.split("\n\n")[0] || "";
+  const firstParagraph = body.split('\n\n')[0] || '';
 
   // Truncate to maxLength if needed
   if (firstParagraph.length > maxLength) {
-    return firstParagraph.substring(0, maxLength) + "...";
+    return firstParagraph.substring(0, maxLength) + '...';
   }
 
   return firstParagraph;

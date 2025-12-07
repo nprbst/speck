@@ -7,9 +7,9 @@
  * Supports JSON output and verbose mode for detailed information.
  */
 
-import { listWorktrees } from "./git";
-import { WorktreeError } from "./errors";
-import type { Worktree } from "./types";
+import { listWorktrees } from './git';
+import { WorktreeError } from './errors';
+import type { Worktree } from './types';
 
 export interface ListCommandOptions {
   repoPath: string;
@@ -20,9 +20,7 @@ export interface ListCommandOptions {
 /**
  * Execute the list command
  */
-export async function executeListCommand(
-  options: ListCommandOptions
-): Promise<void> {
+export async function executeListCommand(options: ListCommandOptions): Promise<void> {
   const { repoPath, json, verbose } = options;
 
   try {
@@ -34,7 +32,7 @@ export async function executeListCommand(
       console.log(JSON.stringify({ worktrees }, null, 2));
     } else {
       if (worktrees.length === 0) {
-        console.log("No worktrees found");
+        console.log('No worktrees found');
       } else {
         console.log(`Found ${worktrees.length} worktree(s):\n`);
         worktrees.forEach((wt) => {
@@ -68,7 +66,7 @@ export async function executeListCommand(
  * Format worktree output for console display
  */
 function formatWorktreeOutput(worktree: Worktree, verbose: boolean): void {
-  const branchName = worktree.branch || "(main)";
+  const branchName = worktree.branch || '(main)';
   console.log(`  ${branchName}`);
   console.log(`    Path: ${worktree.path}`);
 

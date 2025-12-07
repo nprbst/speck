@@ -12,7 +12,7 @@
  * Common utilities are imported from @speck/common/output.
  */
 
-import type { CommandResult } from "@speck/common/types";
+import type { CommandResult } from '@speck/common/types';
 
 // Re-export common output utilities for backward compatibility
 export {
@@ -32,7 +32,7 @@ export {
   type InputMode,
   type JsonOutput,
   type FormatJsonInput,
-} from "@speck/common/output";
+} from '@speck/common/output';
 
 // =============================================================================
 // Speck-specific Hook Types
@@ -42,7 +42,7 @@ export {
  * Hook input payload structure (read from stdin when --hook flag present)
  */
 export interface HookInputPayload {
-  hookType?: "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "SessionStart";
+  hookType?: 'UserPromptSubmit' | 'PreToolUse' | 'PostToolUse' | 'SessionStart';
   toolName?: string;
   toolInput?: Record<string, unknown>;
   userPrompt?: string;
@@ -69,7 +69,7 @@ export interface HookOutput {
  * Format input for formatHookOutput function
  */
 export interface FormatHookInput {
-  hookType?: "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "SessionStart";
+  hookType?: 'UserPromptSubmit' | 'PreToolUse' | 'PostToolUse' | 'SessionStart';
   context?: string;
   additionalContext?: string;
   allow?: boolean;
@@ -117,7 +117,7 @@ export async function readHookInput(stdinContent?: string): Promise<HookInputPay
     }
 
     // Empty content
-    if (!content || content.trim() === "") {
+    if (!content || content.trim() === '') {
       return undefined;
     }
 
@@ -147,19 +147,19 @@ export function formatHookOutput(input: FormatHookInput): HookOutput {
   const output: HookOutput = {};
 
   // UserPromptSubmit: inject context into prompt
-  if (input.hookType === "UserPromptSubmit" && input.context) {
+  if (input.hookType === 'UserPromptSubmit' && input.context) {
     output.context = input.context;
   }
 
   // SessionStart: use hookSpecificOutput.additionalContext
-  if (input.hookType === "SessionStart" && input.additionalContext) {
+  if (input.hookType === 'SessionStart' && input.additionalContext) {
     output.hookSpecificOutput = {
       additionalContext: input.additionalContext,
     };
   }
 
   // PreToolUse: allow/deny with optional message
-  if (input.hookType === "PreToolUse") {
+  if (input.hookType === 'PreToolUse') {
     if (input.allow !== undefined) {
       output.allow = input.allow;
     }

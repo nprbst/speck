@@ -6,39 +6,39 @@
  * Per data-model.md: Identical business logic in both modes, different output formatting
  */
 
-import { Command } from "commander";
-import type { CommandContext } from "@speck/common/types";
-import { registry } from "./commands/index";
-import { CommandError, formatError } from "@speck/common/errors";
+import { Command } from 'commander';
+import type { CommandContext } from '@speck/common/types';
+import { registry } from './commands/index';
+import { CommandError, formatError } from '@speck/common/errors';
 
 /**
  * Helper to detect CLI mode
  */
-function detectMode(): "cli" | "hook" {
+function detectMode(): 'cli' | 'hook' {
   // Check for --hook flag or JSON piped input
-  if (process.argv.includes("--hook")) {
-    return "hook";
+  if (process.argv.includes('--hook')) {
+    return 'hook';
   }
-  return "cli";
+  return 'cli';
 }
 
 const program = new Command();
 
 program
-  .name("speck")
-  .description("Speck unified CLI for feature specification workflow")
-  .version("0.1.0");
+  .name('speck')
+  .description('Speck unified CLI for feature specification workflow')
+  .version('0.1.0');
 
 // Register commands from registry
 
 // echo command
 const echoEntry = registry.echo!;
 program
-  .command("echo <message...>")
+  .command('echo <message...>')
   .description(echoEntry.description)
   .action(async (messageArray) => {
     // Commander captures variadic args as an array
-    const message = Array.isArray(messageArray) ? messageArray.join(" ") : String(messageArray);
+    const message = Array.isArray(messageArray) ? messageArray.join(' ') : String(messageArray);
 
     const context: CommandContext = {
       mode: detectMode(),
@@ -60,15 +60,15 @@ program
 // env command
 const envEntry = registry.env;
 if (!envEntry) {
-  throw new Error("env command not found in registry");
+  throw new Error('env command not found in registry');
 }
 program
-  .command("env")
+  .command('env')
   .description(envEntry.description)
   .action(async () => {
     const context: CommandContext = {
       mode: detectMode(),
-      rawCommand: "env",
+      rawCommand: 'env',
       workingDirectory: process.cwd(),
       isInteractive: process.stdin.isTTY ?? false,
     };
@@ -84,9 +84,9 @@ program
   });
 
 // check-prerequisites command
-const checkPrerequisitesEntry = registry["check-prerequisites"]!;
+const checkPrerequisitesEntry = registry['check-prerequisites']!;
 program
-  .command("check-prerequisites [args...]")
+  .command('check-prerequisites [args...]')
   .description(checkPrerequisitesEntry.description)
   .allowUnknownOption() // Allow --json, --require-tasks, etc. to pass through
   .action(async (args: unknown) => {
@@ -97,7 +97,7 @@ program
       const exitCode = await checkPrerequisitesEntry.main(argsArray);
       process.exit(exitCode);
     } else if (checkPrerequisitesEntry.handler) {
-      const commandString = `check-prerequisites ${argsArray.join(" ")}`;
+      const commandString = `check-prerequisites ${argsArray.join(' ')}`;
       const context: CommandContext = {
         mode: detectMode(),
         rawCommand: commandString,
@@ -118,9 +118,9 @@ program
   });
 
 // create-new-feature command
-const createNewFeatureEntry = registry["create-new-feature"]!;
+const createNewFeatureEntry = registry['create-new-feature']!;
 program
-  .command("create-new-feature [args...]")
+  .command('create-new-feature [args...]')
   .description(createNewFeatureEntry.description)
   .allowUnknownOption() // Allow flags to pass through
   .action(async (args: unknown) => {
@@ -132,7 +132,7 @@ program
       const exitCode = await mainFn(argsArray);
       process.exit(exitCode);
     } else if (createNewFeatureEntry.handler) {
-      const commandString = `create-new-feature ${argsArray.join(" ")}`;
+      const commandString = `create-new-feature ${argsArray.join(' ')}`;
       const context: CommandContext = {
         mode: detectMode(),
         rawCommand: commandString,
@@ -153,9 +153,9 @@ program
   });
 
 // setup-plan command
-const setupPlanEntry = registry["setup-plan"]!;
+const setupPlanEntry = registry['setup-plan']!;
 program
-  .command("setup-plan [args...]")
+  .command('setup-plan [args...]')
   .description(setupPlanEntry.description)
   .allowUnknownOption() // Allow flags to pass through
   .action(async (args: unknown) => {
@@ -167,7 +167,7 @@ program
       const exitCode = await mainFn(argsArray);
       process.exit(exitCode);
     } else if (setupPlanEntry.handler) {
-      const commandString = `setup-plan ${argsArray.join(" ")}`;
+      const commandString = `setup-plan ${argsArray.join(' ')}`;
       const context: CommandContext = {
         mode: detectMode(),
         rawCommand: commandString,
@@ -188,9 +188,9 @@ program
   });
 
 // link-repo command
-const linkRepoEntry = registry["link-repo"]!;
+const linkRepoEntry = registry['link-repo']!;
 program
-  .command("link-repo [args...]")
+  .command('link-repo [args...]')
   .description(linkRepoEntry.description)
   .allowUnknownOption() // Allow flags to pass through
   .action(async (args: unknown) => {
@@ -202,7 +202,7 @@ program
       const exitCode = await mainFn(argsArray);
       process.exit(exitCode);
     } else if (linkRepoEntry.handler) {
-      const commandString = `link-repo ${argsArray.join(" ")}`;
+      const commandString = `link-repo ${argsArray.join(' ')}`;
       const context: CommandContext = {
         mode: detectMode(),
         rawCommand: commandString,
@@ -223,9 +223,9 @@ program
   });
 
 // update-agent-context command
-const updateAgentContextEntry = registry["update-agent-context"]!;
+const updateAgentContextEntry = registry['update-agent-context']!;
 program
-  .command("update-agent-context [args...]")
+  .command('update-agent-context [args...]')
   .description(updateAgentContextEntry.description)
   .allowUnknownOption() // Allow flags to pass through
   .action(async (args: unknown) => {
@@ -237,7 +237,7 @@ program
       const exitCode = await mainFn(argsArray);
       process.exit(exitCode);
     } else if (updateAgentContextEntry.handler) {
-      const commandString = `update-agent-context ${argsArray.join(" ")}`;
+      const commandString = `update-agent-context ${argsArray.join(' ')}`;
       const context: CommandContext = {
         mode: detectMode(),
         rawCommand: commandString,
@@ -258,9 +258,9 @@ program
   });
 
 // next-feature command
-const nextFeatureEntry = registry["next-feature"]!;
+const nextFeatureEntry = registry['next-feature']!;
 program
-  .command("next-feature [args...]")
+  .command('next-feature [args...]')
   .description(nextFeatureEntry.description)
   .allowUnknownOption() // Allow flags to pass through
   .action(async (args: unknown) => {
@@ -272,7 +272,7 @@ program
       const exitCode = await mainFn(argsArray);
       process.exit(exitCode);
     } else if (nextFeatureEntry.handler) {
-      const commandString = `next-feature ${argsArray.join(" ")}`;
+      const commandString = `next-feature ${argsArray.join(' ')}`;
       const context: CommandContext = {
         mode: detectMode(),
         rawCommand: commandString,
@@ -302,11 +302,11 @@ async function main(): Promise<void> {
     // Format error for CLI mode
     const errorMessage = formatError(
       error instanceof Error ? error : new Error(String(error)),
-      "cli"
+      'cli'
     );
 
     // Print formatted error
-    if (typeof errorMessage === "string") {
+    if (typeof errorMessage === 'string') {
       console.error(errorMessage);
     }
 

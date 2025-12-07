@@ -4,15 +4,8 @@
  * Provides atomic JSON file operations with schema versioning and validation.
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  writeFileSync,
-  readFileSync,
-  renameSync,
-  unlinkSync,
-} from "fs";
-import { dirname } from "path";
+import { existsSync, mkdirSync, writeFileSync, readFileSync, renameSync, unlinkSync } from 'fs';
+import { dirname } from 'path';
 
 /**
  * JSON state error
@@ -20,7 +13,7 @@ import { dirname } from "path";
 export class JsonStateError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "JsonStateError";
+    this.name = 'JsonStateError';
   }
 }
 
@@ -83,7 +76,7 @@ export function atomicWriteJson<T>(
     const content = JSON.stringify(data, null, indent);
 
     // Write to temp file first
-    writeFileSync(tempPath, content, "utf-8");
+    writeFileSync(tempPath, content, 'utf-8');
 
     // Atomic rename
     renameSync(tempPath, filePath);
@@ -98,7 +91,7 @@ export function atomicWriteJson<T>(
     }
 
     throw new JsonStateError(
-      `Failed to write JSON file: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to write JSON file: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -123,11 +116,11 @@ export function readJson<T>(filePath: string): T | null {
   }
 
   try {
-    const content = readFileSync(filePath, "utf-8");
+    const content = readFileSync(filePath, 'utf-8');
     return JSON.parse(content) as T;
   } catch (error) {
     throw new JsonStateError(
-      `Failed to read JSON file: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to read JSON file: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -209,7 +202,7 @@ export function deleteState(filePath: string): boolean {
     return true;
   } catch (error) {
     throw new JsonStateError(
-      `Failed to delete state file: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to delete state file: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }

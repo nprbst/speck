@@ -10,7 +10,7 @@ interface HookInput {
   tool_input?: { command?: string };
 }
 
-const hookInput = await Bun.stdin.json() as HookInput;
+const hookInput = (await Bun.stdin.json()) as HookInput;
 const { session_id, cwd, tool_name, tool_input } = hookInput;
 
 // Only validate SlashCommand tool

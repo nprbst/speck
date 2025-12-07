@@ -9,9 +9,9 @@
  * @feature 015-scope-simplification
  */
 
-import { parseArgs } from "node:util";
-import { loadConfig } from "./config";
-import { launchIDE } from "./ide-launch";
+import { parseArgs } from 'node:util';
+import { loadConfig } from './config';
+import { launchIDE } from './ide-launch';
 
 export interface LaunchIDECommandOptions {
   worktreePath: string;
@@ -22,10 +22,8 @@ export interface LaunchIDECommandOptions {
 /**
  * Execute the launch-ide command
  */
-export async function executeLaunchIDECommand(
-  options: LaunchIDECommandOptions
-): Promise<void> {
-  const { worktreePath, repoPath = ".", json = false } = options;
+export async function executeLaunchIDECommand(options: LaunchIDECommandOptions): Promise<void> {
+  const { worktreePath, repoPath = '.', json = false } = options;
 
   try {
     // Load configuration
@@ -37,11 +35,13 @@ export async function executeLaunchIDECommand(
           JSON.stringify({
             success: true,
             skipped: true,
-            message: "IDE auto-launch is disabled in configuration",
+            message: 'IDE auto-launch is disabled in configuration',
           })
         );
       } else {
-        console.log(`⚠ IDE auto-launch is disabled. Run 'speck init' to configure, or launch manually.`);
+        console.log(
+          `⚠ IDE auto-launch is disabled. Run 'speck init' to configure, or launch manually.`
+        );
       }
       return;
     }
@@ -95,27 +95,27 @@ export async function main(args: string[]): Promise<number> {
   const { values } = parseArgs({
     args,
     options: {
-      "worktree-path": { type: "string" },
-      "repo-path": { type: "string", default: "." },
-      json: { type: "boolean", default: false },
+      'worktree-path': { type: 'string' },
+      'repo-path': { type: 'string', default: '.' },
+      json: { type: 'boolean', default: false },
     },
   });
 
-  if (!values["worktree-path"]) {
-    console.error("Error: --worktree-path is required");
+  if (!values['worktree-path']) {
+    console.error('Error: --worktree-path is required');
     return 1;
   }
 
   try {
     await executeLaunchIDECommand({
-      worktreePath: values["worktree-path"],
-      repoPath: values["repo-path"] ?? ".",
+      worktreePath: values['worktree-path'],
+      repoPath: values['repo-path'] ?? '.',
       json: values.json ?? false,
     });
     return 0;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("Error:", message);
+    console.error('Error:', message);
     return 1;
   }
 }

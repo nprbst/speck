@@ -119,7 +119,7 @@ export interface PRInfo {
 /**
  * Change type for diff files
  */
-export type ChangeType = "added" | "modified" | "deleted" | "renamed";
+export type ChangeType = 'added' | 'modified' | 'deleted' | 'renamed';
 
 /**
  * PR file change information
@@ -140,7 +140,7 @@ export interface GitHubComment {
   line: number;
   body: string;
   author: string;
-  state: "open" | "resolved";
+  state: 'open' | 'resolved';
   createdAt: string;
 }
 
@@ -161,9 +161,9 @@ export interface RepoInfo {
  */
 export function parseRateLimitHeaders(headers: Headers): RateLimitInfo {
   return {
-    remaining: parseInt(headers.get("X-RateLimit-Remaining") || "0", 10),
-    limit: parseInt(headers.get("X-RateLimit-Limit") || "60", 10),
-    reset: parseInt(headers.get("X-RateLimit-Reset") || "0", 10),
+    remaining: parseInt(headers.get('X-RateLimit-Remaining') || '0', 10),
+    limit: parseInt(headers.get('X-RateLimit-Limit') || '60', 10),
+    reset: parseInt(headers.get('X-RateLimit-Reset') || '0', 10),
   };
 }
 
@@ -189,9 +189,7 @@ export function secondsUntilReset(rateLimit: RateLimitInfo): number {
 /**
  * Filter releases to exclude drafts and pre-releases
  */
-export function filterStableReleases(
-  releases: GitHubRelease[]
-): GitHubRelease[] {
+export function filterStableReleases(releases: GitHubRelease[]): GitHubRelease[] {
   return releases.filter((r) => !r.draft && !r.prerelease);
 }
 
@@ -200,8 +198,7 @@ export function filterStableReleases(
  */
 export function sortReleasesByDate(releases: GitHubRelease[]): GitHubRelease[] {
   return releases.sort(
-    (a, b) =>
-      new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
+    (a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
   );
 }
 
@@ -209,9 +206,9 @@ export function sortReleasesByDate(releases: GitHubRelease[]): GitHubRelease[] {
  * Extract release notes summary (first paragraph or first 200 chars)
  */
 export function extractNotesSummary(body: string, maxLength = 200): string {
-  const firstParagraph = body.split("\n\n")[0] || "";
+  const firstParagraph = body.split('\n\n')[0] || '';
   if (firstParagraph.length > maxLength) {
-    return firstParagraph.substring(0, maxLength) + "...";
+    return firstParagraph.substring(0, maxLength) + '...';
   }
   return firstParagraph;
 }

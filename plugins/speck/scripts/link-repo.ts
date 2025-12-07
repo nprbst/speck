@@ -29,11 +29,11 @@ export async function linkRepo(targetPath: string): Promise<void> {
   if (!targetPath || targetPath.trim() === '') {
     throw new Error(
       'Missing required argument: path-to-speck-root\n' +
-      'Usage: /speck:link <path>\n' +
-      'Examples:\n' +
-      '  /speck:link ..          (parent directory)\n' +
-      '  /speck:link ../..       (grandparent, for monorepo)\n' +
-      '  /speck:link /abs/path   (absolute path)'
+        'Usage: /speck:link <path>\n' +
+        'Examples:\n' +
+        '  /speck:link ..          (parent directory)\n' +
+        '  /speck:link ../..       (grandparent, for monorepo)\n' +
+        '  /speck:link /abs/path   (absolute path)'
     );
   }
 
@@ -66,7 +66,8 @@ export async function linkRepo(targetPath: string): Promise<void> {
     if (!stats.isSymbolicLink()) {
       throw new Error(
         '.speck/root exists but is not a symlink\n' +
-        'Fix: mv .speck/root .speck/root.backup && /speck:link ' + targetPath
+          'Fix: mv .speck/root .speck/root.backup && /speck:link ' +
+          targetPath
       );
     }
 
@@ -81,7 +82,6 @@ export async function linkRepo(targetPath: string): Promise<void> {
 
     console.log(`Updating link from ${currentTarget} to ${relativePath}`);
     await fs.unlink(symlinkPath);
-
   } catch (error) {
     const err = error as NodeJS.ErrnoException;
     if (err.code !== 'ENOENT') throw error;
@@ -97,13 +97,14 @@ export async function linkRepo(targetPath: string): Promise<void> {
     if (process.platform === 'win32' && (err.code === 'EPERM' || err.code === 'EACCES')) {
       throw new Error(
         'Symlink creation failed (Windows requires Developer Mode or WSL)\n\n' +
-        'Fix options:\n' +
-        '  1. Enable Developer Mode:\n' +
-        '     - Settings → Update & Security → For developers → Developer Mode\n' +
-        '  2. Use WSL (Windows Subsystem for Linux):\n' +
-        '     - Run Speck commands from WSL terminal\n' +
-        '  3. Create symlink manually with admin privileges:\n' +
-        '     - mklink /D .speck\\root ' + targetPath.replace(/\//g, '\\')
+          'Fix options:\n' +
+          '  1. Enable Developer Mode:\n' +
+          '     - Settings → Update & Security → For developers → Developer Mode\n' +
+          '  2. Use WSL (Windows Subsystem for Linux):\n' +
+          '     - Run Speck commands from WSL terminal\n' +
+          '  3. Create symlink manually with admin privileges:\n' +
+          '     - mklink /D .speck\\root ' +
+          targetPath.replace(/\//g, '\\')
       );
     }
     throw error;
@@ -115,7 +116,7 @@ export async function linkRepo(targetPath: string): Promise<void> {
   if (config.mode !== 'multi-repo') {
     throw new Error(
       'Link created but detection failed - this is a bug\n' +
-      'Please report at https://github.com/nprbst/speck/issues'
+        'Please report at https://github.com/nprbst/speck/issues'
     );
   }
 

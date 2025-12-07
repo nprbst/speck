@@ -25,7 +25,7 @@ async function runCli(
   stderr: string;
   exitCode: number;
 }> {
-  const cliPath = new URL('../../src/cli/index.ts', import.meta.url).pathname;
+  const cliPath = new URL('../../plugins/speck/cli/index.ts', import.meta.url).pathname;
   const cmd = cwd
     ? $`bun run ${cliPath} ${args}`.cwd(cwd).nothrow().quiet()
     : $`bun run ${cliPath} ${args}`.nothrow().quiet();

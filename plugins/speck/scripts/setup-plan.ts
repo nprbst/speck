@@ -25,16 +25,16 @@
  * - Preserved all CLI flags and output format exactly
  */
 
-import { existsSync, mkdirSync, copyFileSync } from "node:fs";
-import path from "node:path";
-import { $ } from "bun";
+import { existsSync, mkdirSync, copyFileSync } from 'node:fs';
+import path from 'node:path';
+import { $ } from 'bun';
 import {
   getFeaturePaths,
   checkFeatureBranch,
   getTemplatesDir,
   detectSpeckRoot,
-} from "./common/paths";
-import { ExitCode } from "./contracts/cli-interface";
+} from './common/paths';
+import { ExitCode } from './contracts/cli-interface';
 
 /**
  * CLI options for setup-plan
@@ -60,8 +60,8 @@ interface SetupPlanOutput {
  */
 function parseArgs(args: string[]): SetupPlanOptions {
   return {
-    json: args.includes("--json"),
-    help: args.includes("--help") || args.includes("-h"),
+    json: args.includes('--json'),
+    help: args.includes('--help') || args.includes('-h'),
   };
 }
 
@@ -87,10 +87,10 @@ export async function main(args: string[]): Promise<number> {
 
   // Get all paths and variables from common functions
   const paths = await getFeaturePaths();
-  const hasGitRepo = paths.HAS_GIT === "true";
+  const hasGitRepo = paths.HAS_GIT === 'true';
 
   // Check if we're on a proper feature branch (only for git repos)
-  if (!await checkFeatureBranch(paths.CURRENT_BRANCH, hasGitRepo, paths.REPO_ROOT)) {
+  if (!(await checkFeatureBranch(paths.CURRENT_BRANCH, hasGitRepo, paths.REPO_ROOT))) {
     return ExitCode.USER_ERROR;
   }
 
@@ -127,7 +127,7 @@ export async function main(args: string[]): Promise<number> {
     // Check if spec is shared (in multi-repo mode, FEATURE_SPEC points to shared spec at speckRoot)
     // A spec is shared if it exists at the speck root
     const specFile = paths.FEATURE_SPEC;
-    const isSharedSpec = (config.mode === 'multi-repo' && existsSync(specFile));
+    const isSharedSpec = config.mode === 'multi-repo' && existsSync(specFile);
 
     // T077: Validate parent branch if using shared spec in multi-repo mode
     if (isSharedSpec) {
@@ -146,7 +146,8 @@ export async function main(args: string[]): Promise<number> {
 
       if (parentHasGit) {
         try {
-          const parentBranch = await $`git -C ${parentRepoRoot} rev-parse --abbrev-ref HEAD`.quiet();
+          const parentBranch =
+            await $`git -C ${parentRepoRoot} rev-parse --abbrev-ref HEAD`.quiet();
           const parentBranchName = parentBranch.text().trim();
 
           if (parentBranchName !== branchName) {
@@ -169,7 +170,7 @@ export async function main(args: string[]): Promise<number> {
   // [SPECK-EXTENSION:END]
 
   // Copy plan template if it exists
-  const template = path.join(getTemplatesDir(), "plan-template.md");
+  const template = path.join(getTemplatesDir(), 'plan-template.md');
   if (existsSync(template)) {
     // Ensure the parent directory of IMPL_PLAN exists (local specs dir in multi-repo mode)
     const implPlanDir = path.dirname(paths.IMPL_PLAN);
@@ -179,7 +180,7 @@ export async function main(args: string[]): Promise<number> {
   } else {
     console.log(`Warning: Plan template not found at ${template}`);
     // Create a basic plan file if template doesn't exist
-    await Bun.write(paths.IMPL_PLAN, "");
+    await Bun.write(paths.IMPL_PLAN, '');
   }
 
   // Output results

@@ -4,17 +4,13 @@
  * This module handles loading, saving, and migrating Speck configuration.
  */
 
-import { existsSync } from "fs";
-import { mkdir, readFile, writeFile } from "fs/promises";
-import { join } from "path";
-import {
-  type SpeckConfig,
-  DEFAULT_SPECK_CONFIG,
-  validateSpeckConfig,
-} from "./config-schema";
+import { existsSync } from 'fs';
+import { mkdir, readFile, writeFile } from 'fs/promises';
+import { join } from 'path';
+import { type SpeckConfig, DEFAULT_SPECK_CONFIG, validateSpeckConfig } from './config-schema';
 
-const CONFIG_FILENAME = "config.json";
-const SPECK_DIR = ".speck";
+const CONFIG_FILENAME = 'config.json';
+const SPECK_DIR = '.speck';
 
 /**
  * Get the path to the configuration file
@@ -42,16 +38,14 @@ export async function loadConfig(repoPath: string): Promise<SpeckConfig> {
   }
 
   try {
-    const content = await readFile(configPath, "utf-8");
+    const content = await readFile(configPath, 'utf-8');
     const rawConfig: unknown = JSON.parse(content);
 
     // Validate and apply defaults
     return validateSpeckConfig(rawConfig);
   } catch (error) {
     if (error instanceof SyntaxError) {
-      throw new Error(
-        `Failed to parse configuration file at ${configPath}: ${error.message}`
-      );
+      throw new Error(`Failed to parse configuration file at ${configPath}: ${error.message}`);
     }
     throw error;
   }
@@ -64,10 +58,7 @@ export async function loadConfig(repoPath: string): Promise<SpeckConfig> {
  * @param config - SpeckConfig to save
  * @throws Error if config is invalid or write fails
  */
-export async function saveConfig(
-  repoPath: string,
-  config: SpeckConfig
-): Promise<void> {
+export async function saveConfig(repoPath: string, config: SpeckConfig): Promise<void> {
   // Validate config before saving
   const validatedConfig = validateSpeckConfig(config);
 
@@ -80,8 +71,8 @@ export async function saveConfig(
   }
 
   // Write config with pretty formatting
-  const content = JSON.stringify(validatedConfig, null, 2) + "\n";
-  await writeFile(configPath, content, "utf-8");
+  const content = JSON.stringify(validatedConfig, null, 2) + '\n';
+  await writeFile(configPath, content, 'utf-8');
 }
 
 /**
@@ -100,12 +91,12 @@ export async function migrateConfig(repoPath: string): Promise<boolean> {
   }
 
   try {
-    const content = await readFile(configPath, "utf-8");
+    const content = await readFile(configPath, 'utf-8');
     const rawConfig: unknown = JSON.parse(content);
 
     // Check if migration is needed (version mismatch)
     const currentVersion = (rawConfig as { version?: string }).version;
-    const targetVersion = "1.0";
+    const targetVersion = '1.0';
 
     if (currentVersion === targetVersion) {
       // Already at current version
@@ -122,9 +113,7 @@ export async function migrateConfig(repoPath: string): Promise<boolean> {
     return true;
   } catch (error) {
     if (error instanceof SyntaxError) {
-      throw new Error(
-        `Failed to migrate configuration: Invalid JSON in ${configPath}`
-      );
+      throw new Error(`Failed to migrate configuration: Invalid JSON in ${configPath}`);
     }
     throw error;
   }

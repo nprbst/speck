@@ -8,7 +8,7 @@
 /**
  * Execution mode: CLI (standalone) or hook (invoked by Claude Code)
  */
-export type ExecutionMode = "cli" | "hook";
+export type ExecutionMode = 'cli' | 'hook';
 
 /**
  * Log levels for filtering
@@ -36,7 +36,7 @@ export interface LoggerConfig {
  */
 const defaultConfig: LoggerConfig = {
   level: LogLevel.INFO,
-  mode: "cli",
+  mode: 'cli',
   enableColors: true,
   enableTimestamps: false,
 };
@@ -53,7 +53,7 @@ export function configureLogger(config: Partial<LoggerConfig>): void {
   currentConfig = { ...currentConfig, ...config };
 
   // Disable colors in hook mode or if not TTY
-  if (currentConfig.mode === "hook" || !process.stderr.isTTY) {
+  if (currentConfig.mode === 'hook' || !process.stderr.isTTY) {
     currentConfig.enableColors = false;
   }
 }
@@ -71,7 +71,7 @@ export function getLoggerConfig(): Readonly<LoggerConfig> {
  */
 function getLogLevel(): LogLevel {
   // SPECK_DEBUG=1 enables debug logging (shorthand)
-  if (process.env.SPECK_DEBUG === "1") {
+  if (process.env.SPECK_DEBUG === '1') {
     return LogLevel.DEBUG;
   }
 
@@ -95,15 +95,11 @@ export function isDebugEnabled(): boolean {
 /**
  * Format log message with optional timestamp and color
  */
-function formatMessage(
-  level: LogLevel,
-  message: string,
-  data?: unknown
-): string {
-  let formatted = "";
+function formatMessage(level: LogLevel, message: string, data?: unknown): string {
+  let formatted = '';
 
   // Add timestamp if enabled or in debug mode
-  if (currentConfig.enableTimestamps || (isDebugEnabled() && process.env.SPECK_DEBUG === "1")) {
+  if (currentConfig.enableTimestamps || (isDebugEnabled() && process.env.SPECK_DEBUG === '1')) {
     const timestamp = new Date().toISOString();
     formatted += `[${timestamp}] `;
   }
@@ -134,15 +130,15 @@ function formatMessage(
 function getLevelColor(level: LogLevel): string {
   switch (level) {
     case LogLevel.DEBUG:
-      return "\x1b[90m"; // Gray
+      return '\x1b[90m'; // Gray
     case LogLevel.INFO:
-      return "\x1b[36m"; // Cyan
+      return '\x1b[36m'; // Cyan
     case LogLevel.WARN:
-      return "\x1b[33m"; // Yellow
+      return '\x1b[33m'; // Yellow
     case LogLevel.ERROR:
-      return "\x1b[31m"; // Red
+      return '\x1b[31m'; // Red
     default:
-      return "\x1b[0m"; // Reset
+      return '\x1b[0m'; // Reset
   }
 }
 
@@ -163,7 +159,7 @@ export function info(message: string, data?: unknown): void {
   if (getLogLevel() <= LogLevel.INFO) {
     const formatted = formatMessage(LogLevel.INFO, message, data);
     // Use stderr in hook mode to avoid polluting JSON output
-    if (currentConfig.mode === "hook") {
+    if (currentConfig.mode === 'hook') {
       console.error(formatted);
     } else {
       console.log(formatted);
@@ -210,14 +206,10 @@ export function createScopedLogger(scope: string): {
   json: (data: unknown) => void;
 } {
   return {
-    debug: (message: string, data?: unknown): void =>
-      debug(`[${scope}] ${message}`, data),
-    info: (message: string, data?: unknown): void =>
-      info(`[${scope}] ${message}`, data),
-    warn: (message: string, data?: unknown): void =>
-      warn(`[${scope}] ${message}`, data),
-    error: (message: string, data?: unknown): void =>
-      error(`[${scope}] ${message}`, data),
+    debug: (message: string, data?: unknown): void => debug(`[${scope}] ${message}`, data),
+    info: (message: string, data?: unknown): void => info(`[${scope}] ${message}`, data),
+    warn: (message: string, data?: unknown): void => warn(`[${scope}] ${message}`, data),
+    error: (message: string, data?: unknown): void => error(`[${scope}] ${message}`, data),
     json,
   };
 }
@@ -225,10 +217,7 @@ export function createScopedLogger(scope: string): {
 /**
  * Log function execution time (for debugging performance)
  */
-export async function logExecutionTime<T>(
-  label: string,
-  fn: () => Promise<T>
-): Promise<T> {
+export async function logExecutionTime<T>(label: string, fn: () => Promise<T>): Promise<T> {
   if (!isDebugEnabled()) {
     return fn();
   }

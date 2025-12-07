@@ -7,10 +7,10 @@
  * Provides detailed error handling and user-friendly output.
  */
 
-import { createWorktree } from "./create";
-import { loadConfig } from "./config";
-import { WorktreeError } from "./errors";
-import type { CreateWorktreeOptions } from "./types";
+import { createWorktree } from './create';
+import { loadConfig } from './config';
+import { WorktreeError } from './errors';
+import type { CreateWorktreeOptions } from './types';
 
 export interface CreateCommandOptions {
   branch: string;
@@ -25,9 +25,7 @@ export interface CreateCommandOptions {
 /**
  * Execute the create command
  */
-export async function executeCreateCommand(
-  options: CreateCommandOptions
-): Promise<void> {
+export async function executeCreateCommand(options: CreateCommandOptions): Promise<void> {
   const { branch, repoPath, worktreePath, skipIDE, skipDeps, reuseExisting, json } = options;
 
   try {
@@ -39,13 +37,13 @@ export async function executeCreateCommand(
         console.log(
           JSON.stringify({
             success: false,
-            message: "Worktree integration is disabled in .speck/config.json",
+            message: 'Worktree integration is disabled in .speck/config.json',
             skipped: true,
           })
         );
       } else {
         console.log(
-          "⚠ Worktree integration is disabled. Set worktree.enabled = true in .speck/config.json"
+          '⚠ Worktree integration is disabled. Set worktree.enabled = true in .speck/config.json'
         );
       }
       process.exit(0);
@@ -88,7 +86,7 @@ export async function executeCreateCommand(
         if (
           config.worktree.dependencies?.autoInstall &&
           !skipDeps &&
-          result.metadata.status === "ready"
+          result.metadata.status === 'ready'
         ) {
           console.log(`✓ Dependencies installed successfully`);
         }

@@ -25,7 +25,7 @@ interface HookInput {
   };
 }
 
-const hookInput = await Bun.stdin.json() as HookInput;
+const hookInput = (await Bun.stdin.json()) as HookInput;
 
 // Only validate Bash commands
 if (hookInput.tool_name !== 'Bash') {

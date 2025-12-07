@@ -80,7 +80,7 @@ export interface PullUpstreamOutput {
   version: string;
   commit: string;
   pullDate: string;
-  status: "pulled";
+  status: 'pulled';
   directory: string;
 }
 
@@ -98,11 +98,11 @@ export interface TransformUpstreamOptions extends Omit<BaseCliOptions, 'version'
 export interface TransformUpstreamOutput {
   upstreamVersion: string;
   transformDate: string;
-  status: "transformed" | "failed";
+  status: 'transformed' | 'failed';
   bunScriptsGenerated: Array<{
     path: string;
     bashSource: string;
-    strategy: "pure-typescript" | "bun-shell" | "bun-spawn";
+    strategy: 'pure-typescript' | 'bun-shell' | 'bun-spawn';
   }>;
   speckCommandsGenerated: Array<{
     commandName: string;

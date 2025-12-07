@@ -14,7 +14,7 @@ import type {
   WorktreeMetadata,
   WorktreeState,
   IDEInfo,
-} from "./config-schema";
+} from './config-schema';
 
 // Re-export types from config-schema
 export type {
@@ -36,14 +36,14 @@ export type {
  * Options for worktree creation
  */
 export interface CreateWorktreeOptions {
-  repoPath: string;           // Absolute path to main repository
-  branchName: string;         // Branch name (without prefix)
-  branchPrefix?: string;      // Optional prefix (e.g., "specs/")
-  worktreePath?: string;      // Custom worktree path (overrides config)
-  reuseExisting?: boolean;    // Reuse existing directory if present
-  force?: boolean;            // Force creation, removing existing if needed
-  skipDeps?: boolean;         // Skip dependency installation
-  skipIDE?: boolean;          // Skip IDE launch
+  repoPath: string; // Absolute path to main repository
+  branchName: string; // Branch name (without prefix)
+  branchPrefix?: string; // Optional prefix (e.g., "specs/")
+  worktreePath?: string; // Custom worktree path (overrides config)
+  reuseExisting?: boolean; // Reuse existing directory if present
+  force?: boolean; // Force creation, removing existing if needed
+  skipDeps?: boolean; // Skip dependency installation
+  skipIDE?: boolean; // Skip IDE launch
   onProgress?: (message: string, percent: number) => void; // Progress callback
 }
 
@@ -52,19 +52,19 @@ export interface CreateWorktreeOptions {
  */
 export interface CreateWorktreeResult {
   success: boolean;
-  worktreePath: string;       // Absolute path to created worktree
+  worktreePath: string; // Absolute path to created worktree
   metadata: WorktreeMetadata; // Runtime metadata
-  errors?: string[];          // Non-fatal errors (e.g., IDE launch failed)
+  errors?: string[]; // Non-fatal errors (e.g., IDE launch failed)
 }
 
 /**
  * Options for worktree removal
  */
 export interface RemoveWorktreeOptions {
-  repoPath: string;           // Absolute path to main repository
-  branchName: string;         // Branch name
-  force?: boolean;            // Force removal even with uncommitted changes
-  deleteBranch?: boolean;     // Also delete the branch
+  repoPath: string; // Absolute path to main repository
+  branchName: string; // Branch name
+  force?: boolean; // Force removal even with uncommitted changes
+  deleteBranch?: boolean; // Also delete the branch
 }
 
 /**
@@ -72,18 +72,18 @@ export interface RemoveWorktreeOptions {
  */
 export interface RemoveWorktreeResult {
   success: boolean;
-  worktreePath: string;       // Path that was removed
-  branchDeleted?: boolean;    // Whether branch was also deleted
+  worktreePath: string; // Path that was removed
+  branchDeleted?: boolean; // Whether branch was also deleted
 }
 
 /**
  * Worktree information from git worktree list
  */
 export interface GitWorktreeInfo {
-  path: string;               // Absolute path
-  branch: string;             // Branch name (or "detached HEAD")
-  commit: string;             // Short commit hash
-  prunable?: string;          // Reason if prunable
+  path: string; // Absolute path
+  branch: string; // Branch name (or "detached HEAD")
+  commit: string; // Short commit hash
+  prunable?: string; // Reason if prunable
 }
 
 /**
@@ -103,9 +103,9 @@ export interface PruneWorktreesResult {
  * Options for file operations
  */
 export interface ApplyFileRulesOptions {
-  sourcePath: string;         // Absolute path to source (main repo)
-  destPath: string;           // Absolute path to destination (worktree)
-  rules: FileRule[];          // File rules to apply
+  sourcePath: string; // Absolute path to source (main repo)
+  destPath: string; // Absolute path to destination (worktree)
+  rules: FileRule[]; // File rules to apply
   includeUntracked?: boolean; // Include untracked files in copy operations
   onProgress?: (message: string) => void; // Progress callback
 }
@@ -114,11 +114,12 @@ export interface ApplyFileRulesOptions {
  * Result of file operations
  */
 export interface ApplyFileRulesResult {
-  copiedCount: number;        // Number of files copied
-  copiedPaths: string[];      // Relative paths of copied files
-  symlinkedCount: number;     // Number of directories symlinked
-  symlinkedPaths: string[];   // Relative paths of symlinked directories
-  errors: Array<{             // Non-fatal errors
+  copiedCount: number; // Number of files copied
+  copiedPaths: string[]; // Relative paths of copied files
+  symlinkedCount: number; // Number of directories symlinked
+  symlinkedPaths: string[]; // Relative paths of symlinked directories
+  errors: Array<{
+    // Non-fatal errors
     path: string;
     error: string;
   }>;
@@ -128,7 +129,7 @@ export interface ApplyFileRulesResult {
  * Options for dependency installation
  */
 export interface InstallDependenciesOptions {
-  worktreePath: string;       // Absolute path to worktree
+  worktreePath: string; // Absolute path to worktree
   packageManager?: PackageManager; // Override detected package manager
   onProgress?: (line: string) => void; // Progress callback (stdout/stderr)
 }
@@ -139,17 +140,17 @@ export interface InstallDependenciesOptions {
 export interface InstallDependenciesResult {
   success: boolean;
   packageManager: PackageManager; // Package manager that was used
-  duration: number;           // Installation time in milliseconds
-  error?: string;             // Error message if failed
+  duration: number; // Installation time in milliseconds
+  error?: string; // Error message if failed
 }
 
 /**
  * Options for IDE launch
  */
 export interface LaunchIDEOptions {
-  worktreePath: string;       // Absolute path to worktree
-  editor: IDEEditor;          // Which IDE to launch
-  newWindow?: boolean;        // Open in new window (default: true)
+  worktreePath: string; // Absolute path to worktree
+  editor: IDEEditor; // Which IDE to launch
+  newWindow?: boolean; // Open in new window (default: true)
 }
 
 /**
@@ -157,9 +158,9 @@ export interface LaunchIDEOptions {
  */
 export interface LaunchIDEResult {
   success: boolean;
-  editor: IDEEditor;          // Editor that was launched
-  command: string;            // Command that was executed
-  error?: string;             // Error message if failed
+  editor: IDEEditor; // Editor that was launched
+  command: string; // Command that was executed
+  error?: string; // Error message if failed
 }
 
 /**
@@ -167,9 +168,9 @@ export interface LaunchIDEResult {
  */
 export interface CreateBranchWithWorktreeOptions {
   repoPath: string;
-  specNumber: string;         // e.g., "002"
-  shortName: string;          // e.g., "user-auth"
-  createWorktree?: boolean;   // Override config setting
+  specNumber: string; // e.g., "002"
+  shortName: string; // e.g., "user-auth"
+  createWorktree?: boolean; // Override config setting
   promptForApproval?: boolean; // Prompt user for branch name approval (FR-016)
 }
 
@@ -181,9 +182,13 @@ export interface CreateBranchWithWorktreeOptions {
  * Base error class for worktree operations
  */
 export class WorktreeError extends Error {
-  constructor(message: string, public code?: string, public context?: unknown) {
+  constructor(
+    message: string,
+    public code?: string,
+    public context?: unknown
+  ) {
     super(message);
-    this.name = "WorktreeError";
+    this.name = 'WorktreeError';
   }
 }
 
@@ -191,9 +196,12 @@ export class WorktreeError extends Error {
  * Error when Git worktree operation fails
  */
 export class GitWorktreeError extends WorktreeError {
-  constructor(message: string, public gitOutput?: string) {
-    super(message, "GIT_WORKTREE_ERROR");
-    this.name = "GitWorktreeError";
+  constructor(
+    message: string,
+    public gitOutput?: string
+  ) {
+    super(message, 'GIT_WORKTREE_ERROR');
+    this.name = 'GitWorktreeError';
   }
 }
 
@@ -201,9 +209,12 @@ export class GitWorktreeError extends WorktreeError {
  * Error when file operations fail
  */
 export class FileOperationError extends WorktreeError {
-  constructor(message: string, public path?: string) {
-    super(message, "FILE_OPERATION_ERROR", { path });
-    this.name = "FileOperationError";
+  constructor(
+    message: string,
+    public path?: string
+  ) {
+    super(message, 'FILE_OPERATION_ERROR', { path });
+    this.name = 'FileOperationError';
   }
 }
 
@@ -216,8 +227,8 @@ export class DependencyInstallError extends WorktreeError {
     public packageManager: PackageManager,
     public installOutput?: string
   ) {
-    super(message, "DEPENDENCY_INSTALL_ERROR", { packageManager });
-    this.name = "DependencyInstallError";
+    super(message, 'DEPENDENCY_INSTALL_ERROR', { packageManager });
+    this.name = 'DependencyInstallError';
   }
 }
 
@@ -225,9 +236,12 @@ export class DependencyInstallError extends WorktreeError {
  * Error when IDE launch fails (non-fatal)
  */
 export class IDELaunchError extends WorktreeError {
-  constructor(message: string, public editor: IDEEditor) {
-    super(message, "IDE_LAUNCH_ERROR", { editor });
-    this.name = "IDELaunchError";
+  constructor(
+    message: string,
+    public editor: IDEEditor
+  ) {
+    super(message, 'IDE_LAUNCH_ERROR', { editor });
+    this.name = 'IDELaunchError';
   }
 }
 
@@ -240,8 +254,8 @@ export class DiskSpaceError extends WorktreeError {
     public required: number,
     public available: number
   ) {
-    super(message, "DISK_SPACE_ERROR", { required, available });
-    this.name = "DiskSpaceError";
+    super(message, 'DISK_SPACE_ERROR', { required, available });
+    this.name = 'DiskSpaceError';
   }
 }
 
@@ -249,8 +263,11 @@ export class DiskSpaceError extends WorktreeError {
  * Error when configuration is invalid
  */
 export class ConfigValidationError extends WorktreeError {
-  constructor(message: string, public validationErrors?: string[]) {
-    super(message, "CONFIG_VALIDATION_ERROR", { validationErrors });
-    this.name = "ConfigValidationError";
+  constructor(
+    message: string,
+    public validationErrors?: string[]
+  ) {
+    super(message, 'CONFIG_VALIDATION_ERROR', { validationErrors });
+    this.name = 'ConfigValidationError';
   }
 }

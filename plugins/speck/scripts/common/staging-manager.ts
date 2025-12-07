@@ -206,7 +206,10 @@ async function listFilesRecursive(dir: string): Promise<string[]> {
  * @returns Updated staging context
  * @throws StagingError if transition is invalid
  */
-export async function updateStagingStatus(context: StagingContext, newStatus: StagingStatus): Promise<StagingContext> {
+export async function updateStagingStatus(
+  context: StagingContext,
+  newStatus: StagingStatus
+): Promise<StagingContext> {
   const currentStatus = context.metadata.status;
 
   // Check if current status is terminal
@@ -315,7 +318,9 @@ export async function captureProductionBaseline(context: StagingContext): Promis
 export async function commitStaging(context: StagingContext): Promise<StagingContext> {
   // Verify context is in ready state
   if (context.metadata.status !== 'ready') {
-    throw new StagingError(`Cannot commit: staging status is '${context.metadata.status}', expected 'ready'`);
+    throw new StagingError(
+      `Cannot commit: staging status is '${context.metadata.status}', expected 'ready'`
+    );
   }
 
   // Update status to committing
@@ -369,7 +374,9 @@ export async function commitStaging(context: StagingContext): Promise<StagingCon
 export async function rollbackStaging(context: StagingContext): Promise<StagingContext> {
   // Check if already terminal
   if (isTerminalStatus(context.metadata.status)) {
-    throw new StagingError(`Cannot rollback: already in terminal status '${context.metadata.status}'`);
+    throw new StagingError(
+      `Cannot rollback: already in terminal status '${context.metadata.status}'`
+    );
   }
 
   try {

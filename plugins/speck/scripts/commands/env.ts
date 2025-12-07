@@ -3,10 +3,10 @@
  * Shows basic Speck environment information
  */
 
-import type { CommandHandler } from "@speck/common/types";
-import { detectSpeckRoot } from "../common/paths";
-import { errorToResult } from "@speck/common/errors";
-import { successResult } from "@speck/common/output";
+import type { CommandHandler } from '@speck/common/types';
+import { detectSpeckRoot } from '../common/paths';
+import { errorToResult } from '@speck/common/errors';
+import { successResult } from '@speck/common/output';
 
 /**
  * env command handler
@@ -33,7 +33,7 @@ export const envHandler: CommandHandler = async (_args, context) => {
       `Interactive: ${context.isInteractive}`,
     ];
 
-    const output = lines.join("\n");
+    const output = lines.join('\n');
 
     return successResult(output, {
       speckRoot: config.speckRoot,

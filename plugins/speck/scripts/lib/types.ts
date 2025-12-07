@@ -7,7 +7,7 @@
  * JSON structure received via stdin when Claude Code invokes PreToolUse hook
  */
 export interface HookInput {
-  tool_name: "Bash";
+  tool_name: 'Bash';
   tool_input: {
     command: string;
     description?: string;
@@ -25,8 +25,8 @@ export type HookOutput = InterceptedCommand | PassThrough;
  */
 export interface InterceptedCommand {
   hookSpecificOutput: {
-    hookEventName: "PreToolUse";
-    permissionDecision: "allow";
+    hookEventName: 'PreToolUse';
+    permissionDecision: 'allow';
     updatedInput: {
       command: string;
     };
@@ -62,7 +62,7 @@ export interface CommandContext {
 /**
  * Execution mode: CLI (standalone) or hook (invoked by Claude Code)
  */
-export type ExecutionMode = "cli" | "hook";
+export type ExecutionMode = 'cli' | 'hook';
 
 /**
  * Function signature for custom command argument parsing

@@ -5,21 +5,18 @@
  * Supports: VSCode, Cursor, WebStorm, IntelliJ IDEA, PyCharm
  */
 
-import type { IDEEditor, IDEInfo } from "./types";
-import type { LaunchIDEOptions, LaunchIDEResult } from "./types";
+import type { IDEEditor, IDEInfo } from './types';
+import type { LaunchIDEOptions, LaunchIDEResult } from './types';
 
 /**
  * IDE configuration map: editor type -> command + display name + default args
  */
-const IDE_CONFIG: Record<
-  IDEEditor,
-  { command: string; name: string; newWindowFlag?: string }
-> = {
-  vscode: { command: "code", name: "VSCode", newWindowFlag: "-n" },
-  cursor: { command: "cursor", name: "Cursor", newWindowFlag: "-n" },
-  webstorm: { command: "webstorm", name: "WebStorm" }, // Uses "nosplash" instead
-  idea: { command: "idea", name: "IntelliJ IDEA" }, // Uses "nosplash" instead
-  pycharm: { command: "pycharm", name: "PyCharm" }, // Uses "nosplash" instead
+const IDE_CONFIG: Record<IDEEditor, { command: string; name: string; newWindowFlag?: string }> = {
+  vscode: { command: 'code', name: 'VSCode', newWindowFlag: '-n' },
+  cursor: { command: 'cursor', name: 'Cursor', newWindowFlag: '-n' },
+  webstorm: { command: 'webstorm', name: 'WebStorm' }, // Uses "nosplash" instead
+  idea: { command: 'idea', name: 'IntelliJ IDEA' }, // Uses "nosplash" instead
+  pycharm: { command: 'pycharm', name: 'PyCharm' }, // Uses "nosplash" instead
 };
 
 /**
@@ -56,7 +53,7 @@ export function detectAvailableIDEs(): IDEInfo[] {
         args.push(config.newWindowFlag);
       } else {
         // JetBrains IDEs use "nosplash" flag
-        args.push("nosplash");
+        args.push('nosplash');
       }
 
       ides.push({
@@ -99,7 +96,7 @@ export function getIDECommand(
     }
   } else {
     // JetBrains IDEs: always use nosplash (no new window flag)
-    command.push("nosplash");
+    command.push('nosplash');
   }
 
   command.push(worktreePath);
@@ -128,7 +125,7 @@ export function launchIDE(options: LaunchIDEOptions): LaunchIDEResult {
     return {
       success: false,
       editor,
-      command: "",
+      command: '',
       error: `Unknown IDE editor: ${editor}`,
     };
   }
@@ -145,13 +142,13 @@ export function launchIDE(options: LaunchIDEOptions): LaunchIDEResult {
 
   // Construct command
   const commandArray = getIDECommand(editor, worktreePath, newWindow);
-  const commandString = commandArray.join(" ");
+  const commandString = commandArray.join(' ');
 
   try {
     // Spawn IDE process (detached, doesn't wait for it to close)
     Bun.spawn(commandArray, {
       cwd: worktreePath,
-      stdio: ["ignore", "ignore", "ignore"],
+      stdio: ['ignore', 'ignore', 'ignore'],
       // Detach the process so it continues after parent exits
       onExit: undefined,
     });
@@ -165,8 +162,7 @@ export function launchIDE(options: LaunchIDEOptions): LaunchIDEResult {
       command: commandString,
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
       success: false,
       editor,

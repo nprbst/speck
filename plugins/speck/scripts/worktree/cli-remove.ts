@@ -7,9 +7,9 @@
  * Provides detailed error handling and user-friendly output.
  */
 
-import { removeWorktree } from "./remove";
-import { WorktreeError } from "./errors";
-import type { RemoveWorktreeOptions } from "./types";
+import { removeWorktree } from './remove';
+import { WorktreeError } from './errors';
+import type { RemoveWorktreeOptions } from './types';
 
 export interface RemoveCommandOptions {
   branch: string;
@@ -21,9 +21,7 @@ export interface RemoveCommandOptions {
 /**
  * Execute the remove command
  */
-export async function executeRemoveCommand(
-  options: RemoveCommandOptions
-): Promise<void> {
+export async function executeRemoveCommand(options: RemoveCommandOptions): Promise<void> {
   const { branch, repoPath, force, json } = options;
 
   try {

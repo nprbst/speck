@@ -26,27 +26,23 @@
  * - Preserved all CLI flags and argument parsing logic
  */
 
-import { existsSync, mkdirSync, readdirSync, copyFileSync, symlinkSync } from "node:fs";
-import path from "node:path";
-import { $ } from "bun";
-import { ExitCode } from "./contracts/cli-interface";
-import { getTemplatesDir, detectSpeckRoot } from "./common/paths";
-import {
-  formatJsonOutput,
-  detectOutputMode,
-  type OutputMode,
-} from "@speck/common/output";
-import { formatHookOutput } from "./lib/output-formatter";
-import { loadConfig } from "./worktree/config";
-import { constructWorktreePath } from "./worktree/naming";
-import { writeWorktreeHandoff } from "./worktree/handoff";
-import { launchIDE } from "./worktree/ide-launch";
+import { existsSync, mkdirSync, readdirSync, copyFileSync, symlinkSync } from 'node:fs';
+import path from 'node:path';
+import { $ } from 'bun';
+import { ExitCode } from './contracts/cli-interface';
+import { getTemplatesDir, detectSpeckRoot } from './common/paths';
+import { formatJsonOutput, detectOutputMode, type OutputMode } from '@speck/common/output';
+import { formatHookOutput } from './lib/output-formatter';
+import { loadConfig } from './worktree/config';
+import { constructWorktreePath } from './worktree/naming';
+import { writeWorktreeHandoff } from './worktree/handoff';
+import { launchIDE } from './worktree/ide-launch';
 import {
   readBranches,
   writeBranches,
   createBranchEntry,
   addBranchEntry,
-} from "./common/branch-mapper";
+} from './common/branch-mapper';
 
 /**
  * CLI options for create-new-feature
@@ -56,12 +52,12 @@ interface CreateFeatureOptions {
   hook: boolean;
   shortName?: string;
   number?: number;
-  branch?: string;      // T081: Custom branch name (non-standard, recorded in branches.json)
-  sharedSpec: boolean;  // T064-T066: Create spec at speckRoot with local symlinks
-  localSpec: boolean;   // T067: Create spec locally in child repo
-  noWorktree: boolean;  // T053: Disable worktree creation even if config enables it
-  worktree: boolean;    // Force worktree creation even if config disables it
-  noIde: boolean;       // Skip IDE launch (for deferred launch by /speck.specify)
+  branch?: string; // T081: Custom branch name (non-standard, recorded in branches.json)
+  sharedSpec: boolean; // T064-T066: Create spec at speckRoot with local symlinks
+  localSpec: boolean; // T067: Create spec locally in child repo
+  noWorktree: boolean; // T053: Disable worktree creation even if config enables it
+  worktree: boolean; // Force worktree creation even if config disables it
+  noIde: boolean; // Skip IDE launch (for deferred launch by /speck.specify)
   help: boolean;
   featureDescription: string;
 }
@@ -97,7 +93,7 @@ function parseArgs(args: string[]): ParseResult {
     worktree: false,
     noIde: false,
     help: false,
-    featureDescription: "",
+    featureDescription: '',
   };
 
   const positionalArgs: string[] = [];
@@ -106,51 +102,51 @@ function parseArgs(args: string[]): ParseResult {
   while (i < args.length) {
     const arg = args[i]!;
 
-    if (arg === "--json") {
+    if (arg === '--json') {
       options.json = true;
       i++;
-    } else if (arg === "--hook") {
+    } else if (arg === '--hook') {
       options.hook = true;
       i++;
-    } else if (arg === "--short-name") {
-      if (i + 1 >= args.length || args[i + 1]?.startsWith("--")) {
-        return { success: false, error: "--short-name requires a value" };
+    } else if (arg === '--short-name') {
+      if (i + 1 >= args.length || args[i + 1]?.startsWith('--')) {
+        return { success: false, error: '--short-name requires a value' };
       }
       options.shortName = args[i + 1]!;
       i += 2;
-    } else if (arg === "--number") {
-      if (i + 1 >= args.length || args[i + 1]?.startsWith("--")) {
-        return { success: false, error: "--number requires a value" };
+    } else if (arg === '--number') {
+      if (i + 1 >= args.length || args[i + 1]?.startsWith('--')) {
+        return { success: false, error: '--number requires a value' };
       }
       const num = parseInt(args[i + 1]!, 10);
       if (isNaN(num)) {
-        return { success: false, error: "--number requires a numeric value" };
+        return { success: false, error: '--number requires a numeric value' };
       }
       options.number = num;
       i += 2;
-    } else if (arg === "--branch") {
+    } else if (arg === '--branch') {
       // T081: Custom branch name (non-standard, recorded in branches.json)
-      if (i + 1 >= args.length || args[i + 1]?.startsWith("--")) {
-        return { success: false, error: "--branch requires a value" };
+      if (i + 1 >= args.length || args[i + 1]?.startsWith('--')) {
+        return { success: false, error: '--branch requires a value' };
       }
       options.branch = args[i + 1]!;
       i += 2;
-    } else if (arg === "--shared-spec") {
+    } else if (arg === '--shared-spec') {
       options.sharedSpec = true;
       i++;
-    } else if (arg === "--local-spec") {
+    } else if (arg === '--local-spec') {
       options.localSpec = true;
       i++;
-    } else if (arg === "--no-worktree") {
+    } else if (arg === '--no-worktree') {
       options.noWorktree = true;
       i++;
-    } else if (arg === "--worktree") {
+    } else if (arg === '--worktree') {
       options.worktree = true;
       i++;
-    } else if (arg === "--no-ide") {
+    } else if (arg === '--no-ide') {
       options.noIde = true;
       i++;
-    } else if (arg === "--help" || arg === "-h") {
+    } else if (arg === '--help' || arg === '-h') {
       options.help = true;
       i++;
     } else {
@@ -159,7 +155,7 @@ function parseArgs(args: string[]): ParseResult {
     }
   }
 
-  options.featureDescription = positionalArgs.join(" ");
+  options.featureDescription = positionalArgs.join(' ');
   return { success: true, options };
 }
 
@@ -210,15 +206,15 @@ function outputError(
   startTime: number,
   recovery?: string[]
 ): void {
-  if (outputMode === "json") {
+  if (outputMode === 'json') {
     const output = formatJsonOutput({
       success: false,
       error: { code, message, recovery },
-      command: "create-new-feature",
+      command: 'create-new-feature',
       startTime,
     });
     console.log(JSON.stringify(output));
-  } else if (outputMode === "hook") {
+  } else if (outputMode === 'hook') {
     console.error(`ERROR: ${message}`);
   } else {
     console.error(`Error: ${message}`);
@@ -230,8 +226,12 @@ function outputError(
  */
 function findRepoRoot(startDir: string): string | null {
   let dir = startDir;
-  while (dir !== "/") {
-    if (existsSync(path.join(dir, ".git")) || existsSync(path.join(dir, ".specify")) || existsSync(path.join(dir, ".speck"))) {
+  while (dir !== '/') {
+    if (
+      existsSync(path.join(dir, '.git')) ||
+      existsSync(path.join(dir, '.specify')) ||
+      existsSync(path.join(dir, '.speck'))
+    ) {
       return dir;
     }
     dir = path.dirname(dir);
@@ -279,7 +279,7 @@ async function checkExistingBranches(shortName: string, specsDir: string): Promi
   // Check remote branches
   try {
     const result = await $`git ls-remote --heads origin`.quiet();
-    const lines = result.text().split("\n");
+    const lines = result.text().split('\n');
     for (const line of lines) {
       const match = line.match(new RegExp(`refs/heads/(\\d+)-${shortName}$`));
       if (match && match[1]) {
@@ -296,7 +296,7 @@ async function checkExistingBranches(shortName: string, specsDir: string): Promi
   // Check local branches
   try {
     const result = await $`git branch`.quiet();
-    const branches = result.text().split("\n");
+    const branches = result.text().split('\n');
     for (const branch of branches) {
       const match = branch.match(new RegExp(`^[* ]*?(\\d+)-${shortName}$`));
       if (match && match[1]) {
@@ -335,10 +335,10 @@ async function checkExistingBranches(shortName: string, specsDir: string): Promi
 function cleanBranchName(name: string): string {
   return name
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-/, "")
-    .replace(/-$/, "");
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-/, '')
+    .replace(/-$/, '');
 }
 
 /**
@@ -347,16 +347,58 @@ function cleanBranchName(name: string): string {
 function generateBranchName(description: string): string {
   // Common stop words to filter out
   const stopWords = new Set([
-    "i", "a", "an", "the", "to", "for", "of", "in", "on", "at", "by",
-    "with", "from", "is", "are", "was", "were", "be", "been", "being",
-    "have", "has", "had", "do", "does", "did", "will", "would", "should",
-    "could", "can", "may", "might", "must", "shall", "this", "that",
-    "these", "those", "my", "your", "our", "their", "want", "need",
-    "add", "get", "set",
+    'i',
+    'a',
+    'an',
+    'the',
+    'to',
+    'for',
+    'of',
+    'in',
+    'on',
+    'at',
+    'by',
+    'with',
+    'from',
+    'is',
+    'are',
+    'was',
+    'were',
+    'be',
+    'been',
+    'being',
+    'have',
+    'has',
+    'had',
+    'do',
+    'does',
+    'did',
+    'will',
+    'would',
+    'should',
+    'could',
+    'can',
+    'may',
+    'might',
+    'must',
+    'shall',
+    'this',
+    'that',
+    'these',
+    'those',
+    'my',
+    'your',
+    'our',
+    'their',
+    'want',
+    'need',
+    'add',
+    'get',
+    'set',
   ]);
 
   // Convert to lowercase and split into words
-  const cleanName = description.toLowerCase().replace(/[^a-z0-9]+/g, " ");
+  const cleanName = description.toLowerCase().replace(/[^a-z0-9]+/g, ' ');
   const words = cleanName.split(/\s+/).filter((w) => w.length > 0);
 
   // Filter words: remove stop words and short words (unless they look like acronyms)
@@ -380,16 +422,16 @@ function generateBranchName(description: string): string {
   // Use first 3-4 meaningful words
   if (meaningfulWords.length > 0) {
     const maxWords = meaningfulWords.length === 4 ? 4 : 3;
-    return meaningfulWords.slice(0, maxWords).join("-");
+    return meaningfulWords.slice(0, maxWords).join('-');
   }
 
   // Fallback: use cleaned description (first 3 words)
   const cleaned = cleanBranchName(description);
   return cleaned
-    .split("-")
+    .split('-')
     .filter((w) => w.length > 0)
     .slice(0, 3)
-    .join("-");
+    .join('-');
 }
 
 /**
@@ -401,15 +443,10 @@ export async function main(args: string[]): Promise<number> {
 
   // Handle parse errors (need to detect outputMode first from raw args)
   if (!parseResult.success) {
-    const hasJsonFlag = args.includes("--json");
-    const hasHookFlag = args.includes("--hook");
+    const hasJsonFlag = args.includes('--json');
+    const hasHookFlag = args.includes('--hook');
     const outputMode = detectOutputMode({ json: hasJsonFlag, hook: hasHookFlag });
-    outputError(
-      "INVALID_ARGS",
-      parseResult.error,
-      outputMode,
-      startTime
-    );
+    outputError('INVALID_ARGS', parseResult.error, outputMode, startTime);
     return ExitCode.USER_ERROR;
   }
 
@@ -422,13 +459,9 @@ export async function main(args: string[]): Promise<number> {
   }
 
   if (!options.featureDescription) {
-    outputError(
-      "MISSING_DESCRIPTION",
-      "Feature description is required",
-      outputMode,
-      startTime,
-      ["Provide a description: create-new-feature '<feature description>'"]
-    );
+    outputError('MISSING_DESCRIPTION', 'Feature description is required', outputMode, startTime, [
+      "Provide a description: create-new-feature '<feature description>'",
+    ]);
     return ExitCode.USER_ERROR;
   }
 
@@ -445,8 +478,8 @@ export async function main(args: string[]): Promise<number> {
     const foundRoot = findRepoRoot(scriptDir);
     if (!foundRoot) {
       outputError(
-        "REPO_NOT_FOUND",
-        "Could not determine repository root. Please run this script from within the repository.",
+        'REPO_NOT_FOUND',
+        'Could not determine repository root. Please run this script from within the repository.',
         outputMode,
         startTime
       );
@@ -464,11 +497,11 @@ export async function main(args: string[]): Promise<number> {
   let isSharedSpec = false;
   if (options.sharedSpec && config.mode === 'multi-repo') {
     // T064: Create shared spec at speckRoot
-    specsDir = path.join(config.speckRoot, "specs");
+    specsDir = path.join(config.speckRoot, 'specs');
     isSharedSpec = true;
   } else {
     // T067: Create local spec at repoRoot (default behavior)
-    specsDir = path.join(repoRoot, "specs");
+    specsDir = path.join(repoRoot, 'specs');
   }
   mkdirSync(specsDir, { recursive: true });
   // [SPECK-EXTENSION:END]
@@ -501,7 +534,7 @@ export async function main(args: string[]): Promise<number> {
       branchNumber = highest + 1;
     }
 
-    featureNum = branchNumber.toString().padStart(3, "0");
+    featureNum = branchNumber.toString().padStart(3, '0');
     specId = `${featureNum}-${branchSuffix}`;
   } else {
     // Standard branch name generation
@@ -523,14 +556,14 @@ export async function main(args: string[]): Promise<number> {
       branchNumber = highest + 1;
     }
 
-    featureNum = branchNumber.toString().padStart(3, "0");
+    featureNum = branchNumber.toString().padStart(3, '0');
     branchName = `${featureNum}-${branchSuffix}`;
 
     // GitHub enforces a 244-byte limit on branch names
     const maxBranchLength = 244;
     if (branchName.length > maxBranchLength) {
       const maxSuffixLength = maxBranchLength - 4; // 3 digits + hyphen
-      const truncatedSuffix = branchSuffix.substring(0, maxSuffixLength).replace(/-$/, "");
+      const truncatedSuffix = branchSuffix.substring(0, maxSuffixLength).replace(/-$/, '');
 
       console.error(`[specify] Warning: Branch name exceeded GitHub's 244-byte limit`);
       console.error(`[specify] Original: ${branchName} (${branchName.length} bytes)`);
@@ -550,7 +583,7 @@ export async function main(args: string[]): Promise<number> {
       const updatedMapping = addBranchEntry(branchMapping, entry);
       await writeBranches(repoRoot, updatedMapping);
 
-      if (outputMode === "human") {
+      if (outputMode === 'human') {
         console.log(`[speck] Recorded branch mapping: ${branchName} → ${specId}`);
       }
 
@@ -558,13 +591,15 @@ export async function main(args: string[]): Promise<number> {
       try {
         await $`git add .speck/branches.json`.quiet();
         await $`git commit -m "chore: update branches.json for ${branchName}"`.quiet();
-        if (outputMode === "human") {
+        if (outputMode === 'human') {
           console.log(`[speck] Committed branches.json`);
         }
       } catch {
         // Non-fatal: warn but continue (file might already be committed or no changes)
-        if (outputMode === "human") {
-          console.error(`[speck] Warning: Could not commit branches.json (may already be up to date)`);
+        if (outputMode === 'human') {
+          console.error(
+            `[speck] Warning: Could not commit branches.json (may already be up to date)`
+          );
         }
       }
     } catch (error) {
@@ -607,38 +642,39 @@ export async function main(args: string[]): Promise<number> {
           throw new Error(`git worktree add failed: ${result.stderr.toString()}`);
         }
 
-        if (outputMode === "human") {
+        if (outputMode === 'human') {
           console.log(`[speck] Created worktree at: ${worktreePath}`);
         }
 
         // T048a-d, T054: Write handoff artifacts (graceful degradation)
         try {
           // Extract feature title from description
-          const featureTitle = options.featureDescription.charAt(0).toUpperCase() +
+          const featureTitle =
+            options.featureDescription.charAt(0).toUpperCase() +
             options.featureDescription.slice(1);
 
           // Calculate relative spec path from worktree
           // T081: Use specId for spec directory (always NNN-short-name format)
-          const relativeSpecDir = path.join("specs", specId);
-          const relativeSpecPath = path.join(relativeSpecDir, "spec.md");
+          const relativeSpecDir = path.join('specs', specId);
+          const relativeSpecPath = path.join(relativeSpecDir, 'spec.md');
 
           writeWorktreeHandoff(worktreePath, {
             featureName: featureTitle,
             branchName,
             specPath: relativeSpecPath,
             context: options.featureDescription,
-            status: "not-started",
+            status: 'not-started',
             repoRoot,
           });
 
-          if (outputMode === "human") {
+          if (outputMode === 'human') {
             console.log(`[speck] Written handoff artifacts to worktree`);
           }
         } catch (error) {
           // T054: Non-fatal - worktree still works without handoff
           const errorMessage = error instanceof Error ? error.message : String(error);
           warnings.push(`Failed to write handoff artifacts: ${errorMessage}`);
-          if (outputMode === "human") {
+          if (outputMode === 'human') {
             console.error(`[speck] Warning: Failed to write handoff artifacts: ${errorMessage}`);
           }
         }
@@ -654,7 +690,7 @@ export async function main(args: string[]): Promise<number> {
 
             if (!ideResult.success) {
               warnings.push(`IDE launch failed: ${ideResult.error}`);
-              if (outputMode === "human") {
+              if (outputMode === 'human') {
                 console.error(`[speck] Warning: IDE launch failed: ${ideResult.error}`);
               }
             }
@@ -666,8 +702,10 @@ export async function main(args: string[]): Promise<number> {
       } catch (error) {
         // Worktree creation failed - fall back to regular checkout
         const errorMessage = error instanceof Error ? error.message : String(error);
-        if (outputMode === "human") {
-          console.error(`[speck] Warning: Worktree creation failed, falling back to branch checkout: ${errorMessage}`);
+        if (outputMode === 'human') {
+          console.error(
+            `[speck] Warning: Worktree creation failed, falling back to branch checkout: ${errorMessage}`
+          );
         }
         warnings.push(`Worktree creation failed: ${errorMessage}`);
         worktreePath = undefined;
@@ -678,7 +716,7 @@ export async function main(args: string[]): Promise<number> {
           await $`git checkout -b ${branchName}`;
         } catch (checkoutError) {
           outputError(
-            "GIT_BRANCH_FAILED",
+            'GIT_BRANCH_FAILED',
             `Failed to create git branch: ${String(checkoutError)}`,
             outputMode,
             startTime
@@ -692,7 +730,7 @@ export async function main(args: string[]): Promise<number> {
         await $`git checkout -b ${branchName}`;
       } catch (error) {
         outputError(
-          "GIT_BRANCH_FAILED",
+          'GIT_BRANCH_FAILED',
           `Failed to create git branch: ${String(error)}`,
           outputMode,
           startTime
@@ -700,8 +738,10 @@ export async function main(args: string[]): Promise<number> {
         return ExitCode.USER_ERROR;
       }
     }
-  } else if (outputMode === "human") {
-    console.error(`[specify] Warning: Git repository not detected; skipped branch creation for ${branchName}`);
+  } else if (outputMode === 'human') {
+    console.error(
+      `[specify] Warning: Git repository not detected; skipped branch creation for ${branchName}`
+    );
   }
   // [SPECK-EXTENSION:END]
 
@@ -723,7 +763,9 @@ export async function main(args: string[]): Promise<number> {
 
     if (!parentHasGit) {
       // T074: Prompt user to initialize parent as git repo
-      console.error(`[specify] Notice: Parent directory is not a git repository: ${parentRepoRoot}`);
+      console.error(
+        `[specify] Notice: Parent directory is not a git repository: ${parentRepoRoot}`
+      );
       console.error(`[specify] To enable branch coordination, initialize it as a git repo:`);
       console.error(`[specify]   cd ${parentRepoRoot} && git init`);
       console.error(`[specify] Skipping parent branch creation for now.`);
@@ -733,8 +775,9 @@ export async function main(args: string[]): Promise<number> {
         // Check if branch already exists in parent
         let branchExistsInParent = false;
         try {
-          const checkResult = await $`git -C ${parentRepoRoot} rev-parse --verify ${branchName}`.quiet();
-          branchExistsInParent = (checkResult.exitCode === 0);
+          const checkResult =
+            await $`git -C ${parentRepoRoot} rev-parse --verify ${branchName}`.quiet();
+          branchExistsInParent = checkResult.exitCode === 0;
         } catch {
           branchExistsInParent = false;
         }
@@ -749,16 +792,22 @@ export async function main(args: string[]): Promise<number> {
           // Create new branch in parent repo
           const createResult = await $`git -C ${parentRepoRoot} checkout -b ${branchName}`.quiet();
           if (createResult.exitCode !== 0) {
-            throw new Error(`git checkout -b failed with exit code ${String(createResult.exitCode)}: ${String(createResult.stderr)}`);
+            throw new Error(
+              `git checkout -b failed with exit code ${String(createResult.exitCode)}: ${String(createResult.stderr)}`
+            );
           }
           if (!options.json) {
             console.log(`[specify] Created branch in parent repo: ${branchName}`);
           }
         }
       } catch (error) {
-        console.error(`[specify] Warning: Failed to create branch in parent repo: ${String(error)}`);
+        console.error(
+          `[specify] Warning: Failed to create branch in parent repo: ${String(error)}`
+        );
         console.error(`[specify] Parent repo: ${parentRepoRoot}`);
-        console.error(`[specify] You may need to manually create the branch: git -C ${parentRepoRoot} checkout -b ${branchName}`);
+        console.error(
+          `[specify] You may need to manually create the branch: git -C ${parentRepoRoot} checkout -b ${branchName}`
+        );
       }
     }
   }
@@ -776,7 +825,7 @@ export async function main(args: string[]): Promise<number> {
     actualSpecsDir = specsDir; // Already set to path.join(config.speckRoot, "specs")
   } else if (useWorktree && worktreePath) {
     // T119: Worktree mode (non-shared): spec goes into worktree's specs/ directory
-    actualSpecsDir = path.join(worktreePath, "specs");
+    actualSpecsDir = path.join(worktreePath, 'specs');
   } else {
     // Non-worktree mode: use previously determined specsDir (repoRoot)
     actualSpecsDir = specsDir;
@@ -788,23 +837,23 @@ export async function main(args: string[]): Promise<number> {
   mkdirSync(featureDir, { recursive: true });
 
   // Copy template to the spec location
-  const template = path.join(getTemplatesDir(), "spec-template.md");
-  const specFile = path.join(featureDir, "spec.md");
+  const template = path.join(getTemplatesDir(), 'spec-template.md');
+  const specFile = path.join(featureDir, 'spec.md');
   if (existsSync(template)) {
     copyFileSync(template, specFile);
   } else {
     // Create empty spec file
-    await Bun.write(specFile, "");
+    await Bun.write(specFile, '');
   }
 
   // T065-T066: If shared spec in multi-repo mode, create local directory and symlink
   if (options.sharedSpec && config.mode === 'multi-repo') {
     // T065: Create local specs/NNN-feature/ directory in child repo
-    const localFeatureDir = path.join(repoRoot, "specs", specId);
+    const localFeatureDir = path.join(repoRoot, 'specs', specId);
     mkdirSync(localFeatureDir, { recursive: true });
 
     // T066: Symlink parent spec.md into child's local specs/NNN-feature/
-    const localSpecFile = path.join(localFeatureDir, "spec.md");
+    const localSpecFile = path.join(localFeatureDir, 'spec.md');
 
     // Calculate relative path from local spec location to shared spec
     const relativePath = path.relative(localFeatureDir, specFile);
@@ -843,17 +892,17 @@ export async function main(args: string[]): Promise<number> {
   };
 
   // Output results based on mode
-  if (outputMode === "json") {
+  if (outputMode === 'json') {
     const output = formatJsonOutput({
       success: true,
       data: outputData,
-      command: "create-new-feature",
+      command: 'create-new-feature',
       startTime,
     });
     console.log(JSON.stringify(output));
-  } else if (outputMode === "hook") {
+  } else if (outputMode === 'hook') {
     const hookOutput = formatHookOutput({
-      hookType: "UserPromptSubmit",
+      hookType: 'UserPromptSubmit',
       context: `<!-- SPECK_FEATURE_CREATED\n${JSON.stringify(outputData)}\n-->`,
     });
     console.log(JSON.stringify(hookOutput));

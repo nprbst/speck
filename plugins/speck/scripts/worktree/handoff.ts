@@ -9,10 +9,18 @@
  * @see session-handoff-addendum.md
  */
 
-import { z } from "zod";
-import { mkdirSync, existsSync, renameSync, readFileSync, writeFileSync, chmodSync, copyFileSync } from "node:fs";
-import path from "node:path";
-import { $ } from "bun";
+import { z } from 'zod';
+import {
+  mkdirSync,
+  existsSync,
+  renameSync,
+  readFileSync,
+  writeFileSync,
+  chmodSync,
+  copyFileSync,
+} from 'node:fs';
+import path from 'node:path';
+import { $ } from 'bun';
 
 // =============================================================================
 // Schema Definition (from contracts/handoff-document.ts)
@@ -23,33 +31,28 @@ import { $ } from "bun";
  */
 export const HandoffDocumentSchema = z.object({
   /** Feature name from spec.md title */
-  featureName: z.string().min(1, "Feature name is required"),
+  featureName: z.string().min(1, 'Feature name is required'),
 
   /** Git branch name */
   branchName: z
     .string()
-    .min(1, "Branch name is required")
-    .regex(
-      /^[a-zA-Z0-9._/-]+$/,
-      "Branch name contains invalid characters"
-    ),
+    .min(1, 'Branch name is required')
+    .regex(/^[a-zA-Z0-9._/-]+$/, 'Branch name contains invalid characters'),
 
   /** Relative path from worktree to spec.md */
-  specPath: z.string().min(1, "Spec path is required"),
+  specPath: z.string().min(1, 'Spec path is required'),
 
   /** ISO timestamp of handoff creation */
-  createdAt: z.string().datetime("Invalid ISO timestamp"),
+  createdAt: z.string().datetime('Invalid ISO timestamp'),
 
   /** Brief description of feature purpose */
-  context: z.string().min(1, "Context is required"),
+  context: z.string().min(1, 'Context is required'),
 
   /** Current implementation status (if tasks.md exists) */
-  status: z
-    .enum(["not-started", "in-progress", "completed"])
-    .optional(),
+  status: z.enum(['not-started', 'in-progress', 'completed']).optional(),
 
   /** Next suggested action for the developer */
-  nextStep: z.string().min(1, "Next step is required"),
+  nextStep: z.string().min(1, 'Next step is required'),
 });
 
 /**
@@ -64,32 +67,32 @@ export type HandoffDocument = z.infer<typeof HandoffDocumentSchema>;
 /**
  * Handoff document location within worktree
  */
-export const HANDOFF_FILE_PATH = ".speck/handoff.md";
+export const HANDOFF_FILE_PATH = '.speck/handoff.md';
 
 /**
  * Archived handoff document location
  */
-export const HANDOFF_DONE_PATH = ".speck/handoff.done.md";
+export const HANDOFF_DONE_PATH = '.speck/handoff.done.md';
 
 /**
  * Claude settings file location
  */
-export const CLAUDE_SETTINGS_PATH = ".claude/settings.json";
+export const CLAUDE_SETTINGS_PATH = '.claude/settings.json';
 
 /**
  * Claude local settings file location (machine-specific, not tracked by git)
  */
-export const CLAUDE_SETTINGS_LOCAL_PATH = ".claude/settings.local.json";
+export const CLAUDE_SETTINGS_LOCAL_PATH = '.claude/settings.local.json';
 
 /**
  * Hook script location
  */
-export const HOOK_SCRIPT_PATH = ".claude/scripts/handoff.sh";
+export const HOOK_SCRIPT_PATH = '.claude/scripts/handoff.sh';
 
 /**
  * VSCode tasks file location
  */
-export const VSCODE_TASKS_PATH = ".vscode/tasks.json";
+export const VSCODE_TASKS_PATH = '.vscode/tasks.json';
 
 // =============================================================================
 // Template Constants (T052)
@@ -115,19 +118,19 @@ export const CLAUDE_SETTINGS_TEMPLATE = {
  * claude shell alias available.
  */
 export const VSCODE_TASKS_TEMPLATE = {
-  version: "2.0.0",
+  version: '2.0.0',
   tasks: [
     {
-      label: "Start Claude with Handoff",
-      type: "shell",
-      command: "~/.claude/local/claude",
+      label: 'Start Claude with Handoff',
+      type: 'shell',
+      command: '~/.claude/local/claude',
       args: ["'Read .speck/handoff.md and proceed with the task described there.'"],
       runOptions: {
-        runOn: "folderOpen",
+        runOn: 'folderOpen',
       },
       presentation: {
-        reveal: "always",
-        panel: "dedicated",
+        reveal: 'always',
+        panel: 'dedicated',
         focus: true,
       },
       problemMatcher: [],
@@ -193,7 +196,7 @@ export interface CreateHandoffOptions {
   /** Brief feature description */
   context: string;
   /** Current implementation status (optional) */
-  status?: HandoffDocument["status"];
+  status?: HandoffDocument['status'];
 }
 
 /**
@@ -220,16 +223,16 @@ export function createHandoffDocument(options: CreateHandoffOptions): HandoffDoc
 /**
  * Determine the next step based on current status
  */
-function determineNextStep(status?: HandoffDocument["status"]): string {
+function determineNextStep(status?: HandoffDocument['status']): string {
   switch (status) {
-    case "not-started":
-      return "Run `/speck:plan` to create an implementation plan, then `/speck:tasks` to generate tasks.";
-    case "in-progress":
-      return "Run `/speck:implement` to continue working on the remaining tasks.";
-    case "completed":
-      return "This feature is complete. Run `/speck:analyze` to verify consistency before merging.";
+    case 'not-started':
+      return 'Run `/speck:plan` to create an implementation plan, then `/speck:tasks` to generate tasks.';
+    case 'in-progress':
+      return 'Run `/speck:implement` to continue working on the remaining tasks.';
+    case 'completed':
+      return 'This feature is complete. Run `/speck:analyze` to verify consistency before merging.';
     default:
-      return "Start by reviewing the spec, then run `/speck:plan` to create an implementation plan.";
+      return 'Start by reviewing the spec, then run `/speck:plan` to create an implementation plan.';
   }
 }
 
@@ -244,7 +247,7 @@ function determineNextStep(status?: HandoffDocument["status"]): string {
  * @returns Markdown string
  */
 export function generateHandoffMarkdown(doc: HandoffDocument): string {
-  const statusLine = doc.status ? `status: "${doc.status}"` : "";
+  const statusLine = doc.status ? `status: "${doc.status}"` : '';
 
   const yamlFrontmatter = `---
 featureName: "${escapeYaml(doc.featureName)}"
@@ -284,14 +287,14 @@ mv .speck/handoff.md .speck/handoff.done.md
 This prevents re-loading the same handoff in future sessions.
 `;
 
-  return yamlFrontmatter + "\n" + markdownContent.trim() + "\n";
+  return yamlFrontmatter + '\n' + markdownContent.trim() + '\n';
 }
 
 /**
  * Escape special characters for YAML strings
  */
 function escapeYaml(str: string): string {
-  return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
+  return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
 }
 
 // =============================================================================
@@ -309,14 +312,14 @@ export function parseHandoffMarkdown(markdown: string): HandoffDocument {
   // Extract YAML frontmatter
   const frontmatterMatch = markdown.match(/^---\n([\s\S]*?)\n---/);
   if (!frontmatterMatch || !frontmatterMatch[1]) {
-    throw new Error("Invalid handoff document: missing YAML frontmatter");
+    throw new Error('Invalid handoff document: missing YAML frontmatter');
   }
 
   const yamlContent = frontmatterMatch[1];
   const frontmatter: Record<string, string> = {};
 
   // Simple YAML parsing (key: "value" format)
-  for (const line of yamlContent.split("\n")) {
+  for (const line of yamlContent.split('\n')) {
     const match = line.match(/^(\w+):\s*"?([^"]*)"?$/);
     if (match && match[1] !== undefined && match[2] !== undefined) {
       frontmatter[match[1]] = match[2];
@@ -326,19 +329,19 @@ export function parseHandoffMarkdown(markdown: string): HandoffDocument {
   // Extract context from markdown body
   const body = markdown.slice(frontmatterMatch[0].length);
   const contextMatch = body.match(/## Context\n\n([\s\S]*?)\n\n## Getting Started/);
-  const context = contextMatch && contextMatch[1] ? contextMatch[1].trim() : "";
+  const context = contextMatch && contextMatch[1] ? contextMatch[1].trim() : '';
 
   // Extract next step from markdown body
   const nextStepMatch = body.match(/## Next Step\n\n([\s\S]*?)\n\n---/);
-  const nextStep = nextStepMatch && nextStepMatch[1] ? nextStepMatch[1].trim() : "";
+  const nextStep = nextStepMatch && nextStepMatch[1] ? nextStepMatch[1].trim() : '';
 
   // Build and validate document
   const doc = {
-    featureName: frontmatter.featureName || "",
-    branchName: frontmatter.branchName || "",
-    specPath: frontmatter.specPath || "",
-    createdAt: frontmatter.createdAt || "",
-    status: frontmatter.status as HandoffDocument["status"],
+    featureName: frontmatter.featureName || '',
+    branchName: frontmatter.branchName || '',
+    specPath: frontmatter.specPath || '',
+    createdAt: frontmatter.createdAt || '',
+    status: frontmatter.status as HandoffDocument['status'],
     context,
     nextStep,
   };
@@ -359,7 +362,7 @@ export function parseHandoffMarkdown(markdown: string): HandoffDocument {
 export function generateHookOutput(handoffContent: string): string {
   const output = {
     hookSpecificOutput: {
-      hookEventName: "SessionStart",
+      hookEventName: 'SessionStart',
       additionalContext: handoffContent,
     },
   };
@@ -403,7 +406,7 @@ export function removeSessionStartHook(worktreePath: string): void {
   }
 
   try {
-    const content = readFileSync(settingsPath, "utf-8");
+    const content = readFileSync(settingsPath, 'utf-8');
     const settings = JSON.parse(content) as Record<string, unknown>;
 
     const hooks = settings.hooks as Record<string, unknown> | undefined;
@@ -439,7 +442,7 @@ export interface WriteWorktreeHandoffOptions {
   /** Brief feature description */
   context: string;
   /** Current implementation status (optional) */
-  status?: HandoffDocument["status"];
+  status?: HandoffDocument['status'];
   /** Path to main repository (for copying settings.local.json) */
   repoRoot?: string;
 }
@@ -458,19 +461,19 @@ export function writeWorktreeHandoff(
   const doc = createHandoffDocument(options);
   const markdown = generateHandoffMarkdown(doc);
 
-  const speckDir = path.join(worktreePath, ".speck");
+  const speckDir = path.join(worktreePath, '.speck');
   mkdirSync(speckDir, { recursive: true });
   writeFileSync(path.join(worktreePath, HANDOFF_FILE_PATH), markdown);
 
   // T048c: Write .claude/settings.json - merge with existing (preserve checked-in settings)
-  const claudeDir = path.join(worktreePath, ".claude");
+  const claudeDir = path.join(worktreePath, '.claude');
   mkdirSync(claudeDir, { recursive: true });
 
   const settingsPath = path.join(worktreePath, CLAUDE_SETTINGS_PATH);
   let existingSettings: Record<string, unknown> = {};
   try {
     if (existsSync(settingsPath)) {
-      existingSettings = JSON.parse(readFileSync(settingsPath, "utf-8"));
+      existingSettings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
     }
   } catch {
     // If parse fails, start fresh
@@ -497,14 +500,14 @@ export function writeWorktreeHandoff(
   }
 
   // T048b: Write .claude/scripts/handoff.sh
-  const scriptsDir = path.join(worktreePath, ".claude", "scripts");
+  const scriptsDir = path.join(worktreePath, '.claude', 'scripts');
   mkdirSync(scriptsDir, { recursive: true });
   const hookScriptPath = path.join(worktreePath, HOOK_SCRIPT_PATH);
   writeFileSync(hookScriptPath, HANDOFF_HOOK_SCRIPT);
   chmodSync(hookScriptPath, 0o755); // Make executable
 
   // T048d: Write .vscode/tasks.json
-  const vscodeDir = path.join(worktreePath, ".vscode");
+  const vscodeDir = path.join(worktreePath, '.vscode');
   mkdirSync(vscodeDir, { recursive: true });
   writeFileSync(
     path.join(worktreePath, VSCODE_TASKS_PATH),
@@ -533,7 +536,7 @@ export interface CreateWorktreeWithHandoffOptions {
   /** Brief feature description */
   context: string;
   /** Current implementation status (optional) */
-  status?: HandoffDocument["status"];
+  status?: HandoffDocument['status'];
 }
 
 /**
@@ -562,26 +565,21 @@ export interface CreateWorktreeWithHandoffResult {
 export async function createWorktreeWithHandoff(
   options: CreateWorktreeWithHandoffOptions
 ): Promise<CreateWorktreeWithHandoffResult> {
-  const {
-    repoPath,
-    branchName,
-    worktreePath,
-    featureName,
-    specPath,
-    context,
-    status,
-  } = options;
+  const { repoPath, branchName, worktreePath, featureName, specPath, context, status } = options;
 
   const warnings: string[] = [];
 
   try {
     // T048: Use atomic git worktree add (no checkout switching)
     // Check if branch already exists
-    const branchCheck = await $`git -C ${repoPath} rev-parse --verify ${branchName}`.nothrow().quiet();
+    const branchCheck = await $`git -C ${repoPath} rev-parse --verify ${branchName}`
+      .nothrow()
+      .quiet();
 
     if (branchCheck.exitCode === 0) {
       // Branch exists, add worktree for existing branch
-      const result = await $`git -C ${repoPath} worktree add ${worktreePath} ${branchName}`.nothrow();
+      const result =
+        await $`git -C ${repoPath} worktree add ${worktreePath} ${branchName}`.nothrow();
       if (result.exitCode !== 0) {
         return {
           success: false,
@@ -591,7 +589,8 @@ export async function createWorktreeWithHandoff(
       }
     } else {
       // Branch doesn't exist, create branch and worktree atomically
-      const result = await $`git -C ${repoPath} worktree add -b ${branchName} ${worktreePath} HEAD`.nothrow();
+      const result =
+        await $`git -C ${repoPath} worktree add -b ${branchName} ${worktreePath} HEAD`.nothrow();
       if (result.exitCode !== 0) {
         return {
           success: false,

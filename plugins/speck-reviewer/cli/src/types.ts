@@ -7,11 +7,11 @@
 // Review Session
 // ============================================================================
 
-export type ReviewMode = "normal" | "self-review";
+export type ReviewMode = 'normal' | 'self-review';
 
 export interface ReviewSession {
   /** Schema version for forward compatibility */
-  $schema: "review-state-v1";
+  $schema: 'review-state-v1';
   /** PR number */
   prNumber: number;
   /** Full repository name in format "owner/repo" */
@@ -52,7 +52,7 @@ export interface ReviewSession {
 // File Clusters
 // ============================================================================
 
-export type ClusterStatus = "pending" | "in_progress" | "reviewed";
+export type ClusterStatus = 'pending' | 'in_progress' | 'reviewed';
 
 export interface FileCluster {
   /** Unique identifier (e.g., "cluster-1") */
@@ -71,7 +71,7 @@ export interface FileCluster {
   status: ClusterStatus;
 }
 
-export type ChangeType = "added" | "modified" | "deleted" | "renamed";
+export type ChangeType = 'added' | 'modified' | 'deleted' | 'renamed';
 
 export interface ClusterFile {
   /** Relative file path */
@@ -90,7 +90,7 @@ export interface ClusterFile {
 // Review Comments
 // ============================================================================
 
-export type CommentState = "suggested" | "staged" | "skipped" | "posted";
+export type CommentState = 'suggested' | 'staged' | 'skipped' | 'posted';
 
 export interface ReviewComment {
   /** Unique identifier */
@@ -116,13 +116,13 @@ export interface ReviewComment {
 }
 
 export type EditAction =
-  | "reword"
-  | "soften"
-  | "strengthen"
-  | "combine"
-  | "skip"
-  | "restore"
-  | "post";
+  | 'reword'
+  | 'soften'
+  | 'strengthen'
+  | 'combine'
+  | 'skip'
+  | 'restore'
+  | 'post';
 
 export interface CommentEdit {
   /** When the edit occurred */
@@ -178,7 +178,7 @@ export interface ParsedRequirement {
   category: string;
 }
 
-export type UserStoryPriority = "P1" | "P2" | "P3";
+export type UserStoryPriority = 'P1' | 'P2' | 'P3';
 
 export interface ParsedUserStory {
   /** Story ID */
@@ -250,6 +250,6 @@ export interface GitHubComment {
   line: number;
   body: string;
   author: string;
-  state: "open" | "resolved";
+  state: 'open' | 'resolved';
   createdAt: string;
 }

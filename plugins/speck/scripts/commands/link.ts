@@ -30,9 +30,9 @@ import {
   readFileSync,
   writeFileSync,
   appendFileSync,
-} from "node:fs";
-import { join, resolve, relative, basename, isAbsolute } from "node:path";
-import { parseArgs } from "util";
+} from 'node:fs';
+import { join, resolve, relative, basename, isAbsolute } from 'node:path';
+import { parseArgs } from 'util';
 
 // =============================================================================
 // Types
@@ -48,7 +48,7 @@ interface LinkResult {
   symlinkPath?: string;
   targetPath?: string;
   repoName?: string;
-  linkType?: "monorepo" | "multi-repo";
+  linkType?: 'monorepo' | 'multi-repo';
   reverseSymlinkPath?: string;
   linkedReposUpdated?: boolean;
 }
@@ -62,7 +62,7 @@ interface LinkResult {
  */
 function getGitRoot(cwd: string): string | null {
   try {
-    const result = Bun.spawnSync(["git", "rev-parse", "--show-toplevel"], {
+    const result = Bun.spawnSync(['git', 'rev-parse', '--show-toplevel'], {
       cwd,
     });
     if (result.exitCode === 0) {
@@ -78,17 +78,17 @@ function getGitRoot(cwd: string): string | null {
  * Determine if the current directory and target are in the same git repo
  * Returns "monorepo" if same git root, "multi-repo" if different git roots
  */
-function detectLinkType(currentPath: string, targetPath: string): "monorepo" | "multi-repo" {
+function detectLinkType(currentPath: string, targetPath: string): 'monorepo' | 'multi-repo' {
   const currentGitRoot = getGitRoot(currentPath);
   const targetGitRoot = getGitRoot(targetPath);
 
   // If either isn't in a git repo, treat as multi-repo
   if (!currentGitRoot || !targetGitRoot) {
-    return "multi-repo";
+    return 'multi-repo';
   }
 
   // Compare git roots (normalize paths for comparison)
-  return resolve(currentGitRoot) === resolve(targetGitRoot) ? "monorepo" : "multi-repo";
+  return resolve(currentGitRoot) === resolve(targetGitRoot) ? 'monorepo' : 'multi-repo';
 }
 
 /**
@@ -96,7 +96,7 @@ function detectLinkType(currentPath: string, targetPath: string): "monorepo" | "
  */
 function getGitRemoteUrl(): string | null {
   try {
-    const result = Bun.spawnSync(["git", "remote", "get-url", "origin"], {
+    const result = Bun.spawnSync(['git', 'remote', 'get-url', 'origin'], {
       cwd: process.cwd(),
     });
     if (result.exitCode === 0) {
@@ -117,7 +117,8 @@ function getRepoName(): string {
     // Extract repo name from URL like:
     // https://github.com/org/repo.git -> repo
     // git@github.com:org/repo.git -> repo
-    const match = remoteUrl.match(/\/([^/]+?)(?:\.git)?$/) || remoteUrl.match(/:([^/]+?)(?:\.git)?$/);
+    const match =
+      remoteUrl.match(/\/([^/]+?)(?:\.git)?$/) || remoteUrl.match(/:([^/]+?)(?:\.git)?$/);
     if (match?.[1]) {
       return match[1];
     }
@@ -131,15 +132,15 @@ function getRepoName(): string {
  */
 function getGitUserName(): string {
   try {
-    const result = Bun.spawnSync(["git", "config", "user.name"], {
+    const result = Bun.spawnSync(['git', 'config', 'user.name'], {
       cwd: process.cwd(),
     });
     if (result.exitCode === 0) {
       return result.stdout.toString().trim();
     }
-    return "Unknown";
+    return 'Unknown';
   } catch {
-    return "Unknown";
+    return 'Unknown';
   }
 }
 
@@ -148,7 +149,7 @@ function getGitUserName(): string {
  */
 function getTodayDate(): string {
   const now = new Date();
-  return now.toISOString().split("T")[0] ?? "";
+  return now.toISOString().split('T')[0] ?? '';
 }
 
 /**
@@ -160,7 +161,7 @@ function adjustPathForSpeckDepth(inputPath: string): string {
     return inputPath;
   }
   // Prepend ../ to account for .speck/ directory
-  return join("..", inputPath);
+  return join('..', inputPath);
 }
 
 /**
@@ -185,23 +186,23 @@ function updateLinkedReposFile(
   relativePath: string,
   userName: string,
   todayDate: string,
-  linkType: "monorepo" | "multi-repo"
+  linkType: 'monorepo' | 'multi-repo'
 ): boolean {
-  const linkedReposPath = join(speckRootPath, ".speck", "linked-repos.md");
+  const linkedReposPath = join(speckRootPath, '.speck', 'linked-repos.md');
 
   // Format link type for display
-  const linkTypeLabel = linkType === "monorepo" ? "monorepo package" : "multi-repo child";
+  const linkTypeLabel = linkType === 'monorepo' ? 'monorepo package' : 'multi-repo child';
 
   // Entry to add
   const entry = `
 ### ${repoName}
 - **Type**: ${linkTypeLabel}
-- **Repository**: \`${remoteUrl || "local"}\`
+- **Repository**: \`${remoteUrl || 'local'}\`
 - **Local Path**: \`${relativePath}\`
 - **Linked**: ${todayDate}
 - **Contact**: ${userName}
 - **Active Features**: None yet
-- **Notes**: ${linkType === "monorepo" ? "Package within same git repository" : "Separate git repository"}
+- **Notes**: ${linkType === 'monorepo' ? 'Package within same git repository' : 'Separate git repository'}
 `;
 
   try {
@@ -223,17 +224,17 @@ speck link /path/to/speck-root
     } else {
       // Append entry to existing file
       // Read file to check if repo already linked
-      const content = readFileSync(linkedReposPath, "utf-8");
+      const content = readFileSync(linkedReposPath, 'utf-8');
       if (content.includes(`### ${repoName}`)) {
         // Already linked, don't duplicate
         return true;
       }
       // Find position before "## Link Management" or append at end
-      const linkManagementPos = content.indexOf("## Link Management");
+      const linkManagementPos = content.indexOf('## Link Management');
       if (linkManagementPos !== -1) {
         const before = content.slice(0, linkManagementPos);
         const after = content.slice(linkManagementPos);
-        writeFileSync(linkedReposPath, before + entry + "\n" + after);
+        writeFileSync(linkedReposPath, before + entry + '\n' + after);
       } else {
         appendFileSync(linkedReposPath, entry);
       }
@@ -247,8 +248,12 @@ speck link /path/to/speck-root
 /**
  * Create reverse symlink at speck root pointing back to this repo
  */
-function createReverseSymlink(speckRootPath: string, repoName: string, currentRepoPath: string): string | null {
-  const reposDir = join(speckRootPath, ".speck", "repos");
+function createReverseSymlink(
+  speckRootPath: string,
+  repoName: string,
+  currentRepoPath: string
+): string | null {
+  const reposDir = join(speckRootPath, '.speck', 'repos');
   const reverseSymlinkPath = join(reposDir, repoName);
 
   try {
@@ -300,7 +305,7 @@ function runLink(targetPath: string, _options: LinkOptions): LinkResult {
   }
 
   // Step 2: Verify target has .speck/ directory (is a valid speck root)
-  const targetSpeckDir = join(targetPath, ".speck");
+  const targetSpeckDir = join(targetPath, '.speck');
   if (!existsSync(targetSpeckDir)) {
     return {
       success: false,
@@ -313,13 +318,13 @@ Run 'speck init' in the target directory first.`,
   const adjustedPath = adjustPathForSpeckDepth(targetPath);
 
   // Step 4: Create .speck/ directory in CWD if it doesn't exist
-  const speckDir = join(cwd, ".speck");
+  const speckDir = join(cwd, '.speck');
   if (!existsSync(speckDir)) {
     mkdirSync(speckDir, { recursive: true });
   }
 
   // Step 5: Create symlink
-  const symlinkPath = join(speckDir, "root");
+  const symlinkPath = join(speckDir, 'root');
 
   // Check if symlink already exists and points to correct target
   if (existsSync(symlinkPath)) {
@@ -371,7 +376,7 @@ Run 'speck init' in the target directory first.`,
   const todayDate = getTodayDate();
 
   // Step 7a: Detect if this is a monorepo package or multi-repo child
-  const resolvedTargetPath = resolve(cwd, adjustedPath.replace(/^\.\.\//, ""));
+  const resolvedTargetPath = resolve(cwd, adjustedPath.replace(/^\.\.\//, ''));
   const linkType = detectLinkType(cwd, resolvedTargetPath);
 
   // Calculate relative path from speck root to this directory
@@ -392,7 +397,7 @@ Run 'speck init' in the target directory first.`,
   );
 
   // Build success message
-  const linkTypeLabel = linkType === "monorepo" ? "monorepo package" : "multi-repo child";
+  const linkTypeLabel = linkType === 'monorepo' ? 'monorepo package' : 'multi-repo child';
   const messages: string[] = [];
   messages.push(`✓ Linked as ${linkTypeLabel} to speck root: ${targetPath}`);
   messages.push(`  Symlink: .speck/root → ${adjustedPath}`);
@@ -405,7 +410,7 @@ Run 'speck init' in the target directory first.`,
 
   return {
     success: true,
-    message: messages.join("\n"),
+    message: messages.join('\n'),
     symlinkPath,
     targetPath: adjustedPath,
     repoName,
@@ -453,7 +458,7 @@ export function main(args: string[]): Promise<number> {
   const { values, positionals } = parseArgs({
     args,
     options: {
-      json: { type: "boolean", default: false },
+      json: { type: 'boolean', default: false },
     },
     allowPositionals: true,
   });
@@ -461,7 +466,7 @@ export function main(args: string[]): Promise<number> {
   // Validate positional argument
   const targetPath = positionals[0];
   if (!targetPath) {
-    const errorMsg = "Error: Missing required argument <path>\n\nUsage: speck link <path> [--json]";
+    const errorMsg = 'Error: Missing required argument <path>\n\nUsage: speck link <path> [--json]';
     if (values.json) {
       console.log(JSON.stringify({ ok: false, message: errorMsg }, null, 2));
     } else {

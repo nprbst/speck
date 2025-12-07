@@ -76,7 +76,8 @@ function parseConventionalCommit(subject: string): ParsedCommit | null {
 }
 
 async function getAllTags(): Promise<TagInfo[]> {
-  const result = await $`git tag --sort=version:refname --format="%(refname:short) %(creatordate:short)"`.text();
+  const result =
+    await $`git tag --sort=version:refname --format="%(refname:short) %(creatordate:short)"`.text();
   const lines = result.trim().split('\n').filter(Boolean);
 
   const tags: TagInfo[] = [];
@@ -122,7 +123,7 @@ async function getCommitsBetweenTags(fromTag: string | null, toTag: string): Pro
   }
 
   const lines = result.trim().split('\n').filter(Boolean);
-  return lines.map(line => {
+  return lines.map((line) => {
     const [hash, subject] = line.split('\x00');
     return { hash, subject };
   });
@@ -181,7 +182,12 @@ function categorizeCommits(commits: RawCommit[]): ChangelogSections {
   return sections;
 }
 
-function formatChangelogEntry(target: PluginTarget, version: string, date: string, sections: ChangelogSections): string {
+function formatChangelogEntry(
+  target: PluginTarget,
+  version: string,
+  date: string,
+  sections: ChangelogSections
+): string {
   const lines: string[] = [];
 
   lines.push(`## [${target} v${version}] - ${date}`);
@@ -250,7 +256,12 @@ async function main() {
 
       const commits = await getCommitsBetweenTags(previousTag, currentTag.tag);
       const sections = categorizeCommits(commits);
-      const entry = formatChangelogEntry(currentTag.target, currentTag.version, currentTag.date, sections);
+      const entry = formatChangelogEntry(
+        currentTag.target,
+        currentTag.version,
+        currentTag.date,
+        sections
+      );
 
       entries.push({ tag: currentTag, entry });
     }
@@ -279,7 +290,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 `;
 
-  const changelogContent = changelogHeader + entries.map(e => e.entry).join('\n');
+  const changelogContent = changelogHeader + entries.map((e) => e.entry).join('\n');
 
   if (dryRun) {
     console.log('\n--- DRY RUN: Would write the following ---\n');
@@ -291,7 +302,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   }
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Error:', error);
   process.exit(1);
 });

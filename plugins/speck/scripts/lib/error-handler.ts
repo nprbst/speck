@@ -3,7 +3,7 @@
  * Provides consistent error formatting across CLI and hook modes
  */
 
-import type { CommandResult, ExecutionMode } from "./types";
+import type { CommandResult, ExecutionMode } from './types';
 
 /**
  * Custom error class for command-specific errors
@@ -16,7 +16,7 @@ export class CommandError extends Error {
     public readonly metadata?: Record<string, unknown>
   ) {
     super(message);
-    this.name = "CommandError";
+    this.name = 'CommandError';
     Error.captureStackTrace(this, CommandError);
   }
 }
@@ -50,7 +50,7 @@ export function formatHookError(error: Error | CommandError): CommandResult {
 
   return {
     success: false,
-    output: "",
+    output: '',
     errorOutput: error.message,
     exitCode,
     metadata: metadata ?? null,
@@ -65,7 +65,7 @@ export function formatError(
   error: Error | CommandError,
   mode: ExecutionMode
 ): CommandResult | string {
-  if (mode === "hook") {
+  if (mode === 'hook') {
     return formatHookError(error);
   }
   return formatCliError(error);
@@ -96,7 +96,7 @@ export function withErrorHandling<TArgs>(
       // Handle non-Error throws
       return {
         success: false,
-        output: "",
+        output: '',
         errorOutput: String(error),
         exitCode: 1,
         metadata: null,

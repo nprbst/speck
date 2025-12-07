@@ -5,35 +5,26 @@
  * and common/ utilities.
  */
 
-import type {
-  GitHubRelease,
-  RateLimitInfo,
-} from "./github-api";
-import type {
-  UpstreamRelease,
-  ReleaseRegistry,
-  ReleaseStatus,
-} from "./release-registry";
-import type { CliResult, ExitCode } from "./cli-interface";
+import type { GitHubRelease, RateLimitInfo } from './github-api';
+import type { UpstreamRelease, ReleaseRegistry, ReleaseStatus } from './release-registry';
+import type { CliResult, ExitCode } from './cli-interface';
 
 /**
  * Create mock GitHub release for testing
  */
-export function createMockGitHubRelease(
-  overrides?: Partial<GitHubRelease>
-): GitHubRelease {
+export function createMockGitHubRelease(overrides?: Partial<GitHubRelease>): GitHubRelease {
   return {
-    tag_name: "v1.0.0",
-    target_commitish: "abc123" + "0".repeat(34), // 40 char SHA
-    name: "Release v1.0.0",
-    body: "This is a test release.\n\nWith multiple paragraphs.",
-    published_at: "2025-11-15T00:00:00Z",
+    tag_name: 'v1.0.0',
+    target_commitish: 'abc123' + '0'.repeat(34), // 40 char SHA
+    name: 'Release v1.0.0',
+    body: 'This is a test release.\n\nWith multiple paragraphs.',
+    published_at: '2025-11-15T00:00:00Z',
     draft: false,
     prerelease: false,
-    tarball_url: "https://api.github.com/repos/owner/repo/tarball/v1.0.0",
-    zipball_url: "https://api.github.com/repos/owner/repo/zipball/v1.0.0",
-    url: "https://api.github.com/repos/owner/repo/releases/123",
-    html_url: "https://github.com/owner/repo/releases/tag/v1.0.0",
+    tarball_url: 'https://api.github.com/repos/owner/repo/tarball/v1.0.0',
+    zipball_url: 'https://api.github.com/repos/owner/repo/zipball/v1.0.0',
+    url: 'https://api.github.com/repos/owner/repo/releases/123',
+    html_url: 'https://github.com/owner/repo/releases/tag/v1.0.0',
     ...overrides,
   };
 }
@@ -41,15 +32,13 @@ export function createMockGitHubRelease(
 /**
  * Create mock upstream release for testing
  */
-export function createMockUpstreamRelease(
-  overrides?: Partial<UpstreamRelease>
-): UpstreamRelease {
+export function createMockUpstreamRelease(overrides?: Partial<UpstreamRelease>): UpstreamRelease {
   return {
-    version: "v1.0.0",
-    commit: "abc123" + "0".repeat(34), // 40 char SHA
-    pullDate: "2025-11-15T12:00:00Z",
-    releaseNotesUrl: "https://github.com/owner/repo/releases/tag/v1.0.0",
-    status: "pulled" as ReleaseStatus,
+    version: 'v1.0.0',
+    commit: 'abc123' + '0'.repeat(34), // 40 char SHA
+    pullDate: '2025-11-15T12:00:00Z',
+    releaseNotesUrl: 'https://github.com/owner/repo/releases/tag/v1.0.0',
+    status: 'pulled' as ReleaseStatus,
     ...overrides,
   };
 }
@@ -57,13 +46,11 @@ export function createMockUpstreamRelease(
 /**
  * Create mock release registry for testing
  */
-export function createMockReleaseRegistry(
-  releases?: UpstreamRelease[]
-): ReleaseRegistry {
+export function createMockReleaseRegistry(releases?: UpstreamRelease[]): ReleaseRegistry {
   const defaultReleases = releases || [createMockUpstreamRelease()];
   const firstRelease = defaultReleases[0];
   if (!firstRelease) {
-    throw new Error("At least one release required");
+    throw new Error('At least one release required');
   }
 
   return {
@@ -75,9 +62,7 @@ export function createMockReleaseRegistry(
 /**
  * Create mock rate limit info for testing
  */
-export function createMockRateLimitInfo(
-  overrides?: Partial<RateLimitInfo>
-): RateLimitInfo {
+export function createMockRateLimitInfo(overrides?: Partial<RateLimitInfo>): RateLimitInfo {
   return {
     remaining: 50,
     limit: 60,
@@ -91,8 +76,8 @@ export function createMockRateLimitInfo(
  */
 export function createMockCliResult<T = unknown>(
   exitCode: ExitCode,
-  stdout = "",
-  stderr = "",
+  stdout = '',
+  stderr = '',
   data?: T
 ): CliResult<T> {
   return {
@@ -156,7 +141,7 @@ export class MockFilesystem {
   rm(path: string, options?: { recursive?: boolean }): void {
     // Simple implementation: remove exact path or all paths starting with path/
     if (options?.recursive) {
-      const prefix = path.endsWith("/") ? path : path + "/";
+      const prefix = path.endsWith('/') ? path : path + '/';
       for (const [key] of this.files) {
         if (key === path || key.startsWith(prefix)) {
           this.files.delete(key);
@@ -186,7 +171,7 @@ export class MockGitHubApi {
   private releases: GitHubRelease[] = [];
   private rateLimit: RateLimitInfo = createMockRateLimitInfo();
   private shouldFail = false;
-  private errorMessage = "Network error";
+  private errorMessage = 'Network error';
 
   setReleases(releases: GitHubRelease[]): void {
     this.releases = releases;
@@ -196,7 +181,7 @@ export class MockGitHubApi {
     this.rateLimit = rateLimit;
   }
 
-  setShouldFail(shouldFail: boolean, errorMessage = "Network error"): void {
+  setShouldFail(shouldFail: boolean, errorMessage = 'Network error'): void {
     this.shouldFail = shouldFail;
     this.errorMessage = errorMessage;
   }
@@ -219,7 +204,7 @@ export class MockGitHubApi {
     this.releases = [];
     this.rateLimit = createMockRateLimitInfo();
     this.shouldFail = false;
-    this.errorMessage = "Network error";
+    this.errorMessage = 'Network error';
   }
 }
 
@@ -234,17 +219,14 @@ export interface MockUpstreamDirectory {
 /**
  * Create mock upstream directory fixture
  */
-export function createMockUpstreamDirectory(
-  version = "v1.0.0"
-): MockUpstreamDirectory {
+export function createMockUpstreamDirectory(version = 'v1.0.0'): MockUpstreamDirectory {
   return {
     version,
     files: {
-      ".specify/templates/spec-template.md": "# Feature Specification\n...",
-      ".specify/templates/plan-template.md": "# Implementation Plan\n...",
-      ".specify/scripts/bash/setup-plan.sh":
-        '#!/bin/bash\necho \'{"FEATURE_SPEC": "/path"}\'\n',
-      ".claude/commands/speckit.plan.md": "# Plan Command\n...",
+      '.specify/templates/spec-template.md': '# Feature Specification\n...',
+      '.specify/templates/plan-template.md': '# Implementation Plan\n...',
+      '.specify/scripts/bash/setup-plan.sh': '#!/bin/bash\necho \'{"FEATURE_SPEC": "/path"}\'\n',
+      '.claude/commands/speckit.plan.md': '# Plan Command\n...',
     },
   };
 }
@@ -261,9 +243,7 @@ export function assertCliResult(
   }
 ): void {
   if (result.exitCode !== expected.exitCode) {
-    throw new Error(
-      `Expected exit code ${expected.exitCode}, got ${result.exitCode}`
-    );
+    throw new Error(`Expected exit code ${expected.exitCode}, got ${result.exitCode}`);
   }
 
   if (expected.stdoutContains && !result.stdout.includes(expected.stdoutContains)) {
@@ -282,11 +262,8 @@ export function assertCliResult(
 /**
  * Assert JSON output matches schema
  */
-export function assertJsonOutput<T>(
-  result: CliResult,
-  validator: (data: unknown) => T
-): T {
-  if (result.exitCode !== 0 as ExitCode) {
+export function assertJsonOutput<T>(result: CliResult, validator: (data: unknown) => T): T {
+  if (result.exitCode !== (0 as ExitCode)) {
     throw new Error(
       `Cannot validate JSON from failed command (exit ${String(result.exitCode)}): ${result.stderr}`
     );

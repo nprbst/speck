@@ -5,14 +5,14 @@
  * and constructs paths for worktree creation.
  */
 
-import { basename, dirname, join, resolve } from "path";
-import { $ } from "bun";
-import type { WorktreeConfig } from "./config-schema";
+import { basename, dirname, join, resolve } from 'path';
+import { $ } from 'bun';
+import type { WorktreeConfig } from './config-schema';
 
 /**
  * Repository layout detection result
  */
-export type RepoLayout = "repo-name-dir" | "branch-name-dir";
+export type RepoLayout = 'repo-name-dir' | 'branch-name-dir';
 
 /**
  * Detect repository layout to determine worktree naming strategy
@@ -37,14 +37,14 @@ export async function detectRepoLayout(repoPath: string): Promise<RepoLayout> {
 
     // Check if directory name matches current branch name
     if (dirName === currentBranch) {
-      return "branch-name-dir";
+      return 'branch-name-dir';
     }
 
     // Default to repo-name-dir layout
-    return "repo-name-dir";
+    return 'repo-name-dir';
   } catch {
     // If git command fails, default to repo-name-dir
-    return "repo-name-dir";
+    return 'repo-name-dir';
   }
 }
 
@@ -93,10 +93,10 @@ export async function getRepoName(repoPath: string): Promise<string> {
 export function slugifyBranchName(branchName: string): string {
   return branchName
     .toLowerCase()
-    .replace(/\//g, "-")     // Replace slashes with dashes
-    .replace(/[^a-z0-9-_]/g, "-") // Replace unsafe chars with dash
-    .replace(/-+/g, "-")     // Collapse multiple dashes
-    .replace(/^-|-$/g, "");  // Remove leading/trailing dashes
+    .replace(/\//g, '-') // Replace slashes with dashes
+    .replace(/[^a-z0-9-_]/g, '-') // Replace unsafe chars with dash
+    .replace(/-+/g, '-') // Collapse multiple dashes
+    .replace(/^-|-$/g, ''); // Remove leading/trailing dashes
 }
 
 /**
@@ -113,7 +113,7 @@ export async function constructWorktreeDirName(
   const layout = await detectRepoLayout(repoPath);
   const slugifiedBranch = slugifyBranchName(branchName);
 
-  if (layout === "branch-name-dir") {
+  if (layout === 'branch-name-dir') {
     // No prefix needed
     return slugifiedBranch;
   } else {
@@ -130,16 +130,13 @@ export async function constructWorktreeDirName(
  * @param prefix - Optional prefix (e.g., "specs/", "feature/")
  * @returns Full branch name (e.g., "specs/002-user-auth" or "002-user-auth")
  */
-export function constructBranchName(
-  branchName: string,
-  prefix?: string
-): string {
+export function constructBranchName(branchName: string, prefix?: string): string {
   if (!prefix) {
     return branchName;
   }
 
   // Ensure prefix ends with slash
-  const normalizedPrefix = prefix.endsWith("/") ? prefix : `${prefix}/`;
+  const normalizedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
   return `${normalizedPrefix}${branchName}`;
 }
 

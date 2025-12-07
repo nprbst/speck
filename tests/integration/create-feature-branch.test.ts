@@ -219,8 +219,14 @@ describe('create-new-feature --branch flag (T081)', () => {
 describe('Non-standard branch lookup in check-prerequisites (T082, T083)', () => {
   let testDir: string;
   let repoPath: string;
-  const createScriptPath = join(import.meta.dir, '../../plugins/speck/scripts/create-new-feature.ts');
-  const checkScriptPath = join(import.meta.dir, '../../plugins/speck/scripts/check-prerequisites.ts');
+  const createScriptPath = join(
+    import.meta.dir,
+    '../../plugins/speck/scripts/create-new-feature.ts'
+  );
+  const checkScriptPath = join(
+    import.meta.dir,
+    '../../plugins/speck/scripts/check-prerequisites.ts'
+  );
 
   beforeEach(async () => {
     // Create temporary directory for test

@@ -4,17 +4,17 @@
  * Handles package manager detection and dependency installation
  */
 
-import { access } from "node:fs/promises";
-import { constants } from "node:fs";
-import { join } from "node:path";
-import { spawn, type ChildProcess } from "node:child_process";
-import type { PackageManager } from "./config-schema";
+import { access } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { join } from 'node:path';
+import { spawn, type ChildProcess } from 'node:child_process';
+import type { PackageManager } from './config-schema';
 
 /**
  * Options for dependency installation
  */
 export interface InstallDependenciesOptions {
-  worktreePath: string;       // Absolute path to worktree
+  worktreePath: string; // Absolute path to worktree
   packageManager?: PackageManager; // Override detected package manager
   onProgress?: (line: string) => void; // Progress callback (stdout/stderr)
 }
@@ -25,9 +25,9 @@ export interface InstallDependenciesOptions {
 export interface InstallDependenciesResult {
   success: boolean;
   packageManager: PackageManager; // Package manager that was used
-  duration?: number;           // Installation time in milliseconds
-  error?: string;             // Error message if failed
-  interpretation?: string;    // User-friendly error interpretation
+  duration?: number; // Installation time in milliseconds
+  error?: string; // Error message if failed
+  interpretation?: string; // User-friendly error interpretation
 }
 
 /**
@@ -38,14 +38,12 @@ export interface InstallDependenciesResult {
  * @param projectPath - Absolute path to project directory
  * @returns Detected package manager
  */
-export async function detectPackageManager(
-  projectPath: string
-): Promise<PackageManager> {
+export async function detectPackageManager(projectPath: string): Promise<PackageManager> {
   const lockfiles: Array<[string, PackageManager]> = [
-    ["bun.lockb", "bun"],
-    ["pnpm-lock.yaml", "pnpm"],
-    ["yarn.lock", "yarn"],
-    ["package-lock.json", "npm"],
+    ['bun.lockb', 'bun'],
+    ['pnpm-lock.yaml', 'pnpm'],
+    ['yarn.lock', 'yarn'],
+    ['package-lock.json', 'npm'],
   ];
 
   for (const [lockfile, pm] of lockfiles) {
@@ -58,7 +56,7 @@ export async function detectPackageManager(
   }
 
   // Default to npm if no lockfile found
-  return "npm";
+  return 'npm';
 }
 
 /**
@@ -69,17 +67,17 @@ export async function detectPackageManager(
  */
 export function getInstallCommand(packageManager: PackageManager): string[] {
   switch (packageManager) {
-    case "bun":
-      return ["bun", "install"];
-    case "pnpm":
-      return ["pnpm", "install"];
-    case "yarn":
-      return ["yarn", "install"];
-    case "npm":
-      return ["npm", "install"];
-    case "auto":
+    case 'bun':
+      return ['bun', 'install'];
+    case 'pnpm':
+      return ['pnpm', 'install'];
+    case 'yarn':
+      return ['yarn', 'install'];
+    case 'npm':
+      return ['npm', 'install'];
+    case 'auto':
       // Auto defaults to npm (actual detection happens in installDependencies)
-      return ["npm", "install"];
+      return ['npm', 'install'];
   }
 }
 
@@ -92,32 +90,36 @@ export function getInstallCommand(packageManager: PackageManager): string[] {
 export function interpretInstallError(error: string): string {
   const errorLower = error.toLowerCase();
 
-  if (errorLower.includes("enoent") && errorLower.includes("package.json")) {
-    return "package.json not found. Ensure the file exists in the worktree directory.";
+  if (errorLower.includes('enoent') && errorLower.includes('package.json')) {
+    return 'package.json not found. Ensure the file exists in the worktree directory.';
   }
 
-  if (errorLower.includes("eacces") || errorLower.includes("permission denied")) {
-    return "Permission denied. Try running with appropriate permissions or check file ownership.";
+  if (errorLower.includes('eacces') || errorLower.includes('permission denied')) {
+    return 'Permission denied. Try running with appropriate permissions or check file ownership.';
   }
 
-  if (errorLower.includes("enospc") || errorLower.includes("no space")) {
-    return "Insufficient disk space. Free up disk space and try again.";
+  if (errorLower.includes('enospc') || errorLower.includes('no space')) {
+    return 'Insufficient disk space. Free up disk space and try again.';
   }
 
-  if (errorLower.includes("network") || errorLower.includes("timeout") || errorLower.includes("fetch")) {
-    return "Network error. Check your internet connection and try again.";
+  if (
+    errorLower.includes('network') ||
+    errorLower.includes('timeout') ||
+    errorLower.includes('fetch')
+  ) {
+    return 'Network error. Check your internet connection and try again.';
   }
 
-  if (errorLower.includes("404") || errorLower.includes("not found")) {
-    return "Package not found in registry. Verify package names in package.json.";
+  if (errorLower.includes('404') || errorLower.includes('not found')) {
+    return 'Package not found in registry. Verify package names in package.json.';
   }
 
-  if (errorLower.includes("unexpected") && errorLower.includes("json")) {
-    return "Invalid JSON in package.json. Check syntax and formatting.";
+  if (errorLower.includes('unexpected') && errorLower.includes('json')) {
+    return 'Invalid JSON in package.json. Check syntax and formatting.';
   }
 
   // Generic error message
-  return "Dependency installation failed. Check the error message above for details.";
+  return 'Dependency installation failed. Check the error message above for details.';
 }
 
 /**
@@ -135,30 +137,25 @@ export function interpretInstallError(error: string): string {
 export async function installDependencies(
   options: InstallDependenciesOptions
 ): Promise<InstallDependenciesResult> {
-  const {
-    worktreePath,
-    packageManager: pmOverride,
-    onProgress
-  } = options;
+  const { worktreePath, packageManager: pmOverride, onProgress } = options;
 
   const startTime = Date.now();
 
   try {
     // Detect package manager if not provided or if "auto"
-    const packageManager = (pmOverride === "auto" || !pmOverride)
-      ? await detectPackageManager(worktreePath)
-      : pmOverride;
+    const packageManager =
+      pmOverride === 'auto' || !pmOverride ? await detectPackageManager(worktreePath) : pmOverride;
 
     // Check if package.json exists
     try {
-      await access(join(worktreePath, "package.json"), constants.F_OK);
+      await access(join(worktreePath, 'package.json'), constants.F_OK);
     } catch {
-      const error = "package.json not found";
+      const error = 'package.json not found';
       return {
         success: false,
         packageManager,
         error,
-        interpretation: interpretInstallError(error)
+        interpretation: interpretInstallError(error),
       };
     }
 
@@ -177,33 +174,33 @@ export async function installDependencies(
     return new Promise((resolve) => {
       const proc: ChildProcess = spawn(command, args, {
         cwd: worktreePath,
-        stdio: ["ignore", "pipe", "pipe"],
-        shell: true
+        stdio: ['ignore', 'pipe', 'pipe'],
+        shell: true,
       });
 
-      let stdout = "";
-      let stderr = "";
+      let stdout = '';
+      let stderr = '';
 
-      proc.stdout?.on("data", (data: Buffer) => {
+      proc.stdout?.on('data', (data: Buffer) => {
         const line = data.toString();
         stdout += line;
         onProgress?.(line.trim());
       });
 
-      proc.stderr?.on("data", (data: Buffer) => {
+      proc.stderr?.on('data', (data: Buffer) => {
         const line = data.toString();
         stderr += line;
         onProgress?.(line.trim());
       });
 
-      proc.on("close", (code: number | null) => {
+      proc.on('close', (code: number | null) => {
         const duration = Date.now() - startTime;
 
         if (code === 0) {
           resolve({
             success: true,
             packageManager,
-            duration
+            duration,
           });
         } else {
           const error = stderr || stdout || `Installation failed with exit code ${code}`;
@@ -212,12 +209,12 @@ export async function installDependencies(
             packageManager,
             duration,
             error,
-            interpretation: interpretInstallError(error)
+            interpretation: interpretInstallError(error),
           });
         }
       });
 
-      proc.on("error", (err: Error) => {
+      proc.on('error', (err: Error) => {
         const duration = Date.now() - startTime;
         const error = err.message;
 
@@ -226,7 +223,7 @@ export async function installDependencies(
           packageManager,
           duration,
           error,
-          interpretation: interpretInstallError(error)
+          interpretation: interpretInstallError(error),
         });
       });
     });
@@ -236,10 +233,10 @@ export async function installDependencies(
 
     return {
       success: false,
-      packageManager: pmOverride || "npm",
+      packageManager: pmOverride || 'npm',
       duration,
       error: errorMessage,
-      interpretation: interpretInstallError(errorMessage)
+      interpretation: interpretInstallError(errorMessage),
     };
   }
 }

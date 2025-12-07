@@ -13,16 +13,12 @@
  * - JSON Output: { NEXT_NUMBER, BRANCH_NAME, MODE, SPECS_DIR }
  */
 
-import { existsSync, readdirSync } from "node:fs";
-import path from "node:path";
-import { $ } from "bun";
-import { ExitCode } from "./contracts/cli-interface";
-import { detectSpeckRoot } from "./common/paths";
-import {
-  formatJsonOutput,
-  detectOutputMode,
-  type OutputMode,
-} from "@speck/common/output";
+import { existsSync, readdirSync } from 'node:fs';
+import path from 'node:path';
+import { $ } from 'bun';
+import { ExitCode } from './contracts/cli-interface';
+import { detectSpeckRoot } from './common/paths';
+import { formatJsonOutput, detectOutputMode, type OutputMode } from '@speck/common/output';
 
 /**
  * CLI options for next-feature
@@ -39,7 +35,7 @@ interface NextFeatureOptions {
 interface NextFeatureOutput {
   NEXT_NUMBER: number;
   BRANCH_NAME: string;
-  MODE: "single-repo" | "multi-repo";
+  MODE: 'single-repo' | 'multi-repo';
   SPECS_DIR: string;
 }
 
@@ -65,16 +61,16 @@ function parseArgs(args: string[]): ParseResult {
   while (i < args.length) {
     const arg = args[i]!;
 
-    if (arg === "--json") {
+    if (arg === '--json') {
       options.json = true;
       i++;
-    } else if (arg === "--short-name") {
-      if (i + 1 >= args.length || args[i + 1]?.startsWith("--")) {
-        return { success: false, error: "--short-name requires a value" };
+    } else if (arg === '--short-name') {
+      if (i + 1 >= args.length || args[i + 1]?.startsWith('--')) {
+        return { success: false, error: '--short-name requires a value' };
       }
       options.shortName = args[i + 1]!;
       i += 2;
-    } else if (arg === "--help" || arg === "-h") {
+    } else if (arg === '--help' || arg === '-h') {
       options.help = true;
       i++;
     } else {
@@ -122,11 +118,11 @@ function outputError(
   startTime: number,
   recovery?: string[]
 ): void {
-  if (outputMode === "json") {
+  if (outputMode === 'json') {
     const output = formatJsonOutput({
       success: false,
       error: { code, message, recovery },
-      command: "next-feature",
+      command: 'next-feature',
       startTime,
     });
     console.log(JSON.stringify(output));
@@ -167,7 +163,7 @@ async function getHighestFromRemotes(): Promise<number> {
 
   try {
     const result = await $`git ls-remote --heads origin`.quiet();
-    const lines = result.text().split("\n");
+    const lines = result.text().split('\n');
     for (const line of lines) {
       // Match any branch starting with digits followed by dash
       const match = line.match(/refs\/heads\/(\d+)-/);
@@ -193,7 +189,7 @@ async function getHighestFromLocalBranches(): Promise<number> {
 
   try {
     const result = await $`git branch`.quiet();
-    const branches = result.text().split("\n");
+    const branches = result.text().split('\n');
     for (const branch of branches) {
       // Match any branch starting with digits followed by dash
       const match = branch.match(/^[* ]*(\d+)-/);
@@ -220,7 +216,7 @@ async function checkShortNameExists(shortName: string, specsDir: string): Promis
   // Check remote branches for this short-name
   try {
     const result = await $`git ls-remote --heads origin`.quiet();
-    const lines = result.text().split("\n");
+    const lines = result.text().split('\n');
     for (const line of lines) {
       const match = line.match(new RegExp(`refs/heads/(\\d+)-${shortName}$`));
       if (match && match[1]) {
@@ -237,7 +233,7 @@ async function checkShortNameExists(shortName: string, specsDir: string): Promis
   // Check local branches for this short-name
   try {
     const result = await $`git branch`.quiet();
-    const branches = result.text().split("\n");
+    const branches = result.text().split('\n');
     for (const branch of branches) {
       const match = branch.match(new RegExp(`^[* ]*?(\\d+)-${shortName}$`));
       if (match && match[1]) {
@@ -276,10 +272,10 @@ async function checkShortNameExists(shortName: string, specsDir: string): Promis
 function cleanShortName(name: string): string {
   return name
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-/, "")
-    .replace(/-$/, "");
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-/, '')
+    .replace(/-$/, '');
 }
 
 /**
@@ -291,14 +287,9 @@ export async function main(args: string[]): Promise<number> {
 
   // Handle parse errors
   if (!parseResult.success) {
-    const hasJsonFlag = args.includes("--json");
+    const hasJsonFlag = args.includes('--json');
     const outputMode = detectOutputMode({ json: hasJsonFlag, hook: false });
-    outputError(
-      "INVALID_ARGS",
-      parseResult.error,
-      outputMode,
-      startTime
-    );
+    outputError('INVALID_ARGS', parseResult.error, outputMode, startTime);
     return ExitCode.USER_ERROR;
   }
 
@@ -359,7 +350,7 @@ export async function main(args: string[]): Promise<number> {
   }
 
   // Format feature number with padding
-  const featureNum = nextNumber.toString().padStart(3, "0");
+  const featureNum = nextNumber.toString().padStart(3, '0');
   const branchName = options.shortName
     ? `${featureNum}-${cleanShortName(options.shortName)}`
     : featureNum;
@@ -373,11 +364,11 @@ export async function main(args: string[]): Promise<number> {
   };
 
   // Output results based on mode
-  if (outputMode === "json") {
+  if (outputMode === 'json') {
     const output = formatJsonOutput({
       success: true,
       data: outputData,
-      command: "next-feature",
+      command: 'next-feature',
       startTime,
     });
     console.log(JSON.stringify(output));

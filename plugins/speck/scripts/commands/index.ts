@@ -6,47 +6,47 @@
  * without hardcoding command names in the hook script.
  */
 
-import type { CommandRegistry, CommandRegistryEntry, MainFunction } from "@speck/common/types";
-import { echoHandler, parseEchoArgs } from "./echo";
-import { envHandler } from "./env";
+import type { CommandRegistry, CommandRegistryEntry, MainFunction } from '@speck/common/types';
+import { echoHandler, parseEchoArgs } from './echo';
+import { envHandler } from './env';
 
 // Lightweight commands: static imports (always loaded)
-import { main as checkPrerequisitesMain } from "../check-prerequisites";
+import { main as checkPrerequisitesMain } from '../check-prerequisites';
 
 // Heavy commands: dynamic imports (lazy-loaded on demand)
 // Using arrow functions that return dynamic imports ensures the code is only loaded when called
 const lazyEnvMain = async (): Promise<MainFunction> => {
-  const module = await import("../env-command");
+  const module = await import('../env-command');
   return module.main;
 };
 
 const lazyCreateNewFeatureMain = async (): Promise<MainFunction> => {
-  const module = await import("../create-new-feature");
+  const module = await import('../create-new-feature');
   return module.main;
 };
 
 const lazySetupPlanMain = async (): Promise<MainFunction> => {
-  const module = await import("../setup-plan");
+  const module = await import('../setup-plan');
   return module.main;
 };
 
 const lazyLinkRepoMain = async (): Promise<MainFunction> => {
-  const module = await import("../link-repo");
+  const module = await import('../link-repo');
   return module.main;
 };
 
 const lazyUpdateAgentContextMain = async (): Promise<MainFunction> => {
-  const module = await import("../update-agent-context");
+  const module = await import('../update-agent-context');
   return module.main;
 };
 
 const lazyInitMain = async (): Promise<MainFunction> => {
-  const module = await import("./init");
+  const module = await import('./init');
   return module.main;
 };
 
 const lazyNextFeatureMain = async (): Promise<MainFunction> => {
-  const module = await import("../next-feature");
+  const module = await import('../next-feature');
   return module.main;
 };
 
@@ -64,16 +64,16 @@ export const registry: CommandRegistry = {
   echo: {
     handler: echoHandler,
     parseArgs: parseEchoArgs,
-    description: "Echo back the provided message",
-    version: "1.0.0",
+    description: 'Echo back the provided message',
+    version: '1.0.0',
   },
   env: {
     handler: envHandler,
     lazyMain: lazyEnvMain,
-    description: "Show Speck environment and configuration info",
-    version: "1.0.0",
+    description: 'Show Speck environment and configuration info',
+    version: '1.0.0',
   },
-  "check-prerequisites": {
+  'check-prerequisites': {
     main: checkPrerequisitesMain,
     parseArgs: (commandString: string): string[] => {
       const parts = commandString.trim().split(/\s+/);
@@ -83,38 +83,38 @@ export const registry: CommandRegistry = {
       }
       return parts;
     },
-    description: "Validate feature directory structure and prerequisites",
-    version: "1.0.0",
+    description: 'Validate feature directory structure and prerequisites',
+    version: '1.0.0',
   } as CommandRegistryEntry<string[]>,
-  "create-new-feature": {
+  'create-new-feature': {
     lazyMain: lazyCreateNewFeatureMain,
-    description: "Create new feature specification directory",
-    version: "1.0.0",
+    description: 'Create new feature specification directory',
+    version: '1.0.0',
   },
-  "setup-plan": {
+  'setup-plan': {
     lazyMain: lazySetupPlanMain,
-    description: "Initialize planning workflow",
-    version: "1.0.0",
+    description: 'Initialize planning workflow',
+    version: '1.0.0',
   },
-  "link-repo": {
+  'link-repo': {
     lazyMain: lazyLinkRepoMain,
-    description: "Link repository to multi-repo speck root",
-    version: "1.0.0",
+    description: 'Link repository to multi-repo speck root',
+    version: '1.0.0',
   },
-  "update-agent-context": {
+  'update-agent-context': {
     lazyMain: lazyUpdateAgentContextMain,
-    description: "Update agent-specific context files with technology stack",
-    version: "1.0.0",
+    description: 'Update agent-specific context files with technology stack',
+    version: '1.0.0',
   },
   init: {
     lazyMain: lazyInitMain,
-    description: "Initialize Speck in current repository and install CLI globally",
-    version: "1.0.0",
+    description: 'Initialize Speck in current repository and install CLI globally',
+    version: '1.0.0',
   },
-  "next-feature": {
+  'next-feature': {
     lazyMain: lazyNextFeatureMain,
-    description: "Get next feature number and detect multi-repo mode",
-    version: "1.0.0",
+    description: 'Get next feature number and detect multi-repo mode',
+    version: '1.0.0',
   },
 };
 

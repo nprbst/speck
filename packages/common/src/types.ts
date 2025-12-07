@@ -5,8 +5,8 @@
  */
 
 // Re-export types from logger and errors for convenience
-export type { ExecutionMode } from "./logger";
-export type { CommandResult } from "./errors";
+export type { ExecutionMode } from './logger';
+export type { CommandResult } from './errors';
 
 // =============================================================================
 // Hook Types
@@ -16,7 +16,7 @@ export type { CommandResult } from "./errors";
  * JSON structure received via stdin when Claude Code invokes PreToolUse hook
  */
 export interface HookInput {
-  tool_name: "Bash";
+  tool_name: 'Bash';
   tool_input: {
     command: string;
     description?: string;
@@ -34,8 +34,8 @@ export type HookOutput = InterceptedCommand | PassThrough;
  */
 export interface InterceptedCommand {
   hookSpecificOutput: {
-    hookEventName: "PreToolUse";
-    permissionDecision: "allow";
+    hookEventName: 'PreToolUse';
+    permissionDecision: 'allow';
     updatedInput: {
       command: string;
     };
@@ -51,12 +51,7 @@ export type PassThrough = Record<string, never>;
  * Hook input payload for UserPromptSubmit and other hooks
  */
 export interface HookInputPayload {
-  hookType?:
-    | "UserPromptSubmit"
-    | "PreToolUse"
-    | "PostToolUse"
-    | "SessionStart"
-    | "Stop";
+  hookType?: 'UserPromptSubmit' | 'PreToolUse' | 'PostToolUse' | 'SessionStart' | 'Stop';
   toolName?: string;
   toolInput?: Record<string, unknown>;
   userPrompt?: string;
@@ -87,7 +82,7 @@ export interface HookOutputPayload {
  * Execution context provided to command handlers
  */
 export interface CommandContext {
-  mode: "cli" | "hook";
+  mode: 'cli' | 'hook';
   rawCommand: string;
   workingDirectory: string;
   isInteractive: boolean;
@@ -104,7 +99,7 @@ export type ArgumentParser<T = unknown> = (commandString: string) => T;
 export type CommandHandler<TArgs = unknown> = (
   args: TArgs,
   context: CommandContext
-) => Promise<import("./errors").CommandResult>;
+) => Promise<import('./errors').CommandResult>;
 
 /**
  * Main function signature for scripts (returns exit code)
@@ -141,9 +136,7 @@ export type CommandRegistry = Record<string, CommandRegistryEntry<any>>;
 /**
  * Result type for operations that can succeed or fail
  */
-export type Result<T, E = Error> =
-  | { success: true; value: T }
-  | { success: false; error: E };
+export type Result<T, E = Error> = { success: true; value: T } | { success: false; error: E };
 
 /**
  * Options with a JSON output flag
