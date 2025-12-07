@@ -3,18 +3,22 @@
 /**
  * Version Management Script
  *
- * Bumps version in package.json and creates git tag
+ * Bumps version in package.json (speck) or plugin.json (speck-reviewer) and creates git tag
  *
  * Usage:
- *   bun run scripts/version.ts patch
- *   bun run scripts/version.ts minor
- *   bun run scripts/version.ts major
- *   bun run scripts/version.ts 1.2.3
+ *   bun run scripts/version.ts patch                  # bumps speck (package.json)
+ *   bun run scripts/version.ts minor                  # bumps speck (package.json)
+ *   bun run scripts/version.ts major                  # bumps speck (package.json)
+ *   bun run scripts/version.ts patch speck-reviewer   # bumps speck-reviewer (plugin.json)
+ *   bun run scripts/version.ts 1.2.3 speck-reviewer   # sets specific version
  */
 
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import { $ } from 'bun';
+
+type PluginTarget = 'speck' | 'speck-reviewer';
 
 type BumpType = 'patch' | 'minor' | 'major';
 
@@ -46,21 +50,36 @@ function bumpVersion(current: string, bump: BumpType | string): string {
   }
 }
 
-async function updatePackageJson(newVersion: string): Promise<void> {
-  const packageJsonPath = join(process.cwd(), 'package.json');
-  const content = await readFile(packageJsonPath, 'utf-8');
-  const packageJson = JSON.parse(content);
+function getVersionFilePath(target: PluginTarget): string {
+  if (target === 'speck-reviewer') {
+    return join(process.cwd(), 'plugins/speck-reviewer/.claude-plugin/plugin.json');
+  }
+  return join(process.cwd(), 'package.json');
+}
 
-  const oldVersion = packageJson.version;
-  packageJson.version = newVersion;
+async function updateVersionFile(newVersion: string, target: PluginTarget): Promise<string> {
+  const filePath = getVersionFilePath(target);
+
+  if (!existsSync(filePath)) {
+    throw new Error(`Version file not found: ${filePath}`);
+  }
+
+  const content = await readFile(filePath, 'utf-8');
+  const json = JSON.parse(content);
+
+  const oldVersion = json.version;
+  json.version = newVersion;
 
   await writeFile(
-    packageJsonPath,
-    JSON.stringify(packageJson, null, 2) + '\n',
+    filePath,
+    JSON.stringify(json, null, 2) + '\n',
     'utf-8'
   );
 
-  console.log(`✓ Updated package.json: ${oldVersion} → ${newVersion}`);
+  const fileName = target === 'speck-reviewer' ? 'plugin.json' : 'package.json';
+  console.log(`✓ Updated ${fileName}: ${oldVersion} → ${newVersion}`);
+
+  return filePath;
 }
 
 async function checkGitStatus(skipGit: boolean, allowDirty: boolean): Promise<boolean> {
@@ -93,28 +112,87 @@ async function checkGitStatus(skipGit: boolean, allowDirty: boolean): Promise<bo
   return true; // Using git
 }
 
-async function commitAndTag(version: string, skipPush: boolean): Promise<void> {
-  try {
-    // Commit the version change
-    await $`git add package.json`;
-    await $`git commit -m "chore: bump version to v${version}"`;
-    console.log(`✓ Committed version bump: v${version}`);
+function parseTarget(args: string[]): PluginTarget | 'both' | null {
+  // Look for known plugin names in positional args (not flags)
+  const positionalArgs = args.filter(arg => !arg.startsWith('--'));
+  if (positionalArgs.includes('speck-reviewer')) {
+    return 'speck-reviewer';
+  }
+  if (positionalArgs.includes('speck')) {
+    return 'speck';
+  }
+  if (positionalArgs.includes('both')) {
+    return 'both';
+  }
+  return null; // No plugin specified
+}
 
-    // Create tag
-    await $`git tag v${version}`;
-    console.log(`✓ Created git tag: v${version}`);
+async function promptForTarget(): Promise<PluginTarget | 'both' | null> {
+  console.log('\n⚠️  No plugin specified. Which plugin(s) to bump?');
+  console.log('  1. speck');
+  console.log('  2. speck-reviewer');
+  console.log('  3. both');
+  console.log('  4. exit');
+  process.stdout.write('\nChoice [1-4]: ');
 
-    // Push commit and tag
-    if (!skipPush) {
-      await $`git push`;
-      console.log(`✓ Pushed commit to remote`);
+  const response = await new Promise<string>((resolve) => {
+    process.stdin.once('data', (data) => resolve(data.toString().trim()));
+  });
 
-      await $`git push origin v${version}`;
-      console.log(`✓ Pushed tag v${version} to remote`);
+  switch (response) {
+    case '1': return 'speck';
+    case '2': return 'speck-reviewer';
+    case '3': return 'both';
+    default: return null;
+  }
+}
+
+async function bumpPlugin(bump: string, target: PluginTarget, skipGit: boolean, skipPush: boolean, allowDirty: boolean): Promise<void> {
+  // Check git status first (before making any changes)
+  const useGit = await checkGitStatus(skipGit, allowDirty);
+
+  // Read current version from target file
+  const versionFilePath = getVersionFilePath(target);
+  const content = await readFile(versionFilePath, 'utf-8');
+  const json = JSON.parse(content);
+  const currentVersion = json.version;
+
+  // Calculate new version
+  const newVersion = bumpVersion(currentVersion, bump);
+
+  console.log(`\n📦 Version Bump (${target}): ${currentVersion} → ${newVersion}\n`);
+
+  // Update version file
+  const updatedFile = await updateVersionFile(newVersion, target);
+
+  // Commit, tag, and push if using git
+  if (useGit) {
+    // Use plugin-specific tag for speck-reviewer
+    const tagPrefix = target === 'speck-reviewer' ? 'speck-reviewer-v' : 'v';
+    const tagName = `${tagPrefix}${newVersion}`;
+
+    try {
+      // Commit the version change
+      await $`git add ${updatedFile}`;
+      await $`git commit -m ${'chore(' + target + '): bump version to v' + newVersion}`;
+      console.log(`✓ Committed version bump: ${tagName}`);
+
+      // Create tag
+      await $`git tag ${tagName}`;
+      console.log(`✓ Created git tag: ${tagName}`);
+
+      // Push commit and tag
+      if (!skipPush) {
+        await $`git push`;
+        console.log(`✓ Pushed commit to remote`);
+
+        await $`git push origin ${tagName}`;
+        console.log(`✓ Pushed tag ${tagName} to remote`);
+      }
+    } catch (error) {
+      console.error(`⚠ Warning: Git operations failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw error;
     }
-  } catch (error) {
-    console.error(`⚠ Warning: Git operations failed: ${error instanceof Error ? error.message : String(error)}`);
-    throw error;
   }
 }
 
@@ -122,56 +200,44 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.error('Usage: bun run scripts/version.ts <patch|minor|major|1.2.3> [--no-git] [--allow-dirty]');
+    console.error('Usage: bun run scripts/version.ts <patch|minor|major|1.2.3> <plugin-name> [--no-git] [--allow-dirty]');
+    console.error('\nPlugins: speck, speck-reviewer, both');
+    console.error('\nExamples:');
+    console.error('  bun run scripts/version.ts patch speck           # bump speck');
+    console.error('  bun run scripts/version.ts patch speck-reviewer  # bump speck-reviewer');
+    console.error('  bun run scripts/version.ts patch both            # bump both plugins');
     process.exit(1);
   }
 
   const bump = args[0];
+  let target = parseTarget(args);
   const skipGit = args.includes('--no-git');
   const skipPush = args.includes('--no-push');
   const allowDirty = args.includes('--allow-dirty');
 
+  // If no plugin specified, prompt user
+  if (target === null) {
+    target = await promptForTarget();
+    if (target === null) {
+      console.log('Exiting.');
+      process.exit(0);
+    }
+  }
+
   try {
-    // Check git status first (before making any changes)
-    const useGit = await checkGitStatus(skipGit, allowDirty);
-
-    // Read current version
-    const packageJsonPath = join(process.cwd(), 'package.json');
-    const content = await readFile(packageJsonPath, 'utf-8');
-    const packageJson = JSON.parse(content);
-    const currentVersion = packageJson.version;
-
-    // Calculate new version
-    const newVersion = bumpVersion(currentVersion, bump);
-
-    console.log(`\n📦 Version Bump: ${currentVersion} → ${newVersion}\n`);
-
-    // Update package.json
-    await updatePackageJson(newVersion);
-
-    // Commit, tag, and push if using git
-    if (useGit) {
-      await commitAndTag(newVersion, skipPush);
+    // Handle 'both' by bumping each plugin separately
+    if (target === 'both') {
+      console.log('\n📦 Bumping both plugins...\n');
+      await bumpPlugin(bump, 'speck', skipGit, skipPush, allowDirty);
+      await bumpPlugin(bump, 'speck-reviewer', skipGit, skipPush, allowDirty);
+    } else {
+      await bumpPlugin(bump, target, skipGit, skipPush, allowDirty);
     }
 
     console.log('\n✅ Version bump complete!');
     console.log('\nNext steps:');
-    if (useGit) {
-      if (skipPush) {
-        console.log('  1. Push commit and tag: git push && git push origin v' + newVersion);
-        console.log('  2. Build plugin: bun run build-plugin');
-        console.log('  3. Publish: bun run publish-plugin\n');
-      } else {
-        console.log('  1. Build plugin: bun run build-plugin');
-        console.log('  2. Publish: bun run publish-plugin\n');
-      }
-    } else {
-      console.log('  1. Review changes: git diff package.json');
-      console.log('  2. Commit changes: git add package.json && git commit -m "chore: bump version to v' + newVersion + '"');
-      console.log('  3. Push tag: git push origin v' + newVersion);
-      console.log('  4. Build plugin: bun run build-plugin');
-      console.log('  5. Publish: bun run publish-plugin\n');
-    }
+    console.log('  1. Build plugin: bun run build-plugin');
+    console.log('  2. Publish: bun run publish-plugin\n');
 
   } catch (error) {
     console.error('\n❌ Version bump failed:');

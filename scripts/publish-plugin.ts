@@ -19,20 +19,20 @@ import { $ } from 'bun';
 
 const MARKET_REPO = 'https://github.com/nprbst/speck-market.git';
 const MARKET_DIR = join(process.cwd(), '.market-temp');
-const PLUGIN_DIR = join(process.cwd(), 'dist/plugin');
+const PLUGIN_DIR = join(process.cwd(), 'dist/plugins');
 
 async function main() {
-  console.log('📦 Publishing Speck Plugin to Marketplace...\n');
+  console.log('📦 Publishing Speck Plugins to Marketplace...\n');
 
   try {
-    // Step 1: Build the plugin
-    console.log('🔨 Building plugin package...');
+    // Step 1: Build the plugins
+    console.log('🔨 Building plugin packages...');
     await $`bun run scripts/build-plugin.ts`;
-    console.log('   ✓ Plugin built successfully\n');
+    console.log('   ✓ Plugins built successfully\n');
 
     // Verify plugin directory exists
     if (!existsSync(PLUGIN_DIR)) {
-      throw new Error('Plugin build failed - dist/plugin/ not found');
+      throw new Error('Plugin build failed - dist/plugins/ not found');
     }
 
     // Get version from package.json
@@ -89,16 +89,19 @@ async function main() {
       return;
     }
 
-    const commitMessage = `chore: publish speck plugin v${version}
+    // Read speck-reviewer version
+    const reviewerPluginPath = join(process.cwd(), 'plugins/speck-reviewer/.claude-plugin/plugin.json');
+    let reviewerVersion = 'unknown';
+    if (existsSync(reviewerPluginPath)) {
+      const reviewerJson = JSON.parse(await readFile(reviewerPluginPath, 'utf-8'));
+      reviewerVersion = reviewerJson.version;
+    }
 
-Update plugin package to version ${version}
+    const commitMessage = `chore: publish marketplace plugins
 
-Package contents:
-- 9 core workflow commands
-- 2 specialized agents
-- 5 templates
-- 4 runtime scripts
-- README and CHANGELOG
+Plugins:
+- speck v${version}
+- speck-reviewer v${reviewerVersion}
 
 🤖 Published with [Claude Code](https://claude.com/claude-code)`;
 
@@ -124,8 +127,8 @@ Package contents:
     await rm(MARKET_DIR, { recursive: true, force: true });
 
     console.log('✅ Publishing complete!\n');
-    console.log('📍 Plugin published to: https://github.com/nprbst/speck-market');
-    console.log(`📍 Installation: /plugin install https://github.com/nprbst/speck-market\n`);
+    console.log('📍 Plugins published to: https://github.com/nprbst/speck-market');
+    console.log(`📍 Installation: /marketplace install https://github.com/nprbst/speck-market\n`);
 
   } catch (error) {
     console.error('\n❌ Publishing failed:');

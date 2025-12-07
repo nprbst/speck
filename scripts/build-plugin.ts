@@ -35,7 +35,7 @@ interface BuildConfig {
 
 const config: BuildConfig = {
   sourceRoot: process.cwd(),
-  outputDir: join(process.cwd(), 'dist/plugin/speck'),
+  outputDir: join(process.cwd(), 'dist/plugins/speck'),
   commandsSourceDir: join(process.cwd(), '.claude/commands'),
   agentsSourceDir: join(process.cwd(), '.claude/agents'),
   skillsSourceDir: join(process.cwd(), '.claude/skills'),
@@ -255,43 +255,32 @@ async function generatePluginManifest(): Promise<void> {
 
 /**
  * T012: Generate marketplace.json manifest
+ * Copies from source marketplace.json and updates plugin versions
  */
 async function generateMarketplaceManifest(): Promise<void> {
-  const marketplace = {
-    name: 'speck-market',
-    owner: {
-      name: 'Nathan Prabst',
-      email: 'nathan@example.com',
-    },
-    metadata: {
-      description: 'Official Speck plugin marketplace for specification and planning tools',
-      version: '1.0.0',
-    },
-    plugins: [
-      {
-        name: 'speck',
-        source: './speck',  // Point to speck/ subdirectory
-        description: 'Specification and planning workflow framework for Claude Code',
-        version: config.version,
-        author: {
-          name: 'Nathan Prabst',
-        },
-        homepage: 'https://github.com/nprbst/speck',
-        repository: 'https://github.com/nprbst/speck',
-        license: 'MIT',
-        keywords: [
-          'specification',
-          'planning',
-          'workflow',
-          'feature-management',
-        ],
-        category: 'development-tools',
-        strict: true,
-      },
-    ],
-  };
+  // Read source marketplace.json
+  const sourceMarketplacePath = join(config.sourceRoot, '.claude-plugin/marketplace.json');
+  const sourceContent = await readFile(sourceMarketplacePath, 'utf-8');
+  const marketplace = JSON.parse(sourceContent);
 
-  // Place marketplace.json at root of dist/plugin/, not in speck/
+  // Update speck plugin version from package.json
+  const speckPlugin = marketplace.plugins.find((p: { name: string }) => p.name === 'speck');
+  if (speckPlugin) {
+    speckPlugin.version = config.version;
+  }
+
+  // Update speck-reviewer plugin version from its plugin.json
+  const reviewerPluginJsonPath = join(config.sourceRoot, 'plugins/speck-reviewer/.claude-plugin/plugin.json');
+  if (existsSync(reviewerPluginJsonPath)) {
+    const reviewerPluginContent = await readFile(reviewerPluginJsonPath, 'utf-8');
+    const reviewerPluginJson = JSON.parse(reviewerPluginContent);
+    const reviewerPlugin = marketplace.plugins.find((p: { name: string }) => p.name === 'speck-reviewer');
+    if (reviewerPlugin) {
+      reviewerPlugin.version = reviewerPluginJson.version;
+    }
+  }
+
+  // Place marketplace.json at root of dist/plugins/
   const marketplaceRoot = join(config.outputDir, '..');
   const manifestDir = join(marketplaceRoot, '.claude-plugin');
   await ensureDir(manifestDir);
@@ -510,6 +499,81 @@ async function copyPluginFiles(): Promise<FileCounts> {
 }
 
 // ============================================================================
+// Speck-Reviewer Plugin Build
+// ============================================================================
+
+interface SpeckReviewerCounts {
+  commands: number;
+  skills: number;
+  cli: boolean;
+}
+
+/**
+ * Build the speck-reviewer plugin
+ */
+async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
+  const counts: SpeckReviewerCounts = {
+    commands: 0,
+    skills: 0,
+    cli: false,
+  };
+
+  const reviewerSourceDir = join(config.sourceRoot, 'plugins/speck-reviewer');
+  const reviewerOutputDir = join(config.sourceRoot, 'dist/plugins/speck-reviewer');
+
+  // Skip if source doesn't exist
+  if (!existsSync(reviewerSourceDir)) {
+    console.log('   ⊘ speck-reviewer plugin source not found, skipping');
+    return counts;
+  }
+
+  // Clean and create output directory
+  if (existsSync(reviewerOutputDir)) {
+    await rm(reviewerOutputDir, { recursive: true, force: true });
+  }
+  await ensureDir(reviewerOutputDir);
+
+  // 1. Bundle CLI to single JS file
+  const cliSourcePath = join(reviewerSourceDir, 'cli/src/index.ts');
+  if (existsSync(cliSourcePath)) {
+    const cliDestDir = join(reviewerOutputDir, 'dist');
+    await ensureDir(cliDestDir);
+    bundleScript(
+      cliSourcePath,
+      join(cliDestDir, 'speck-review.js'),
+      'speck-review CLI'
+    );
+    counts.cli = true;
+  }
+
+  // 2. Copy plugin.json
+  const pluginJsonSourceDir = join(reviewerSourceDir, '.claude-plugin');
+  if (existsSync(pluginJsonSourceDir)) {
+    await copyDir(pluginJsonSourceDir, join(reviewerOutputDir, '.claude-plugin'));
+  }
+
+  // 3. Copy commands
+  const commandsSourceDir = join(reviewerSourceDir, 'commands');
+  if (existsSync(commandsSourceDir)) {
+    const commandsDestDir = join(reviewerOutputDir, 'commands');
+    await copyDir(commandsSourceDir, commandsDestDir);
+    const files = await readdir(commandsDestDir);
+    counts.commands = files.filter(f => f.endsWith('.md')).length;
+  }
+
+  // 4. Copy skills
+  const skillsSourceDir = join(reviewerSourceDir, 'skills');
+  if (existsSync(skillsSourceDir)) {
+    const skillsDestDir = join(reviewerOutputDir, 'skills');
+    await copyDir(skillsSourceDir, skillsDestDir);
+    const entries = await readdir(skillsDestDir, { withFileTypes: true });
+    counts.skills = entries.filter(e => e.isDirectory()).length;
+  }
+
+  return counts;
+}
+
+// ============================================================================
 // Documentation Generation
 // ============================================================================
 
@@ -517,7 +581,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
  * T042: Copy CHANGELOG.md
  */
 async function copyChangelog(): Promise<void> {
-  // Place at marketplace root (dist/plugin/), not in speck/
+  // Place at marketplace root (dist/plugins/)
   const marketplaceRoot = join(config.outputDir, '..');
   const changelogPath = join(config.sourceRoot, 'CHANGELOG.md');
   if (existsSync(changelogPath)) {
@@ -544,11 +608,11 @@ All notable changes to Speck will be documented in this file.
 async function generateReadme(): Promise<void> {
   const readme = `# Speck Marketplace
 
-Official marketplace for the Speck plugin for Claude Code.
+Official marketplace for Speck plugins for Claude Code.
 
 ## About
 
-This marketplace provides the Speck plugin, a complete workflow framework for creating, planning, and implementing features using Claude Code.
+This marketplace provides plugins for specification-driven development and AI-assisted code review.
 
 ## Installation
 
@@ -558,21 +622,27 @@ Install the marketplace:
 /marketplace install https://github.com/nprbst/speck-market
 \`\`\`
 
-This will make the Speck plugin available with all its commands and agents.
+This will make all plugins available with their commands and skills.
 
 ## Available Plugins
 
 ### Speck - Specification and Planning Workflow
 
-The core Speck plugin provides a complete workflow framework for feature development:
+A complete workflow framework for feature development:
 
-#### Features
-
-- **9 Core Commands**: From specification to implementation
-- **2 Specialized Agents**: Transform scripts and commands automatically
-- **5 Templates**: Handlebars templates for specs, plans, tasks, constitution, and checklists
-- **Runtime Scripts**: Automated workflows for feature management
+- **Core Commands**: Specification, planning, and implementation workflows
+- **Templates**: Handlebars templates for specs, plans, tasks, and checklists
 - **Constitution Support**: Define and enforce project principles
+- **Hook Integration**: Automatic context loading
+
+### Speck-Reviewer - AI-Powered PR Review
+
+AI-assisted pull request review with structured walkthroughs:
+
+- **Guided Review Mode**: Cluster-based review for large PRs
+- **Speck-Aware Context**: Links reviews to feature specifications
+- **Comment Management**: Stage, refine, and batch-post comments
+- **State Persistence**: Resume reviews across sessions
 
 ## Documentation
 
@@ -593,7 +663,7 @@ Nathan Prabst (nathan@example.com)
 \ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)
 `;
 
-  // Place at marketplace root (dist/plugin/), not in speck/
+  // Place at marketplace root (dist/plugins/)
   const marketplaceRoot = join(config.outputDir, '..');
   await writeFile(join(marketplaceRoot, 'README.md'), readme, 'utf-8');
 }
@@ -722,10 +792,23 @@ async function validateManifests(): Promise<void> {
  * T021: Check for missing required files
  */
 async function validateRequiredFiles(): Promise<void> {
+  const marketplaceRoot = join(config.outputDir, '..');
+
+  // Speck plugin required directories
   const requiredDirs = [
-    { path: join(config.outputDir, 'commands'), name: 'commands' },
-    { path: join(config.outputDir, '.claude-plugin'), name: '.claude-plugin' },
+    { path: join(config.outputDir, 'commands'), name: 'speck/commands' },
+    { path: join(config.outputDir, '.claude-plugin'), name: 'speck/.claude-plugin' },
   ];
+
+  // Speck-reviewer plugin required directories (if source exists)
+  const reviewerSourceDir = join(config.sourceRoot, 'plugins/speck-reviewer');
+  if (existsSync(reviewerSourceDir)) {
+    requiredDirs.push(
+      { path: join(marketplaceRoot, 'speck-reviewer/.claude-plugin'), name: 'speck-reviewer/.claude-plugin' },
+      { path: join(marketplaceRoot, 'speck-reviewer/commands'), name: 'speck-reviewer/commands' },
+      { path: join(marketplaceRoot, 'speck-reviewer/skills'), name: 'speck-reviewer/skills' },
+    );
+  }
 
   for (const dir of requiredDirs) {
     if (!existsSync(dir.path)) {
@@ -733,10 +816,19 @@ async function validateRequiredFiles(): Promise<void> {
     }
   }
 
+  // Required files
   const requiredFiles = [
-    { path: join(config.outputDir, '.claude-plugin/plugin.json'), name: 'plugin.json' },
-    { path: join(config.outputDir, '../.claude-plugin/marketplace.json'), name: 'marketplace.json' },
+    { path: join(config.outputDir, '.claude-plugin/plugin.json'), name: 'speck/plugin.json' },
+    { path: join(marketplaceRoot, '.claude-plugin/marketplace.json'), name: 'marketplace.json' },
   ];
+
+  // Speck-reviewer plugin required files (if source exists)
+  if (existsSync(reviewerSourceDir)) {
+    requiredFiles.push(
+      { path: join(marketplaceRoot, 'speck-reviewer/.claude-plugin/plugin.json'), name: 'speck-reviewer/plugin.json' },
+      { path: join(marketplaceRoot, 'speck-reviewer/dist/speck-review.js'), name: 'speck-reviewer CLI bundle' },
+    );
+  }
 
   for (const file of requiredFiles) {
     if (!existsSync(file.path)) {
@@ -798,8 +890,8 @@ async function main() {
     await generateMarketplaceManifest();
     console.log('   ✓ Created plugin.json and marketplace.json\n');
 
-    // T013-T016a: Copy files
-    console.log('📁 Copying plugin files...');
+    // T013-T016a: Copy speck plugin files
+    console.log('📁 Copying speck plugin files...');
     const fileCounts = await copyPluginFiles();
     console.log(`   ✓ Copied ${fileCounts.commands} commands`);
     console.log(`   ✓ Copied ${fileCounts.agents} agents`);
@@ -816,6 +908,16 @@ async function main() {
     }
     console.log('');
 
+    // Build speck-reviewer plugin
+    console.log('📁 Building speck-reviewer plugin...');
+    const reviewerCounts = await buildSpeckReviewerPlugin();
+    if (reviewerCounts.cli) {
+      console.log(`   ✓ Bundled CLI`);
+    }
+    console.log(`   ✓ Copied ${reviewerCounts.commands} commands`);
+    console.log(`   ✓ Copied ${reviewerCounts.skills} skills`);
+    console.log('');
+
     // T029-T035, T042: Generate documentation
     console.log('📚 Generating documentation...');
     await generateReadme();
@@ -829,10 +931,15 @@ async function main() {
 
     // T022: Build output logging
     console.log('📊 Build Summary:');
-    const totalSize = await getDirSize(config.outputDir);
-    console.log(`   Package size: ${formatBytes(totalSize)}`);
+    const marketplaceRoot = join(config.outputDir, '..');
+    const totalSize = await getDirSize(marketplaceRoot);
+    const speckSize = await getDirSize(config.outputDir);
+    const reviewerOutputDir = join(marketplaceRoot, 'speck-reviewer');
+    const reviewerSize = existsSync(reviewerOutputDir) ? await getDirSize(reviewerOutputDir) : 0;
+    console.log(`   Total marketplace size: ${formatBytes(totalSize)}`);
+    console.log(`   - speck: ${formatBytes(speckSize)}`);
+    console.log(`   - speck-reviewer: ${formatBytes(reviewerSize)}`);
     console.log(`   Size limit: ${formatBytes(config.maxSizeBytes)}`);
-    console.log(`   Total files: ${fileCounts.commands + fileCounts.agents + fileCounts.templates + fileCounts.scripts + fileCounts.memory + 2}`);
     console.log('');
 
     console.log('✅ Build completed successfully!\n');
