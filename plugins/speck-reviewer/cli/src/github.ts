@@ -150,8 +150,14 @@ export async function postComment(
   body: string
 ): Promise<number | null> {
   try {
+    const repoFullName = await getRepoFullName();
+    if (!repoFullName) {
+      logger.error("Failed to get repository name");
+      return null;
+    }
+
     // Use gh api to post a review comment
-    const result = await $`gh api repos/{owner}/{repo}/pulls/${prNumber}/comments \
+    const result = await $`gh api repos/${repoFullName}/pulls/${prNumber}/comments \
       -f body=${body} \
       -f path=${file} \
       -F line=${line} \
@@ -174,7 +180,13 @@ export async function replyToComment(
   body: string
 ): Promise<boolean> {
   try {
-    await $`gh api repos/{owner}/{repo}/pulls/${prNumber}/comments/${commentId}/replies \
+    const repoFullName = await getRepoFullName();
+    if (!repoFullName) {
+      logger.error("Failed to get repository name");
+      return false;
+    }
+
+    await $`gh api repos/${repoFullName}/pulls/${prNumber}/comments/${commentId}/replies \
       -f body=${body}`.quiet();
     return true;
   } catch (error) {
@@ -188,7 +200,13 @@ export async function replyToComment(
  */
 export async function deleteComment(commentId: number): Promise<boolean> {
   try {
-    await $`gh api repos/{owner}/{repo}/pulls/comments/${commentId} -X DELETE`.quiet();
+    const repoFullName = await getRepoFullName();
+    if (!repoFullName) {
+      logger.error("Failed to get repository name");
+      return false;
+    }
+
+    await $`gh api repos/${repoFullName}/pulls/comments/${commentId} -X DELETE`.quiet();
     return true;
   } catch (error) {
     logger.error("Failed to delete comment:", error);
