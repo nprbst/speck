@@ -1,0 +1,1 @@
+../../plugins/speck/commands/speck.help.md
