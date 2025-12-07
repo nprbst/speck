@@ -2,7 +2,7 @@
 title: "Expert Help"
 description: "Implementation assistance for organizations adopting Speck"
 category: community
-order: 2
+order: 3
 redirect: /expert-help
 ---
 

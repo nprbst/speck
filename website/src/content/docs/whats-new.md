@@ -1,11 +1,11 @@
 ---
 title: "What's New in Speck"
 description: "Recent feature additions and improvements to Speck for Claude Code"
-category: "reference"
-order: 2
+category: "community"
+order: 1
 tags: ["changelog", "updates", "features", "releases"]
 lastUpdated: 2025-12-07
-draft: true
+draft: false
 ---
 
 # What's New in Speck
@@ -177,9 +177,9 @@ Share specifications across multiple repositories with symlink-based detection a
 
 ---
 
-## October-November 2025: Website & Documentation
+## November 2025: Website & Documentation (Spec 006)
 
-### Plugin Installation & Speck Skill (Spec 006)
+### Plugin Installation & Speck Skill
 **Released**: November 2025
 
 Complete website documentation for plugin installation and Speck skill usage.
@@ -199,10 +199,10 @@ Complete website documentation for plugin installation and Speck skill usage.
 
 ---
 
-## September-October 2025: Public Website (Spec 004)
+## November 2025: Public Website (Spec 004)
 
 ### Speck Website Launch
-**Released**: October 2025
+**Released**: November 2025
 
 Public-facing website built with Astro for Speck documentation and marketing.
 
@@ -231,12 +231,8 @@ Keep Speck up to date with the latest features:
 
 ---
 
-## Coming Soon
+## What's Next
 
-**Q1 2026** *(Roadmap - not committed)*:
-- GitHub integration for automated PR status updates
-- Visual dependency graphs
-- Multi-spec workspace management
-- Performance dashboards
+See the [Roadmap](/docs/community/roadmap) for planned features, current focus areas, and how to suggest new ideas.
 
 Have feature requests? [Open a GitHub Discussion](https://github.com/nprbst/speck/discussions).

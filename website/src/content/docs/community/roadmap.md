@@ -2,7 +2,7 @@
 title: "Roadmap"
 description: "Upcoming features, planned enhancements, and how to suggest new ideas for Speck"
 category: community
-order: 1
+order: 2
 lastUpdated: 2025-12-02
 tags: ["roadmap", "features", "community", "feedback"]
 ---
