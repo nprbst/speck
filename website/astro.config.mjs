@@ -8,6 +8,7 @@ import cloudflare from '@astrojs/cloudflare';
 // API routes use prerender:false for SSR
 export default defineConfig({
   site: 'https://beta.speck.codes',
+  trailingSlash: 'never',
   output: 'server',
   adapter: cloudflare({
     platformProxy: {

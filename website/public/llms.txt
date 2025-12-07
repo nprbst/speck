@@ -1,0 +1,22 @@
+# Speck
+
+> Speck is a specification-driven development tool that helps developers plan, track, and implement features using AI-assisted workflows with Claude Code.
+
+Speck provides structured workflows for feature development, from initial specification through implementation, with support for monorepos, multi-repo setups, and git worktrees.
+
+## Documentation
+
+- [Quick Start](https://beta.speck.codes/docs/getting-started/quick-start.md): Get started with Speck in minutes
+- [Core Workflow](https://beta.speck.codes/docs/core-concepts/workflow.md): Understanding the specify → plan → tasks → implement workflow
+- [Commands Reference](https://beta.speck.codes/docs/commands/reference.md): Available slash commands
+- [Configuration](https://beta.speck.codes/docs/configuration/speck-config.md): Configure Speck for your project
+
+## Advanced
+
+- [Multi-Repo Support](https://beta.speck.codes/docs/core-concepts/multi-repo.md): Working across multiple repositories
+- [Git Worktrees](https://beta.speck.codes/docs/advanced-features/worktrees.md): Parallel feature development
+- [Monorepo Support](https://beta.speck.codes/docs/advanced-features/monorepos.md): Monorepo workflows
+
+## Plugins
+
+- [Speck Reviewer](https://beta.speck.codes/docs/plugins/speck-reviewer.md): AI-powered PR review plugin
