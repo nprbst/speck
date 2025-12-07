@@ -32,7 +32,11 @@ export interface ReviewSession {
   clusters: FileCluster[];
   /** Review comments (staged, posted, skipped) */
   comments: ReviewComment[];
-  /** Currently active cluster ID */
+  /**
+   * Currently active cluster ID.
+   * When set, the corresponding cluster should have status "in_progress".
+   * Use setCurrentCluster() to maintain this invariant.
+   */
   currentClusterId?: string;
   /** IDs of clusters that have been reviewed */
   reviewedSections: string[];

@@ -36,7 +36,7 @@ const DIRECTORY_PRIORITIES: Record<string, number> = {
 // Cross-cutting concern patterns
 const CROSS_CUTTING_PATTERNS = {
   "Configuration changes": [/package\.json$/, /\.env/, /config\.(ts|js|json)$/, /tsconfig\.json$/],
-  "New dependencies": [/package\.json$/, /package-lock\.json$/, /yarn\.lock$/, /bun\.lockb$/],
+  "New dependencies": [/package\.json$/, /package-lock\.json$/, /yarn\.lock$/, /bun\.lockb?$/],
   "Database migrations": [/migrations?\//i, /\.sql$/],
   "CI/CD changes": [/\.github\//, /\.gitlab-ci/, /Dockerfile/, /docker-compose/],
   "Documentation": [/README/, /CHANGELOG/, /docs\//],

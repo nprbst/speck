@@ -157,6 +157,7 @@ export async function postComment(
     }
 
     // Use gh api to post a review comment
+    // side=RIGHT means comment on the new (changed) version of the file
     const result = await $`gh api repos/${repoFullName}/pulls/${prNumber}/comments \
       -f body=${body} \
       -f path=${file} \

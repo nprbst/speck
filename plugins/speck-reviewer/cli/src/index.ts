@@ -164,13 +164,13 @@ async function main(): Promise<void> {
 
   // Handle --version/-v
   if (args.includes("--version") || args.includes("-v")) {
-    commands.version?.([]);
+    await commands.version([]);
     return;
   }
 
   // Handle --help/-h
   if (args.includes("--help") || args.includes("-h") || args.length === 0) {
-    commands.help?.([]);
+    await commands.help([]);
     return;
   }
 

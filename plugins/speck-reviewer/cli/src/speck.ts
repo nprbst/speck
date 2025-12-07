@@ -3,7 +3,7 @@
  * Detects and parses Speck specs for PR branches
  */
 
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { logger } from "./logger";
 import type { SpecContext, ParsedRequirement, ParsedUserStory, UserStoryPriority } from "./types";
@@ -48,7 +48,7 @@ export async function findSpecForBranch(
   // Try partial matching (branch might be NNN-name or feature/NNN-name)
   const specsDir = join(repoRoot, "specs");
   if (existsSync(specsDir)) {
-    const entries = Bun.spawnSync(["ls", specsDir]).stdout.toString().trim().split("\n");
+    const entries = readdirSync(specsDir);
     for (const entry of entries) {
       if (branchName.includes(entry) || entry.includes(branchName.replace(/^feature\//, ""))) {
         const specPath = join(specsDir, entry, "spec.md");

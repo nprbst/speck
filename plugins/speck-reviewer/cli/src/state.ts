@@ -67,11 +67,14 @@ export async function saveState(session: ReviewSession, repoRoot: string): Promi
     mkdirSync(stateDir, { recursive: true });
   }
 
-  // Update lastUpdated timestamp
-  session.lastUpdated = new Date().toISOString();
+  // Clone and update timestamp (avoid mutating input)
+  const sessionToSave = {
+    ...session,
+    lastUpdated: new Date().toISOString(),
+  };
 
   // Write to temp file first (atomic write pattern)
-  const content = JSON.stringify(session, null, 2);
+  const content = JSON.stringify(sessionToSave, null, 2);
   writeFileSync(tempPath, content, "utf-8");
 
   // Rename temp to actual (atomic on most filesystems)
@@ -184,6 +187,7 @@ export function getClusterById(session: ReviewSession, id: string): FileCluster 
 
 /**
  * Mark a cluster as reviewed
+ * @deprecated Use markClusterReviewedImmutable for new code
  */
 export function markClusterReviewed(session: ReviewSession, clusterId: string): void {
   const cluster = session.clusters.find(c => c.id === clusterId);
@@ -197,6 +201,7 @@ export function markClusterReviewed(session: ReviewSession, clusterId: string): 
 
 /**
  * Mark a cluster as in progress
+ * @deprecated Use setCurrentCluster for new code (immutable)
  */
 export function markClusterInProgress(session: ReviewSession, clusterId: string): void {
   const cluster = session.clusters.find(c => c.id === clusterId);
