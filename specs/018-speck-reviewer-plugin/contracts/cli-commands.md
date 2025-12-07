@@ -327,7 +327,7 @@ speck-review 1.0.0
 |----------|-------------|---------|
 | `SPECK_DEBUG` | Enable debug logging | `0` |
 | `SPECK_LOG_LEVEL` | Log level (debug, info, warn, error) | `info` |
-| `SPECK_STATE_PATH` | Override state file location | `.claude/review-state.json` |
+| `SPECK_STATE_PATH` | Override state file location | `.speck/review-state.json` |
 
 ---
 
@@ -343,7 +343,7 @@ When GitHub API calls fail:
 
 ```
 ✗ GitHub API error: rate limit exceeded
-  Staged comments preserved in .claude/review-state.json
+  Staged comments preserved in .speck/review-state.json
   Retry with: speck-review retry-post
 ```
 

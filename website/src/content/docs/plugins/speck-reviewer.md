@@ -9,15 +9,20 @@ tags: ["plugins", "code-review", "pull-request", "github", "cluster-analysis"]
 
 # Speck Reviewer Plugin
 
-Speck Reviewer brings structured, AI-assisted code review to your GitHub pull requests. It groups related files into semantic clusters, guides you through a structured walkthrough, and manages review comments with one-click posting.
+Speck Reviewer brings structured, AI-assisted code review to your GitHub pull
+requests. It groups related files into semantic clusters, guides you through a
+structured walkthrough, and manages review comments with one-click posting.
 
 ## Features
 
-- **Cluster-Based Review** - Automatically groups related files for coherent review sessions
-- **Speck-Aware Context** - When specs exist, references requirements in feedback
+- **Cluster-Based Review** - Automatically groups related files for coherent
+  review sessions
+- **Speck-Aware Context** - When specs exist, references requirements in
+  feedback
 - **Guided Walkthrough** - Step-by-step navigation through large PRs (5+ files)
 - **Comment Management** - Stage, refine, and batch-post comments
-- **Session Persistence** - Resume interrupted reviews exactly where you left off
+- **Session Persistence** - Resume interrupted reviews exactly where you left
+  off
 - **Self-Review Mode** - Review your own PRs with appropriate comment handling
 
 ## Installation
@@ -39,7 +44,7 @@ Speck Reviewer brings structured, AI-assisted code review to your GitHub pull re
 
 2. **Start a review**:
    ```
-   /review
+   /speck-reviewer:review
    ```
 
 3. **Navigate clusters** using natural language:
@@ -57,7 +62,7 @@ Speck Reviewer brings structured, AI-assisted code review to your GitHub pull re
 
 ### Cluster Analysis
 
-When you run `/review`, Speck Reviewer:
+When you run `/speck-reviewer:review`, Speck Reviewer:
 
 1. Analyzes the PR diff to identify changed files
 2. Groups files into semantic clusters based on:
@@ -75,11 +80,12 @@ For PRs with 5+ files, you'll see:
 
 **Why review first:** These types are used by all other changes
 
-| File | Changes | Focus Areas |
-|------|---------|-------------|
-| [src/types/user.ts](src/types/user.ts) | +45/-0 | Interface design |
+| File                                   | Changes | Focus Areas      |
+| -------------------------------------- | ------- | ---------------- |
+| [src/types/user.ts](src/types/user.ts) | +45/-0  | Interface design |
 
 **What to look for:**
+
 - Required vs optional fields
 - Naming conventions
 ```
@@ -133,14 +139,15 @@ This is detected automatically via `gh api user`.
 
 ## Session Persistence
 
-Review state is saved to `.claude/review-state.json`:
+Review state is saved to `.speck/review-state.json`:
 
 - Cluster progress (which clusters reviewed)
 - Staged comments (not yet posted)
 - Current position (for resume)
 - Q&A history (questions asked during review)
 
-To start fresh: answer "start fresh" when prompted or run `speck-review state clear`.
+To start fresh: answer "start fresh" when prompted or run
+`speck-review state clear`.
 
 ## Prerequisites
 
@@ -197,4 +204,5 @@ Check GitHub rate limits. Staged comments are preserved - retry with "post all".
 
 - [Plugin Extensibility](./) - Overview of Speck plugins
 - [Quick Start Guide](/getting-started/quick-start) - Core Speck installation
-- [Feature Development Workflow](/workflows/feature-development) - Using Speck for features
+- [Feature Development Workflow](/workflows/feature-development) - Using Speck
+  for features

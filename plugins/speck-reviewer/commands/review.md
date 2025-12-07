@@ -98,7 +98,7 @@ Show the refined clusters with:
 ### 9. Initialize State
 
 Use the Write tool to save the initial review state to
-`.claude/review-state.json` with:
+`.speck/review-state.json` with:
 
 - PR metadata (number, title, author, branches)
 - Generated narrative

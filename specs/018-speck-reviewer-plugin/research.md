@@ -50,7 +50,7 @@
 
 ### State Persistence
 
-**Decision**: File-based JSON at `.claude/review-state.json` per repository
+**Decision**: File-based JSON at `.speck/review-state.json` per repository
 
 **Rationale**:
 - POC already implements this pattern with well-defined schema

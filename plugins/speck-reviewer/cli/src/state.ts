@@ -1,6 +1,6 @@
 /**
  * State management for review sessions
- * Handles persistence to .claude/review-state.json with atomic writes
+ * Handles persistence to .speck/review-state.json with atomic writes
  */
 
 import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync } from "fs";
@@ -9,7 +9,7 @@ import type { ReviewSession, ReviewMode, FileCluster, CommentState, CommentEdit,
 import { logger } from "./logger";
 
 const STATE_SCHEMA_VERSION = "review-state-v1";
-const STATE_FILE_NAME = ".claude/review-state.json";
+const STATE_FILE_NAME = ".speck/review-state.json";
 
 export interface CreateSessionParams {
   prNumber: number;

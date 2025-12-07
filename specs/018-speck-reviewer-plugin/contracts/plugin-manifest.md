@@ -223,5 +223,5 @@ Both plugins can be installed simultaneously:
 
 - No command name conflicts (`/speck.*` vs `/review`)
 - No skill name conflicts (`speck-help` vs `pr-review`)
-- Independent state files (`.speck/` vs `.claude/review-state.json`)
+- Independent state files (`.speck/branches.json` vs `.speck/review-state.json`)
 - Shared marketplace for single source management

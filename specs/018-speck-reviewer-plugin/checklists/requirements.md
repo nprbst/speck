@@ -36,5 +36,5 @@
   - Plugin directory structure: `plugins/speck/` and `plugins/speck-reviewer/`
   - Speck detection via `specs/NNN-branch-name/spec.md` or `.speck/branches.json`
   - CLI tool named `speck-review` (consistent with source repo)
-  - Review state persists to `.claude/review-state.json`
+  - Review state persists to `.speck/review-state.json`
   - Self-review mode posts issue comments instead of review comments

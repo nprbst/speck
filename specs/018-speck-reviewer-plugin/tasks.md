@@ -93,7 +93,7 @@ Based on plan.md monorepo structure:
 - [X] T023 [US2] Implement `files` command to list changed files with metadata
 - [X] T024 [US2] Add cluster navigation support (next/back/go-to logic) in state.ts for skill-driven navigation
 
-**Checkpoint**: Cluster analysis works, session state persists to `.claude/review-state.json` ✓
+**Checkpoint**: Cluster analysis works, session state persists to `.speck/review-state.json` ✓
 
 ---
 

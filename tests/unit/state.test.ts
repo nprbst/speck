@@ -5,12 +5,12 @@ import { tmpdir } from "os";
 
 // Test fixtures directory
 const TEST_DIR = join(tmpdir(), "speck-reviewer-test-" + Date.now());
-const STATE_FILE = join(TEST_DIR, ".claude", "review-state.json");
+const STATE_FILE = join(TEST_DIR, ".speck", "review-state.json");
 
 describe("state management", () => {
   beforeEach(() => {
     // Create test directory
-    mkdirSync(join(TEST_DIR, ".claude"), { recursive: true });
+    mkdirSync(join(TEST_DIR, ".speck"), { recursive: true });
   });
 
   afterEach(() => {

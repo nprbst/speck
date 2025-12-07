@@ -11,7 +11,7 @@
 
 - Q: What functionality should be explicitly OUT OF SCOPE? → A: Automated code fixes (AI suggestions are readonly, no code modification). Multi-PR review remains in scope for multi-repo cases with shared specs.
 - Q: How should a ReviewSession be uniquely identified? → A: Full PR reference `{owner}/{repo}#{prNumber}` for global uniqueness across repos and forks.
-- Q: Where should review state files be stored? → A: Per-project in `.claude/review-state.json` within each repository.
+- Q: Where should review state files be stored? → A: Per-project in `.speck/review-state.json` within each repository.
 - Q: When a cluster contains 50+ files, how should it be subdivided? → A: Sub-cluster by subdirectory (e.g., `tests/api/`, `tests/unit/`).
 - Q: How should the plugin handle GitHub API failures? → A: Preserve staged comments locally and offer a retry command.
 
@@ -151,7 +151,7 @@ A developer reviewing their own PR wants self-review mode where comments are pos
 - **FR-011**: Plugin MUST generate a narrative summary that references the PR description and explains the story of changes.
 - **FR-012**: Plugin MUST support navigating clusters with commands like "next", "back", "go to [cluster]".
 - **FR-013**: Plugin MUST track review state including reviewed clusters, staged comments, and current position.
-- **FR-014**: Review state MUST persist to `.claude/review-state.json` for session resumption.
+- **FR-014**: Review state MUST persist to `.speck/review-state.json` for session resumption.
 
 #### Comment Management
 

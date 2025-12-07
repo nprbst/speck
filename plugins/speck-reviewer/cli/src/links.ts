@@ -173,5 +173,5 @@ export function getLogInfo(): string {
   return `Log files location:
   - Debug: Set SPECK_DEBUG=1 to enable debug logging
   - Log level: Set SPECK_LOG_LEVEL=debug|info|warn|error
-  - State: .claude/review-state.json`;
+  - State: .speck/review-state.json`;
 }

@@ -11,7 +11,7 @@ Extract PR review functionality from `claude-pr-review-extensions-poc` into a st
 
 **Language/Version**: TypeScript 5.3+ with Bun 1.0+ runtime
 **Primary Dependencies**: Bun Shell API, `gh` CLI (user-provided)
-**Storage**: File-based JSON (`.claude/review-state.json`)
+**Storage**: File-based JSON (`.speck/review-state.json`)
 **Testing**: Bun test runner
 **Target Platform**: macOS/Linux terminal (Claude Code environment)
 **Project Type**: Single project with monorepo plugin structure

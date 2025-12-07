@@ -213,7 +213,7 @@ gh auth status
 **State file corrupted**:
 ```bash
 speck-review state clear
-# or manually delete .claude/review-state.json
+# or manually delete .speck/review-state.json
 ```
 
 **Plugin not loading**:

@@ -15,7 +15,7 @@ navigation, guided walkthroughs for large PRs, and one-click comment posting.
    job is to provide feedback, not implement changes.
 
 2. **Read-Only Mode**: During PR review, you MUST NOT use Edit, Write, or any
-   file modification tools EXCEPT for writing to `.claude/review-state.json` for
+   file modification tools EXCEPT for writing to `.speck/review-state.json` for
    session persistence. This constraint ensures review integrity.
 
 3. **Constructive Feedback**: Use friendly, suggestion-based tone. Only be
@@ -236,7 +236,7 @@ Support natural language navigation:
 
 ### State Persistence
 
-Track review progress in `.claude/review-state.json`:
+Track review progress in `.speck/review-state.json`:
 
 ```bash
 # Show current state
@@ -250,7 +250,7 @@ bun run ${CLAUDE_PLUGIN_ROOT}/cli/src/index.ts state clear
 
 1. After generating the PR narrative and refining clusters, **persist them to
    state**
-2. Use the Write tool to save the ReviewSession to `.claude/review-state.json`
+2. Use the Write tool to save the ReviewSession to `.speck/review-state.json`
 3. The state file schema is:
    ```json
    {
@@ -694,7 +694,7 @@ Support these natural language commands:
 After ANY comment modification:
 
 1. Update the in-memory comment list
-2. Write to `.claude/review-state.json` immediately
+2. Write to `.speck/review-state.json` immediately
 3. Confirm the change to the user
 
 This ensures no refinements are lost if the session ends.

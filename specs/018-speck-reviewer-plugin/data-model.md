@@ -215,7 +215,7 @@ interface ParsedUserStory {
 
 ## Storage Schema
 
-### File: `.claude/review-state.json`
+### File: `.speck/review-state.json`
 
 ```json
 {

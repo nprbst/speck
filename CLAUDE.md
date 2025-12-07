@@ -13,7 +13,7 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 - Cloudflare D1 (SQLite-based, serverless)
 - `gh` CLI (user-provided)
 - File-based configuration (`.speck/config.json`)
-- File-based JSON (`.claude/review-state.json`)
+- File-based JSON (`.speck/review-state.json`)
 
 ### Core Runtime & Languages
 
