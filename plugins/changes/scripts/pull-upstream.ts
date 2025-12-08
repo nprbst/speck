@@ -263,6 +263,27 @@ export async function pullUpstream(
       await unlink(agentsMdPath);
     }
 
+    // Step 5c: Copy essential openspec/ files to init-output/ (AGENTS.md, project.md)
+    // Skip specs/ and changes/ dirs as they may contain test content
+    // Keep source openspec/ in project root for A/B testing
+    const openspecDir = join(rootDir, 'openspec');
+    const initOpenspecDir = join(initOutputDir, 'openspec');
+    if (existsSync(openspecDir)) {
+      logger.info('Copying openspec/ essential files to upstream...');
+      await mkdir(initOpenspecDir, { recursive: true });
+
+      // Copy only AGENTS.md and project.md
+      const openspecAgentsMd = join(openspecDir, 'AGENTS.md');
+      const projectMd = join(openspecDir, 'project.md');
+
+      if (existsSync(openspecAgentsMd)) {
+        await cp(openspecAgentsMd, join(initOpenspecDir, 'AGENTS.md'));
+      }
+      if (existsSync(projectMd)) {
+        await cp(projectMd, join(initOpenspecDir, 'project.md'));
+      }
+    }
+
     // Step 6: Get npm publish date
     const npmPublishDate = await getNpmPublishDate(normalizedVersion);
 
@@ -331,6 +352,7 @@ This command will:
   3. Copy the npm package to upstream/openspec/<version>/package/
   4. Copy generated commands to upstream/openspec/<version>/init-output/
   5. Move AGENTS.md to upstream/openspec/<version>/init-output/
+  6. Copy openspec/AGENTS.md and project.md to upstream/openspec/<version>/init-output/openspec/
 
 Example:
   bun plugins/changes/scripts/pull-upstream.ts 0.16.0
