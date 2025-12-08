@@ -123,13 +123,13 @@ import { Logger, SpeckError, fileOps, output } from '@speck/common';
 
 ### Implementation for User Story 7
 
-- [ ] T054-TEST [TEST] [P] [US7] Write tests for apply in `plugins/speck-changes/tests/apply.test.ts`
-- [ ] T054 [P] [US7] Implement apply script in `plugins/speck-changes/scripts/apply.ts` (red-green-refactor)
-- [ ] T055 [US7] Implement task parsing from change proposal's `tasks.md` in apply.ts
-- [ ] T056 [US7] Implement task completion marking (FR-016a) in apply.ts
-- [ ] T057 [US7] Implement delta spec context loading for related tasks (FR-016b) in apply.ts
-- [ ] T058 [US7] Implement completion detection and archive suggestion (FR-017) in apply.ts
-- [ ] T059 [US7] Create apply command in `plugins/speck-changes/commands/speck-changes.apply.md`
+- [x] T054-TEST [TEST] [P] [US7] Write tests for apply in `plugins/changes/tests/apply.test.ts`
+- [x] T054 [P] [US7] Implement apply script in `plugins/changes/scripts/apply.ts` (red-green-refactor)
+- [x] T055 [US7] Implement task parsing from change proposal's `tasks.md` in apply.ts
+- [x] T056 [US7] Implement task completion marking (FR-016a) in apply.ts
+- [x] T057 [US7] Implement delta spec context loading for related tasks (FR-016b) in apply.ts
+- [x] T058 [US7] Implement completion detection and archive suggestion (FR-017) in apply.ts
+- [x] T059 [US7] Create apply command in `plugins/changes/commands/speck-changes.apply.md`
 
 **Checkpoint**: User Story 7 complete - change implementation workflow functional
 
