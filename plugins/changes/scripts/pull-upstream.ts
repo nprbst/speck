@@ -19,6 +19,20 @@ const OPENSPEC_OWNER = 'Fission-AI';
 const OPENSPEC_REPO = 'OpenSpec';
 
 /**
+ * Paths to keep when extracting OpenSpec releases.
+ * Only these files/directories will be copied to the final destination.
+ */
+const OPENSPEC_KEEP_PATHS = [
+  'src',
+  'package.json',
+  'pnpm-lock.yaml',
+  'tsconfig.json',
+  'CHANGELOG.md',
+  'LICENSE',
+  'README.md',
+];
+
+/**
  * Result of pull-upstream command
  */
 export type PullResult =
@@ -118,6 +132,32 @@ async function extractTarball(tarballPath: string, destDir: string): Promise<voi
 }
 
 /**
+ * Copy only specified paths from source to destination directory.
+ * Skips paths that don't exist in the source.
+ */
+async function copySelectivePaths(
+  sourceDir: string,
+  destDir: string,
+  paths: string[]
+): Promise<void> {
+  for (const path of paths) {
+    const src = join(sourceDir, path);
+    const dest = join(destDir, path);
+    if (existsSync(src)) {
+      const proc = Bun.spawn(['cp', '-r', src, dest], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      });
+      const exitCode = await proc.exited;
+      if (exitCode !== 0) {
+        const stderr = await new Response(proc.stderr).text();
+        throw new Error(`Failed to copy ${path}: ${stderr}`);
+      }
+    }
+  }
+}
+
+/**
  * Main pull-upstream command
  */
 export async function pullUpstream(
@@ -165,20 +205,26 @@ export async function pullUpstream(
       return { ok: false, error: `Release ${version} not found` };
     }
 
-    // Download tarball to temp location
-    const tempTarball = join(rootDir, '.speck', 'tmp', `${version}.tar.gz`);
-    await mkdir(join(rootDir, '.speck', 'tmp'), { recursive: true });
+    // Set up temp locations
+    const tempDir = join(rootDir, '.speck', 'tmp');
+    const tempTarball = join(tempDir, `${version}.tar.gz`);
+    const tempExtractDir = join(tempDir, `${version}-extract`);
+    await mkdir(tempDir, { recursive: true });
 
+    // Download tarball
     await downloadTarball(release.tarball_url, tempTarball);
 
-    // Create version directory
+    // Extract tarball to temp directory
+    await mkdir(tempExtractDir, { recursive: true });
+    await extractTarball(tempTarball, tempExtractDir);
+
+    // Create version directory and copy only essential files
     await mkdir(versionDir, { recursive: true });
+    await copySelectivePaths(tempExtractDir, versionDir, OPENSPEC_KEEP_PATHS);
 
-    // Extract tarball
-    await extractTarball(tempTarball, versionDir);
-
-    // Clean up temp file
+    // Clean up temp files
     await rm(tempTarball, { force: true });
+    await rm(tempExtractDir, { recursive: true, force: true });
 
     // Update releases.json
     const registryResult = await updateReleasesJson(releasesPath, {
