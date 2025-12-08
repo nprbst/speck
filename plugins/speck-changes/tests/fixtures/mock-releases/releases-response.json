@@ -1,0 +1,22 @@
+[
+  {
+    "tag_name": "v0.16.0",
+    "name": "v0.16.0 - Antigravity + iFlow Support",
+    "published_at": "2025-11-21T00:00:00Z",
+    "target_commitish": "main",
+    "html_url": "https://github.com/Fission-AI/OpenSpec/releases/tag/v0.16.0",
+    "body": "## What's Changed\\n- Added Antigravity support\\n- Added iFlow support",
+    "draft": false,
+    "prerelease": false
+  },
+  {
+    "tag_name": "v0.15.0",
+    "name": "v0.15.0 - Gemini CLI, RooCode Support",
+    "published_at": "2025-11-15T00:00:00Z",
+    "target_commitish": "main",
+    "html_url": "https://github.com/Fission-AI/OpenSpec/releases/tag/v0.15.0",
+    "body": "## What's Changed\\n- Added Gemini CLI support\\n- Added RooCode support",
+    "draft": false,
+    "prerelease": false
+  }
+]
