@@ -11,6 +11,7 @@ This plugin brings OpenSpec's change management workflow to Speck, enabling stru
 The plugin provides commands for:
 - Upstream sync (`/speck-changes.check-upstream`, `/speck-changes.pull-upstream`, `/speck-changes.transform-upstream`)
 - Change management (`/speck-changes.propose`, `/speck-changes.list`, `/speck-changes.show`, `/speck-changes.validate`)
+- Implementation workflow (`/speck-changes.apply`)
 - Archive workflow (`/speck-changes.archive`)
 - Migration support (`/speck-changes.migrate`)
 
@@ -76,6 +77,7 @@ plugins/speck-changes/                # Plugin root (follows plugins/speck, plug
 │   ├── list.md                       # /speck-changes.list
 │   ├── show.md                       # /speck-changes.show
 │   ├── validate.md                   # /speck-changes.validate
+│   ├── apply.md                      # /speck-changes.apply
 │   ├── archive.md                    # /speck-changes.archive
 │   └── migrate.md                    # /speck-changes.migrate
 ├── scripts/                          # TypeScript implementations
@@ -86,6 +88,7 @@ plugins/speck-changes/                # Plugin root (follows plugins/speck, plug
 │   ├── list.ts                       # List active changes
 │   ├── show.ts                       # Show change details
 │   ├── validate.ts                   # Validate change structure
+│   ├── apply.ts                      # Implement change tasks
 │   ├── archive.ts                    # Merge and archive change
 │   ├── migrate.ts                    # Import OpenSpec project
 │   └── lib/                          # Plugin-specific utilities
@@ -103,6 +106,7 @@ plugins/speck-changes/                # Plugin root (follows plugins/speck, plug
     ├── list.test.ts
     ├── show.test.ts
     ├── validate.test.ts
+    ├── apply.test.ts
     ├── archive.test.ts
     ├── migrate.test.ts
     └── fixtures/                     # Test fixtures

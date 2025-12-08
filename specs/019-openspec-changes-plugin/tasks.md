@@ -111,6 +111,30 @@ import { Logger, SpeckError, fileOps, output } from '@speck/common';
 
 ---
 
+## Phase 4.5: User Story 7 - Apply Change Proposal (Priority: P1)
+
+**Goal**: Enable developers to implement change proposals with Claude assistance, marking tasks complete as they progress
+
+**Independent Test**: Create a change proposal with tasks, run `/speck-changes.apply add-auth` and verify:
+1. System reads tasks from `.speck/changes/add-auth/tasks.md`
+2. Claude assists with implementing each task
+3. Tasks are marked complete as they're finished
+4. Progress is visible via `/speck-changes.show`
+
+### Implementation for User Story 7
+
+- [ ] T054-TEST [TEST] [P] [US7] Write tests for apply in `plugins/speck-changes/tests/apply.test.ts`
+- [ ] T054 [P] [US7] Implement apply script in `plugins/speck-changes/scripts/apply.ts` (red-green-refactor)
+- [ ] T055 [US7] Implement task parsing from change proposal's `tasks.md` in apply.ts
+- [ ] T056 [US7] Implement task completion marking (FR-016a) in apply.ts
+- [ ] T057 [US7] Implement delta spec context loading for related tasks (FR-016b) in apply.ts
+- [ ] T058 [US7] Implement completion detection and archive suggestion (FR-017) in apply.ts
+- [ ] T059 [US7] Create apply command in `plugins/speck-changes/commands/speck-changes.apply.md`
+
+**Checkpoint**: User Story 7 complete - change implementation workflow functional
+
+---
+
 ## Phase 5: User Story 3 - Review and Manage Changes (Priority: P2)
 
 **Goal**: Enable developers to view all active change proposals and their details

@@ -80,15 +80,13 @@ Edit the generated files to capture your requirements:
 /speck-changes.validate add-user-auth
 ```
 
-**4. Implement and track progress**
+**4. Implement with Claude assistance**
 
-Mark tasks complete in `tasks.md` as you work:
-
-```markdown
-- [x] T001: Create auth middleware
-- [x] T002: Add login endpoint
-- [ ] T003: Write integration tests
 ```
+/speck-changes.apply add-user-auth
+```
+
+Claude will guide you through implementing each task, marking them complete as you progress.
 
 **5. Archive when complete**
 
@@ -173,14 +171,22 @@ Spec Deltas:
 ### 6. Implement the Change
 
 ```
-You: Let's implement this change. Start with the first task.
+You: Let's implement this change.
 
-AI:  I'll work through the tasks in add-2fa.
+AI:  I'll apply the add-2fa change.
+     Running: /speck-changes.apply add-2fa
+
+     Loading tasks from .speck/changes/add-2fa/tasks.md...
 
      Starting T001: Add OTP secret storage to user model...
      [implements the feature]
+     ✓ T001 complete
 
-     Marking T001 complete. Moving to T002...
+     Starting T002: Create OTP verification endpoint...
+     [implements the feature]
+     ✓ T002 complete
+
+     All tasks complete! Run /speck-changes.archive add-2fa to finish.
 ```
 
 ### 7. Archive When Done
@@ -206,6 +212,7 @@ AI:  Archiving add-2fa...
 | `/speck-changes.list` | List all active change proposals |
 | `/speck-changes.show <name>` | Display proposal, tasks, and spec deltas |
 | `/speck-changes.validate <name>` | Check structure and formatting |
+| `/speck-changes.apply <name>` | Implement change tasks with Claude assistance |
 | `/speck-changes.archive <name>` | Archive completed change and merge deltas |
 
 ### Migration

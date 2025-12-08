@@ -126,6 +126,27 @@ After implementing a change and getting approval, the developer runs `/speck-cha
 
 ---
 
+### User Story 7 - Apply Change Proposal (Priority: P1)
+
+A developer has a validated change proposal and wants to implement it. They run `/speck-changes.apply <name>` which guides them through implementing the tasks in the proposal's `tasks.md`, marking tasks complete as they progress.
+
+**Why this priority**: This is the core implementation step in the OpenSpec workflow. Without it, users must manually work through tasks without Claude assistance, breaking the Draft→Review→**Implement**→Archive cycle.
+
+**Independent Test**: Create a change proposal with tasks, run `/speck-changes.apply add-auth` and verify:
+1. System reads tasks from `.speck/changes/add-auth/tasks.md`
+2. Claude assists with implementing each task
+3. Tasks are marked complete as they're finished
+4. Progress is visible via `/speck-changes.show`
+
+**Acceptance Scenarios**:
+
+1. **Given** a change proposal exists with tasks, **When** user runs `/speck-changes.apply <name>`, **Then** system loads tasks from `.speck/changes/<name>/tasks.md` and presents them for implementation
+2. **Given** apply is running, **When** Claude completes a task, **Then** system marks the task as complete in `tasks.md` with `[x]`
+3. **Given** delta specs exist, **When** implementing related tasks, **Then** system provides delta context to Claude for accurate implementation
+4. **Given** all tasks are complete, **When** apply finishes, **Then** system suggests running `/speck-changes.archive <name>`
+
+---
+
 ### User Story 6 - Migrate from OpenSpec (Priority: P3)
 
 An existing OpenSpec user wants to migrate their project to Speck while preserving their existing specs and changes. They run `/speck-changes.migrate` which imports the `openspec/` directory structure into Speck's format.
@@ -177,6 +198,10 @@ An existing OpenSpec user wants to migrate their project to Speck while preservi
 - **FR-013**: System MUST provide `/speck-changes.list` command to display all active changes with names, dates, and status
 - **FR-014**: System MUST provide `/speck-changes.show <name>` command to display change details including proposal, tasks, and deltas
 - **FR-015**: System MUST provide `/speck-changes.validate <name>` command that checks proposal structure, delta file formatting (ADDED/MODIFIED/REMOVED sections), and requirement syntax (FR-### IDs, scenario blocks, RFC 2119 normative keywords)
+- **FR-016**: System MUST provide `/speck-changes.apply <name>` command that loads tasks from `.speck/changes/<name>/tasks.md` and guides implementation
+- **FR-016a**: Apply command MUST mark tasks complete in `tasks.md` as they are finished (changing `[ ]` to `[x]`)
+- **FR-016b**: Apply command MUST provide delta spec context to Claude when implementing tasks related to spec changes
+- **FR-017**: Apply command MUST suggest `/speck-changes.archive <name>` when all tasks are complete
 
 #### Archive & Merge
 
