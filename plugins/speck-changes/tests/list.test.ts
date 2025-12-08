@@ -181,10 +181,10 @@ describe('formatChangesJson', () => {
     ];
 
     const output = formatChangesJson(changes);
-    const parsed = JSON.parse(output);
+    const parsed = JSON.parse(output) as { ok: boolean; changes: { name: string }[] };
 
     expect(parsed.ok).toBe(true);
     expect(parsed.changes).toHaveLength(1);
-    expect(parsed.changes[0].name).toBe('feature-a');
+    expect(parsed.changes[0]?.name).toBe('feature-a');
   });
 });

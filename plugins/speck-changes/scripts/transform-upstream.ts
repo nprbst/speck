@@ -88,7 +88,7 @@ export async function identifyTransformableFiles(sourceDir: string): Promise<Tra
 /**
  * Transform a single file's content
  */
-export async function transformFile(content: string, filename: string): Promise<TransformResult> {
+export function transformFile(content: string, filename: string): TransformResult {
   const changes: string[] = [];
 
   try {
@@ -211,7 +211,7 @@ export async function transformUpstream(options: {
     }
 
     // Transform the source
-    const result = await transformFile(content, file.name);
+    const result = transformFile(content, file.name);
     if (!result.ok) {
       logger.warn(`Skipping ${file.name}: ${result.error}`);
       continue;

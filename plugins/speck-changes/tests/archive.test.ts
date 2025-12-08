@@ -176,7 +176,7 @@ Users SHALL be able to reset passwords.
 });
 
 describe('checkTaskCompletion', () => {
-  test('returns true when all tasks complete', async () => {
+  test('returns true when all tasks complete', () => {
     const content = `# Tasks
 
 - [x] Task 1
@@ -191,7 +191,7 @@ describe('checkTaskCompletion', () => {
     expect(result.completed).toBe(3);
   });
 
-  test('returns false when tasks incomplete', async () => {
+  test('returns false when tasks incomplete', () => {
     const content = `# Tasks
 
 - [x] Task 1
@@ -206,7 +206,7 @@ describe('checkTaskCompletion', () => {
     expect(result.completed).toBe(2);
   });
 
-  test('handles no tasks', async () => {
+  test('handles no tasks', () => {
     const content = `# Tasks
 
 No tasks defined.
@@ -220,7 +220,7 @@ No tasks defined.
 });
 
 describe('mergeDeltas', () => {
-  test('appends ADDED requirements to spec', async () => {
+  test('appends ADDED requirements to spec', () => {
     const specContent = `# Spec: test
 
 ## Requirements
@@ -249,7 +249,7 @@ New requirement.
     expect(result).toContain('REQ-002');
   });
 
-  test('handles empty ADDED section', async () => {
+  test('handles empty ADDED section', () => {
     const specContent = `# Spec: test
 
 ## Requirements

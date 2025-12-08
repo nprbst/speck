@@ -60,7 +60,7 @@ describe('identifyTransformableFiles', () => {
 });
 
 describe('transformFile', () => {
-  test('transforms Node.js imports to Bun', async () => {
+  test('transforms Node.js imports to Bun', () => {
     const content = `import { readFile } from 'fs/promises';
 import { execSync } from 'child_process';
 
@@ -69,7 +69,7 @@ async function loadData() {
   return JSON.parse(data);
 }`;
 
-    const result = await transformFile(content, 'test.ts');
+    const result = transformFile(content, 'test.ts');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -78,7 +78,7 @@ async function loadData() {
     expect(result.transformed).not.toContain("from 'fs/promises'");
   });
 
-  test('preserves SPECK-EXTENSION blocks', async () => {
+  test('preserves SPECK-EXTENSION blocks', () => {
     const content = `import { readFile } from 'fs/promises';
 
 async function loadData() {
@@ -96,7 +96,7 @@ async function speckLoad() {
 
 export { loadData };`;
 
-    const result = await transformFile(content, 'test.ts');
+    const result = transformFile(content, 'test.ts');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -107,11 +107,11 @@ export { loadData };`;
     expect(result.transformed).toContain("await readFile('speck.json', 'utf-8')");
   });
 
-  test('reports transformation rationale', async () => {
+  test('reports transformation rationale', () => {
     const content = `import { readFile } from 'fs/promises';
 const data = await readFile('file.json', 'utf-8');`;
 
-    const result = await transformFile(content, 'test.ts');
+    const result = transformFile(content, 'test.ts');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -140,7 +140,10 @@ describe('recordTransformation', () => {
 
     expect(existsSync(historyPath)).toBe(true);
 
-    const content = await Bun.file(historyPath).json();
+    const content = (await Bun.file(historyPath).json()) as {
+      version: string;
+      artifacts: unknown[];
+    };
     expect(content.version).toBe('v0.16.0');
     expect(content.artifacts).toHaveLength(1);
   });

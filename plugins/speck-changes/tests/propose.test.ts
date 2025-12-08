@@ -58,7 +58,7 @@ describe('changeExists', () => {
     const changeName = 'existing-change';
     await mkdir(join(testDir, '.speck', 'changes', changeName), { recursive: true });
 
-    const exists = await changeExists(changeName, testDir);
+    const exists = changeExists(changeName, testDir);
 
     expect(exists).toBe(true);
   });
@@ -67,13 +67,13 @@ describe('changeExists', () => {
     const changeName = 'archived-change';
     await mkdir(join(testDir, '.speck', 'archive', changeName), { recursive: true });
 
-    const exists = await changeExists(changeName, testDir);
+    const exists = changeExists(changeName, testDir);
 
     expect(exists).toBe(true);
   });
 
-  test('returns false when change does not exist', async () => {
-    const exists = await changeExists('nonexistent', testDir);
+  test('returns false when change does not exist', () => {
+    const exists = changeExists('nonexistent', testDir);
 
     expect(exists).toBe(false);
   });

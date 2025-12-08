@@ -168,7 +168,7 @@ describe('pullUpstream', () => {
     }
   });
 
-  test('validates version format', async () => {
+  test('validates version format', () => {
     // Valid versions
     expect(isValidVersion('v0.16.0')).toBe(true);
     expect(isValidVersion('v1.0.0')).toBe(true);

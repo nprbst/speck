@@ -218,7 +218,7 @@ describe('formatChangeJson', () => {
     };
 
     const output = formatChangeJson(change);
-    const parsed = JSON.parse(output);
+    const parsed = JSON.parse(output) as { ok: boolean; change: { name: string } };
 
     expect(parsed.ok).toBe(true);
     expect(parsed.change.name).toBe('feature-a');

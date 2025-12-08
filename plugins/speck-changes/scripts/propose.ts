@@ -37,7 +37,7 @@ export function validateChangeName(
 /**
  * Check if a change with the given name already exists
  */
-export async function changeExists(name: string, rootDir: string): Promise<boolean> {
+export function changeExists(name: string, rootDir: string): boolean {
   const changesDir = join(rootDir, '.speck', 'changes', name);
   const archiveDir = join(rootDir, '.speck', 'archive', name);
 
@@ -94,7 +94,7 @@ export async function propose(
   }
 
   // Check if change already exists
-  if (await changeExists(name, rootDir)) {
+  if (changeExists(name, rootDir)) {
     return { ok: false, error: `Change "${name}" already exists. Use a different name.` };
   }
 
