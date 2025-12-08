@@ -101,12 +101,18 @@ export const ReleaseStatusSchema = z.enum(['active', 'superseded']);
  * A single OpenSpec release entry
  */
 export const ReleaseSchema = z.object({
-  version: z.string().regex(/^v\d+\.\d+\.\d+$/, 'Version must be semver format (vX.Y.Z)'),
+  version: z.string().regex(/^v?\d+\.\d+\.\d+$/, 'Version must be semver format (vX.Y.Z or X.Y.Z)'),
   pullDate: z.string().datetime({ message: 'Pull date must be ISO datetime' }),
-  commitSha: z.string().length(40, 'Commit SHA must be 40 characters'),
   status: ReleaseStatusSchema,
-  releaseDate: z.string().datetime({ message: 'Release date must be ISO datetime' }),
-  releaseNotes: z.string(),
+  // npm-based fields
+  npmPublishDate: z
+    .string()
+    .datetime({ message: 'NPM publish date must be ISO datetime' })
+    .optional(),
+  // Legacy GitHub-based fields (optional for backwards compat)
+  commitSha: z.string().length(40, 'Commit SHA must be 40 characters').optional(),
+  releaseDate: z.string().datetime({ message: 'Release date must be ISO datetime' }).optional(),
+  releaseNotes: z.string().optional(),
 });
 
 export type Release = z.infer<typeof ReleaseSchema>;
@@ -172,6 +178,38 @@ export const TaskSchema = z.object({
 });
 
 export type Task = z.infer<typeof TaskSchema>;
+
+// ============================================================
+// Check Upstream Schemas
+// ============================================================
+
+/**
+ * Version status in check-upstream output
+ */
+export const VersionStatusSchema = z.enum(['latest', 'pulled', 'new']);
+
+/**
+ * A parsed version from npm registry
+ */
+export const ParsedVersionSchema = z.object({
+  version: z.string(),
+  publishedAt: z.string(),
+  status: VersionStatusSchema,
+});
+
+export type ParsedVersion = z.infer<typeof ParsedVersionSchema>;
+
+/**
+ * JSON output from formatVersionsJson
+ */
+export const CheckUpstreamJsonOutputSchema = z.object({
+  ok: z.literal(true),
+  versions: z.array(ParsedVersionSchema),
+  latestVersion: z.string(),
+  package: z.string(),
+});
+
+export type CheckUpstreamJsonOutput = z.infer<typeof CheckUpstreamJsonOutputSchema>;
 
 // ============================================================
 // Validation Helpers

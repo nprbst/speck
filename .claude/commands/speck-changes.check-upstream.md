@@ -1,14 +1,14 @@
 ---
-description: Check available OpenSpec releases from GitHub
+description: Check available OpenSpec versions from npm registry
 arguments:
   - name: options
-    description: "Command options: --json for JSON output, --limit N for release count"
+    description: "Command options: --json for JSON output, --limit N for version count"
     required: false
 ---
 
-# Check OpenSpec Upstream Releases
+# Check OpenSpec npm Versions
 
-Query the OpenSpec GitHub repository for available releases.
+Query the npm registry for available @fission-ai/openspec versions.
 
 ## Usage
 
@@ -19,11 +19,11 @@ Query the OpenSpec GitHub repository for available releases.
 ## Options
 
 - `--json` - Output in JSON format for machine processing
-- `--limit N` - Limit results to N releases (default: 10)
+- `--limit N` - Limit results to N versions (default: 10)
 
 ## Execute
 
-Run the check-upstream script to query releases:
+Run the check-upstream script to query npm versions:
 
 ```bash
 bun ${CLAUDE_PLUGIN_ROOT}/scripts/check-upstream.ts $ARGUMENTS
@@ -31,17 +31,15 @@ bun ${CLAUDE_PLUGIN_ROOT}/scripts/check-upstream.ts $ARGUMENTS
 
 ## Present Results
 
-After running the script, present the releases as a table for the user to review and select from. Include:
+After running the script, present the versions as a table for the user to review and select from. Include:
 - Version number
-- Release title
 - Publication date
-- Status (latest indicator)
+- Status (latest, pulled, or new)
 
 Then ask the user which version they'd like to pull using the AskUserQuestion tool with the available versions as options.
 
 ## Next Steps
 
-After the user selects a release:
+After the user selects a version:
 
-1. Use `/speck-changes.pull-upstream <version>` to download it
-2. Use `/speck-changes.transform-upstream` to transform to Bun TypeScript
+1. Use `/speck-changes.pull-upstream <version>` to install and capture it

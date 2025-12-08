@@ -3,7 +3,10 @@
   "version": "1.10.2",
   "description": "Claude Code-Native Spec-Driven Development",
   "type": "module",
-  "workspaces": ["packages/*", "plugins/*"],
+  "workspaces": [
+    "packages/*",
+    "plugins/*"
+  ],
   "engines": {
     "bun": ">=1.0.0"
   },
@@ -55,6 +58,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
+    "@fission-ai/openspec": "0.16.0",
     "@playwright/test": "^1.56.1",
     "@types/bun": "^1.3.2",
     "@types/marked": "^6.0.0",

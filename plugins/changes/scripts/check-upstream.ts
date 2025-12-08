@@ -1,110 +1,141 @@
 /**
- * check-upstream - Query OpenSpec releases from GitHub
+ * check-upstream - Query OpenSpec versions from npm registry
  *
  * Usage: bun plugins/changes/scripts/check-upstream.ts [options]
  * Options:
  *   --json     Output in JSON format
- *   --limit N  Limit to N releases (default: 10)
+ *   --limit N  Limit to N versions (default: 10)
  *   --help     Show help message
  */
 
-import { fetchReleases, type GitHubRelease } from '@speck/common/github';
+import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { createScopedLogger } from '@speck/common';
+import { ReleaseRegistrySchema } from './lib/schemas';
 
-const OPENSPEC_OWNER = 'Fission-AI';
-const OPENSPEC_REPO = 'OpenSpec';
+const OPENSPEC_PACKAGE = '@fission-ai/openspec';
 
 /**
- * Parsed release info for display
+ * Parsed version info for display
  */
-export interface ParsedRelease {
+export interface ParsedVersion {
   version: string;
-  title: string;
   publishedAt: string;
-  url: string;
-  summary?: string;
+  status: 'new' | 'pulled' | 'latest';
 }
 
 /**
  * Result of check-upstream command
  */
 export type CheckUpstreamResult =
-  | { ok: true; releases: ParsedRelease[]; latestVersion: string }
+  | { ok: true; versions: ParsedVersion[]; latestVersion: string }
   | { ok: false; error: string };
 
 /**
- * Parse GitHub releases into display format
+ * Fetch all versions from npm registry
  */
-export function parseReleases(releases: GitHubRelease[]): ParsedRelease[] {
-  return releases
-    .filter((r) => !r.draft && !r.prerelease)
-    .sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime())
-    .map((r) => ({
-      version: r.tag_name,
-      title: extractTitle(r.name ?? r.tag_name),
-      publishedAt: r.published_at,
-      url: r.html_url,
-      summary: extractSummary(r.body ?? ''),
-    }));
+async function fetchNpmVersions(): Promise<string[]> {
+  const proc = Bun.spawn(['npm', 'view', OPENSPEC_PACKAGE, 'versions', '--json'], {
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+
+  const exitCode = await proc.exited;
+  if (exitCode !== 0) {
+    const stderr = await new Response(proc.stderr).text();
+    throw new Error(`Failed to fetch npm versions: ${stderr}`);
+  }
+
+  const stdout = await new Response(proc.stdout).text();
+  const versions = JSON.parse(stdout) as string[];
+  return versions;
 }
 
 /**
- * Extract title from release name (e.g., "v0.16.0 - Antigravity" -> "Antigravity")
+ * Fetch publish times for all versions from npm registry
  */
-function extractTitle(name: string): string {
-  const match = name.match(/v[\d.]+\s*[-–]\s*(.+)/);
-  return match?.[1]?.trim() ?? name;
+async function fetchNpmTimes(): Promise<Record<string, string>> {
+  const proc = Bun.spawn(['npm', 'view', OPENSPEC_PACKAGE, 'time', '--json'], {
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+
+  const exitCode = await proc.exited;
+  if (exitCode !== 0) {
+    const stderr = await new Response(proc.stderr).text();
+    throw new Error(`Failed to fetch npm times: ${stderr}`);
+  }
+
+  const stdout = await new Response(proc.stdout).text();
+  const times = JSON.parse(stdout) as Record<string, string>;
+  return times;
 }
 
 /**
- * Extract summary from release body (first sentence or line)
+ * Load pulled versions from local releases.json
  */
-function extractSummary(body: string): string {
-  const firstLine = body.split('\n').find((line) => line.trim() && !line.startsWith('#'));
-  if (!firstLine) return '';
+async function loadPulledVersions(rootDir: string): Promise<Set<string>> {
+  const releasesPath = join(rootDir, 'upstream', 'openspec', 'releases.json');
 
-  // Truncate to 80 chars
-  const summary = firstLine.trim();
-  return summary.length > 80 ? summary.slice(0, 77) + '...' : summary;
+  if (!existsSync(releasesPath)) {
+    return new Set();
+  }
+
+  try {
+    const content = await readFile(releasesPath, 'utf-8');
+    const parsed = ReleaseRegistrySchema.safeParse(JSON.parse(content));
+    if (parsed.success) {
+      return new Set(parsed.data.releases.map((r) => r.version));
+    }
+    // Try raw parse if schema fails
+    const raw = JSON.parse(content) as { releases?: Array<{ version: string }> };
+    if (Array.isArray(raw.releases)) {
+      return new Set(raw.releases.map((r) => r.version));
+    }
+  } catch {
+    // Ignore errors, treat as no pulled versions
+  }
+
+  return new Set();
 }
 
 /**
- * Format releases as a display table
+ * Format versions as a display table
  */
-export function formatReleasesTable(releases: ParsedRelease[]): string {
-  if (releases.length === 0) {
-    return 'No releases found for OpenSpec repository.';
+export function formatVersionsTable(versions: ParsedVersion[]): string {
+  if (versions.length === 0) {
+    return 'No versions found for @fission-ai/openspec package.';
   }
 
   const lines: string[] = [];
-  lines.push('## OpenSpec Releases\n');
-  lines.push('| Version | Title | Published | Status |');
-  lines.push('|---------|-------|-----------|--------|');
+  lines.push('## OpenSpec npm Versions\n');
+  lines.push('| Version | Published | Status |');
+  lines.push('|---------|-----------|--------|');
 
-  for (let i = 0; i < releases.length; i++) {
-    const r = releases[i];
-    if (!r) continue;
-    const date = r.publishedAt.split('T')[0] ?? '';
-    const status = i === 0 ? '**latest**' : '';
-    lines.push(`| ${r.version} | ${r.title} | ${date} | ${status} |`);
+  for (const v of versions) {
+    const date = v.publishedAt.split('T')[0] ?? '';
+    const statusDisplay =
+      v.status === 'latest' ? '**latest**' : v.status === 'pulled' ? '✓ pulled' : 'new';
+    lines.push(`| ${v.version} | ${date} | ${statusDisplay} |`);
   }
 
   lines.push('');
-  lines.push(`Repository: https://github.com/${OPENSPEC_OWNER}/${OPENSPEC_REPO}`);
+  lines.push(`Package: https://www.npmjs.com/package/${OPENSPEC_PACKAGE}`);
 
   return lines.join('\n');
 }
 
 /**
- * Format releases as JSON
+ * Format versions as JSON
  */
-export function formatReleasesJson(releases: ParsedRelease[]): string {
+export function formatVersionsJson(versions: ParsedVersion[], latestVersion: string): string {
   return JSON.stringify(
     {
       ok: true,
-      releases,
-      latestVersion: releases[0]?.version ?? '',
-      repository: `${OPENSPEC_OWNER}/${OPENSPEC_REPO}`,
+      versions,
+      latestVersion,
+      package: OPENSPEC_PACKAGE,
     },
     null,
     2
@@ -117,15 +148,41 @@ export function formatReleasesJson(releases: ParsedRelease[]): string {
 export async function checkUpstream(options: {
   json?: boolean;
   limit?: number;
+  rootDir?: string;
 }): Promise<CheckUpstreamResult> {
-  const { limit = 10 } = options;
+  const { limit = 10, rootDir = process.cwd() } = options;
 
   try {
-    const result = await fetchReleases(OPENSPEC_OWNER, OPENSPEC_REPO);
-    const parsed = parseReleases(result.releases).slice(0, limit);
-    const latestVersion = parsed[0]?.version ?? '';
+    // Fetch versions and times from npm
+    const [versions, times] = await Promise.all([fetchNpmVersions(), fetchNpmTimes()]);
 
-    return { ok: true, releases: parsed, latestVersion };
+    // Load already-pulled versions
+    const pulledVersions = await loadPulledVersions(rootDir);
+
+    // Sort versions by publish date (newest first)
+    const sortedVersions = versions
+      .filter((v) => times[v]) // Only include versions with publish times
+      .sort((a, b) => {
+        const timeA = times[a] ? new Date(times[a]).getTime() : 0;
+        const timeB = times[b] ? new Date(times[b]).getTime() : 0;
+        return timeB - timeA;
+      });
+
+    const latestVersion = sortedVersions[0] ?? '';
+
+    // Map to parsed format with status
+    const parsed: ParsedVersion[] = sortedVersions.slice(0, limit).map((version, index) => ({
+      version,
+      publishedAt: times[version] ?? '',
+      status:
+        index === 0
+          ? 'latest'
+          : pulledVersions.has(version) || pulledVersions.has(`v${version}`)
+            ? 'pulled'
+            : 'new',
+    }));
+
+    return { ok: true, versions: parsed, latestVersion };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return { ok: false, error: message };
@@ -153,13 +210,13 @@ async function main(): Promise<void> {
 
   if (help) {
     console.log(`
-check-upstream - Query OpenSpec releases from GitHub
+check-upstream - Query OpenSpec versions from npm registry
 
 Usage: bun plugins/changes/scripts/check-upstream.ts [options]
 
 Options:
   --json     Output in JSON format
-  --limit N  Limit to N releases (default: 10)
+  --limit N  Limit to N versions (default: 10)
   --help     Show this help message
 
 Example:
@@ -169,7 +226,7 @@ Example:
     process.exit(0);
   }
 
-  logger.info('Checking OpenSpec releases...');
+  logger.info(`Checking ${OPENSPEC_PACKAGE} versions...`);
 
   const result = await checkUpstream({ json, limit });
 
@@ -177,16 +234,16 @@ Example:
     if (json) {
       console.log(JSON.stringify({ ok: false, error: result.error }, null, 2));
     } else {
-      logger.error(`Failed to fetch releases: ${result.error}`);
+      logger.error(`Failed to fetch versions: ${result.error}`);
     }
     process.exit(1);
   }
 
   if (json) {
-    console.log(formatReleasesJson(result.releases));
+    console.log(formatVersionsJson(result.versions, result.latestVersion));
   } else {
-    console.log(formatReleasesTable(result.releases));
-    logger.info(`Found ${result.releases.length} releases. Latest: ${result.latestVersion}`);
+    console.log(formatVersionsTable(result.versions));
+    logger.info(`Found ${result.versions.length} versions. Latest: ${result.latestVersion}`);
   }
 }
 

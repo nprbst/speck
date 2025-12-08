@@ -1,5 +1,5 @@
 /**
- * pull-upstream - Fetch and store OpenSpec release from GitHub
+ * pull-upstream - Install OpenSpec from npm and run init
  *
  * Usage: bun plugins/changes/scripts/pull-upstream.ts <version> [options]
  * Options:
@@ -8,29 +8,13 @@
  *   --help     Show help message
  */
 
-import { mkdir, rm, readFile, symlink, unlink, lstat } from 'node:fs/promises';
+import { mkdir, readFile, symlink, unlink, lstat, cp } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { fetchReleaseByTag, downloadTarball } from '@speck/common/github';
 import { createScopedLogger } from '@speck/common';
 import { ReleaseRegistrySchema, type Release, type ReleaseRegistry } from './lib/schemas';
 
-const OPENSPEC_OWNER = 'Fission-AI';
-const OPENSPEC_REPO = 'OpenSpec';
-
-/**
- * Paths to keep when extracting OpenSpec releases.
- * Only these files/directories will be copied to the final destination.
- */
-const OPENSPEC_KEEP_PATHS = [
-  'src',
-  'package.json',
-  'pnpm-lock.yaml',
-  'tsconfig.json',
-  'CHANGELOG.md',
-  'LICENSE',
-  'README.md',
-];
+const OPENSPEC_PACKAGE = '@fission-ai/openspec';
 
 /**
  * Result of pull-upstream command
@@ -55,6 +39,23 @@ export async function updateReleasesJson(
       const parsed = ReleaseRegistrySchema.safeParse(JSON.parse(content));
       if (parsed.success) {
         registry = parsed.data;
+      } else {
+        // Log validation error but continue - don't silently discard existing data
+        console.warn(
+          `Warning: releases.json validation failed, preserving raw releases: ${parsed.error.message}`
+        );
+        // Try to preserve existing releases even if schema doesn't match
+        try {
+          const raw = JSON.parse(content) as { releases?: unknown[]; latestVersion?: string };
+          if (Array.isArray(raw.releases)) {
+            registry = {
+              releases: raw.releases as Release[],
+              latestVersion: raw.latestVersion ?? '',
+            };
+          }
+        } catch {
+          // If we can't parse at all, start fresh
+        }
       }
     }
 
@@ -115,11 +116,11 @@ export async function createLatestSymlink(
 }
 
 /**
- * Extract tarball to destination directory
+ * Install specific npm package version as dev dependency
  */
-async function extractTarball(tarballPath: string, destDir: string): Promise<void> {
-  // Use Bun shell to extract
-  const proc = Bun.spawn(['tar', 'xzf', tarballPath, '-C', destDir, '--strip-components=1'], {
+async function installNpmPackage(packageSpec: string, cwd: string): Promise<void> {
+  const proc = Bun.spawn(['bun', 'install', '--dev', packageSpec], {
+    cwd,
     stdout: 'pipe',
     stderr: 'pipe',
   });
@@ -127,33 +128,47 @@ async function extractTarball(tarballPath: string, destDir: string): Promise<voi
   const exitCode = await proc.exited;
   if (exitCode !== 0) {
     const stderr = await new Response(proc.stderr).text();
-    throw new Error(`Failed to extract tarball: ${stderr}`);
+    throw new Error(`Failed to install ${packageSpec}: ${stderr}`);
   }
 }
 
 /**
- * Copy only specified paths from source to destination directory.
- * Skips paths that don't exist in the source.
+ * Run openspec init command
  */
-async function copySelectivePaths(
-  sourceDir: string,
-  destDir: string,
-  paths: string[]
-): Promise<void> {
-  for (const path of paths) {
-    const src = join(sourceDir, path);
-    const dest = join(destDir, path);
-    if (existsSync(src)) {
-      const proc = Bun.spawn(['cp', '-r', src, dest], {
-        stdout: 'pipe',
-        stderr: 'pipe',
-      });
-      const exitCode = await proc.exited;
-      if (exitCode !== 0) {
-        const stderr = await new Response(proc.stderr).text();
-        throw new Error(`Failed to copy ${path}: ${stderr}`);
-      }
+async function runOpenspecInit(cwd: string): Promise<void> {
+  const proc = Bun.spawn(['bun', 'openspec', 'init', '--tools', 'claude'], {
+    cwd,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+
+  const exitCode = await proc.exited;
+  if (exitCode !== 0) {
+    const stderr = await new Response(proc.stderr).text();
+    throw new Error(`Failed to run openspec init: ${stderr}`);
+  }
+}
+
+/**
+ * Get npm publish date for a specific version
+ */
+async function getNpmPublishDate(version: string): Promise<string | undefined> {
+  try {
+    const proc = Bun.spawn(['npm', 'view', `${OPENSPEC_PACKAGE}@${version}`, 'time', '--json'], {
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+
+    const exitCode = await proc.exited;
+    if (exitCode !== 0) {
+      return undefined;
     }
+
+    const stdout = await new Response(proc.stdout).text();
+    const times = JSON.parse(stdout) as Record<string, string>;
+    return times[version];
+  } catch {
+    return undefined;
   }
 }
 
@@ -169,88 +184,111 @@ export async function pullUpstream(
 ): Promise<PullResult> {
   const { rootDir = process.cwd(), dryRun = false } = options;
 
+  // Normalize version (support both 0.14.0 and v0.14.0)
+  const normalizedVersion = version.startsWith('v') ? version.slice(1) : version;
+  const displayVersion = normalizedVersion; // Use npm-style version without 'v' prefix
+
   // Validate version format
-  if (!/^v\d+\.\d+\.\d+$/.test(version)) {
+  if (!/^\d+\.\d+\.\d+$/.test(normalizedVersion)) {
     return {
       ok: false,
-      error: `Invalid version format: ${version}. Expected format: vX.Y.Z (e.g., v0.16.0)`,
+      error: `Invalid version format: ${version}. Expected format: X.Y.Z (e.g., 0.16.0)`,
     };
   }
 
   const upstreamDir = join(rootDir, 'upstream', 'openspec');
-  const versionDir = join(upstreamDir, version);
+  const versionDir = join(upstreamDir, displayVersion);
   const releasesPath = join(upstreamDir, 'releases.json');
+  const packageDir = join(versionDir, 'package');
+  const initOutputDir = join(versionDir, 'init-output');
 
   // Check if version already exists
   if (existsSync(versionDir)) {
     return {
       ok: false,
-      error: `Version ${version} already exists at ${versionDir}. Remove it first to re-pull.`,
+      error: `Version ${displayVersion} already exists at ${versionDir}. Remove it first to re-pull.`,
     };
   }
 
   if (dryRun) {
     return {
       ok: true,
-      version,
+      version: displayVersion,
       path: versionDir,
-      message: `[DRY RUN] Would pull ${version} to ${versionDir}`,
+      message: `[DRY RUN] Would pull ${displayVersion} to ${versionDir}`,
     };
   }
 
+  const logger = createScopedLogger('pull-upstream');
+
   try {
-    // Fetch release info from GitHub
-    const release = await fetchReleaseByTag(OPENSPEC_OWNER, OPENSPEC_REPO, version);
-    if (!release) {
-      return { ok: false, error: `Release ${version} not found` };
+    // Step 1: Install the specific npm version
+    logger.info(`Installing ${OPENSPEC_PACKAGE}@${normalizedVersion}...`);
+    await installNpmPackage(`${OPENSPEC_PACKAGE}@${normalizedVersion}`, rootDir);
+
+    // Step 2: Run openspec init --tools claude
+    logger.info('Running openspec init --tools claude...');
+    await runOpenspecInit(rootDir);
+
+    // Step 3: Create version directory structure
+    await mkdir(packageDir, { recursive: true });
+    await mkdir(join(initOutputDir, '.claude', 'commands', 'openspec'), { recursive: true });
+
+    // Step 4: Copy node_modules/@fission-ai/openspec to package/
+    const npmPackagePath = join(rootDir, 'node_modules', '@fission-ai', 'openspec');
+    if (existsSync(npmPackagePath)) {
+      logger.info('Copying npm package to upstream...');
+      await cp(npmPackagePath, packageDir, { recursive: true });
+    } else {
+      return { ok: false, error: `Package not found at ${npmPackagePath}` };
     }
 
-    // Set up temp locations
-    const tempDir = join(rootDir, '.speck', 'tmp');
-    const tempTarball = join(tempDir, `${version}.tar.gz`);
-    const tempExtractDir = join(tempDir, `${version}-extract`);
-    await mkdir(tempDir, { recursive: true });
+    // Step 5: Copy .claude/commands/openspec/ to init-output/
+    const claudeCommandsPath = join(rootDir, '.claude', 'commands', 'openspec');
+    if (existsSync(claudeCommandsPath)) {
+      logger.info('Copying init output to upstream...');
+      await cp(claudeCommandsPath, join(initOutputDir, '.claude', 'commands', 'openspec'), {
+        recursive: true,
+      });
+    } else {
+      logger.warn('No .claude/commands/openspec/ found after init');
+    }
 
-    // Download tarball
-    await downloadTarball(release.tarball_url, tempTarball);
+    // Step 5b: Move AGENTS.md to init-output/ (created by openspec init)
+    const agentsMdPath = join(rootDir, 'AGENTS.md');
+    if (existsSync(agentsMdPath)) {
+      logger.info('Moving AGENTS.md to upstream...');
+      await cp(agentsMdPath, join(initOutputDir, 'AGENTS.md'));
+      // Remove from project root after copying
+      await unlink(agentsMdPath);
+    }
 
-    // Extract tarball to temp directory
-    await mkdir(tempExtractDir, { recursive: true });
-    await extractTarball(tempTarball, tempExtractDir);
+    // Step 6: Get npm publish date
+    const npmPublishDate = await getNpmPublishDate(normalizedVersion);
 
-    // Create version directory and copy only essential files
-    await mkdir(versionDir, { recursive: true });
-    await copySelectivePaths(tempExtractDir, versionDir, OPENSPEC_KEEP_PATHS);
-
-    // Clean up temp files
-    await rm(tempTarball, { force: true });
-    await rm(tempExtractDir, { recursive: true, force: true });
-
-    // Update releases.json
+    // Step 7: Update releases.json
     const registryResult = await updateReleasesJson(releasesPath, {
-      version,
+      version: displayVersion,
       pullDate: new Date().toISOString(),
-      commitSha: release.target_commitish?.slice(0, 40) ?? 'unknown'.padEnd(40, '0'),
       status: 'active',
-      releaseDate: release.published_at,
-      releaseNotes: release.body ?? '',
+      npmPublishDate,
     });
 
     if (!registryResult.ok) {
       return { ok: false, error: registryResult.error };
     }
 
-    // Create/update latest symlink
-    const symlinkResult = await createLatestSymlink(upstreamDir, version);
+    // Step 8: Create/update latest symlink
+    const symlinkResult = await createLatestSymlink(upstreamDir, displayVersion);
     if (!symlinkResult.ok) {
       return { ok: false, error: symlinkResult.error };
     }
 
     return {
       ok: true,
-      version,
+      version: displayVersion,
       path: versionDir,
-      message: `Successfully pulled ${version} to ${versionDir}`,
+      message: `Successfully pulled ${displayVersion} to ${versionDir}`,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -275,21 +313,28 @@ async function main(): Promise<void> {
 
   if (help || !version) {
     console.log(`
-pull-upstream - Fetch and store OpenSpec release from GitHub
+pull-upstream - Install OpenSpec from npm and run init
 
 Usage: bun plugins/changes/scripts/pull-upstream.ts <version> [options]
 
 Arguments:
-  version    OpenSpec version to pull (e.g., v0.16.0)
+  version    OpenSpec version to pull (e.g., 0.16.0 or v0.16.0)
 
 Options:
   --json     Output in JSON format
   --dry-run  Show what would be done without making changes
   --help     Show this help message
 
+This command will:
+  1. Install @fission-ai/openspec@<version> via npm
+  2. Run: bun openspec init --tools claude
+  3. Copy the npm package to upstream/openspec/<version>/package/
+  4. Copy generated commands to upstream/openspec/<version>/init-output/
+  5. Move AGENTS.md to upstream/openspec/<version>/init-output/
+
 Example:
-  bun plugins/changes/scripts/pull-upstream.ts v0.16.0
-  bun plugins/changes/scripts/pull-upstream.ts v0.16.0 --dry-run
+  bun plugins/changes/scripts/pull-upstream.ts 0.16.0
+  bun plugins/changes/scripts/pull-upstream.ts 0.14.0 --dry-run
 `);
     process.exit(help ? 0 : 1);
   }

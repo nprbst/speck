@@ -1,17 +1,17 @@
 ---
-description: Pull a specific OpenSpec release from GitHub
+description: Install OpenSpec from npm and capture artifacts
 arguments:
   - name: version
-    description: "Version to pull (e.g., v0.16.0)"
+    description: "Version to pull (e.g., 0.16.0)"
     required: true
   - name: options
     description: "Command options: --json, --dry-run"
     required: false
 ---
 
-# Pull OpenSpec Release
+# Pull OpenSpec from npm
 
-Download and store a specific OpenSpec release from GitHub.
+Install a specific OpenSpec version from npm and capture the generated artifacts.
 
 ## Usage
 
@@ -21,7 +21,7 @@ Download and store a specific OpenSpec release from GitHub.
 
 ## Arguments
 
-- `version` - The OpenSpec version to pull (e.g., v0.16.0)
+- `version` - The OpenSpec version to pull (e.g., 0.16.0 or v0.16.0)
 
 ## Options
 
@@ -38,22 +38,42 @@ bun ${CLAUDE_PLUGIN_ROOT}/scripts/pull-upstream.ts $ARGUMENTS
 
 ## What This Does
 
-1. Fetches release metadata from GitHub API
-2. Downloads the release tarball
-3. Extracts to `upstream/openspec/<version>/`
-4. Updates `upstream/openspec/releases.json` registry
-5. Creates/updates `upstream/openspec/latest` symlink
+1. Installs `@fission-ai/openspec@<version>` via npm
+2. Runs `bun openspec init --tools claude`
+3. Copies npm package to `upstream/openspec/<version>/package/`
+4. Copies generated commands to `upstream/openspec/<version>/init-output/.claude/commands/openspec/`
+5. Moves AGENTS.md to `upstream/openspec/<version>/init-output/`
+6. Updates `upstream/openspec/releases.json` registry
+7. Creates/updates `upstream/openspec/latest` symlink
+
+## Output Structure
+
+```
+upstream/openspec/<version>/
+├── package/                    # Copy of node_modules/@fission-ai/openspec
+│   ├── package.json
+│   ├── dist/
+│   └── ...
+└── init-output/                # Output from openspec init
+    ├── AGENTS.md
+    └── .claude/
+        └── commands/
+            └── openspec/
+                ├── proposal.md
+                ├── apply.md
+                └── archive.md
+```
 
 ## Output
 
 On success:
 ```
-Successfully pulled v0.16.0 to upstream/openspec/v0.16.0
+Successfully pulled 0.16.0 to upstream/openspec/0.16.0
 ```
 
 ## Next Steps
 
-After pulling a release:
+After pulling a version:
 
-1. Review the source code in `upstream/openspec/<version>/`
-2. Use `/speck-changes.transform-upstream` to transform to Bun TypeScript
+1. Review the generated commands in `upstream/openspec/<version>/init-output/`
+2. Compare with other versions for side-by-side analysis
