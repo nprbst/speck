@@ -8,6 +8,15 @@ import { describe, test, expect } from 'bun:test';
  * They require the dev server to be running for full integration testing.
  */
 
+interface InquiryResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+  details?: unknown;
+  id?: string;
+  email?: string;
+}
+
 const BASE_URL = 'http://localhost:4321';
 
 describe('POST /api/inquiry - Contract Tests', () => {
@@ -29,7 +38,7 @@ describe('POST /api/inquiry - Contract Tests', () => {
         // Should return 201 Created or 500 (if D1 not configured)
         expect([201, 500]).toContain(response.status);
 
-        const data = await response.json();
+        const data = (await response.json()) as InquiryResponse;
         expect(typeof data.success).toBe('boolean');
       } catch (error) {
         // Server not running, skip test
@@ -49,7 +58,7 @@ describe('POST /api/inquiry - Contract Tests', () => {
         });
 
         if (response.status === 201) {
-          const data = await response.json();
+          const data = (await response.json()) as InquiryResponse;
           expect(data.success).toBe(true);
           expect(data.message).toBeDefined();
           expect(typeof data.message).toBe('string');
@@ -74,7 +83,7 @@ describe('POST /api/inquiry - Contract Tests', () => {
 
         expect(response.status).toBe(400);
 
-        const data = await response.json();
+        const data = (await response.json()) as InquiryResponse;
         expect(data.success).toBe(false);
         expect(data.error).toBeDefined();
         expect(data.details).toBeDefined();
@@ -97,7 +106,7 @@ describe('POST /api/inquiry - Contract Tests', () => {
 
         expect(response.status).toBe(400);
 
-        const data = await response.json();
+        const data = (await response.json()) as InquiryResponse;
         expect(data.success).toBe(false);
         expect(data.details).toContain('Message is required');
       } catch {
@@ -118,7 +127,7 @@ describe('POST /api/inquiry - Contract Tests', () => {
 
         expect(response.status).toBe(400);
 
-        const data = await response.json();
+        const data = (await response.json()) as InquiryResponse;
         expect(data.success).toBe(false);
         expect(data.details).toContain('Message must be under 2000 characters');
       } catch {
@@ -136,7 +145,7 @@ describe('POST /api/inquiry - Contract Tests', () => {
 
         expect(response.status).toBe(400);
 
-        const data = await response.json();
+        const data = (await response.json()) as InquiryResponse;
         expect(data.success).toBe(false);
       } catch {
         console.log('Server not running, skipping integration test');
@@ -160,7 +169,7 @@ describe('POST /api/inquiry - Contract Tests', () => {
         // Should return 201 but not actually store
         expect(response.status).toBe(201);
 
-        const data = await response.json();
+        const data = (await response.json()) as InquiryResponse;
         expect(data.success).toBe(true);
       } catch {
         console.log('Server not running, skipping integration test');
@@ -197,7 +206,7 @@ describe('POST /api/inquiry - Contract Tests', () => {
           }),
         });
 
-        const data = await response.json();
+        const data = (await response.json()) as InquiryResponse;
 
         // Check schema
         expect(typeof data.success).toBe('boolean');

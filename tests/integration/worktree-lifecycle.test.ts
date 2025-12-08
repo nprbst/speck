@@ -9,11 +9,11 @@ import { mkdtempSync, rmSync, existsSync, realpathSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { $ } from 'bun';
-import { createWorktree } from '../../.speck/scripts/worktree/create';
-import { removeWorktree } from '../../.speck/scripts/worktree/remove';
-import { saveConfig } from '../../.speck/scripts/worktree/config';
-import { DEFAULT_SPECK_CONFIG } from '../../.speck/scripts/worktree/config-schema';
-import { listWorktrees, getWorktreePath } from '../../.speck/scripts/worktree/git';
+import { createWorktree } from '../../plugins/speck/scripts/worktree/create';
+import { removeWorktree } from '../../plugins/speck/scripts/worktree/remove';
+import { saveConfig } from '../../plugins/speck/scripts/worktree/config';
+import { DEFAULT_SPECK_CONFIG } from '../../plugins/speck/scripts/worktree/config-schema';
+import { listWorktrees, getWorktreePath } from '../../plugins/speck/scripts/worktree/git';
 
 describe('Worktree Lifecycle', () => {
   let testDir: string;

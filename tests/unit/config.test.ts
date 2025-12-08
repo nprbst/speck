@@ -10,8 +10,8 @@ import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
-import { loadConfig, saveConfig, migrateConfig } from '../../.speck/scripts/worktree/config';
-import type { SpeckConfig } from '../../.speck/scripts/worktree/config-schema';
+import { loadConfig, saveConfig, migrateConfig } from '../../plugins/speck/scripts/worktree/config';
+import type { SpeckConfig } from '../../plugins/speck/scripts/worktree/config-schema';
 
 describe('config.ts - Configuration Management', () => {
   let tempRepo: string;
@@ -34,8 +34,8 @@ describe('config.ts - Configuration Management', () => {
 
       expect(config).toBeDefined();
       expect(config.version).toBe('1.0');
-      expect(config.worktree.enabled).toBe(false);
-      expect(config.worktree.worktreePath).toBe('.speck/worktrees');
+      expect(config.worktree.enabled).toBe(true);
+      expect(config.worktree.worktreePath).toBe('../');
     });
 
     test('should load and validate existing config file', async () => {
@@ -90,7 +90,7 @@ describe('config.ts - Configuration Management', () => {
 
       const config = await loadConfig(tempRepo);
 
-      expect(config.worktree.worktreePath).toBe('.speck/worktrees');
+      expect(config.worktree.worktreePath).toBe('../');
       expect(config.worktree.ide.autoLaunch).toBe(false);
       expect(config.worktree.ide.editor).toBe('vscode');
       expect(config.worktree.dependencies.autoInstall).toBe(false);

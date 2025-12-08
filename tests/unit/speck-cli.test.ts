@@ -4,9 +4,9 @@
  */
 
 import { describe, test, expect } from 'bun:test';
-import { echoHandler } from '../../.speck/scripts/commands/echo';
-import { envHandler } from '../../.speck/scripts/commands/env';
-import type { CommandContext } from '../../.speck/scripts/lib/types';
+import { echoHandler } from '../../plugins/speck/scripts/commands/echo';
+import { envHandler } from '../../plugins/speck/scripts/commands/env';
+import type { CommandContext } from '../../plugins/speck/scripts/lib/types';
 
 describe('Dual-Mode CLI Operation', () => {
   describe('Echo Command', () => {

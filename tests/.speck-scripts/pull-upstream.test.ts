@@ -12,7 +12,7 @@
  */
 
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { pullUpstream } from '../../.speck/scripts/pull-upstream';
+import { pullUpstream } from '../../plugins/speck/scripts/pull-upstream';
 import { ExitCode } from '../../specs/001-speck-core-project/contracts/cli-interface';
 import type { PullUpstreamOutput } from '../../specs/001-speck-core-project/contracts/cli-interface';
 import {

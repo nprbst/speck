@@ -1,12 +1,12 @@
-import { describe, expect, it, beforeEach, afterEach } from "bun:test";
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
-import { join } from "path";
-import { tmpdir } from "os";
+import { describe, expect, it, beforeEach, afterEach } from 'bun:test';
+import { mkdirSync, rmSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
 
 // Test fixtures directory
-const TEST_DIR = join(tmpdir(), "speck-reviewer-speck-test-" + Date.now());
+const TEST_DIR = join(tmpdir(), 'speck-reviewer-speck-test-' + Date.now());
 
-describe("speck integration", () => {
+describe('speck integration', () => {
   beforeEach(() => {
     // Create test directory structure
     mkdirSync(TEST_DIR, { recursive: true });
@@ -17,71 +17,74 @@ describe("speck integration", () => {
     rmSync(TEST_DIR, { recursive: true, force: true });
   });
 
-  describe("findSpecForBranch", () => {
-    it("should find spec via specs/{branch-name}/spec.md", async () => {
-      const { findSpecForBranch } = await import("../../plugins/speck-reviewer/cli/src/speck");
+  describe('findSpecForBranch', () => {
+    it('should find spec via specs/{branch-name}/spec.md', async () => {
+      const { findSpecForBranch } = await import('../../plugins/reviewer/src/speck');
 
       // Create spec directory and file
-      const specDir = join(TEST_DIR, "specs", "018-feature-name");
+      const specDir = join(TEST_DIR, 'specs', '018-feature-name');
       mkdirSync(specDir, { recursive: true });
-      writeFileSync(join(specDir, "spec.md"), "# Feature Specification\n\nTest content");
+      writeFileSync(join(specDir, 'spec.md'), '# Feature Specification\n\nTest content');
 
-      const result = await findSpecForBranch("018-feature-name", TEST_DIR);
+      const result = await findSpecForBranch('018-feature-name', TEST_DIR);
 
       expect(result).toBeTruthy();
-      expect(result?.featureId).toBe("018-feature-name");
-      expect(result?.specPath).toContain("spec.md");
+      expect(result?.featureId).toBe('018-feature-name');
+      expect(result?.specPath).toContain('spec.md');
     });
 
-    it("should find spec via .speck/branches.json mapping", async () => {
-      const { findSpecForBranch } = await import("../../plugins/speck-reviewer/cli/src/speck");
+    it('should find spec via .speck/branches.json mapping', async () => {
+      const { findSpecForBranch } = await import('../../plugins/reviewer/src/speck');
 
       // Create branches.json with mapping
-      const speckDir = join(TEST_DIR, ".speck");
+      const speckDir = join(TEST_DIR, '.speck');
       mkdirSync(speckDir, { recursive: true });
-      writeFileSync(join(speckDir, "branches.json"), JSON.stringify({
-        branches: {
-          "feature/custom-name": { specId: "018-feature-name" }
-        }
-      }));
+      writeFileSync(
+        join(speckDir, 'branches.json'),
+        JSON.stringify({
+          branches: {
+            'feature/custom-name': { specId: '018-feature-name' },
+          },
+        })
+      );
 
       // Create spec directory
-      const specDir = join(TEST_DIR, "specs", "018-feature-name");
+      const specDir = join(TEST_DIR, 'specs', '018-feature-name');
       mkdirSync(specDir, { recursive: true });
-      writeFileSync(join(specDir, "spec.md"), "# Feature Specification\n\nTest content");
+      writeFileSync(join(specDir, 'spec.md'), '# Feature Specification\n\nTest content');
 
-      const result = await findSpecForBranch("feature/custom-name", TEST_DIR);
+      const result = await findSpecForBranch('feature/custom-name', TEST_DIR);
 
       expect(result).toBeTruthy();
-      expect(result?.featureId).toBe("018-feature-name");
+      expect(result?.featureId).toBe('018-feature-name');
     });
 
-    it("should return null when no spec exists", async () => {
-      const { findSpecForBranch } = await import("../../plugins/speck-reviewer/cli/src/speck");
+    it('should return null when no spec exists', async () => {
+      const { findSpecForBranch } = await import('../../plugins/reviewer/src/speck');
 
-      const result = await findSpecForBranch("nonexistent-branch", TEST_DIR);
+      const result = await findSpecForBranch('nonexistent-branch', TEST_DIR);
 
       expect(result).toBeNull();
     });
 
-    it("should handle partial branch name matching", async () => {
-      const { findSpecForBranch } = await import("../../plugins/speck-reviewer/cli/src/speck");
+    it('should handle partial branch name matching', async () => {
+      const { findSpecForBranch } = await import('../../plugins/reviewer/src/speck');
 
       // Create spec for feature
-      const specDir = join(TEST_DIR, "specs", "018-speck-reviewer-plugin");
+      const specDir = join(TEST_DIR, 'specs', '018-speck-reviewer-plugin');
       mkdirSync(specDir, { recursive: true });
-      writeFileSync(join(specDir, "spec.md"), "# Feature Specification");
+      writeFileSync(join(specDir, 'spec.md'), '# Feature Specification');
 
       // Branch name might be prefixed
-      const result = await findSpecForBranch("018-speck-reviewer-plugin", TEST_DIR);
+      const result = await findSpecForBranch('018-speck-reviewer-plugin', TEST_DIR);
 
       expect(result).toBeTruthy();
     });
   });
 
-  describe("parseSpecContent", () => {
-    it("should extract requirements from spec", async () => {
-      const { parseSpecContent } = await import("../../plugins/speck-reviewer/cli/src/speck");
+  describe('parseSpecContent', () => {
+    it('should extract requirements from spec', async () => {
+      const { parseSpecContent } = await import('../../plugins/reviewer/src/speck');
 
       const specContent = `# Feature Specification
 
@@ -100,12 +103,12 @@ describe("speck integration", () => {
       const result = parseSpecContent(specContent);
 
       expect(result.requirements.length).toBeGreaterThan(0);
-      expect(result.requirements.find(r => r.id === "FR-001")).toBeTruthy();
-      expect(result.requirements.find(r => r.id === "NFR-001")).toBeTruthy();
+      expect(result.requirements.find((r) => r.id === 'FR-001')).toBeTruthy();
+      expect(result.requirements.find((r) => r.id === 'NFR-001')).toBeTruthy();
     });
 
-    it("should extract user stories from spec", async () => {
-      const { parseSpecContent } = await import("../../plugins/speck-reviewer/cli/src/speck");
+    it('should extract user stories from spec', async () => {
+      const { parseSpecContent } = await import('../../plugins/reviewer/src/speck');
 
       const specContent = `# Feature Specification
 
@@ -128,13 +131,13 @@ A developer wants to review a PR.
       const result = parseSpecContent(specContent);
 
       expect(result.userStories.length).toBe(2);
-      expect(result.userStories[0]?.title).toContain("Install Plugin");
-      expect(result.userStories[0]?.priority).toBe("P1");
+      expect(result.userStories[0]?.title).toContain('Install Plugin');
+      expect(result.userStories[0]?.priority).toBe('P1');
       expect(result.userStories[0]?.acceptanceScenarios.length).toBe(2);
     });
 
-    it("should extract success criteria", async () => {
-      const { parseSpecContent } = await import("../../plugins/speck-reviewer/cli/src/speck");
+    it('should extract success criteria', async () => {
+      const { parseSpecContent } = await import('../../plugins/reviewer/src/speck');
 
       const specContent = `# Feature Specification
 
@@ -149,11 +152,11 @@ A developer wants to review a PR.
       const result = parseSpecContent(specContent);
 
       expect(result.successCriteria.length).toBeGreaterThan(0);
-      expect(result.successCriteria.some(s => s.includes("SC-001"))).toBe(true);
+      expect(result.successCriteria.some((s) => s.includes('SC-001'))).toBe(true);
     });
 
-    it("should handle empty or minimal spec", async () => {
-      const { parseSpecContent } = await import("../../plugins/speck-reviewer/cli/src/speck");
+    it('should handle empty or minimal spec', async () => {
+      const { parseSpecContent } = await import('../../plugins/reviewer/src/speck');
 
       const specContent = `# Feature Specification
 
@@ -168,14 +171,16 @@ Just a minimal spec without structured sections.
     });
   });
 
-  describe("loadSpecContext", () => {
-    it("should load full spec context", async () => {
-      const { loadSpecContext } = await import("../../plugins/speck-reviewer/cli/src/speck");
+  describe('loadSpecContext', () => {
+    it('should load full spec context', async () => {
+      const { loadSpecContext } = await import('../../plugins/reviewer/src/speck');
 
       // Create complete spec
-      const specDir = join(TEST_DIR, "specs", "018-feature");
+      const specDir = join(TEST_DIR, 'specs', '018-feature');
       mkdirSync(specDir, { recursive: true });
-      writeFileSync(join(specDir, "spec.md"), `# Feature Specification
+      writeFileSync(
+        join(specDir, 'spec.md'),
+        `# Feature Specification
 
 ## Requirements
 
@@ -186,14 +191,15 @@ Just a minimal spec without structured sections.
 ## Success Criteria
 
 - **SC-001**: Must pass tests
-`);
+`
+      );
 
-      const result = await loadSpecContext("018-feature", TEST_DIR);
+      const result = await loadSpecContext('018-feature', TEST_DIR);
 
       expect(result).toBeTruthy();
-      expect(result?.featureId).toBe("018-feature");
+      expect(result?.featureId).toBe('018-feature');
       expect(result?.requirements.length).toBeGreaterThan(0);
-      expect(result?.content).toContain("Feature Specification");
+      expect(result?.content).toContain('Feature Specification');
     });
   });
 });

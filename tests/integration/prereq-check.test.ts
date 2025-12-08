@@ -10,8 +10,8 @@ import {
   runPrerequisiteCheck,
   formatPrereqContext,
   formatPrereqError,
-} from '../../.speck/scripts/lib/prereq-runner';
-import { invalidateCache, getCacheStats } from '../../.speck/scripts/lib/prereq-cache';
+} from '../../plugins/speck/scripts/lib/prereq-runner';
+import { invalidateCache, getCacheStats } from '../../plugins/speck/scripts/lib/prereq-cache';
 
 describe('Prerequisite Check Runner', () => {
   beforeEach(() => {

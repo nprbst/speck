@@ -16,7 +16,7 @@ import {
   withTempDir,
   atomicWrite,
   AtomicFileOpsError,
-} from '../../../.speck/scripts/common/file-ops';
+} from '../../../plugins/speck/scripts/common/file-ops';
 
 describe('Atomic File Operations', () => {
   let testDir: string;

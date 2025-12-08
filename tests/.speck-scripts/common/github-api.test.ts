@@ -10,11 +10,11 @@ import {
   fetchReleases,
   downloadTarball,
   GitHubApiClientError,
-} from '../../../.speck/scripts/common/github-api';
+} from '../../../plugins/speck/scripts/common/github-api';
 import {
   createMockGitHubRelease,
   createMockRateLimitInfo,
-} from '../../../.speck/scripts/contracts/test-utilities';
+} from '../../../plugins/speck/scripts/contracts/test-utilities';
 
 describe('GitHub API Client', () => {
   describe('fetchReleases', () => {

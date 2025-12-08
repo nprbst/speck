@@ -47,7 +47,7 @@ back and production remains unchanged.
 
 3. **Check for orphaned staging** (before any other operations):
    ```bash
-   bun run .speck/scripts/transform-upstream/index.ts status
+   bun run packages/maintainer/src/transform-upstream/index.ts status
    ```
    - If orphaned staging directories exist, prompt user:
      ```
@@ -68,7 +68,7 @@ back and production remains unchanged.
      ```
    - Handle user response by calling:
      ```bash
-     bun run .speck/scripts/transform-upstream/index.ts recover <dir> <action>
+     bun run packages/maintainer/src/transform-upstream/index.ts recover <dir> <action>
      ```
    - Block new transformation until orphaned staging is resolved
 
@@ -171,7 +171,7 @@ Find source files to transform and detect changes from previous version:
 **CRITICAL**: Initialize staging BEFORE invoking any agents.
 
 ```bash
-bun run .speck/scripts/transform-upstream/index.ts init <version>
+bun run packages/maintainer/src/transform-upstream/index.ts init <version>
 ```
 
 Parse the JSON output to extract staging directories:
@@ -233,7 +233,7 @@ Task tool parameters:
 
     ## Your Task
 
-    Transform ONLY the changed bash scripts listed above into Bun TypeScript equivalents in .speck/scripts/.
+    Transform ONLY the changed bash scripts listed above into Bun TypeScript equivalents in plugins/speck/scripts/.
 
     Follow the transformation strategy priorities from the agent file:
     1. Pure TypeScript (PREFERRED)
@@ -244,7 +244,7 @@ Task tool parameters:
     1. Read the upstream bash script to understand what changed
     2. Read the existing TypeScript file (if it exists)
     3. Choose transformation strategy
-    4. Generate/update .ts file in .speck/scripts/
+    4. Generate/update .ts file in plugins/speck/scripts/
     5. ALWAYS update documentation header (even if code unchanged)
     6. Preserve CLI interface 100%
     7. Preserve [SPECK-EXTENSION:START/END] markers if present
@@ -262,7 +262,7 @@ Task tool parameters:
     {
       "bunScriptsGenerated": [
         {
-          "path": ".speck/scripts/X.ts",
+          "path": "plugins/speck/scripts/X.ts",
           "bashSource": "upstream/<version>/.specify/scripts/bash/X.sh",
           "strategy": "pure-typescript | bun-shell | bun-spawn",
           "changeType": "new | modified",
@@ -274,7 +274,7 @@ Task tool parameters:
       ],
       "skipped": [
         {
-          "path": ".speck/scripts/Y.ts",
+          "path": "plugins/speck/scripts/Y.ts",
           "bashSource": "upstream/<version>/.specify/scripts/bash/Y.sh",
           "reason": "Script not in CHANGED_BASH_SCRIPTS list (unchanged from previous version)"
         }
@@ -343,8 +343,8 @@ Task tool parameters:
     **BASH_TO_BUN_MAPPINGS**:
     [Provide the FULL mappings (not just changed scripts) - commands may reference any script]
     Example format:
-    - .specify/scripts/bash/setup-plan.sh → .speck/scripts/setup-plan.ts
-    - .specify/scripts/bash/check-prerequisites.sh → .speck/scripts/check-prerequisites.ts
+    - .specify/scripts/bash/setup-plan.sh → plugins/speck/scripts/setup-plan.ts
+    - .specify/scripts/bash/check-prerequisites.sh → plugins/speck/scripts/check-prerequisites.ts
 
     ## Your Task
 
@@ -371,7 +371,7 @@ Task tool parameters:
         {
           "commandName": "speck.X",
           "specKitSource": "upstream/<version>/.claude/commands/speckit.X.md",
-          "scriptReference": ".speck/scripts/Y.ts",
+          "scriptReference": "plugins/speck/scripts/Y.ts",
           "changeType": "new | modified"
         }
       ],
@@ -434,7 +434,7 @@ After both agents succeed, commit the staged files to production:
    ⚠️  FILE CONFLICTS DETECTED
 
    The following production files were modified during transformation:
-     - .speck/scripts/foo.ts (modified 2m ago)
+     - plugins/speck/scripts/foo.ts (modified 2m ago)
      - .claude/commands/speck.bar.md (modified 1m ago)
 
    Options:
@@ -446,7 +446,7 @@ After both agents succeed, commit the staged files to production:
 
 3. **Commit if no conflicts or user approves**:
    The staging system atomically moves all files to production:
-   - `.speck/.transform-staging/<version>/scripts/*` → `.speck/scripts/`
+   - `.speck/.transform-staging/<version>/scripts/*` → `plugins/speck/scripts/`
    - `.speck/.transform-staging/<version>/commands/*` → `.claude/commands/`
    - `.speck/.transform-staging/<version>/agents/*` → `.claude/agents/`
    - `.speck/.transform-staging/<version>/skills/*` → `.claude/skills/`
@@ -460,7 +460,7 @@ Record factoring decisions in `.speck/transformation-history.json`:
 
 1. **Initialize transformation entry** (at start of transformation):
    ```typescript
-   import { addTransformationEntry } from ".speck/scripts/common/transformation-history";
+   import { addTransformationEntry } from "packages/maintainer/src/common/transformation-history";
 
    await addTransformationEntry(
      ".speck/transformation-history.json",
@@ -474,7 +474,7 @@ Record factoring decisions in `.speck/transformation-history.json`:
 2. **Agents record factoring decisions**:
    - When Agent 2 (transform-commands) extracts agents/skills, it should call:
      ```typescript
-     import { addFactoringMapping } from ".speck/scripts/common/transformation-history";
+     import { addFactoringMapping } from "packages/maintainer/src/common/transformation-history";
 
      await addFactoringMapping(
        ".speck/transformation-history.json",
@@ -507,7 +507,7 @@ Record factoring decisions in `.speck/transformation-history.json`:
 
 4. **Update transformation status on completion**:
    ```typescript
-   import { updateTransformationStatus } from ".speck/scripts/common/transformation-history";
+   import { updateTransformationStatus } from "packages/maintainer/src/common/transformation-history";
 
    // On success:
    await updateTransformationStatus(
@@ -530,13 +530,13 @@ Record factoring decisions in `.speck/transformation-history.json`:
 Update `upstream/releases.json` with transformation status:
 
 ```bash
-bun run .speck/scripts/common/json-tracker.ts update-status <version> transformed
+bun run packages/maintainer/src/common/json-tracker.ts update-status <version> transformed
 ```
 
 Or if any agent failed:
 
 ```bash
-bun run .speck/scripts/common/json-tracker.ts update-status <version> failed "<error message>"
+bun run packages/maintainer/src/common/json-tracker.ts update-status <version> failed "<error message>"
 ```
 
 ### 8. Report Results
@@ -549,7 +549,7 @@ Present transformation summary to user:
 ✓ Transformation complete for <version>
 
 Generated:
-  - X Bun TypeScript scripts in .speck/scripts/
+  - X Bun TypeScript scripts in plugins/speck/scripts/
   - Y /speck.* commands in .claude/commands/
   - Z factoring mappings recorded in .speck/transformation-history.json
 
@@ -661,7 +661,7 @@ Failure scenarios:
 
 ## Notes
 
-- **Staging orchestration**: Uses `.speck/scripts/transform-upstream/index.ts` for
+- **Staging orchestration**: Uses `packages/maintainer/src/transform-upstream/index.ts` for
   staging lifecycle management (create, record, commit, rollback, recover)
 - **Version resolution**: `upstream/latest` symlink provides default version
 - **Idempotent**: Can re-run safely - overwrites previous transformation
@@ -687,7 +687,7 @@ Failure scenarios:
 ## Architecture Note
 
 This slash command orchestrates the transformation agents with staging lifecycle
-support from `.speck/scripts/transform-upstream/index.ts`.
+support from `packages/maintainer/src/transform-upstream/index.ts`.
 
 **Division of responsibilities**:
 
@@ -697,7 +697,7 @@ support from `.speck/scripts/transform-upstream/index.ts`.
    - Agent invocation via Task tool
    - Result parsing and reporting
 
-2. **Staging orchestration script** (`.speck/scripts/transform-upstream/index.ts`):
+2. **Staging orchestration script** (`packages/maintainer/src/transform-upstream/index.ts`):
    - Staging directory lifecycle (create, update, cleanup)
    - Status tracking (agent results, staging state)
    - Commit/rollback operations

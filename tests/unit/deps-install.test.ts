@@ -15,7 +15,7 @@ import {
   getInstallCommand,
   installDependencies,
   interpretInstallError,
-} from '../../.speck/scripts/worktree/deps-install';
+} from '../../plugins/speck/scripts/worktree/deps-install';
 
 describe('detectPackageManager', () => {
   let tempDir: string;

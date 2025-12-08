@@ -20,11 +20,8 @@ import {
   ProductionBaselineSchema,
   FileBaselineSchema,
   FileCategorySchema,
-  type StagingContext,
-  type StagingMetadata,
-  type StagedFile,
   type StagingStatus,
-} from '../../.speck/scripts/common/staging-types';
+} from '../../packages/maintainer/src/common/staging-types';
 
 describe('StagingStatusSchema', () => {
   it('accepts valid status values', () => {

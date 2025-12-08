@@ -17,9 +17,9 @@ import {
   copyFiles,
   symlinkDirectories,
   applyFileRules,
-} from '../../.speck/scripts/worktree/file-ops';
+} from '../../plugins/speck/scripts/worktree/file-ops';
 
-import type { FileRule } from '../../.speck/scripts/worktree/config-schema';
+import type { FileRule } from '../../plugins/speck/scripts/worktree/config-schema';
 
 describe('matchFiles', () => {
   let tempDir: string;

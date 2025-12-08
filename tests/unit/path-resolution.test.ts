@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'bun:test';
-import { getRepoRoot, getFeaturePaths } from '../../.speck/scripts/common/paths';
+import { getRepoRoot, getFeaturePaths } from '../../plugins/speck/scripts/common/paths';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 

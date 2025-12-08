@@ -236,7 +236,7 @@ This specification is shared across all child repositories.
     if (!childDir) throw new Error('Child repo not found');
 
     // Import branch-mapper from project root (not fixture - fixture doesn't have node_modules)
-    const branchMapper = await import('../../.speck/scripts/common/branch-mapper.ts');
+    const branchMapper = await import('../../plugins/speck/scripts/common/branch-mapper.ts');
 
     // Create a branch entry with parentSpecId
     const entry = branchMapper.createBranchEntry(
@@ -380,7 +380,7 @@ describe('Multi-repo branches.json aggregation', () => {
 
   test('getAggregatedBranchStatus() collects branches across repos', async () => {
     // Import branch-mapper from project root (fixture doesn't have node_modules)
-    const branchMapper = await import('../../.speck/scripts/common/branch-mapper.ts');
+    const branchMapper = await import('../../plugins/speck/scripts/common/branch-mapper.ts');
 
     const aggregated = await branchMapper.getAggregatedBranchStatus(
       fixture.rootDir,

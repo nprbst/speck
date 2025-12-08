@@ -121,8 +121,16 @@ What tasks are pending?
 ├── agents/            # Subagents for complex workflows
 └── skills/            # Natural language skill
 
-.speck/
+plugins/speck/         # Deployable Speck plugin
 ├── scripts/           # CLI implementations
+├── commands/          # Slash command definitions
+└── skills/            # Skill definitions
+
+packages/
+├── common/            # Shared utilities (@speck/common)
+└── maintainer/        # Maintainer tools (@speck/maintainer)
+
+.speck/                # User project config (runtime)
 └── config.json        # Worktree and IDE settings
 
 specs/                 # Feature specifications (spec.md, plan.md, tasks.md)

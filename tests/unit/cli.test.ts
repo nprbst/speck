@@ -1,7 +1,7 @@
 /**
  * Unit Tests: CLI Argument Parsing
  *
- * Tests for the Speck CLI entry point (src/cli/index.ts)
+ * Tests for the Speck CLI entry point (plugins/speck/cli/index.ts)
  * Per Constitution Principle XII: TDD - tests written before implementation
  *
  * Feature: 015-scope-simplification
@@ -19,7 +19,7 @@ async function runCli(args: string[]): Promise<{
   stderr: string;
   exitCode: number;
 }> {
-  const cliPath = new URL('../../src/cli/index.ts', import.meta.url).pathname;
+  const cliPath = new URL('../../plugins/speck/cli/index.ts', import.meta.url).pathname;
   const result = await $`bun run ${cliPath} ${args}`.nothrow().quiet();
   return {
     stdout: result.stdout.toString(),

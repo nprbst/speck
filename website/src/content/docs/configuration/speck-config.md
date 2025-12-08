@@ -700,7 +700,7 @@ import type {
   FileRule,
   IDEConfig,
   DependencyConfig
-} from "./.speck/scripts/worktree/config-schema";
+} from "./plugins/speck/scripts/worktree/config-schema";
 
 // Type-safe config object
 const config: SpeckConfig = {

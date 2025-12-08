@@ -19,7 +19,7 @@ import {
   recordAgent1Complete,
   recordAgent2Complete,
   commitStagingToProduction,
-} from '../../.speck/scripts/transform-upstream/index';
+} from '../../packages/maintainer/src/transform-upstream/index';
 
 describe('Conflict Detection Integration (FR-012)', () => {
   let env: StagingTestEnv;

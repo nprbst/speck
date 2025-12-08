@@ -86,7 +86,7 @@ git push origin 002-user-profile
 **Option 1: Interactive Setup Wizard**
 
 ```bash
-bun .speck/scripts/worktree/cli.ts init
+speck worktree init
 ```
 
 **Option 2: Manual Configuration**
@@ -186,7 +186,7 @@ Main repo: my-app/                     (branch: main)
 
 ```bash
 # Remove worktree when feature is complete
-bun .speck/scripts/worktree/cli.ts remove 002-user-auth
+speck worktree remove 002-user-auth
 
 # Confirmation prompt:
 # Remove worktree for branch '002-user-auth'?
@@ -201,7 +201,7 @@ bun .speck/scripts/worktree/cli.ts remove 002-user-auth
 **Cleanup stale worktrees** (manually deleted directories):
 
 ```bash
-bun .speck/scripts/worktree/cli.ts prune
+speck worktree prune
 ```
 
 ## Worktree Management Commands
@@ -209,7 +209,7 @@ bun .speck/scripts/worktree/cli.ts prune
 ### List All Worktrees
 
 ```bash
-bun .speck/scripts/worktree/cli.ts list
+speck worktree list
 ```
 
 **Output**:
@@ -223,20 +223,20 @@ Worktrees:
 ### Create Worktree Manually
 
 ```bash
-bun .speck/scripts/worktree/cli.ts create 005-feature-name
+speck worktree create 005-feature-name
 ```
 
 ### Remove Worktree
 
 ```bash
-bun .speck/scripts/worktree/cli.ts remove 002-user-auth
+speck worktree remove 002-user-auth
 ```
 
 ### Cleanup Stale Worktrees
 
 ```bash
-bun .speck/scripts/worktree/cli.ts prune --dry-run  # See what would be removed
-bun .speck/scripts/worktree/cli.ts prune             # Actually remove
+speck worktree prune --dry-run  # See what would be removed
+speck worktree prune             # Actually remove
 ```
 
 ## Command Flags Reference
@@ -303,7 +303,7 @@ du -sh .speck/worktrees/*       # Individual worktree usage
 2. Develop feature over days/weeks
 3. Commit and push regularly
 4. Create PR when ready
-5. Remove worktree after PR is merged: `bun .speck/scripts/worktree/cli.ts remove`
+5. Remove worktree after PR is merged: `speck worktree remove`
 
 **Don't let worktrees accumulate** - remove them when features are merged.
 
@@ -372,7 +372,7 @@ which code  # Should show path to VSCode CLI
 
 **Solution**: Run cleanup
 ```bash
-bun .speck/scripts/worktree/cli.ts prune
+speck worktree prune
 ```
 
 ## Performance Benchmarks

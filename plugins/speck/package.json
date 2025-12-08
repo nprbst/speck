@@ -1,0 +1,16 @@
+{
+  "name": "@speck/speck-plugin",
+  "version": "1.10.2",
+  "description": "Speck - AI-powered spec-driven development plugin for Claude Code",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@speck/common": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.2",
+    "typescript": "^5.3.3"
+  }
+}

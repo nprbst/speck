@@ -14,8 +14,8 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { $ } from 'bun';
-import { detectSpeckRoot, clearSpeckCache } from '../.speck/scripts/common/paths.ts';
-import { linkRepo } from '../.speck/scripts/link-repo.ts';
+import { detectSpeckRoot, clearSpeckCache } from '../plugins/speck/scripts/common/paths.ts';
+import { linkRepo } from '../plugins/speck/scripts/link-repo.ts';
 
 // Test helpers
 async function createTestDir(name: string): Promise<string> {
@@ -123,7 +123,7 @@ describe('User Story 5: Single-Repo to Multi-Repo Migration', () => {
     clearSpeckCache();
 
     // Verify paths resolve correctly
-    const { getFeaturePaths } = await import('../.speck/scripts/common/paths.ts');
+    const { getFeaturePaths } = await import('../plugins/speck/scripts/common/paths.ts');
     const paths = await getFeaturePaths();
     const realParentDir = await fs.realpath(parentDir);
     const realSingleRepoDir = await fs.realpath(singleRepoDir);

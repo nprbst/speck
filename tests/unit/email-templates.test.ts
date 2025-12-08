@@ -3,7 +3,10 @@
  * Tests the HTML email template function that wraps response content
  */
 import { describe, expect, test } from 'bun:test';
-import { renderEmailTemplate, type EmailTemplateData } from '../../.claude/scripts/inquiries/templates';
+import {
+  renderEmailTemplate,
+  type EmailTemplateData,
+} from '../../.claude/scripts/inquiries/templates';
 
 describe('renderEmailTemplate', () => {
   const baseData: EmailTemplateData = {

@@ -16,12 +16,12 @@ import {
   getRelease,
   getLatest,
   releaseExists,
-} from '../../../.speck/scripts/common/json-tracker';
-import { ReleaseStatus } from '../../../.speck/scripts/contracts/release-registry';
+} from '../../../plugins/speck/scripts/common/json-tracker';
+import { ReleaseStatus } from '../../../plugins/speck/scripts/contracts/release-registry';
 import {
   createMockUpstreamRelease,
   createMockReleaseRegistry,
-} from '../../../.speck/scripts/contracts/test-utilities';
+} from '../../../plugins/speck/scripts/contracts/test-utilities';
 
 describe('Release Registry Manager', () => {
   let tempDir: string;

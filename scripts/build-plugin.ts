@@ -10,8 +10,10 @@
  */
 
 import { mkdir, rm, readdir, copyFile, readFile, writeFile, stat, chmod } from 'fs/promises';
-import { join, relative, basename } from 'path';
+import { join } from 'path';
 import { existsSync } from 'fs';
+import { z } from 'zod';
+import { PackageJsonSchema, PluginJsonSchema } from '@speck/common';
 
 // ============================================================================
 // Configuration
@@ -36,11 +38,11 @@ interface BuildConfig {
 const config: BuildConfig = {
   sourceRoot: process.cwd(),
   outputDir: join(process.cwd(), 'dist/plugins/speck'),
-  commandsSourceDir: join(process.cwd(), '.claude/commands'),
-  agentsSourceDir: join(process.cwd(), '.claude/agents'),
-  skillsSourceDir: join(process.cwd(), '.claude/skills'),
-  templatesSourceDir: join(process.cwd(), '.speck/templates'),
-  scriptsSourceDir: join(process.cwd(), '.speck/scripts'),
+  commandsSourceDir: join(process.cwd(), 'plugins/speck/commands'),
+  agentsSourceDir: join(process.cwd(), 'plugins/speck/agents'),
+  skillsSourceDir: join(process.cwd(), 'plugins/speck/skills'),
+  templatesSourceDir: join(process.cwd(), 'plugins/speck/templates'),
+  scriptsSourceDir: join(process.cwd(), 'plugins/speck/scripts'),
   memorySourceDir: join(process.cwd(), 'upstream/latest/.specify/memory'),
   version: '', // Will be loaded from package.json
   maxSizeBytes: 5 * 1024 * 1024, // 5MB
@@ -59,7 +61,7 @@ const config: BuildConfig = {
 async function loadVersion(): Promise<string> {
   const packageJsonPath = join(config.sourceRoot, 'package.json');
   const content = await readFile(packageJsonPath, 'utf-8');
-  const packageJson = JSON.parse(content);
+  const packageJson = PackageJsonSchema.parse(JSON.parse(content));
   return packageJson.version;
 }
 
@@ -85,14 +87,6 @@ function buildFailedError(description: string, details: string, action: string):
  */
 async function ensureDir(dirPath: string): Promise<void> {
   await mkdir(dirPath, { recursive: true });
-}
-
-/**
- * Copy file from source to destination
- */
-async function copyFileWithDirs(src: string, dest: string): Promise<void> {
-  await ensureDir(join(dest, '..'));
-  await copyFile(src, dest);
 }
 
 /**
@@ -160,12 +154,10 @@ function bundleScript(sourcePath: string, destPath: string, name: string): void 
     return;
   }
 
-  const result = Bun.spawnSync([
-    'bun', 'build',
-    sourcePath,
-    '--outfile', destPath,
-    '--target', 'bun',
-  ], { cwd: config.sourceRoot });
+  const result = Bun.spawnSync(
+    ['bun', 'build', sourcePath, '--outfile', destPath, '--target', 'bun'],
+    { cwd: config.sourceRoot }
+  );
 
   if (result.exitCode !== 0) {
     throw buildFailedError(
@@ -182,9 +174,9 @@ function bundleScript(sourcePath: string, destPath: string, name: string): void 
  * This ensures the bundled scripts are always up-to-date with source changes.
  */
 async function rebuildHookBundles(): Promise<void> {
-  const hookSourceDir = join(config.sourceRoot, '.speck/scripts/hooks');
-  const cliSourceDir = join(config.sourceRoot, 'src/cli');
-  const distDir = join(config.sourceRoot, '.speck/dist');
+  const hookSourceDir = join(config.sourceRoot, 'plugins/speck/scripts/hooks');
+  const cliSourceDir = join(config.sourceRoot, 'plugins/speck/cli');
+  const distDir = join(config.sourceRoot, 'plugins/speck/dist');
 
   await ensureDir(distDir);
 
@@ -196,11 +188,7 @@ async function rebuildHookBundles(): Promise<void> {
   );
 
   // Bundle the main CLI (includes all commands: init, env, etc.)
-  bundleScript(
-    join(cliSourceDir, 'index.ts'),
-    join(distDir, 'speck-cli.js'),
-    'speck CLI'
-  );
+  bundleScript(join(cliSourceDir, 'index.ts'), join(distDir, 'speck-cli.js'), 'speck CLI');
 }
 
 // ============================================================================
@@ -222,13 +210,7 @@ async function generatePluginManifest(): Promise<void> {
     homepage: 'https://github.com/nprbst/speck',
     repository: 'https://github.com/nprbst/speck',
     license: 'MIT',
-    keywords: [
-      'specification',
-      'planning',
-      'workflow',
-      'feature-management',
-      'development-tools',
-    ],
+    keywords: ['specification', 'planning', 'workflow', 'feature-management', 'development-tools'],
     hooks: {
       UserPromptSubmit: [
         {
@@ -253,6 +235,22 @@ async function generatePluginManifest(): Promise<void> {
   );
 }
 
+// Extended schema for marketplace.json with plugins array
+const MarketplaceWithPluginsSchema = z
+  .object({
+    name: z.string(),
+    owner: z.string(),
+    plugins: z.array(
+      z
+        .object({
+          name: z.string(),
+          version: z.string().optional(),
+        })
+        .passthrough()
+    ),
+  })
+  .passthrough();
+
 /**
  * T012: Generate marketplace.json manifest
  * Copies from source marketplace.json and updates plugin versions
@@ -261,20 +259,23 @@ async function generateMarketplaceManifest(): Promise<void> {
   // Read source marketplace.json
   const sourceMarketplacePath = join(config.sourceRoot, '.claude-plugin/marketplace.json');
   const sourceContent = await readFile(sourceMarketplacePath, 'utf-8');
-  const marketplace = JSON.parse(sourceContent);
+  const marketplace = MarketplaceWithPluginsSchema.parse(JSON.parse(sourceContent));
 
   // Update speck plugin version from package.json
-  const speckPlugin = marketplace.plugins.find((p: { name: string }) => p.name === 'speck');
+  const speckPlugin = marketplace.plugins.find((p) => p.name === 'speck');
   if (speckPlugin) {
     speckPlugin.version = config.version;
   }
 
   // Update speck-reviewer plugin version from its plugin.json
-  const reviewerPluginJsonPath = join(config.sourceRoot, 'plugins/speck-reviewer/.claude-plugin/plugin.json');
+  const reviewerPluginJsonPath = join(
+    config.sourceRoot,
+    'plugins/reviewer/.claude-plugin/plugin.json'
+  );
   if (existsSync(reviewerPluginJsonPath)) {
     const reviewerPluginContent = await readFile(reviewerPluginJsonPath, 'utf-8');
-    const reviewerPluginJson = JSON.parse(reviewerPluginContent);
-    const reviewerPlugin = marketplace.plugins.find((p: { name: string }) => p.name === 'speck-reviewer');
+    const reviewerPluginJson = PluginJsonSchema.parse(JSON.parse(reviewerPluginContent));
+    const reviewerPlugin = marketplace.plugins.find((p) => p.name === 'speck-reviewer');
     if (reviewerPlugin) {
       reviewerPlugin.version = reviewerPluginJson.version;
     }
@@ -325,21 +326,21 @@ async function copyPluginFiles(): Promise<FileCounts> {
     await ensureDir(commandsDestDir);
 
     const sourceFiles = await readdir(config.commandsSourceDir);
-    const mdFiles = sourceFiles.filter(f => f.endsWith('.md'));
+    const mdFiles = sourceFiles.filter((f) => f.endsWith('.md'));
 
     for (const file of mdFiles) {
       // Exclude speckit.* aliases, upstream management commands, and project-local commands
-      if (file.startsWith('speckit.') ||
+      if (
+        file.startsWith('speckit.') ||
         file.includes('-upstream') ||
-        file.includes('refresh-website')) {
+        file.includes('refresh-website')
+      ) {
         continue;
       }
 
       // Strip 'speck.' prefix from filename for published plugin
       // e.g., speck.tasks.md -> tasks.md
-      const destFilename = file.startsWith('speck.')
-        ? file.substring('speck.'.length)
-        : file;
+      const destFilename = file.startsWith('speck.') ? file.substring('speck.'.length) : file;
 
       // Read the source file
       const sourcePath = join(config.commandsSourceDir, file);
@@ -362,7 +363,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
     await ensureDir(agentsDestDir);
 
     const sourceFiles = await readdir(config.agentsSourceDir);
-    const mdFiles = sourceFiles.filter(f => f.endsWith('.md'));
+    const mdFiles = sourceFiles.filter((f) => f.endsWith('.md'));
 
     for (const file of mdFiles) {
       // Exclude transform agents (development-only tools)
@@ -399,7 +400,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
     }
 
     // Count skill directories (each directory contains SKILL.md)
-    counts.skills = entries.filter(entry => entry.isDirectory()).length;
+    counts.skills = entries.filter((entry) => entry.isDirectory()).length;
   }
 
   // T015: Copy templates
@@ -408,7 +409,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
     const templatesDestDir = join(config.outputDir, 'templates');
     await copyDir(config.templatesSourceDir, templatesDestDir);
     const files = await readdir(templatesDestDir, { recursive: true });
-    counts.templates = files.filter(f => typeof f === 'string').length;
+    counts.templates = files.filter((f) => typeof f === 'string').length;
   }
 
   // T016: Copy scripts (only scripts needed by published commands/agents)
@@ -456,17 +457,17 @@ async function copyPluginFiles(): Promise<FileCounts> {
 
     // Copy dist/ directory containing the bundled hooks and CLI
     // (pre-prompt-submit-hook.js, speck-cli.js)
-    const distPath = join(config.scriptsSourceDir, '../dist');
+    const distPath = join(config.sourceRoot, 'plugins/speck/dist');
     if (existsSync(distPath)) {
       await copyDir(distPath, join(config.outputDir, 'dist'));
     }
 
     // Copy bootstrap.sh for CLI installation
-    const bootstrapPath = join(config.sourceRoot, 'src/cli/bootstrap.sh');
+    const bootstrapPath = join(config.sourceRoot, 'plugins/speck/cli/bootstrap.sh');
     if (existsSync(bootstrapPath)) {
-      const srcCliDir = join(config.outputDir, 'src/cli');
-      await ensureDir(srcCliDir);
-      await copyFile(bootstrapPath, join(srcCliDir, 'bootstrap.sh'));
+      const cliDestDir = join(config.outputDir, 'cli');
+      await ensureDir(cliDestDir);
+      await copyFile(bootstrapPath, join(cliDestDir, 'bootstrap.sh'));
     }
   }
 
@@ -481,7 +482,7 @@ async function copyPluginFiles(): Promise<FileCounts> {
   }
 
   // T010i & T010j: Copy hooks/ directory (hooks.json and setup-env.sh)
-  const hooksSourceDir = join(config.sourceRoot, 'hooks');
+  const hooksSourceDir = join(config.sourceRoot, 'plugins/speck/hooks');
   if (existsSync(hooksSourceDir)) {
     const hooksDestDir = join(config.outputDir, 'hooks');
     await copyDir(hooksSourceDir, hooksDestDir);
@@ -520,7 +521,7 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
     bootstrap: false,
   };
 
-  const reviewerSourceDir = join(config.sourceRoot, 'plugins/speck-reviewer');
+  const reviewerSourceDir = join(config.sourceRoot, 'plugins/reviewer');
   const reviewerOutputDir = join(config.sourceRoot, 'dist/plugins/speck-reviewer');
 
   // Skip if source doesn't exist
@@ -536,20 +537,16 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
   await ensureDir(reviewerOutputDir);
 
   // 1. Bundle CLI to single JS file
-  const cliSourcePath = join(reviewerSourceDir, 'cli/src/index.ts');
+  const cliSourcePath = join(reviewerSourceDir, 'src/index.ts');
   if (existsSync(cliSourcePath)) {
     const cliDestDir = join(reviewerOutputDir, 'dist');
     await ensureDir(cliDestDir);
-    bundleScript(
-      cliSourcePath,
-      join(cliDestDir, 'speck-review.js'),
-      'speck-review CLI'
-    );
+    bundleScript(cliSourcePath, join(cliDestDir, 'speck-review.js'), 'speck-review CLI');
     counts.cli = true;
   }
 
   // 1.5. Copy bootstrap.sh for global CLI installation
-  const bootstrapSourcePath = join(reviewerSourceDir, 'src/cli/bootstrap.sh');
+  const bootstrapSourcePath = join(reviewerSourceDir, 'src/bootstrap.sh');
   if (existsSync(bootstrapSourcePath)) {
     const srcCliDir = join(reviewerOutputDir, 'src/cli');
     await ensureDir(srcCliDir);
@@ -572,7 +569,7 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
     const commandsDestDir = join(reviewerOutputDir, 'commands');
     await copyDir(commandsSourceDir, commandsDestDir);
     const files = await readdir(commandsDestDir);
-    counts.commands = files.filter(f => f.endsWith('.md')).length;
+    counts.commands = files.filter((f) => f.endsWith('.md')).length;
   }
 
   // 4. Copy skills
@@ -581,7 +578,7 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
     const skillsDestDir = join(reviewerOutputDir, 'skills');
     await copyDir(skillsSourceDir, skillsDestDir);
     const entries = await readdir(skillsDestDir, { withFileTypes: true });
-    counts.skills = entries.filter(e => e.isDirectory()).length;
+    counts.skills = entries.filter((e) => e.isDirectory()).length;
   }
 
   return counts;
@@ -716,7 +713,7 @@ async function validateCommands(): Promise<void> {
   }
 
   const files = await readdir(commandsDir);
-  const mdFiles = files.filter(f => f.endsWith('.md'));
+  const mdFiles = files.filter((f) => f.endsWith('.md'));
 
   if (mdFiles.length === 0) {
     throw buildFailedError(
@@ -751,7 +748,7 @@ async function validateAgents(): Promise<void> {
   }
 
   const files = await readdir(agentsDir);
-  const mdFiles = files.filter(f => f.endsWith('.md'));
+  const mdFiles = files.filter((f) => f.endsWith('.md'));
 
   for (const file of mdFiles) {
     const content = await readFile(join(agentsDir, file), 'utf-8');
@@ -777,13 +774,12 @@ async function validateManifests(): Promise<void> {
   }
   const pluginContent = await readFile(pluginJsonPath, 'utf-8');
   try {
-    const parsed = JSON.parse(pluginContent);
-    // Check required fields
-    if (!parsed.name || !parsed.description || !parsed.version || !parsed.author) {
-      throw new Error('plugin.json missing required fields');
-    }
+    // Zod schema validates required fields: name, description, version
+    PluginJsonSchema.parse(JSON.parse(pluginContent));
   } catch (error) {
-    throw new Error(`plugin.json validation failed: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `plugin.json validation failed: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 
   // Validate marketplace.json
@@ -792,20 +788,19 @@ async function validateManifests(): Promise<void> {
   }
   const marketplaceContent = await readFile(marketplaceJsonPath, 'utf-8');
   try {
-    const parsed = JSON.parse(marketplaceContent);
-    // Check required fields
-    if (!parsed.name || !parsed.owner || !parsed.plugins) {
-      throw new Error('marketplace.json missing required fields');
-    }
+    // Zod schema validates required fields: name, owner
+    MarketplaceWithPluginsSchema.parse(JSON.parse(marketplaceContent));
   } catch (error) {
-    throw new Error(`marketplace.json validation failed: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `marketplace.json validation failed: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 
 /**
  * T021: Check for missing required files
  */
-async function validateRequiredFiles(): Promise<void> {
+function validateRequiredFiles(): void {
   const marketplaceRoot = join(config.outputDir, '..');
 
   // Speck plugin required directories
@@ -815,12 +810,15 @@ async function validateRequiredFiles(): Promise<void> {
   ];
 
   // Speck-reviewer plugin required directories (if source exists)
-  const reviewerSourceDir = join(config.sourceRoot, 'plugins/speck-reviewer');
+  const reviewerSourceDir = join(config.sourceRoot, 'plugins/reviewer');
   if (existsSync(reviewerSourceDir)) {
     requiredDirs.push(
-      { path: join(marketplaceRoot, 'speck-reviewer/.claude-plugin'), name: 'speck-reviewer/.claude-plugin' },
+      {
+        path: join(marketplaceRoot, 'speck-reviewer/.claude-plugin'),
+        name: 'speck-reviewer/.claude-plugin',
+      },
       { path: join(marketplaceRoot, 'speck-reviewer/commands'), name: 'speck-reviewer/commands' },
-      { path: join(marketplaceRoot, 'speck-reviewer/skills'), name: 'speck-reviewer/skills' },
+      { path: join(marketplaceRoot, 'speck-reviewer/skills'), name: 'speck-reviewer/skills' }
     );
   }
 
@@ -839,8 +837,14 @@ async function validateRequiredFiles(): Promise<void> {
   // Speck-reviewer plugin required files (if source exists)
   if (existsSync(reviewerSourceDir)) {
     requiredFiles.push(
-      { path: join(marketplaceRoot, 'speck-reviewer/.claude-plugin/plugin.json'), name: 'speck-reviewer/plugin.json' },
-      { path: join(marketplaceRoot, 'speck-reviewer/dist/speck-review.js'), name: 'speck-reviewer CLI bundle' },
+      {
+        path: join(marketplaceRoot, 'speck-reviewer/.claude-plugin/plugin.json'),
+        name: 'speck-reviewer/plugin.json',
+      },
+      {
+        path: join(marketplaceRoot, 'speck-reviewer/dist/speck-review.js'),
+        name: 'speck-reviewer CLI bundle',
+      }
     );
   }
 
@@ -855,7 +859,7 @@ async function validateRequiredFiles(): Promise<void> {
  * T017-T021: Run all validations
  */
 async function validatePackage(): Promise<void> {
-  await validateRequiredFiles();
+  validateRequiredFiles();
   await validateManifests();
   await validateCommands();
   await validateAgents();
@@ -866,7 +870,7 @@ async function validatePackage(): Promise<void> {
 // Main Build Process
 // ============================================================================
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🚀 Building Speck Plugin Package...\n');
 
   try {
@@ -960,7 +964,6 @@ async function main() {
     console.log('');
 
     console.log('✅ Build completed successfully!\n');
-
   } catch (error) {
     console.error('\n❌ Build failed:');
     console.error(error instanceof Error ? error.message : String(error));
@@ -969,4 +972,4 @@ async function main() {
 }
 
 // Run the build
-main();
+void main();

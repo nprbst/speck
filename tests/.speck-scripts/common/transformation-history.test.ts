@@ -20,7 +20,7 @@ import {
   TransformationHistoryError,
   createEmptyHistory,
   createHistoryEntry,
-} from '../../../.speck/scripts/common/transformation-history';
+} from '../../../plugins/speck/scripts/common/transformation-history';
 import type {
   TransformationHistory,
   FactoringMapping,

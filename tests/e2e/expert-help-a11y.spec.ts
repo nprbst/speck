@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -16,7 +17,10 @@ test.describe('Expert Help Page Accessibility', () => {
 
     // Log violations for debugging
     if (accessibilityScanResults.violations.length > 0) {
-      console.log('Accessibility violations:', JSON.stringify(accessibilityScanResults.violations, null, 2));
+      console.log(
+        'Accessibility violations:',
+        JSON.stringify(accessibilityScanResults.violations, null, 2)
+      );
     }
 
     expect(accessibilityScanResults.violations).toEqual([]);
@@ -32,12 +36,12 @@ test.describe('Expert Help Page Accessibility', () => {
     // Headings should be in logical order (no skipped levels)
     const headings = await page.evaluate(() => {
       const headingElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-      return Array.from(headingElements).map(h => parseInt(h.tagName[1]));
+      return Array.from(headingElements).map((h) => parseInt(h.tagName[1]!));
     });
 
     // Verify no heading levels are skipped
     for (let i = 1; i < headings.length; i++) {
-      const diff = headings[i] - headings[i - 1];
+      const diff = headings[i]! - headings[i - 1]!;
       // Can only go up by 1 level, or down to any level
       expect(diff).toBeLessThanOrEqual(1);
     }
@@ -93,10 +97,7 @@ test.describe('Expert Help Page Accessibility', () => {
         };
       });
 
-      if (
-        focusedElement.type === 'email' ||
-        focusedElement.name === 'email'
-      ) {
+      if (focusedElement.type === 'email' || focusedElement.name === 'email') {
         foundEmailInput = true;
       }
 

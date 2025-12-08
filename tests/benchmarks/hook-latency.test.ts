@@ -5,7 +5,7 @@
 
 import { describe, test, expect } from 'bun:test';
 import { performance } from 'perf_hooks';
-import type { HookInput } from '../../.speck/scripts/lib/types';
+import type { HookInput } from '../../plugins/speck/scripts/lib/types';
 
 describe('Hook Routing Latency Benchmark', () => {
   test('SC-003: Hook routing latency should be <100ms', async () => {

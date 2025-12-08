@@ -13,7 +13,11 @@ import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import path from 'node:path';
 import type { MultiRepoTestFixture } from '../helpers/multi-repo-fixtures';
 import { createMultiRepoTestFixture } from '../helpers/multi-repo-fixtures';
-import { getPluginRoot, getTemplatesDir, getScriptsDir } from '../../.speck/scripts/common/paths';
+import {
+  getPluginRoot,
+  getTemplatesDir,
+  getScriptsDir,
+} from '../../plugins/speck/scripts/common/paths';
 
 describe('Integration: Plugin root resolution in multi-repo', () => {
   let fixture: MultiRepoTestFixture;
@@ -46,8 +50,8 @@ describe('Integration: Plugin root resolution in multi-repo', () => {
     // Plugin root should be a valid absolute path
     expect(path.isAbsolute(pluginRoot)).toBe(true);
 
-    // Should contain .speck directory (in dev mode) or be a plugin directory
-    const isDevMode = pluginRoot.includes('.speck') || pluginRoot.endsWith('speck');
+    // Should contain plugins/speck directory (in dev mode) or be a plugin directory
+    const isDevMode = pluginRoot.includes('plugins/speck') || pluginRoot.endsWith('speck');
     const isPluginMode = pluginRoot.includes('.claude/plugins');
     expect(isDevMode || isPluginMode).toBe(true);
   });
@@ -62,9 +66,9 @@ describe('Integration: Plugin root resolution in multi-repo', () => {
 
     // Templates directory should be absolute and end with appropriate path
     expect(path.isAbsolute(templatesDir)).toBe(true);
-    expect(templatesDir.endsWith('.speck/templates') || templatesDir.endsWith('templates')).toBe(
-      true
-    );
+    expect(
+      templatesDir.endsWith('plugins/speck/templates') || templatesDir.endsWith('templates')
+    ).toBe(true);
   });
 
   test('T025: Scripts directory resolves correctly from child repo', async () => {
@@ -75,9 +79,9 @@ describe('Integration: Plugin root resolution in multi-repo', () => {
 
     const scriptsDir = getScriptsDir();
 
-    // Scripts directory should be absolute and end with .speck/scripts
+    // Scripts directory should be absolute and end with plugins/speck/scripts
     expect(path.isAbsolute(scriptsDir)).toBe(true);
-    expect(scriptsDir.endsWith('.speck/scripts')).toBe(true);
+    expect(scriptsDir.endsWith('plugins/speck/scripts')).toBe(true);
   });
 
   test('T025: Plugin root resolution from root repo works correctly', async () => {

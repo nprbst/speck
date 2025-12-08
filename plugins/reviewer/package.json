@@ -1,0 +1,30 @@
+{
+  "name": "@speck/reviewer-plugin",
+  "version": "1.2.0",
+  "description": "AI-powered PR review with Speck-aware context",
+  "type": "module",
+  "main": "src/index.ts",
+  "bin": {
+    "speck-review": "dist/speck-review"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --compile --outfile dist/speck-review",
+    "dev": "bun run src/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@speck/common": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "author": {
+    "name": "Nathan Prabst"
+  },
+  "license": "MIT"
+}

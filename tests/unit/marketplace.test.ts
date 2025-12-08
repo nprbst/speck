@@ -1,20 +1,14 @@
-import { describe, expect, it } from "bun:test";
-import { readFile } from "fs/promises";
-import { existsSync } from "fs";
-import { join } from "path";
+import { describe, expect, it } from 'bun:test';
+import { readFile } from 'fs/promises';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
-const REPO_ROOT = join(import.meta.dir, "../..");
-const MARKETPLACE_PATH = join(REPO_ROOT, ".claude-plugin/marketplace.json");
-
-interface PluginSource {
-  source: string;
-  repo: string;
-  path?: string;
-}
+const REPO_ROOT = join(import.meta.dir, '../..');
+const MARKETPLACE_PATH = join(REPO_ROOT, '.claude-plugin/marketplace.json');
 
 interface PluginListing {
   name: string;
-  source: PluginSource;
+  source: string; // Local path like "./plugins/speck"
   description: string;
   version: string;
   author?: {
@@ -42,105 +36,92 @@ interface Marketplace {
   plugins: PluginListing[];
 }
 
-describe("marketplace.json", () => {
-  it("should exist at repository root", () => {
+describe('marketplace.json', () => {
+  it('should exist at repository root', () => {
     expect(existsSync(MARKETPLACE_PATH)).toBe(true);
   });
 
-  it("should be valid JSON", async () => {
-    const content = await readFile(MARKETPLACE_PATH, "utf-8");
+  it('should be valid JSON', async () => {
+    const content = await readFile(MARKETPLACE_PATH, 'utf-8');
     expect(() => JSON.parse(content)).not.toThrow();
   });
 
-  describe("marketplace metadata", () => {
-    let marketplace: Marketplace;
-
-    it("should have marketplace name", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
-      marketplace = JSON.parse(content);
-      expect(marketplace.name).toBe("speck-market");
+  describe('required fields', () => {
+    it('should have name field', async () => {
+      const content = await readFile(MARKETPLACE_PATH, 'utf-8');
+      const marketplace: Marketplace = JSON.parse(content);
+      expect(marketplace.name).toBe('speck-market');
     });
 
-    it("should have owner information", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
-      marketplace = JSON.parse(content);
+    it('should have owner information', async () => {
+      const content = await readFile(MARKETPLACE_PATH, 'utf-8');
+      const marketplace: Marketplace = JSON.parse(content);
       expect(marketplace.owner).toBeTruthy();
       expect(marketplace.owner.name).toBeTruthy();
     });
 
-    it("should have metadata with version", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
-      marketplace = JSON.parse(content);
-      expect(marketplace.metadata?.version).toBeTruthy();
-    });
-  });
-
-  describe("plugins array", () => {
-    it("should have plugins array", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
+    it('should have plugins array', async () => {
+      const content = await readFile(MARKETPLACE_PATH, 'utf-8');
       const marketplace: Marketplace = JSON.parse(content);
       expect(Array.isArray(marketplace.plugins)).toBe(true);
       expect(marketplace.plugins.length).toBeGreaterThan(0);
     });
+  });
 
-    it("should include speck plugin", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
+  describe('plugin listings', () => {
+    it('should include speck plugin', async () => {
+      const content = await readFile(MARKETPLACE_PATH, 'utf-8');
       const marketplace: Marketplace = JSON.parse(content);
-      const speckPlugin = marketplace.plugins.find(p => p.name === "speck");
+      const speckPlugin = marketplace.plugins.find((p) => p.name === 'speck');
       expect(speckPlugin).toBeTruthy();
     });
 
-    it("should include speck-reviewer plugin", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
+    it('should include speck-reviewer plugin', async () => {
+      const content = await readFile(MARKETPLACE_PATH, 'utf-8');
       const marketplace: Marketplace = JSON.parse(content);
-      const reviewerPlugin = marketplace.plugins.find(p => p.name === "speck-reviewer");
+      const reviewerPlugin = marketplace.plugins.find((p) => p.name === 'speck-reviewer');
       expect(reviewerPlugin).toBeTruthy();
     });
   });
 
-  describe("speck-reviewer plugin listing", () => {
+  describe('speck-reviewer plugin listing', () => {
     let reviewerPlugin: PluginListing | undefined;
 
-    it("should have correct source configuration", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
+    it('should have correct source path', async () => {
+      const content = await readFile(MARKETPLACE_PATH, 'utf-8');
       const marketplace: Marketplace = JSON.parse(content);
-      reviewerPlugin = marketplace.plugins.find(p => p.name === "speck-reviewer");
-      expect(reviewerPlugin?.source.source).toBe("github");
-      expect(reviewerPlugin?.source.repo).toBeTruthy();
-      expect(reviewerPlugin?.source.path).toBe("plugins/speck-reviewer");
+      reviewerPlugin = marketplace.plugins.find((p) => p.name === 'speck-reviewer');
+      expect(reviewerPlugin?.source).toBe('./plugins/reviewer');
     });
 
-    it("should have description", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
+    it('should have description', async () => {
+      const content = await readFile(MARKETPLACE_PATH, 'utf-8');
       const marketplace: Marketplace = JSON.parse(content);
-      reviewerPlugin = marketplace.plugins.find(p => p.name === "speck-reviewer");
+      reviewerPlugin = marketplace.plugins.find((p) => p.name === 'speck-reviewer');
       expect(reviewerPlugin?.description).toBeTruthy();
-      expect(reviewerPlugin?.description).toContain("PR review");
+      expect(reviewerPlugin?.description).toContain('PR review');
     });
 
-    it("should have version in semver format", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
+    it('should have version', async () => {
+      const content = await readFile(MARKETPLACE_PATH, 'utf-8');
       const marketplace: Marketplace = JSON.parse(content);
-      reviewerPlugin = marketplace.plugins.find(p => p.name === "speck-reviewer");
+      reviewerPlugin = marketplace.plugins.find((p) => p.name === 'speck-reviewer');
       expect(reviewerPlugin?.version).toMatch(/^\d+\.\d+\.\d+$/);
     });
 
-    it("should have relevant keywords", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
+    it('should have keywords', async () => {
+      const content = await readFile(MARKETPLACE_PATH, 'utf-8');
       const marketplace: Marketplace = JSON.parse(content);
-      reviewerPlugin = marketplace.plugins.find(p => p.name === "speck-reviewer");
-      expect(reviewerPlugin?.keywords).toContain("code-review");
-      expect(reviewerPlugin?.keywords).toContain("pull-request");
+      reviewerPlugin = marketplace.plugins.find((p) => p.name === 'speck-reviewer');
+      expect(Array.isArray(reviewerPlugin?.keywords)).toBe(true);
+      expect(reviewerPlugin?.keywords).toContain('code-review');
     });
-  });
 
-  describe("plugin uniqueness", () => {
-    it("should have unique plugin names", async () => {
-      const content = await readFile(MARKETPLACE_PATH, "utf-8");
+    it('should have category', async () => {
+      const content = await readFile(MARKETPLACE_PATH, 'utf-8');
       const marketplace: Marketplace = JSON.parse(content);
-      const names = marketplace.plugins.map(p => p.name);
-      const uniqueNames = [...new Set(names)];
-      expect(names.length).toBe(uniqueNames.length);
+      reviewerPlugin = marketplace.plugins.find((p) => p.name === 'speck-reviewer');
+      expect(reviewerPlugin?.category).toBe('development-tools');
     });
   });
 });

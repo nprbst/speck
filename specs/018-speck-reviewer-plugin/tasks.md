@@ -38,8 +38,8 @@ Based on plan.md monorepo structure:
       runtime configuration
 - [x] T004 [P] Create `plugins/speck-reviewer/cli/tsconfig.json` with strict
       TypeScript settings
-- [x] T005 Migrate existing speck plugin to `plugins/speck/` directory structure
-      (per FR-004)
+- [ ] T005 Migrate existing speck plugin to `plugins/speck/` directory structure
+      (per FR-004) (DEFERRED)
 
 ---
 

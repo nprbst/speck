@@ -20,12 +20,8 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   createStagingTestEnv,
-  createMockStagingDirectory,
-  createMockStagingMetadata,
   readMockStagingMetadata,
-  listMockStagingFiles,
   type StagingTestEnv,
-  type MockStagedFile,
 } from '../helpers/staging-helpers';
 import {
   createStagingDirectory,
@@ -34,14 +30,7 @@ import {
   captureProductionBaseline,
   commitStaging,
   rollbackStaging,
-  detectOrphanedStaging,
-  getStagingStatus,
-  inspectStaging,
-  detectFileConflicts,
-  generateFileManifest,
-  loadStagingContext,
-} from '../../.speck/scripts/common/staging-manager';
-import type { StagingContext, StagingStatus } from '../../.speck/scripts/common/staging-types';
+} from '../../packages/maintainer/src/common/staging-manager';
 
 describe('createStagingDirectory', () => {
   let env: StagingTestEnv;

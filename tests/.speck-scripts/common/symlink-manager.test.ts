@@ -15,7 +15,7 @@ import {
   isSymlink,
   removeSymlink,
   SymlinkManagerError,
-} from '../../../.speck/scripts/common/symlink-manager';
+} from '../../../plugins/speck/scripts/common/symlink-manager';
 
 describe('Symlink Manager', () => {
   let tempDir: string;
