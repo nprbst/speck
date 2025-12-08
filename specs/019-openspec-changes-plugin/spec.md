@@ -37,14 +37,14 @@ The workflow follows four stages: Draft Proposal → Review & Iterate → Implem
 
 ### User Story 1 - Transform OpenSpec Release to Speck Plugin (Priority: P1)
 
-A Speck maintainer wants to add OpenSpec's change management capabilities as a plugin. They run `/speck-changes.check-upstream` to see available OpenSpec releases, then `/speck-changes.pull-upstream <version>` to fetch the release into `upstream/openspec/<version>/`. Finally, they run `/speck-changes.transform-upstream` to analyze the Node.js CLI and generate Bun TypeScript equivalents in `.speck/plugins/speck-changes/` plus corresponding `/speck-changes.*` commands.
+A Speck maintainer wants to add OpenSpec's change management capabilities as a plugin. They run `/speck-changes.check-upstream` to see available OpenSpec releases, then `/speck-changes.pull-upstream <version>` to fetch the release into `upstream/openspec/<version>/`. Finally, they run `/speck-changes.transform-upstream` to analyze the Node.js CLI and generate Bun TypeScript equivalents in `plugins/speck-changes/` plus corresponding `/speck-changes.*` commands.
 
 **Why this priority**: This is the foundational transformation pipeline. Without it, there's no plugin - just manual integration of OpenSpec code.
 
 **Independent Test**: Run the three upstream commands, then verify:
 1. `upstream/openspec/<version>/` contains pristine OpenSpec source
 2. `upstream/openspec/releases.json` tracks the release metadata
-3. `.speck/plugins/speck-changes/` contains Bun TypeScript equivalents
+3. `plugins/speck-changes/scripts/` contains Bun TypeScript equivalents
 4. `/speck-changes.*` commands exist and successfully execute
 5. Transformation report shows what changed and Claude's rationale
 
@@ -52,7 +52,7 @@ A Speck maintainer wants to add OpenSpec's change management capabilities as a p
 
 1. **Given** maintainer wants to see available releases, **When** they run `/speck-changes.check-upstream`, **Then** system queries OpenSpec GitHub repo and displays available release tags with versions, dates, and release notes summaries
 2. **Given** an OpenSpec release tag exists, **When** maintainer runs `/speck-changes.pull-upstream <version>`, **Then** system fetches upstream content and stores it pristine in `upstream/openspec/<version>/`, records metadata in `upstream/openspec/releases.json`, and creates/updates `upstream/openspec/latest` symlink
-3. **Given** upstream content pulled, **When** maintainer runs `/speck-changes.transform-upstream`, **Then** system launches transformation agents: (1) Node.js-to-Bun transformation agent analyzes source code and generates Bun TypeScript in `.speck/plugins/speck-changes/scripts/`, (2) command transformation agent creates `/speck-changes.*` commands in `.claude/commands/`
+3. **Given** upstream content pulled, **When** maintainer runs `/speck-changes.transform-upstream`, **Then** system launches transformation agents: (1) Node.js-to-Bun transformation agent analyzes source code and generates Bun TypeScript in `plugins/speck-changes/scripts/`, (2) command transformation agent creates `/speck-changes.*` commands in `plugins/speck-changes/commands/`
 4. **Given** both transformation agents complete, **When** all scripts and commands processed, **Then** transformation report documents scripts generated, commands created, and Claude's rationale
 
 ---
@@ -164,7 +164,7 @@ An existing OpenSpec user wants to migrate their project to Speck while preservi
 - **FR-004a**: Transformation MUST be fully semantic and LLM-driven (matching speckit transformation pattern), not config-based; incompatible upstream versions may require transformation updates
 - **FR-004b**: Pull-upstream MUST install OpenSpec CLI in a temp location and extract embedded .md template files, since OpenSpec lacks standalone command files
 - **FR-005**: Transformation agent MUST preserve SPECK-EXTENSION blocks from existing Bun TypeScript files with absolute priority
-- **FR-006**: System MUST generate or update tests for transformed scripts in `tests/.speck-plugins/speck-changes/`
+- **FR-006**: System MUST generate or update tests for transformed scripts in `plugins/speck-changes/tests/`
 - **FR-007**: Transformation MUST run TypeScript compilation and ESLint validation on generated code before reporting success; maintainer performs manual review before committing
 - **FR-008**: Upstream commands MUST use `gh` CLI authentication when available (via `gh auth token`), falling back to unauthenticated GitHub API with 60 requests/hour limit
 

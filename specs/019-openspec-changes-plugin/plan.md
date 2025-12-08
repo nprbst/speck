@@ -39,10 +39,10 @@ The plugin provides commands for:
 | V. Claude Code Native | ✅ PASS | All functionality exposed via `/speck-changes.*` slash commands |
 | VI. Technology Agnosticism | ✅ PASS | Spec describes WHAT (change management), not HOW (implementation) |
 | VII. File Format Compatibility | ✅ PASS | Plugin uses `.speck/` directory, not `specs/` core structure |
-| VIII. Command-Implementation Separation | ✅ PASS | Commands delegate to `.speck/plugins/speck-changes/scripts/*.ts` |
+| VIII. Command-Implementation Separation | ✅ PASS | Commands delegate to `plugins/speck-changes/scripts/*.ts` |
 | IX. Preflight Gate | ⏳ PENDING | Will validate generated code via typecheck + lint (FR-007) |
 | X. Website Documentation | ⏳ PENDING | Will update website if commands are user-facing |
-| XI. TDD | ⏳ PENDING | Tests in `tests/.speck-plugins/speck-changes/` (FR-006) |
+| XI. TDD | ⏳ PENDING | Tests in `plugins/speck-changes/tests/` (FR-006) |
 | XII. Skill Synchronization | ⏳ PENDING | Will update speck-help skill with new commands |
 
 **Gate Status**: ✅ PASS - No violations requiring justification. Proceed to Phase 0.
@@ -63,19 +63,21 @@ specs/019-openspec-changes-plugin/
 ### Source Code (repository root)
 
 ```text
-.claude/commands/speck-changes/       # Slash command definitions
-├── check-upstream.md                 # /speck-changes.check-upstream
-├── pull-upstream.md                  # /speck-changes.pull-upstream
-├── transform-upstream.md             # /speck-changes.transform-upstream
-├── propose.md                        # /speck-changes.propose
-├── list.md                           # /speck-changes.list
-├── show.md                           # /speck-changes.show
-├── validate.md                       # /speck-changes.validate
-├── archive.md                        # /speck-changes.archive
-└── migrate.md                        # /speck-changes.migrate
-
-.speck/plugins/speck-changes/         # Plugin implementation
-├── plugin.json                       # Plugin manifest
+plugins/speck-changes/                # Plugin root (follows plugins/speck, plugins/reviewer pattern)
+├── .claude-plugin/
+│   └── plugin.json                   # Plugin manifest
+├── package.json                      # Dependencies (@speck/common)
+├── tsconfig.json                     # TypeScript config
+├── commands/                         # Slash command definitions
+│   ├── check-upstream.md             # /speck-changes.check-upstream
+│   ├── pull-upstream.md              # /speck-changes.pull-upstream
+│   ├── transform-upstream.md         # /speck-changes.transform-upstream
+│   ├── propose.md                    # /speck-changes.propose
+│   ├── list.md                       # /speck-changes.list
+│   ├── show.md                       # /speck-changes.show
+│   ├── validate.md                   # /speck-changes.validate
+│   ├── archive.md                    # /speck-changes.archive
+│   └── migrate.md                    # /speck-changes.migrate
 ├── scripts/                          # TypeScript implementations
 │   ├── check-upstream.ts             # Query OpenSpec releases
 │   ├── pull-upstream.ts              # Fetch and store release
@@ -86,15 +88,26 @@ specs/019-openspec-changes-plugin/
 │   ├── validate.ts                   # Validate change structure
 │   ├── archive.ts                    # Merge and archive change
 │   ├── migrate.ts                    # Import OpenSpec project
-│   └── lib/                          # Shared utilities
-│       ├── github.ts                 # GitHub API wrapper (gh CLI + REST)
+│   └── lib/                          # Plugin-specific utilities
 │       ├── delta.ts                  # Delta file parsing/generation
-│       ├── validation.ts             # Schema validation
 │       └── transform.ts              # Node.js→Bun transformation utils
-└── templates/                        # Change proposal templates
-    ├── proposal.md                   # Proposal template
-    ├── tasks.md                      # Tasks template
-    └── design.md                     # Optional design template
+├── templates/                        # Change proposal templates
+│   ├── proposal.md                   # Proposal template
+│   ├── tasks.md                      # Tasks template
+│   └── design.md                     # Optional design template
+└── tests/                            # Plugin tests
+    ├── check-upstream.test.ts
+    ├── pull-upstream.test.ts
+    ├── transform-upstream.test.ts
+    ├── propose.test.ts
+    ├── list.test.ts
+    ├── show.test.ts
+    ├── validate.test.ts
+    ├── archive.test.ts
+    ├── migrate.test.ts
+    └── fixtures/                     # Test fixtures
+        ├── mock-openspec/            # Mock OpenSpec project
+        └── mock-releases/            # Mock GitHub release data
 
 upstream/openspec/                    # Pristine upstream storage
 ├── releases.json                     # Release metadata registry
@@ -102,7 +115,7 @@ upstream/openspec/                    # Pristine upstream storage
 └── <version>/                        # Versioned release directories (e.g., v0.16.0/)
     └── [OpenSpec CLI source]
 
-.speck/changes/                       # Active change proposals
+.speck/changes/                       # Active change proposals (user project runtime)
 └── <change-name>/
     ├── proposal.md
     ├── tasks.md
@@ -110,25 +123,11 @@ upstream/openspec/                    # Pristine upstream storage
     └── specs/                        # Delta files
         └── <affected-spec>.md
 
-.speck/archive/                       # Completed changes
+.speck/archive/                       # Completed changes (user project runtime)
 └── <change-name>/
-
-tests/.speck-plugins/speck-changes/   # Plugin tests
-├── check-upstream.test.ts
-├── pull-upstream.test.ts
-├── transform-upstream.test.ts
-├── propose.test.ts
-├── list.test.ts
-├── show.test.ts
-├── validate.test.ts
-├── archive.test.ts
-├── migrate.test.ts
-└── fixtures/                         # Test fixtures
-    ├── mock-openspec/                # Mock OpenSpec project
-    └── mock-releases/                # Mock GitHub release data
 ```
 
-**Structure Decision**: Claude Code plugin structure following Principle VIII (command-implementation separation). Commands in `.claude/commands/speck-changes/` delegate to TypeScript scripts in `.speck/plugins/speck-changes/scripts/`. This matches the existing Speck plugin architecture.
+**Structure Decision**: Claude Code plugin structure following Principle VIII (command-implementation separation) and the refactored monorepo pattern established in `plugins/speck/` and `plugins/reviewer/`. Commands in `plugins/speck-changes/commands/` delegate to TypeScript scripts in `plugins/speck-changes/scripts/`. Shared utilities (GitHub API, logging, errors, file-ops) imported from `@speck/common`.
 
 ## Complexity Tracking
 
