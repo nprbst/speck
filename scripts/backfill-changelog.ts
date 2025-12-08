@@ -216,7 +216,7 @@ function formatChangelogEntry(
   return lines.join('\n');
 }
 
-async function main() {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
 
@@ -263,7 +263,7 @@ async function main() {
     if (dateCompare !== 0) return dateCompare;
 
     // Same date - compare versions (parse as semver for proper ordering)
-    const parseVersion = (v: string) => {
+    const parseVersion = (v: string): number => {
       const parts = v.split('.').map(Number);
       return (parts[0] ?? 0) * 10000 + (parts[1] ?? 0) * 100 + (parts[2] ?? 0);
     };

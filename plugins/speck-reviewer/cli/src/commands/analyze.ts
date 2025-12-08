@@ -50,7 +50,7 @@ export async function analyzeCommand(args: string[]): Promise<void> {
 
   // Load spec context if available (FR-019, FR-020)
   const repoRoot = process.cwd();
-  const specContext = await loadSpecContext(prInfo.headBranch, repoRoot);
+  const specContext = loadSpecContext(prInfo.headBranch, repoRoot);
   if (specContext) {
     logger.debug(`Loaded spec context for branch: ${prInfo.headBranch}`);
   } else {

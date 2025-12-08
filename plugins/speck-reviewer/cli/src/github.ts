@@ -4,8 +4,22 @@
  */
 
 import { $ } from 'bun';
+import { z } from 'zod';
 import { logger } from '@speck/common/logger';
+import {
+  GhGraphQLResponseSchema,
+  GhPRViewSchema,
+  GhPRFilesSchema,
+  GhReviewCommentsSchema,
+  GhRestCommentsSchema,
+  GhPRMetadataSchema,
+} from '@speck/common/github';
 import type { PRInfo, PRFile, GitHubComment, ChangeType } from './types';
+
+// Schema for issue comment response
+const IssueCommentResponseSchema = z.object({
+  id: z.number(),
+});
 
 /**
  * Check if gh CLI is available and authenticated
@@ -44,7 +58,7 @@ export async function getPRInfo(prNumber?: number): Promise<PRInfo | null> {
       ? $`gh pr view ${prArg} --json ${jsonFields}`
       : $`gh pr view --json ${jsonFields}`;
 
-    const result = await cmd.json();
+    const result = GhPRViewSchema.parse(await cmd.json());
 
     // Get repo full name from git remote
     const repoFullName = await getRepoFullName();
@@ -86,16 +100,14 @@ export async function getPRFiles(prNumber?: number): Promise<PRFile[]> {
 
     const cmd = prArg ? $`gh pr view ${prArg} --json files` : $`gh pr view --json files`;
 
-    const result = await cmd.json();
+    const result = GhPRFilesSchema.parse(await cmd.json());
 
-    return (result.files || []).map(
-      (file: { path: string; additions: number; deletions: number; status?: string }) => ({
-        path: file.path,
-        changeType: mapChangeType(file.status || 'modified'),
-        additions: file.additions || 0,
-        deletions: file.deletions || 0,
-      })
-    );
+    return (result.files || []).map((file) => ({
+      path: file.path,
+      changeType: mapChangeType(file.status || 'modified'),
+      additions: file.additions || 0,
+      deletions: file.deletions || 0,
+    }));
   } catch (error) {
     logger.error('Failed to get PR files:', error);
     return [];
@@ -221,27 +233,17 @@ export async function listComments(prNumber?: number): Promise<GitHubComment[]> 
       ? $`gh pr view ${prArg} --json reviewComments`
       : $`gh pr view --json reviewComments`;
 
-    const result = await cmd.json();
+    const result = GhReviewCommentsSchema.parse(await cmd.json());
 
-    return (result.reviewComments || []).map(
-      (comment: {
-        id: number;
-        path: string;
-        line?: number;
-        body: string;
-        author?: { login: string };
-        state?: string;
-        createdAt: string;
-      }) => ({
-        id: comment.id,
-        path: comment.path,
-        line: comment.line || 0,
-        body: comment.body,
-        author: comment.author?.login || 'unknown',
-        state: (comment.state === 'resolved' ? 'resolved' : 'open') as 'open' | 'resolved',
-        createdAt: comment.createdAt,
-      })
-    );
+    return (result.reviewComments || []).map((comment) => ({
+      id: comment.id,
+      path: comment.path,
+      line: comment.line || 0,
+      body: comment.body,
+      author: comment.author?.login || 'unknown',
+      state: (comment.state === 'resolved' ? 'resolved' : 'open') as 'open' | 'resolved',
+      createdAt: comment.createdAt,
+    }));
   } catch (error) {
     logger.error('Failed to list comments:', error);
     return [];
@@ -321,10 +323,10 @@ export async function ghGraphQL<T>(query: string, variables?: Record<string, unk
   args.push('-f', `query=${query}`);
 
   const result = await runGh(args);
-  const parsed = JSON.parse(result);
+  const parsed = GhGraphQLResponseSchema.parse(JSON.parse(result));
 
-  if (parsed.errors?.length) {
-    throw new Error(parsed.errors[0].message);
+  if (parsed.errors && parsed.errors.length > 0) {
+    throw new Error(parsed.errors[0]!.message);
   }
 
   return parsed.data as T;
@@ -412,16 +414,7 @@ export async function fetchExistingComments(
   // Use gh api to get comments
   const result = await runGh(['api', `repos/${owner}/${repo}/pulls/${prNumber}/comments`]);
 
-  const comments = JSON.parse(result) as Array<{
-    id: number;
-    path: string;
-    line?: number;
-    body: string;
-    user: { login: string };
-    created_at: string;
-    updated_at: string;
-    in_reply_to_id?: number;
-  }>;
+  const comments = GhRestCommentsSchema.parse(JSON.parse(result));
 
   // Fetch resolved status from GraphQL
   const resolvedMap = await fetchReviewThreadResolvedStatus(owner, repo, prNumber);
@@ -439,7 +432,7 @@ export async function fetchExistingComments(
     .map((c) => ({
       id: c.id,
       path: c.path,
-      line: c.line,
+      line: c.line ?? undefined,
       body: c.body,
       author: c.user.login,
       createdAt: c.created_at,
@@ -479,7 +472,7 @@ export async function getPRMetadata(prNumber?: number): Promise<PRMetadata> {
   }
   args.push('--json', 'number,title,body,author,baseRefName,headRefName');
   const result = await runGh(args);
-  return JSON.parse(result);
+  return GhPRMetadataSchema.parse(JSON.parse(result));
 }
 
 /**
@@ -507,5 +500,5 @@ export async function addIssueComment(
     '-f',
     `body=${body}`,
   ]);
-  return JSON.parse(result);
+  return IssueCommentResponseSchema.parse(JSON.parse(result));
 }

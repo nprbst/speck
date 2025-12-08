@@ -473,7 +473,10 @@ export function writeWorktreeHandoff(
   let existingSettings: Record<string, unknown> = {};
   try {
     if (existsSync(settingsPath)) {
-      existingSettings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+      const parsed: unknown = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+      if (typeof parsed === 'object' && parsed !== null) {
+        existingSettings = parsed as Record<string, unknown>;
+      }
     }
   } catch {
     // If parse fails, start fresh

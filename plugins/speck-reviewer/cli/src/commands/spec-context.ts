@@ -23,7 +23,7 @@ export async function specContextCommand(): Promise<void> {
 
   // Load spec context
   const repoRoot = process.cwd();
-  const context = await loadSpecContext(branch, repoRoot);
+  const context = loadSpecContext(branch, repoRoot);
 
   // Output result
   const output = formatSpecContextOutput(context);

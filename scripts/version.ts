@@ -49,10 +49,21 @@ import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { $ } from 'bun';
+import { z } from 'zod';
+
+// Schema for reading version from package.json, plugin.json, or marketplace.json
+const VersionFileSchema = z
+  .object({
+    version: z.string().optional(),
+    metadata: z
+      .object({
+        version: z.string(),
+      })
+      .optional(),
+  })
+  .passthrough();
 
 type PluginTarget = 'speck' | 'speck-reviewer' | 'marketplace' | 'common' | 'maintainer';
-
-type BumpType = 'patch' | 'minor' | 'major';
 
 // Changelog types
 interface RawCommit {
@@ -84,7 +95,7 @@ function parseVersion(version: string): [number, number, number] {
   return [parseInt(parts[0]!), parseInt(parts[1]!), parseInt(parts[2]!)];
 }
 
-function bumpVersion(current: string, bump: BumpType | string): string {
+function bumpVersion(current: string, bump: string): string {
   // If bump is already a version number, validate and return it
   if (/^\d+\.\d+\.\d+$/.test(bump)) {
     return bump;
@@ -383,17 +394,17 @@ async function updateVersionFile(newVersion: string, target: PluginTarget): Prom
   }
 
   const content = await readFile(filePath, 'utf-8');
-  const json = JSON.parse(content);
+  const json = VersionFileSchema.parse(JSON.parse(content));
 
   let oldVersion: string;
   if (target === 'marketplace') {
     // marketplace.json stores version in metadata.version
     oldVersion = json.metadata?.version || '0.0.0';
-    if (!json.metadata) json.metadata = {};
-    json.metadata.version = newVersion;
+    if (!json.metadata) (json as Record<string, unknown>).metadata = {};
+    (json.metadata as { version: string }).version = newVersion;
   } else {
-    oldVersion = json.version;
-    json.version = newVersion;
+    oldVersion = json.version || '0.0.0';
+    (json as Record<string, unknown>).version = newVersion;
   }
 
   await writeFile(filePath, JSON.stringify(json, null, 2) + '\n', 'utf-8');
@@ -414,9 +425,9 @@ async function updateVersionFile(newVersion: string, target: PluginTarget): Prom
     const cliPackagePath = join(process.cwd(), 'plugins/speck-reviewer/cli/package.json');
     if (existsSync(cliPackagePath)) {
       const cliContent = await readFile(cliPackagePath, 'utf-8');
-      const cliJson = JSON.parse(cliContent);
-      const cliOldVersion = cliJson.version;
-      cliJson.version = newVersion;
+      const cliJson = VersionFileSchema.parse(JSON.parse(cliContent));
+      const cliOldVersion = cliJson.version || '0.0.0';
+      (cliJson as Record<string, unknown>).version = newVersion;
       await writeFile(cliPackagePath, JSON.stringify(cliJson, null, 2) + '\n', 'utf-8');
       console.log(`✓ Updated cli/package.json: ${cliOldVersion} → ${newVersion}`);
       updatedFiles.push(cliPackagePath);
@@ -530,9 +541,9 @@ async function bumpPlugin(
   // Read current version from target file
   const versionFilePath = getVersionFilePath(target);
   const content = await readFile(versionFilePath, 'utf-8');
-  const json = JSON.parse(content);
+  const json = VersionFileSchema.parse(JSON.parse(content));
   const currentVersion =
-    target === 'marketplace' ? json.metadata?.version || '0.0.0' : json.version;
+    target === 'marketplace' ? json.metadata?.version || '0.0.0' : json.version || '0.0.0';
 
   // Calculate new version
   const newVersion = bumpVersion(currentVersion, bump);
@@ -580,7 +591,7 @@ async function bumpPlugin(
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {

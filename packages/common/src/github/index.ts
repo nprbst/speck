@@ -18,6 +18,29 @@ export type {
   RepoInfo,
 } from './types';
 
+// Zod schemas for gh CLI responses
+export {
+  GhGraphQLResponseSchema,
+  GhReviewThreadsDataSchema,
+  GhPRViewSchema,
+  GhPRFilesSchema,
+  GhReviewCommentsSchema,
+  GhPRMetadataSchema,
+  GhRestCommentSchema,
+  GhRestCommentsSchema,
+} from './schemas';
+
+export type {
+  GhGraphQLResponse,
+  GhReviewThreadsData,
+  GhPRView,
+  GhPRFiles,
+  GhReviewComments,
+  GhPRMetadata,
+  GhRestComment,
+  GhRestComments,
+} from './schemas';
+
 export {
   parseRateLimitHeaders,
   isRateLimitLow,

@@ -6,6 +6,7 @@
 
 import { $ } from 'bun';
 import type { RepoInfo } from './types';
+import { GhGraphQLResponseSchema } from './schemas';
 
 /**
  * GitHub CLI error
@@ -157,10 +158,10 @@ export async function ghGraphQL<T>(query: string, variables?: Record<string, unk
   args.push('-f', `query=${query}`);
 
   const result = await runGh(args);
-  const parsed = JSON.parse(result);
+  const parsed = GhGraphQLResponseSchema.parse(JSON.parse(result));
 
-  if (parsed.errors?.length) {
-    throw new GhCliError(parsed.errors[0].message);
+  if (parsed.errors && parsed.errors.length > 0) {
+    throw new GhCliError(parsed.errors[0]!.message);
   }
 
   return parsed.data as T;

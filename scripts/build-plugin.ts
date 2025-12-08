@@ -12,6 +12,8 @@
 import { mkdir, rm, readdir, copyFile, readFile, writeFile, stat, chmod } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { z } from 'zod';
+import { PackageJsonSchema, PluginJsonSchema } from '@speck/common';
 
 // ============================================================================
 // Configuration
@@ -59,7 +61,7 @@ const config: BuildConfig = {
 async function loadVersion(): Promise<string> {
   const packageJsonPath = join(config.sourceRoot, 'package.json');
   const content = await readFile(packageJsonPath, 'utf-8');
-  const packageJson = JSON.parse(content);
+  const packageJson = PackageJsonSchema.parse(JSON.parse(content));
   return packageJson.version;
 }
 
@@ -233,6 +235,22 @@ async function generatePluginManifest(): Promise<void> {
   );
 }
 
+// Extended schema for marketplace.json with plugins array
+const MarketplaceWithPluginsSchema = z
+  .object({
+    name: z.string(),
+    owner: z.string(),
+    plugins: z.array(
+      z
+        .object({
+          name: z.string(),
+          version: z.string().optional(),
+        })
+        .passthrough()
+    ),
+  })
+  .passthrough();
+
 /**
  * T012: Generate marketplace.json manifest
  * Copies from source marketplace.json and updates plugin versions
@@ -241,10 +259,10 @@ async function generateMarketplaceManifest(): Promise<void> {
   // Read source marketplace.json
   const sourceMarketplacePath = join(config.sourceRoot, '.claude-plugin/marketplace.json');
   const sourceContent = await readFile(sourceMarketplacePath, 'utf-8');
-  const marketplace = JSON.parse(sourceContent);
+  const marketplace = MarketplaceWithPluginsSchema.parse(JSON.parse(sourceContent));
 
   // Update speck plugin version from package.json
-  const speckPlugin = marketplace.plugins.find((p: { name: string }) => p.name === 'speck');
+  const speckPlugin = marketplace.plugins.find((p) => p.name === 'speck');
   if (speckPlugin) {
     speckPlugin.version = config.version;
   }
@@ -256,10 +274,8 @@ async function generateMarketplaceManifest(): Promise<void> {
   );
   if (existsSync(reviewerPluginJsonPath)) {
     const reviewerPluginContent = await readFile(reviewerPluginJsonPath, 'utf-8');
-    const reviewerPluginJson = JSON.parse(reviewerPluginContent);
-    const reviewerPlugin = marketplace.plugins.find(
-      (p: { name: string }) => p.name === 'speck-reviewer'
-    );
+    const reviewerPluginJson = PluginJsonSchema.parse(JSON.parse(reviewerPluginContent));
+    const reviewerPlugin = marketplace.plugins.find((p) => p.name === 'speck-reviewer');
     if (reviewerPlugin) {
       reviewerPlugin.version = reviewerPluginJson.version;
     }
@@ -758,11 +774,8 @@ async function validateManifests(): Promise<void> {
   }
   const pluginContent = await readFile(pluginJsonPath, 'utf-8');
   try {
-    const parsed = JSON.parse(pluginContent);
-    // Check required fields
-    if (!parsed.name || !parsed.description || !parsed.version || !parsed.author) {
-      throw new Error('plugin.json missing required fields');
-    }
+    // Zod schema validates required fields: name, description, version
+    PluginJsonSchema.parse(JSON.parse(pluginContent));
   } catch (error) {
     throw new Error(
       `plugin.json validation failed: ${error instanceof Error ? error.message : String(error)}`
@@ -775,11 +788,8 @@ async function validateManifests(): Promise<void> {
   }
   const marketplaceContent = await readFile(marketplaceJsonPath, 'utf-8');
   try {
-    const parsed = JSON.parse(marketplaceContent);
-    // Check required fields
-    if (!parsed.name || !parsed.owner || !parsed.plugins) {
-      throw new Error('marketplace.json missing required fields');
-    }
+    // Zod schema validates required fields: name, owner
+    MarketplaceWithPluginsSchema.parse(JSON.parse(marketplaceContent));
   } catch (error) {
     throw new Error(
       `marketplace.json validation failed: ${error instanceof Error ? error.message : String(error)}`
@@ -790,7 +800,7 @@ async function validateManifests(): Promise<void> {
 /**
  * T021: Check for missing required files
  */
-async function validateRequiredFiles(): Promise<void> {
+function validateRequiredFiles(): void {
   const marketplaceRoot = join(config.outputDir, '..');
 
   // Speck plugin required directories
@@ -849,7 +859,7 @@ async function validateRequiredFiles(): Promise<void> {
  * T017-T021: Run all validations
  */
 async function validatePackage(): Promise<void> {
-  await validateRequiredFiles();
+  validateRequiredFiles();
   await validateManifests();
   await validateCommands();
   await validateAgents();
@@ -860,7 +870,7 @@ async function validatePackage(): Promise<void> {
 // Main Build Process
 // ============================================================================
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🚀 Building Speck Plugin Package...\n');
 
   try {

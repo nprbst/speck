@@ -16,12 +16,13 @@ import { existsSync } from 'fs';
 import { readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { $ } from 'bun';
+import { PackageJsonSchema, PluginJsonSchema } from '@speck/common';
 
 const MARKET_REPO = 'https://github.com/nprbst/speck-market.git';
 const MARKET_DIR = join(process.cwd(), '.market-temp');
 const PLUGIN_DIR = join(process.cwd(), 'dist/plugins');
 
-async function main() {
+async function main(): Promise<void> {
   console.log('📦 Publishing Speck Plugins to Marketplace...\n');
 
   try {
@@ -36,7 +37,9 @@ async function main() {
     }
 
     // Get version from package.json
-    const packageJson = JSON.parse(await readFile('package.json', 'utf-8'));
+    const packageJson = PackageJsonSchema.parse(
+      JSON.parse(await readFile('package.json', 'utf-8'))
+    );
     const version = packageJson.version;
     console.log(`   Version: ${version}\n`);
 
@@ -96,7 +99,9 @@ async function main() {
     );
     let reviewerVersion = 'unknown';
     if (existsSync(reviewerPluginPath)) {
-      const reviewerJson = JSON.parse(await readFile(reviewerPluginPath, 'utf-8'));
+      const reviewerJson = PluginJsonSchema.parse(
+        JSON.parse(await readFile(reviewerPluginPath, 'utf-8'))
+      );
       reviewerVersion = reviewerJson.version;
     }
 

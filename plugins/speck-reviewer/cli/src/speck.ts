@@ -5,8 +5,20 @@
 
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
+import { z } from 'zod';
 import { logger } from '@speck/common/logger';
 import type { SpecContext, ParsedRequirement, ParsedUserStory, UserStoryPriority } from './types';
+
+// Schema for branches.json branch mapping
+const BranchesJsonSchema = z.object({
+  branches: z
+    .record(
+      z.object({
+        specId: z.string(),
+      })
+    )
+    .optional(),
+});
 
 /**
  * Find spec for a given branch name
@@ -30,7 +42,7 @@ export function findSpecForBranch(
   if (existsSync(branchesPath)) {
     try {
       const content = readFileSync(branchesPath, 'utf-8');
-      const branches = JSON.parse(content);
+      const branches = BranchesJsonSchema.parse(JSON.parse(content));
 
       const mapping = branches.branches?.[branchName];
       if (mapping?.specId) {

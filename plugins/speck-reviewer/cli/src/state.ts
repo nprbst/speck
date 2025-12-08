@@ -108,14 +108,14 @@ export function loadState(repoRoot: string): ReviewSession | null {
 
     // Check schema version
     if (state.$schema !== STATE_SCHEMA_VERSION) {
-      logger.warn(`State file has incompatible schema version: ${state.$schema}`);
+      logger.warn(`State file has incompatible schema version: ${String(state.$schema)}`);
       return null;
     }
 
     logger.debug(`State loaded from ${statePath}`);
     return state;
   } catch (error) {
-    logger.error(`Failed to load state: ${error}`);
+    logger.error(`Failed to load state: ${error instanceof Error ? error.message : String(error)}`);
     return null;
   }
 }
