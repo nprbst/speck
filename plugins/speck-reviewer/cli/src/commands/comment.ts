@@ -29,14 +29,13 @@ export async function commentCommand(args: string[]): Promise<void> {
   logger.debug('comment command', { file, line, body });
 
   const repoRoot = process.cwd();
-  const session = await loadState(repoRoot);
+  const session = loadState(repoRoot);
 
   if (!session) {
     throw new Error("No active review session. Run 'speck-review analyze' first.");
   }
 
   // Post comment (use issue comments in self-review mode)
-  let commentId: number | null;
   if (session.reviewMode === 'self-review') {
     // In self-review mode, post as issue comment
     const fullBody = `**${file}:${line}**\n\n${body}`;
@@ -48,7 +47,7 @@ export async function commentCommand(args: string[]): Promise<void> {
     return;
   }
 
-  commentId = await postComment(session.prNumber, file, line, body);
+  const commentId = await postComment(session.prNumber, file, line, body);
 
   if (commentId === null) {
     // Preserve comment locally on failure
@@ -64,7 +63,7 @@ export async function commentCommand(args: string[]): Promise<void> {
       updatedAt: new Date().toISOString(),
     };
     session.comments.push(stagedComment);
-    await saveState(session, repoRoot);
+    saveState(session, repoRoot);
     throw new Error(
       "Failed to post comment. Comment preserved locally - use 'list-comments' to see staged comments."
     );
@@ -84,7 +83,7 @@ export async function commentCommand(args: string[]): Promise<void> {
     updatedAt: new Date().toISOString(),
   };
   session.comments.push(postedComment);
-  await saveState(session, repoRoot);
+  saveState(session, repoRoot);
 
   console.log(`✓ Added comment #${commentId} on ${file}:${line}`);
   console.log(`  [${file}:${line}](${file}#L${line})`);
@@ -106,7 +105,7 @@ export async function commentReplyCommand(args: string[]): Promise<void> {
   logger.debug('comment-reply command', { commentId, body });
 
   const repoRoot = process.cwd();
-  const session = await loadState(repoRoot);
+  const session = loadState(repoRoot);
 
   if (!session) {
     throw new Error("No active review session. Run 'speck-review analyze' first.");
@@ -146,7 +145,7 @@ export async function listCommentsCommand(): Promise<void> {
   logger.debug('list-comments command');
 
   const repoRoot = process.cwd();
-  const session = await loadState(repoRoot);
+  const session = loadState(repoRoot);
 
   // Get comments from GitHub
   const prNumber = session?.prNumber;

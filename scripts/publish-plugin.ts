@@ -13,7 +13,7 @@
  */
 
 import { existsSync } from 'fs';
-import { readFile, rm, mkdir } from 'fs/promises';
+import { readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { $ } from 'bun';
 
@@ -145,4 +145,4 @@ Plugins:
   }
 }
 
-main();
+void main();

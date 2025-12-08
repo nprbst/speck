@@ -64,7 +64,7 @@ export function getStatePath(repoRoot: string): string {
 /**
  * Save review session state to file with atomic write
  */
-export async function saveState(session: ReviewSession, repoRoot: string): Promise<void> {
+export function saveState(session: ReviewSession, repoRoot: string): void {
   const statePath = getStatePath(repoRoot);
   const stateDir = dirname(statePath);
   const tempPath = statePath + '.tmp';
@@ -94,7 +94,7 @@ export async function saveState(session: ReviewSession, repoRoot: string): Promi
  * Load review session state from file
  * Returns null if no state exists or schema version is incompatible
  */
-export async function loadState(repoRoot: string): Promise<ReviewSession | null> {
+export function loadState(repoRoot: string): ReviewSession | null {
   const statePath = getStatePath(repoRoot);
 
   if (!existsSync(statePath)) {
@@ -123,7 +123,7 @@ export async function loadState(repoRoot: string): Promise<ReviewSession | null>
 /**
  * Clear review session state
  */
-export async function clearState(repoRoot: string): Promise<void> {
+export function clearState(repoRoot: string): void {
   const statePath = getStatePath(repoRoot);
 
   if (existsSync(statePath)) {

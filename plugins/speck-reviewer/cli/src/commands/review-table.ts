@@ -24,7 +24,7 @@ const EXAMPLE_COMMENTS = [
   },
 ];
 
-export async function reviewTableCommand(args: string[]): Promise<void> {
+export function reviewTableCommand(args: string[]): void {
   const showExample = args.includes('--example');
 
   if (showExample) {
@@ -35,7 +35,7 @@ export async function reviewTableCommand(args: string[]): Promise<void> {
 
   // Load current state and get staged comments
   const repoRoot = process.cwd();
-  const state = await loadState(repoRoot);
+  const state = loadState(repoRoot);
 
   if (!state) {
     logger.warn(`No active review session. State path: ${getStatePath(repoRoot)}`);

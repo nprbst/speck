@@ -35,7 +35,7 @@ describe('clustering', () => {
     });
 
     it('should detect cross-cutting concerns', async () => {
-      const { clusterFiles, detectCrossCuttingConcerns } = await import(
+      const { clusterFiles: _clusterFiles, detectCrossCuttingConcerns } = await import(
         '../../plugins/speck-reviewer/cli/src/clustering'
       );
 

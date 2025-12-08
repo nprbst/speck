@@ -20,9 +20,6 @@ import {
   ProductionBaselineSchema,
   FileBaselineSchema,
   FileCategorySchema,
-  type StagingContext,
-  type StagingMetadata,
-  type StagedFile,
   type StagingStatus,
 } from '../../packages/maintainer/src/common/staging-types';
 

@@ -73,7 +73,7 @@ export async function analyzeCommand(args: string[]): Promise<void> {
   const isSelfReview = currentUser === prInfo.author;
 
   // Create or update session
-  let session = await loadState(repoRoot);
+  let session = loadState(repoRoot);
 
   if (session && session.prNumber === prInfo.number) {
     // Update existing session
@@ -99,7 +99,7 @@ export async function analyzeCommand(args: string[]): Promise<void> {
   }
 
   // Save state
-  await saveState(session, repoRoot);
+  saveState(session, repoRoot);
 
   // Output analysis
   const output: AnalyzeOutput = {

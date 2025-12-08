@@ -12,10 +12,10 @@ import type { SpecContext, ParsedRequirement, ParsedUserStory, UserStoryPriority
  * Find spec for a given branch name
  * Checks: 1) specs/{branch-name}/spec.md, 2) .speck/branches.json mapping
  */
-export async function findSpecForBranch(
+export function findSpecForBranch(
   branchName: string,
   repoRoot: string
-): Promise<{ featureId: string; specPath: string } | null> {
+): { featureId: string; specPath: string } | null {
   logger.debug('Finding spec for branch:', branchName);
 
   // Try direct branch name match
@@ -137,11 +137,8 @@ export function parseSpecContent(content: string): {
 /**
  * Load full spec context for a branch
  */
-export async function loadSpecContext(
-  branchName: string,
-  repoRoot: string
-): Promise<SpecContext | null> {
-  const specInfo = await findSpecForBranch(branchName, repoRoot);
+export function loadSpecContext(branchName: string, repoRoot: string): SpecContext | null {
+  const specInfo = findSpecForBranch(branchName, repoRoot);
   if (!specInfo) {
     return null;
   }

@@ -12,7 +12,7 @@ export async function filesCommand(_args: string[]): Promise<void> {
   const repoRoot = process.cwd();
 
   // Try to get from state first
-  const session = await loadState(repoRoot);
+  const session = loadState(repoRoot);
 
   if (session) {
     // Use files from session clusters

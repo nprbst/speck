@@ -14,12 +14,14 @@ type CommandHandler = (args: string[]) => Promise<void>;
 
 // Command registry
 const commands: Record<string, CommandHandler> = {
-  help: async () => {
+  help: () => {
     printHelp();
+    return Promise.resolve();
   },
 
-  version: async () => {
+  version: () => {
     console.log(`speck-review ${VERSION}`);
+    return Promise.resolve();
   },
 
   // Phase 4: User Story 2 - Cluster Analysis
@@ -31,7 +33,7 @@ const commands: Record<string, CommandHandler> = {
   // State management
   state: async (args) => {
     const { stateCommand } = await import('./commands/state');
-    await stateCommand(args);
+    stateCommand(args);
   },
 
   // File listing
@@ -81,32 +83,32 @@ const commands: Record<string, CommandHandler> = {
   // Phase 9b: POC Parity - Utility Commands (FR-027)
   link: async (args) => {
     const { linkCommand } = await import('./commands/link');
-    await linkCommand(args);
+    linkCommand(args);
   },
 
   actions: async () => {
     const { actionsCommand } = await import('./commands/actions');
-    await actionsCommand();
+    actionsCommand();
   },
 
   'run-actions': async () => {
     const { runActionsCommand } = await import('./commands/actions');
-    await runActionsCommand();
+    runActionsCommand();
   },
 
   'review-table': async (args) => {
     const { reviewTableCommand } = await import('./commands/review-table');
-    await reviewTableCommand(args);
+    reviewTableCommand(args);
   },
 
   'submit-actions': async (args) => {
     const { submitActionsCommand } = await import('./commands/actions');
-    await submitActionsCommand(args);
+    submitActionsCommand(args);
   },
 
   logs: async () => {
     const { logsCommand } = await import('./commands/logs');
-    await logsCommand();
+    logsCommand();
   },
 };
 
@@ -205,4 +207,4 @@ async function main(): Promise<void> {
 }
 
 // Run
-main();
+void main();

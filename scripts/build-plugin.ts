@@ -10,7 +10,7 @@
  */
 
 import { mkdir, rm, readdir, copyFile, readFile, writeFile, stat, chmod } from 'fs/promises';
-import { join, relative, basename } from 'path';
+import { join } from 'path';
 import { existsSync } from 'fs';
 
 // ============================================================================
@@ -85,14 +85,6 @@ function buildFailedError(description: string, details: string, action: string):
  */
 async function ensureDir(dirPath: string): Promise<void> {
   await mkdir(dirPath, { recursive: true });
-}
-
-/**
- * Copy file from source to destination
- */
-async function copyFileWithDirs(src: string, dest: string): Promise<void> {
-  await ensureDir(join(dest, '..'));
-  await copyFile(src, dest);
 }
 
 /**
@@ -970,4 +962,4 @@ async function main() {
 }
 
 // Run the build
-main();
+void main();

@@ -22,8 +22,7 @@ import {
   initializeStaging,
   getStagingOutputDirs,
   recordAgent1Complete,
-  recordAgent2Complete,
-} from '../../plugins/speck/scripts/transform-upstream/index';
+} from '../../packages/maintainer/src/transform-upstream/index';
 
 describe('Agent 1 Failure Integration (US4)', () => {
   let env: StagingTestEnv;

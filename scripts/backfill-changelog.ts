@@ -48,17 +48,6 @@ interface TagInfo {
   date: string;
 }
 
-function getTagPrefix(target: PluginTarget): string {
-  switch (target) {
-    case 'speck-reviewer':
-      return 'speck-reviewer-v';
-    case 'marketplace':
-      return 'marketplace-v';
-    default:
-      return 'v';
-  }
-}
-
 function parseConventionalCommit(subject: string): ParsedCommit | null {
   const regex = /^(\w+)(?:\(([^)]+)\))?(!)?: (.+)$/;
   const match = subject.match(regex);
@@ -68,9 +57,9 @@ function parseConventionalCommit(subject: string): ParsedCommit | null {
   }
 
   return {
-    type: match[1],
-    scope: match[2] || null,
-    description: match[4],
+    type: match[1]!,
+    scope: match[2] ?? null,
+    description: match[4]!,
     isBreaking: match[3] === '!',
   };
 }
@@ -84,6 +73,7 @@ async function getAllTags(): Promise<TagInfo[]> {
 
   for (const line of lines) {
     const [tag, date] = line.split(' ');
+    if (!tag || !date) continue;
 
     // Determine target and version from tag
     let target: PluginTarget;
@@ -125,7 +115,7 @@ async function getCommitsBetweenTags(fromTag: string | null, toTag: string): Pro
   const lines = result.trim().split('\n').filter(Boolean);
   return lines.map((line) => {
     const [hash, subject] = line.split('\x00');
-    return { hash, subject };
+    return { hash: hash!, subject: subject! };
   });
 }
 
@@ -251,8 +241,8 @@ async function main() {
     console.log(`Processing ${target}: ${tags.length} tags`);
 
     for (let i = 0; i < tags.length; i++) {
-      const currentTag = tags[i];
-      const previousTag = i > 0 ? tags[i - 1].tag : null;
+      const currentTag = tags[i]!;
+      const previousTag = i > 0 ? tags[i - 1]!.tag : null;
 
       const commits = await getCommitsBetweenTags(previousTag, currentTag.tag);
       const sections = categorizeCommits(commits);
@@ -275,7 +265,7 @@ async function main() {
     // Same date - compare versions (parse as semver for proper ordering)
     const parseVersion = (v: string) => {
       const parts = v.split('.').map(Number);
-      return parts[0] * 10000 + parts[1] * 100 + parts[2];
+      return (parts[0] ?? 0) * 10000 + (parts[1] ?? 0) * 100 + (parts[2] ?? 0);
     };
     return parseVersion(b.tag.version) - parseVersion(a.tag.version);
   });

@@ -400,7 +400,7 @@ export function detectTestPairs(groups: Map<string, ClusterFile[]>): void {
   ];
 
   // For each group, find test/source pairs
-  for (const [_dir, files] of groups) {
+  for (const [, files] of groups) {
     const testFiles = files.filter((f) => testPatterns.some((p) => p.test(f.path)));
     const sourceFiles = files.filter((f) => !testPatterns.some((p) => p.test(f.path)));
 

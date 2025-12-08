@@ -5,26 +5,26 @@
 import { logger } from '@speck/common/logger';
 import { loadState, clearState, formatStateDisplay } from '../state';
 
-export async function stateCommand(args: string[]): Promise<void> {
+export function stateCommand(args: string[]): void {
   const subcommand = args[0] || 'show';
 
   logger.debug('state command', { subcommand });
 
   switch (subcommand) {
     case 'show':
-      await showState();
+      showState();
       break;
     case 'clear':
-      await clearStateCmd();
+      clearStateCmd();
       break;
     default:
       throw new Error(`Unknown state subcommand: ${subcommand}. Use 'show' or 'clear'.`);
   }
 }
 
-async function showState(): Promise<void> {
+function showState(): void {
   const repoRoot = process.cwd();
-  const session = await loadState(repoRoot);
+  const session = loadState(repoRoot);
 
   if (!session) {
     console.log('No active review session found.');
@@ -36,15 +36,15 @@ async function showState(): Promise<void> {
   console.log(display);
 }
 
-async function clearStateCmd(): Promise<void> {
+function clearStateCmd(): void {
   const repoRoot = process.cwd();
-  const session = await loadState(repoRoot);
+  const session = loadState(repoRoot);
 
   if (!session) {
     console.log('No review state to clear.');
     return;
   }
 
-  await clearState(repoRoot);
+  clearState(repoRoot);
   console.log(`✓ Cleared review state for PR #${session.prNumber}`);
 }

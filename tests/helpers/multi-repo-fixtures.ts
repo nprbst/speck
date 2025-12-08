@@ -13,7 +13,7 @@
  * Updated: 2025-11-29
  */
 
-import { mkdtemp, mkdir, writeFile, symlink, rm, cp } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, symlink, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { $ } from 'bun';
@@ -21,19 +21,6 @@ import type {
   BranchMapping,
   BranchEntry,
 } from '../../plugins/speck/scripts/common/branch-mapper.ts';
-
-/**
- * Copy Speck scripts into test fixture for isolation
- *
- * @param targetDir - Directory to copy scripts into (test root)
- */
-async function copySpeckScripts(targetDir: string): Promise<void> {
-  const sourceScriptsDir = path.join(process.cwd(), 'plugins/speck/scripts');
-  const targetScriptsDir = path.join(targetDir, 'plugins/speck/scripts');
-
-  // Copy entire scripts directory recursively
-  await cp(sourceScriptsDir, targetScriptsDir, { recursive: true });
-}
 
 /**
  * Multi-repo test environment structure

@@ -4,7 +4,7 @@
 
 import { diffLink, fileLink } from '../links';
 
-export async function linkCommand(args: string[]): Promise<void> {
+export function linkCommand(args: string[]): void {
   const file = args[0];
   const line = args[1] ? parseInt(args[1], 10) : undefined;
   const endLine = args[2] ? parseInt(args[2], 10) : undefined;

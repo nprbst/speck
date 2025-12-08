@@ -7,7 +7,7 @@ import { formatActions, formatRunActions, formatSubmitActions } from '../links';
 /**
  * actions command - Display navigation action menu
  */
-export async function actionsCommand(): Promise<void> {
+export function actionsCommand(): void {
   console.log('## Navigation Actions\n');
   console.log(formatActions());
 }
@@ -15,7 +15,7 @@ export async function actionsCommand(): Promise<void> {
 /**
  * run-actions command - Display review action menu
  */
-export async function runActionsCommand(): Promise<void> {
+export function runActionsCommand(): void {
   console.log('## Review Actions\n');
   console.log(formatRunActions());
 }
@@ -23,7 +23,7 @@ export async function runActionsCommand(): Promise<void> {
 /**
  * submit-actions command - Display submit review menu
  */
-export async function submitActionsCommand(args: string[]): Promise<void> {
+export function submitActionsCommand(args: string[]): void {
   const body = args.join(' ') || undefined;
   console.log('## Submit Review\n');
   console.log(formatSubmitActions(body));

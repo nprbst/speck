@@ -5,7 +5,7 @@
 import { getLogInfo } from '../links';
 import { getStatePath } from '../state';
 
-export async function logsCommand(): Promise<void> {
+export function logsCommand(): void {
   const repoRoot = process.cwd();
   const statePath = getStatePath(repoRoot);
 

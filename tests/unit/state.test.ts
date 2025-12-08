@@ -166,7 +166,7 @@ describe('state management', () => {
     it('should not throw when state file does not exist', async () => {
       const { clearState } = await import('../../plugins/speck-reviewer/cli/src/state');
 
-      await expect(clearState(TEST_DIR + '-nonexistent')).resolves.toBeUndefined();
+      expect(() => clearState(TEST_DIR + '-nonexistent')).not.toThrow();
     });
   });
 

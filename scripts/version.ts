@@ -81,7 +81,7 @@ function parseVersion(version: string): [number, number, number] {
   if (parts.length !== 3) {
     throw new Error(`Invalid version format: ${version}`);
   }
-  return [parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2])];
+  return [parseInt(parts[0]!), parseInt(parts[1]!), parseInt(parts[2]!)];
 }
 
 function bumpVersion(current: string, bump: BumpType | string): string {
@@ -148,9 +148,9 @@ function parseConventionalCommit(subject: string): ParsedCommit | null {
   }
 
   return {
-    type: match[1],
-    scope: match[2] || null,
-    description: match[4],
+    type: match[1]!,
+    scope: match[2] ?? null,
+    description: match[4]!,
     isBreaking: match[3] === '!',
   };
 }
@@ -167,7 +167,7 @@ async function getPreviousTag(target: PluginTarget): Promise<string | null> {
     const tags = allTags.filter((tag) => tag.startsWith(tagPrefix));
 
     // Return the most recent tag (first in sorted list)
-    return tags.length > 0 ? tags[0] : null;
+    return tags.length > 0 ? tags[0]! : null;
   } catch {
     return null;
   }
@@ -191,7 +191,7 @@ async function getCommitsSinceTag(previousTag: string | null): Promise<RawCommit
   const lines = result.trim().split('\n').filter(Boolean);
   return lines.map((line) => {
     const [hash, subject] = line.split('\x00');
-    return { hash, subject };
+    return { hash: hash!, subject: subject! };
   });
 }
 
@@ -599,7 +599,7 @@ async function main() {
     process.exit(1);
   }
 
-  const bump = args[0];
+  const bump = args[0]!;
   let target = parseTarget(args);
   const skipGit = args.includes('--no-git');
   const skipPush = args.includes('--no-push');
@@ -639,4 +639,4 @@ async function main() {
   }
 }
 
-main();
+void main();

@@ -25,7 +25,7 @@ import {
   recordAgent1Complete,
   recordAgent2Complete,
   rollbackStagingChanges,
-} from '../../plugins/speck/scripts/transform-upstream/index';
+} from '../../packages/maintainer/src/transform-upstream/index';
 
 describe('Transform Rollback Integration', () => {
   let env: StagingTestEnv;

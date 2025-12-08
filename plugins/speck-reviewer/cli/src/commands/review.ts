@@ -30,7 +30,7 @@ export async function reviewCommand(args: string[]): Promise<void> {
   logger.debug('review command', { event, body });
 
   const repoRoot = process.cwd();
-  const session = await loadState(repoRoot);
+  const session = loadState(repoRoot);
 
   if (!session) {
     throw new Error("No active review session. Run 'speck-review analyze' first.");
@@ -69,7 +69,7 @@ export async function reviewCommand(args: string[]): Promise<void> {
         }
       }
     }
-    await saveState(session, repoRoot);
+    saveState(session, repoRoot);
   }
 
   // Map event to GitHub API event
