@@ -102,11 +102,11 @@ describe('Worktree + Handoff Creation Integration (T043)', () => {
       const settingsPath = path.join(worktreePath, '.claude', 'settings.json');
       expect(existsSync(settingsPath)).toBe(true);
 
-      // Verify hook configuration
+      // Verify hook configuration (SessionStart disabled per T043 - uses VSCode task instead)
       const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
       expect(settings.hooks).toBeDefined();
-      expect(settings.hooks.SessionStart).toBeDefined();
-      expect(settings.hooks.SessionStart[0].hooks[0].command).toContain('handoff.sh');
+      // SessionStart hook is intentionally empty - handoff uses VSCode task for automation
+      expect(settings.hooks).toEqual({});
     });
 
     test('creates .claude/scripts/handoff.sh hook script', async () => {

@@ -79,7 +79,7 @@ describe('Handoff Document Generation (T041)', () => {
         context: 'Test',
         status: 'not-started',
       });
-      expect(notStarted.nextStep).toContain('/speck.plan');
+      expect(notStarted.nextStep).toContain('/speck:plan');
 
       // in-progress status
       const inProgress = handoff.createHandoffDocument({
@@ -89,7 +89,7 @@ describe('Handoff Document Generation (T041)', () => {
         context: 'Test',
         status: 'in-progress',
       });
-      expect(inProgress.nextStep).toContain('/speck.implement');
+      expect(inProgress.nextStep).toContain('/speck:implement');
 
       // completed status
       const completed = handoff.createHandoffDocument({
@@ -99,7 +99,7 @@ describe('Handoff Document Generation (T041)', () => {
         context: 'Test',
         status: 'completed',
       });
-      expect(completed.nextStep).toContain('/speck.analyze');
+      expect(completed.nextStep).toContain('/speck:analyze');
     });
 
     test('sets createdAt to ISO timestamp', async () => {
@@ -186,7 +186,7 @@ describe('Handoff Document Generation (T041)', () => {
         createdAt: '2025-11-28T12:00:00.000Z',
         context: 'Simplify and robustify Speck.',
         status: 'in-progress',
-        nextStep: 'Run `/speck.implement` to continue.',
+        nextStep: 'Run `/speck:implement` to continue.',
       };
 
       const markdown = handoff.generateHandoffMarkdown(doc);
@@ -214,7 +214,7 @@ describe('Handoff Document Generation (T041)', () => {
         specPath: 'specs/001-test/spec.md',
         createdAt: '2025-11-28T12:00:00.000Z',
         context: 'This is the feature context.',
-        nextStep: 'Run `/speck.plan` to start.',
+        nextStep: 'Run `/speck:plan` to start.',
       };
 
       const markdown = handoff.generateHandoffMarkdown(doc);
@@ -224,7 +224,7 @@ describe('Handoff Document Generation (T041)', () => {
       expect(markdown).toContain('This is the feature context.');
       expect(markdown).toContain('## Getting Started');
       expect(markdown).toContain('## Next Step');
-      expect(markdown).toContain('Run `/speck.plan` to start.');
+      expect(markdown).toContain('Run `/speck:plan` to start.');
     });
 
     test('escapes special YAML characters in strings', async () => {
@@ -299,11 +299,11 @@ Simplify and robustify Speck.
 ## Getting Started
 
 1. Review the spec
-2. Run /speck.tasks
+2. Run /speck:tasks
 
 ## Next Step
 
-Run \`/speck.implement\` to continue.
+Run \`/speck:implement\` to continue.
 
 ---
 
@@ -318,7 +318,7 @@ Run \`/speck.implement\` to continue.
       expect(doc.createdAt).toBe('2025-11-28T12:00:00.000Z');
       expect(doc.status).toBe('in-progress');
       expect(doc.context).toBe('Simplify and robustify Speck.');
-      expect(doc.nextStep).toContain('/speck.implement');
+      expect(doc.nextStep).toContain('/speck:implement');
     });
 
     test('throws error for missing YAML frontmatter', async () => {
@@ -382,7 +382,7 @@ Next
         createdAt: '2025-11-28T12:00:00.000Z',
         context: 'Testing round-trip conversion.',
         status: 'not-started',
-        nextStep: 'Run `/speck.plan` first.',
+        nextStep: 'Run `/speck:plan` first.',
       };
 
       const markdown = handoff.generateHandoffMarkdown(original);

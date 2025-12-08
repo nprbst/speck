@@ -37,7 +37,7 @@ describe('Integration: Full upstream sync pipeline', () => {
 
   test('full pipeline: check → pull (validation only, no FS changes)', async () => {
     // Step 1: Check upstream releases (read-only, safe)
-    const checkResult = await $`bun .speck/scripts/check-upstream.ts --json`.quiet();
+    const checkResult = await $`bun plugins/speck/scripts/check-upstream.ts --json`.quiet();
     expect(checkResult.exitCode).toBe(0);
 
     const checkOutput = JSON.parse(checkResult.stdout.toString());
@@ -50,7 +50,7 @@ describe('Integration: Full upstream sync pipeline', () => {
     expect(latestRelease).toHaveProperty('notesUrl');
 
     // Step 2: Verify pull-upstream validates version format (no actual pull)
-    const invalidVersionResult = await $`bun .speck/scripts/pull-upstream.ts invalid-version`
+    const invalidVersionResult = await $`bun plugins/speck/scripts/pull-upstream.ts invalid-version`
       .nothrow()
       .quiet();
     expect(invalidVersionResult.exitCode).toBe(1);
@@ -86,7 +86,7 @@ describe('Integration: Full upstream sync pipeline', () => {
     const alreadyPulledVersion = releasesJson.releases[0].version;
 
     // Attempt to pull an already-pulled release (should fail with user error)
-    const result = await $`bun .speck/scripts/pull-upstream.ts ${alreadyPulledVersion}`
+    const result = await $`bun plugins/speck/scripts/pull-upstream.ts ${alreadyPulledVersion}`
       .nothrow()
       .quiet();
     expect(result.exitCode).toBe(1); // User error
@@ -102,7 +102,7 @@ describe('Integration: Full upstream sync pipeline', () => {
 
   test('pipeline validates version format', async () => {
     // Try to pull invalid version
-    const result = await $`bun .speck/scripts/pull-upstream.ts invalid-version`.nothrow().quiet();
+    const result = await $`bun plugins/speck/scripts/pull-upstream.ts invalid-version`.nothrow().quiet();
 
     expect(result.exitCode).toBe(1); // User error exit code
     expect(result.stderr.toString()).toContain('Invalid version');
@@ -112,7 +112,7 @@ describe('Integration: Full upstream sync pipeline', () => {
     // Test with invalid GitHub repo (to trigger network error)
     // This test uses the actual implementation but expects graceful error handling
 
-    const result = await $`bun .speck/scripts/check-upstream.ts`.nothrow().quiet();
+    const result = await $`bun plugins/speck/scripts/check-upstream.ts`.nothrow().quiet();
 
     // Should either succeed or fail with proper exit code
     if (result.exitCode !== 0) {

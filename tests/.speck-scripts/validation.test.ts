@@ -16,7 +16,7 @@ import { join } from 'node:path';
 describe('T072: CLI Interface Compatibility', () => {
   test('check-upstream has identical flags to bash equivalent', async () => {
     // Verify --json flag works
-    const jsonResult = await $`bun .speck/scripts/check-upstream.ts --json`.quiet();
+    const jsonResult = await $`bun plugins/speck/scripts/check-upstream.ts --json`.quiet();
     expect(jsonResult.exitCode).toBe(0);
 
     const output = JSON.parse(jsonResult.stdout.toString());
@@ -26,18 +26,18 @@ describe('T072: CLI Interface Compatibility', () => {
 
   test('check-upstream has correct exit codes', async () => {
     // Success case
-    const successResult = await $`bun .speck/scripts/check-upstream.ts --json`.quiet();
+    const successResult = await $`bun plugins/speck/scripts/check-upstream.ts --json`.quiet();
     expect(successResult.exitCode).toBe(0);
 
     // Help flag should succeed
-    const helpResult = await $`bun .speck/scripts/check-upstream.ts --help`.nothrow().quiet();
+    const helpResult = await $`bun plugins/speck/scripts/check-upstream.ts --help`.nothrow().quiet();
     expect(helpResult.exitCode).toBe(0);
     expect(helpResult.stdout.toString()).toContain('Usage:');
   });
 
   test('pull-upstream has identical flags to bash equivalent', async () => {
     // Verify --json flag structure
-    const checkResult = await $`bun .speck/scripts/check-upstream.ts --json`.quiet();
+    const checkResult = await $`bun plugins/speck/scripts/check-upstream.ts --json`.quiet();
     const checkOutput = JSON.parse(checkResult.stdout.toString());
     const testVersion = checkOutput.releases[0].version;
 
@@ -55,13 +55,13 @@ describe('T072: CLI Interface Compatibility', () => {
 
     if (!needsCleanup) {
       // Version already exists, just verify error handling
-      const result = await $`bun .speck/scripts/pull-upstream.ts ${testVersion}`.nothrow().quiet();
+      const result = await $`bun plugins/speck/scripts/pull-upstream.ts ${testVersion}`.nothrow().quiet();
       expect([0, 1]).toContain(result.exitCode);
       return;
     }
 
     // Pull the version
-    const pullResult = await $`bun .speck/scripts/pull-upstream.ts ${testVersion} --json`.quiet();
+    const pullResult = await $`bun plugins/speck/scripts/pull-upstream.ts ${testVersion} --json`.quiet();
     expect(pullResult.exitCode).toBe(0);
 
     const pullOutput = JSON.parse(pullResult.stdout.toString());
@@ -72,7 +72,7 @@ describe('T072: CLI Interface Compatibility', () => {
 
   test('pull-upstream has correct exit codes', async () => {
     // Invalid version format should return exit code 1 (user error)
-    const invalidResult = await $`bun .speck/scripts/pull-upstream.ts invalid-format`
+    const invalidResult = await $`bun plugins/speck/scripts/pull-upstream.ts invalid-format`
       .nothrow()
       .quiet();
     expect(invalidResult.exitCode).toBe(1);
@@ -81,7 +81,7 @@ describe('T072: CLI Interface Compatibility', () => {
 
   test('Bun scripts start quickly (<100ms)', async () => {
     const start = performance.now();
-    await $`bun .speck/scripts/check-upstream.ts --help`.quiet();
+    await $`bun plugins/speck/scripts/check-upstream.ts --help`.quiet();
     const duration = performance.now() - start;
 
     // Should start in under 100ms (SC-006)

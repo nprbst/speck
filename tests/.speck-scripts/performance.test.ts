@@ -15,7 +15,7 @@ describe('T078: SC-001 - check-upstream performance', () => {
   test('/speck.check-upstream completes in under 10 seconds', async () => {
     const start = performance.now();
 
-    const result = await $`bun .speck/scripts/check-upstream.ts --json`.quiet();
+    const result = await $`bun plugins/speck/scripts/check-upstream.ts --json`.quiet();
     expect(result.exitCode).toBe(0);
 
     const duration = (performance.now() - start) / 1000; // Convert to seconds
@@ -32,7 +32,7 @@ describe('T079: SC-002 - pull-upstream performance', () => {
 
     const start = performance.now();
 
-    // Would test with: bun .speck/scripts/pull-upstream.ts <version>
+    // Would test with: bun plugins/speck/scripts/pull-upstream.ts <version>
     const duration = (performance.now() - start) / 1000;
 
     expect(duration).toBeLessThan(120); // 2 minutes
@@ -46,7 +46,7 @@ describe('T080: SC-003 - transform-upstream performance', () => {
 
     const start = performance.now();
 
-    // Would test with: bun .speck/scripts/transform-upstream.ts
+    // Would test with: bun plugins/speck/scripts/transform-upstream.ts
     const duration = (performance.now() - start) / 1000;
 
     expect(duration).toBeLessThan(300); // 5 minutes
@@ -57,7 +57,7 @@ describe('T081: SC-006 - Bun script startup performance', () => {
   test('check-upstream starts in under 100ms', async () => {
     const start = performance.now();
 
-    await $`bun .speck/scripts/check-upstream.ts --help`.quiet();
+    await $`bun plugins/speck/scripts/check-upstream.ts --help`.quiet();
 
     const duration = performance.now() - start;
     console.log(`check-upstream startup: ${duration.toFixed(2)}ms`);
@@ -69,7 +69,7 @@ describe('T081: SC-006 - Bun script startup performance', () => {
     const start = performance.now();
 
     // Use --help to test startup without actual pull operation
-    const result = await $`bun .speck/scripts/pull-upstream.ts --help`.nothrow().quiet();
+    const result = await $`bun plugins/speck/scripts/pull-upstream.ts --help`.nothrow().quiet();
 
     const duration = performance.now() - start;
     console.log(`pull-upstream startup: ${duration.toFixed(2)}ms`);
@@ -96,7 +96,7 @@ describe('Performance benchmarks (informational)', () => {
   test('measure common utility performance', async () => {
     // Test GitHub API client performance
     const start1 = performance.now();
-    await $`bun .speck/scripts/check-upstream.ts --json`.quiet();
+    await $`bun plugins/speck/scripts/check-upstream.ts --json`.quiet();
     const githubApiDuration = performance.now() - start1;
 
     console.log(`GitHub API fetch: ${githubApiDuration.toFixed(2)}ms`);

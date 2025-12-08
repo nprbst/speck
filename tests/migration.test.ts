@@ -123,7 +123,7 @@ describe('User Story 5: Single-Repo to Multi-Repo Migration', () => {
     clearSpeckCache();
 
     // Verify paths resolve correctly
-    const { getFeaturePaths } = await import('../.speck/scripts/common/paths.ts');
+    const { getFeaturePaths } = await import('../plugins/speck/scripts/common/paths.ts');
     const paths = await getFeaturePaths();
     const realParentDir = await fs.realpath(parentDir);
     const realSingleRepoDir = await fs.realpath(singleRepoDir);

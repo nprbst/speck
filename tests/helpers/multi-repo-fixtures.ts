@@ -116,9 +116,9 @@ export async function createMultiRepoTestFixture(
   // Create .speck directory in root
   await mkdir(path.join(rootDir, '.speck'), { recursive: true });
 
-  // Copy Speck scripts into test root for isolation
-  await copySpeckScripts(rootDir);
-  const scriptsDir = path.join(rootDir, 'plugins/speck/scripts');
+  // Use the real scripts directory (not copied) to preserve workspace package resolution
+  // Scripts depend on @speck/common which is only available via workspace
+  const scriptsDir = path.join(process.cwd(), 'plugins/speck/scripts');
 
   // Create initial commit in root
   await $`git -C ${rootDir} add .`.quiet();
