@@ -1,7 +1,7 @@
 /**
  * pull-upstream - Fetch and store OpenSpec release from GitHub
  *
- * Usage: bun plugins/speck-changes/scripts/pull-upstream.ts <version> [options]
+ * Usage: bun plugins/changes/scripts/pull-upstream.ts <version> [options]
  * Options:
  *   --json     Output in JSON format
  *   --dry-run  Show what would be done without making changes
@@ -231,7 +231,7 @@ async function main(): Promise<void> {
     console.log(`
 pull-upstream - Fetch and store OpenSpec release from GitHub
 
-Usage: bun plugins/speck-changes/scripts/pull-upstream.ts <version> [options]
+Usage: bun plugins/changes/scripts/pull-upstream.ts <version> [options]
 
 Arguments:
   version    OpenSpec version to pull (e.g., v0.16.0)
@@ -242,8 +242,8 @@ Options:
   --help     Show this help message
 
 Example:
-  bun plugins/speck-changes/scripts/pull-upstream.ts v0.16.0
-  bun plugins/speck-changes/scripts/pull-upstream.ts v0.16.0 --dry-run
+  bun plugins/changes/scripts/pull-upstream.ts v0.16.0
+  bun plugins/changes/scripts/pull-upstream.ts v0.16.0 --dry-run
 `);
     process.exit(help ? 0 : 1);
   }

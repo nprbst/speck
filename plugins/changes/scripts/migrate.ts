@@ -1,7 +1,7 @@
 /**
  * migrate - Migrate an existing OpenSpec project to Speck
  *
- * Usage: bun plugins/speck-changes/scripts/migrate.ts [options]
+ * Usage: bun plugins/changes/scripts/migrate.ts [options]
  * Options:
  *   --json     Output in JSON format
  *   --dry-run  Show what would be done without making changes
@@ -332,7 +332,7 @@ async function main(): Promise<void> {
     console.log(`
 migrate - Migrate an existing OpenSpec project to Speck
 
-Usage: bun plugins/speck-changes/scripts/migrate.ts [options]
+Usage: bun plugins/changes/scripts/migrate.ts [options]
 
 Options:
   --dry-run  Show what would be done without making changes
@@ -346,8 +346,8 @@ The migrate command:
   4. Validates migrated content
 
 Example:
-  bun plugins/speck-changes/scripts/migrate.ts
-  bun plugins/speck-changes/scripts/migrate.ts --dry-run
+  bun plugins/changes/scripts/migrate.ts
+  bun plugins/changes/scripts/migrate.ts --dry-run
 `);
     process.exit(0);
   }

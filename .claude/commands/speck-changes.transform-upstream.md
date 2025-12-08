@@ -38,7 +38,7 @@ bun ${CLAUDE_PLUGIN_ROOT}/scripts/transform-upstream.ts $ARGUMENTS
    - `child_process` -> Bun Shell `$``
    - `readFile/writeFile` -> `Bun.file()/Bun.write()`
 3. Preserves SPECK-EXTENSION blocks (Speck-specific code)
-4. Writes transformed files to `plugins/speck-changes/scripts/`
+4. Writes transformed files to `plugins/changes/scripts/`
 5. Records transformation history in `transform-history.json`
 
 ## SPECK-EXTENSION Preservation
@@ -66,6 +66,6 @@ Transformed files:
 
 After transformation:
 
-1. Review transformed files in `plugins/speck-changes/scripts/`
+1. Review transformed files in `plugins/changes/scripts/`
 2. Run `bun run typecheck` to verify type safety
-3. Run tests with `bun test plugins/speck-changes/`
+3. Run tests with `bun test plugins/changes/`

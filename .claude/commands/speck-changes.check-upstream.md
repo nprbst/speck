@@ -29,18 +29,19 @@ Run the check-upstream script to query releases:
 bun ${CLAUDE_PLUGIN_ROOT}/scripts/check-upstream.ts $ARGUMENTS
 ```
 
-## Output
+## Present Results
 
-The command displays a table of available OpenSpec releases:
+After running the script, present the releases as a table for the user to review and select from. Include:
+- Version number
+- Release title
+- Publication date
+- Status (latest indicator)
 
-| Version | Title | Published | Status |
-|---------|-------|-----------|--------|
-| v0.16.0 | Antigravity | 2025-11-21 | **latest** |
-| v0.15.0 | Gemini | 2025-11-15 | |
+Then ask the user which version they'd like to pull using the AskUserQuestion tool with the available versions as options.
 
 ## Next Steps
 
-After identifying the desired release:
+After the user selects a release:
 
 1. Use `/speck-changes.pull-upstream <version>` to download it
 2. Use `/speck-changes.transform-upstream` to transform to Bun TypeScript

@@ -1,7 +1,7 @@
 /**
  * show - Show details of a change proposal
  *
- * Usage: bun plugins/speck-changes/scripts/show.ts <name> [options]
+ * Usage: bun plugins/changes/scripts/show.ts <name> [options]
  * Options:
  *   --json     Output in JSON format
  *   --help     Show help message
@@ -218,7 +218,7 @@ async function main(): Promise<void> {
     console.log(`
 show - Show details of a change proposal
 
-Usage: bun plugins/speck-changes/scripts/show.ts <name> [options]
+Usage: bun plugins/changes/scripts/show.ts <name> [options]
 
 Arguments:
   name       Change name
@@ -228,8 +228,8 @@ Options:
   --help     Show this help message
 
 Example:
-  bun plugins/speck-changes/scripts/show.ts add-auth
-  bun plugins/speck-changes/scripts/show.ts add-auth --json
+  bun plugins/changes/scripts/show.ts add-auth
+  bun plugins/changes/scripts/show.ts add-auth --json
 `);
     process.exit(0);
   }

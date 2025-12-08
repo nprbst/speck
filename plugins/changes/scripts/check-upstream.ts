@@ -1,7 +1,7 @@
 /**
  * check-upstream - Query OpenSpec releases from GitHub
  *
- * Usage: bun plugins/speck-changes/scripts/check-upstream.ts [options]
+ * Usage: bun plugins/changes/scripts/check-upstream.ts [options]
  * Options:
  *   --json     Output in JSON format
  *   --limit N  Limit to N releases (default: 10)
@@ -155,7 +155,7 @@ async function main(): Promise<void> {
     console.log(`
 check-upstream - Query OpenSpec releases from GitHub
 
-Usage: bun plugins/speck-changes/scripts/check-upstream.ts [options]
+Usage: bun plugins/changes/scripts/check-upstream.ts [options]
 
 Options:
   --json     Output in JSON format
@@ -163,8 +163,8 @@ Options:
   --help     Show this help message
 
 Example:
-  bun plugins/speck-changes/scripts/check-upstream.ts --limit 5
-  bun plugins/speck-changes/scripts/check-upstream.ts --json
+  bun plugins/changes/scripts/check-upstream.ts --limit 5
+  bun plugins/changes/scripts/check-upstream.ts --json
 `);
     process.exit(0);
   }

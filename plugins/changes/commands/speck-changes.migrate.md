@@ -47,5 +47,5 @@ Migrate an existing OpenSpec project to Speck format.
 ## Implementation
 
 ```bash
-bun plugins/speck-changes/scripts/migrate.ts $ARGUMENTS
+bun plugins/changes/scripts/migrate.ts $ARGUMENTS
 ```

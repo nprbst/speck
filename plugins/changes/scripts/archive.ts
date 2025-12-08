@@ -1,7 +1,7 @@
 /**
  * archive - Archive a completed change proposal
  *
- * Usage: bun plugins/speck-changes/scripts/archive.ts <name> [options]
+ * Usage: bun plugins/changes/scripts/archive.ts <name> [options]
  * Options:
  *   --force    Archive even if tasks are incomplete
  *   --json     Output in JSON format
@@ -265,7 +265,7 @@ async function main(): Promise<void> {
     console.log(`
 archive - Archive a completed change proposal
 
-Usage: bun plugins/speck-changes/scripts/archive.ts <name> [options]
+Usage: bun plugins/changes/scripts/archive.ts <name> [options]
 
 Arguments:
   name       Change name
@@ -281,8 +281,8 @@ The archive command:
   3. Moves the change folder to .speck/archive/<name>-<YYYYMMDD>/
 
 Example:
-  bun plugins/speck-changes/scripts/archive.ts add-auth
-  bun plugins/speck-changes/scripts/archive.ts add-auth --force
+  bun plugins/changes/scripts/archive.ts add-auth
+  bun plugins/changes/scripts/archive.ts add-auth --force
 `);
     process.exit(0);
   }

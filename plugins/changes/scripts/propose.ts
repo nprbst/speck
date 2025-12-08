@@ -1,7 +1,7 @@
 /**
  * propose - Create a new change proposal
  *
- * Usage: bun plugins/speck-changes/scripts/propose.ts <name> [options]
+ * Usage: bun plugins/changes/scripts/propose.ts <name> [options]
  * Options:
  *   --with-design  Include design.md template
  *   --description  Initial proposal description
@@ -195,7 +195,7 @@ async function main(): Promise<void> {
     console.log(`
 propose - Create a new change proposal
 
-Usage: bun plugins/speck-changes/scripts/propose.ts <name> [options]
+Usage: bun plugins/changes/scripts/propose.ts <name> [options]
 
 Arguments:
   name           Change name in kebab-case (e.g., add-user-auth)
@@ -208,10 +208,10 @@ Options:
   --help            Show this help message
 
 Example:
-  bun plugins/speck-changes/scripts/propose.ts add-auth
-  bun plugins/speck-changes/scripts/propose.ts add-auth --with-design
-  bun plugins/speck-changes/scripts/propose.ts add-auth --description "Add user authentication"
-  bun plugins/speck-changes/scripts/propose.ts add-auth --specs auth,users
+  bun plugins/changes/scripts/propose.ts add-auth
+  bun plugins/changes/scripts/propose.ts add-auth --with-design
+  bun plugins/changes/scripts/propose.ts add-auth --description "Add user authentication"
+  bun plugins/changes/scripts/propose.ts add-auth --specs auth,users
 `);
     process.exit(0);
   }

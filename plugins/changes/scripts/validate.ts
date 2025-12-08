@@ -1,7 +1,7 @@
 /**
  * validate - Validate a change proposal structure and formatting
  *
- * Usage: bun plugins/speck-changes/scripts/validate.ts <name> [options]
+ * Usage: bun plugins/changes/scripts/validate.ts <name> [options]
  * Options:
  *   --json     Output in JSON format
  *   --help     Show help message
@@ -350,7 +350,7 @@ async function main(): Promise<void> {
     console.log(`
 validate - Validate a change proposal structure and formatting
 
-Usage: bun plugins/speck-changes/scripts/validate.ts <name> [options]
+Usage: bun plugins/changes/scripts/validate.ts <name> [options]
 
 Arguments:
   name       Change name
@@ -367,8 +367,8 @@ Validates:
   - RFC 2119 normative keywords (SHALL, MUST, etc.)
 
 Example:
-  bun plugins/speck-changes/scripts/validate.ts add-auth
-  bun plugins/speck-changes/scripts/validate.ts add-auth --json
+  bun plugins/changes/scripts/validate.ts add-auth
+  bun plugins/changes/scripts/validate.ts add-auth --json
 `);
     process.exit(0);
   }

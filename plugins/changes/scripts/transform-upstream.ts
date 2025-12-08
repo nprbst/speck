@@ -1,7 +1,7 @@
 /**
  * transform-upstream - Transform OpenSpec CLI to Bun TypeScript
  *
- * Usage: bun plugins/speck-changes/scripts/transform-upstream.ts [options]
+ * Usage: bun plugins/changes/scripts/transform-upstream.ts [options]
  * Options:
  *   --version <ver>  Specific version to transform (default: latest)
  *   --json           Output in JSON format
@@ -175,7 +175,7 @@ export async function transformUpstream(options: {
   const { version = 'latest', rootDir = process.cwd(), dryRun = false } = options;
 
   const upstreamDir = join(rootDir, 'upstream', 'openspec', version);
-  const pluginDir = join(rootDir, 'plugins', 'speck-changes');
+  const pluginDir = join(rootDir, 'plugins', 'changes');
   const historyPath = join(pluginDir, 'transform-history.json');
 
   // Verify upstream exists
@@ -274,7 +274,7 @@ async function main(): Promise<void> {
     console.log(`
 transform-upstream - Transform OpenSpec CLI to Bun TypeScript
 
-Usage: bun plugins/speck-changes/scripts/transform-upstream.ts [options]
+Usage: bun plugins/changes/scripts/transform-upstream.ts [options]
 
 Options:
   --version <ver>  Specific version to transform (default: latest)
@@ -283,9 +283,9 @@ Options:
   --help           Show this help message
 
 Example:
-  bun plugins/speck-changes/scripts/transform-upstream.ts
-  bun plugins/speck-changes/scripts/transform-upstream.ts --version v0.16.0
-  bun plugins/speck-changes/scripts/transform-upstream.ts --dry-run
+  bun plugins/changes/scripts/transform-upstream.ts
+  bun plugins/changes/scripts/transform-upstream.ts --version v0.16.0
+  bun plugins/changes/scripts/transform-upstream.ts --dry-run
 `);
     process.exit(0);
   }

@@ -1,7 +1,7 @@
 /**
  * list - List all change proposals
  *
- * Usage: bun plugins/speck-changes/scripts/list.ts [options]
+ * Usage: bun plugins/changes/scripts/list.ts [options]
  * Options:
  *   --all      Include archived changes
  *   --json     Output in JSON format
@@ -194,7 +194,7 @@ async function main(): Promise<void> {
     console.log(`
 list - List all change proposals
 
-Usage: bun plugins/speck-changes/scripts/list.ts [options]
+Usage: bun plugins/changes/scripts/list.ts [options]
 
 Options:
   --all      Include archived changes
@@ -202,9 +202,9 @@ Options:
   --help     Show this help message
 
 Example:
-  bun plugins/speck-changes/scripts/list.ts
-  bun plugins/speck-changes/scripts/list.ts --all
-  bun plugins/speck-changes/scripts/list.ts --json
+  bun plugins/changes/scripts/list.ts
+  bun plugins/changes/scripts/list.ts --all
+  bun plugins/changes/scripts/list.ts --json
 `);
     process.exit(0);
   }
