@@ -270,7 +270,7 @@ async function generateMarketplaceManifest(): Promise<void> {
   // Update speck-reviewer plugin version from its plugin.json
   const reviewerPluginJsonPath = join(
     config.sourceRoot,
-    'plugins/speck-reviewer/.claude-plugin/plugin.json'
+    'plugins/reviewer/.claude-plugin/plugin.json'
   );
   if (existsSync(reviewerPluginJsonPath)) {
     const reviewerPluginContent = await readFile(reviewerPluginJsonPath, 'utf-8');
@@ -521,7 +521,7 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
     bootstrap: false,
   };
 
-  const reviewerSourceDir = join(config.sourceRoot, 'plugins/speck-reviewer');
+  const reviewerSourceDir = join(config.sourceRoot, 'plugins/reviewer');
   const reviewerOutputDir = join(config.sourceRoot, 'dist/plugins/speck-reviewer');
 
   // Skip if source doesn't exist
@@ -537,7 +537,7 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
   await ensureDir(reviewerOutputDir);
 
   // 1. Bundle CLI to single JS file
-  const cliSourcePath = join(reviewerSourceDir, 'cli/src/index.ts');
+  const cliSourcePath = join(reviewerSourceDir, 'src/index.ts');
   if (existsSync(cliSourcePath)) {
     const cliDestDir = join(reviewerOutputDir, 'dist');
     await ensureDir(cliDestDir);
@@ -546,7 +546,7 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
   }
 
   // 1.5. Copy bootstrap.sh for global CLI installation
-  const bootstrapSourcePath = join(reviewerSourceDir, 'src/cli/bootstrap.sh');
+  const bootstrapSourcePath = join(reviewerSourceDir, 'src/bootstrap.sh');
   if (existsSync(bootstrapSourcePath)) {
     const srcCliDir = join(reviewerOutputDir, 'src/cli');
     await ensureDir(srcCliDir);
@@ -810,7 +810,7 @@ function validateRequiredFiles(): void {
   ];
 
   // Speck-reviewer plugin required directories (if source exists)
-  const reviewerSourceDir = join(config.sourceRoot, 'plugins/speck-reviewer');
+  const reviewerSourceDir = join(config.sourceRoot, 'plugins/reviewer');
   if (existsSync(reviewerSourceDir)) {
     requiredDirs.push(
       {

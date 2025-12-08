@@ -91,7 +91,7 @@ describe('marketplace.json', () => {
       const content = await readFile(MARKETPLACE_PATH, 'utf-8');
       const marketplace: Marketplace = JSON.parse(content);
       reviewerPlugin = marketplace.plugins.find((p) => p.name === 'speck-reviewer');
-      expect(reviewerPlugin?.source).toBe('./plugins/speck-reviewer');
+      expect(reviewerPlugin?.source).toBe('./plugins/reviewer');
     });
 
     it('should have description', async () => {

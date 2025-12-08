@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import type { PRFile } from '../../plugins/speck-reviewer/cli/src/types';
+import type { PRFile } from '../../plugins/reviewer/src/types';
 
 describe('clustering', () => {
   describe('clusterFiles', () => {
     it('should group files by directory', async () => {
-      const { clusterFiles } = await import('../../plugins/speck-reviewer/cli/src/clustering');
+      const { clusterFiles } = await import('../../plugins/reviewer/src/clustering');
 
       const files: PRFile[] = [
         { path: 'src/auth/login.ts', changeType: 'modified', additions: 10, deletions: 5 },
@@ -21,7 +21,7 @@ describe('clustering', () => {
     });
 
     it('should assign semantic names based on directory', async () => {
-      const { clusterFiles } = await import('../../plugins/speck-reviewer/cli/src/clustering');
+      const { clusterFiles } = await import('../../plugins/reviewer/src/clustering');
 
       const files: PRFile[] = [
         { path: 'src/auth/login.ts', changeType: 'modified', additions: 10, deletions: 5 },
@@ -36,7 +36,7 @@ describe('clustering', () => {
 
     it('should detect cross-cutting concerns', async () => {
       const { clusterFiles: _clusterFiles, detectCrossCuttingConcerns } = await import(
-        '../../plugins/speck-reviewer/cli/src/clustering'
+        '../../plugins/reviewer/src/clustering'
       );
 
       const files: PRFile[] = [
@@ -53,7 +53,7 @@ describe('clustering', () => {
     });
 
     it('should subdivide large clusters (50+ files)', async () => {
-      const { clusterFiles } = await import('../../plugins/speck-reviewer/cli/src/clustering');
+      const { clusterFiles } = await import('../../plugins/reviewer/src/clustering');
 
       // Create 60 test files in same directory
       const files: PRFile[] = [];
@@ -74,7 +74,7 @@ describe('clustering', () => {
     });
 
     it('should prioritize clusters with dependencies first', async () => {
-      const { clusterFiles } = await import('../../plugins/speck-reviewer/cli/src/clustering');
+      const { clusterFiles } = await import('../../plugins/reviewer/src/clustering');
 
       const files: PRFile[] = [
         { path: 'src/types/user.ts', changeType: 'modified', additions: 10, deletions: 5 },
@@ -99,7 +99,7 @@ describe('clustering', () => {
     });
 
     it('should handle renamed files', async () => {
-      const { clusterFiles } = await import('../../plugins/speck-reviewer/cli/src/clustering');
+      const { clusterFiles } = await import('../../plugins/reviewer/src/clustering');
 
       const files: PRFile[] = [
         { path: 'src/utils/helpers.ts', changeType: 'renamed', additions: 0, deletions: 0 },
@@ -114,7 +114,7 @@ describe('clustering', () => {
     });
 
     it('should create unique cluster IDs', async () => {
-      const { clusterFiles } = await import('../../plugins/speck-reviewer/cli/src/clustering');
+      const { clusterFiles } = await import('../../plugins/reviewer/src/clustering');
 
       const files: PRFile[] = [
         { path: 'src/a/file.ts', changeType: 'modified', additions: 10, deletions: 5 },
@@ -130,7 +130,7 @@ describe('clustering', () => {
     });
 
     it('should set initial status to pending', async () => {
-      const { clusterFiles } = await import('../../plugins/speck-reviewer/cli/src/clustering');
+      const { clusterFiles } = await import('../../plugins/reviewer/src/clustering');
 
       const files: PRFile[] = [
         { path: 'src/file.ts', changeType: 'modified', additions: 10, deletions: 5 },
@@ -146,9 +146,7 @@ describe('clustering', () => {
 
   describe('generateClusterName', () => {
     it('should generate readable names from paths', async () => {
-      const { generateClusterName } = await import(
-        '../../plugins/speck-reviewer/cli/src/clustering'
-      );
+      const { generateClusterName } = await import('../../plugins/reviewer/src/clustering');
 
       expect(generateClusterName('src/auth')).toContain('Auth');
       expect(generateClusterName('src/api/routes')).toContain('Routes');
@@ -159,9 +157,7 @@ describe('clustering', () => {
 
   describe('getClusterDescription', () => {
     it('should describe cluster contents', async () => {
-      const { getClusterDescription } = await import(
-        '../../plugins/speck-reviewer/cli/src/clustering'
-      );
+      const { getClusterDescription } = await import('../../plugins/reviewer/src/clustering');
 
       const files: PRFile[] = [
         { path: 'src/auth/login.ts', changeType: 'added', additions: 50, deletions: 0 },

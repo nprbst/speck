@@ -19,7 +19,7 @@ describe('speck integration', () => {
 
   describe('findSpecForBranch', () => {
     it('should find spec via specs/{branch-name}/spec.md', async () => {
-      const { findSpecForBranch } = await import('../../plugins/speck-reviewer/cli/src/speck');
+      const { findSpecForBranch } = await import('../../plugins/reviewer/src/speck');
 
       // Create spec directory and file
       const specDir = join(TEST_DIR, 'specs', '018-feature-name');
@@ -34,7 +34,7 @@ describe('speck integration', () => {
     });
 
     it('should find spec via .speck/branches.json mapping', async () => {
-      const { findSpecForBranch } = await import('../../plugins/speck-reviewer/cli/src/speck');
+      const { findSpecForBranch } = await import('../../plugins/reviewer/src/speck');
 
       // Create branches.json with mapping
       const speckDir = join(TEST_DIR, '.speck');
@@ -60,7 +60,7 @@ describe('speck integration', () => {
     });
 
     it('should return null when no spec exists', async () => {
-      const { findSpecForBranch } = await import('../../plugins/speck-reviewer/cli/src/speck');
+      const { findSpecForBranch } = await import('../../plugins/reviewer/src/speck');
 
       const result = await findSpecForBranch('nonexistent-branch', TEST_DIR);
 
@@ -68,7 +68,7 @@ describe('speck integration', () => {
     });
 
     it('should handle partial branch name matching', async () => {
-      const { findSpecForBranch } = await import('../../plugins/speck-reviewer/cli/src/speck');
+      const { findSpecForBranch } = await import('../../plugins/reviewer/src/speck');
 
       // Create spec for feature
       const specDir = join(TEST_DIR, 'specs', '018-speck-reviewer-plugin');
@@ -84,7 +84,7 @@ describe('speck integration', () => {
 
   describe('parseSpecContent', () => {
     it('should extract requirements from spec', async () => {
-      const { parseSpecContent } = await import('../../plugins/speck-reviewer/cli/src/speck');
+      const { parseSpecContent } = await import('../../plugins/reviewer/src/speck');
 
       const specContent = `# Feature Specification
 
@@ -108,7 +108,7 @@ describe('speck integration', () => {
     });
 
     it('should extract user stories from spec', async () => {
-      const { parseSpecContent } = await import('../../plugins/speck-reviewer/cli/src/speck');
+      const { parseSpecContent } = await import('../../plugins/reviewer/src/speck');
 
       const specContent = `# Feature Specification
 
@@ -137,7 +137,7 @@ A developer wants to review a PR.
     });
 
     it('should extract success criteria', async () => {
-      const { parseSpecContent } = await import('../../plugins/speck-reviewer/cli/src/speck');
+      const { parseSpecContent } = await import('../../plugins/reviewer/src/speck');
 
       const specContent = `# Feature Specification
 
@@ -156,7 +156,7 @@ A developer wants to review a PR.
     });
 
     it('should handle empty or minimal spec', async () => {
-      const { parseSpecContent } = await import('../../plugins/speck-reviewer/cli/src/speck');
+      const { parseSpecContent } = await import('../../plugins/reviewer/src/speck');
 
       const specContent = `# Feature Specification
 
@@ -173,7 +173,7 @@ Just a minimal spec without structured sections.
 
   describe('loadSpecContext', () => {
     it('should load full spec context', async () => {
-      const { loadSpecContext } = await import('../../plugins/speck-reviewer/cli/src/speck');
+      const { loadSpecContext } = await import('../../plugins/reviewer/src/speck');
 
       // Create complete spec
       const specDir = join(TEST_DIR, 'specs', '018-feature');

@@ -20,7 +20,7 @@ describe('state management', () => {
 
   describe('createSession', () => {
     it('should create a new review session with required fields', async () => {
-      const { createSession } = await import('../../plugins/speck-reviewer/cli/src/state');
+      const { createSession } = await import('../../plugins/reviewer/src/state');
 
       const session = createSession({
         prNumber: 142,
@@ -48,7 +48,7 @@ describe('state management', () => {
     });
 
     it('should support self-review mode', async () => {
-      const { createSession } = await import('../../plugins/speck-reviewer/cli/src/state');
+      const { createSession } = await import('../../plugins/reviewer/src/state');
 
       const session = createSession({
         prNumber: 142,
@@ -66,9 +66,7 @@ describe('state management', () => {
 
   describe('saveState / loadState', () => {
     it('should save state to file', async () => {
-      const { createSession, saveState } = await import(
-        '../../plugins/speck-reviewer/cli/src/state'
-      );
+      const { createSession, saveState } = await import('../../plugins/reviewer/src/state');
 
       const session = createSession({
         prNumber: 142,
@@ -86,7 +84,7 @@ describe('state management', () => {
 
     it('should load state from file', async () => {
       const { createSession, saveState, loadState } = await import(
-        '../../plugins/speck-reviewer/cli/src/state'
+        '../../plugins/reviewer/src/state'
       );
 
       const session = createSession({
@@ -107,16 +105,14 @@ describe('state management', () => {
     });
 
     it('should return null when no state file exists', async () => {
-      const { loadState } = await import('../../plugins/speck-reviewer/cli/src/state');
+      const { loadState } = await import('../../plugins/reviewer/src/state');
 
       const loaded = await loadState(TEST_DIR + '-nonexistent');
       expect(loaded).toBeNull();
     });
 
     it('should update lastUpdated on save', async () => {
-      const { createSession, saveState } = await import(
-        '../../plugins/speck-reviewer/cli/src/state'
-      );
+      const { createSession, saveState } = await import('../../plugins/reviewer/src/state');
 
       const session = createSession({
         prNumber: 142,
@@ -144,7 +140,7 @@ describe('state management', () => {
   describe('clearState', () => {
     it('should remove state file', async () => {
       const { createSession, saveState, clearState } = await import(
-        '../../plugins/speck-reviewer/cli/src/state'
+        '../../plugins/reviewer/src/state'
       );
 
       const session = createSession({
@@ -164,7 +160,7 @@ describe('state management', () => {
     });
 
     it('should not throw when state file does not exist', async () => {
-      const { clearState } = await import('../../plugins/speck-reviewer/cli/src/state');
+      const { clearState } = await import('../../plugins/reviewer/src/state');
 
       expect(() => clearState(TEST_DIR + '-nonexistent')).not.toThrow();
     });
@@ -172,7 +168,7 @@ describe('state management', () => {
 
   describe('schema versioning', () => {
     it('should detect schema version mismatch', async () => {
-      const { loadState } = await import('../../plugins/speck-reviewer/cli/src/state');
+      const { loadState } = await import('../../plugins/reviewer/src/state');
 
       // Write state with old schema version
       const oldState = {
@@ -188,7 +184,7 @@ describe('state management', () => {
 
     it('should load state with current schema version', async () => {
       const { createSession, saveState, loadState } = await import(
-        '../../plugins/speck-reviewer/cli/src/state'
+        '../../plugins/reviewer/src/state'
       );
 
       const session = createSession({
@@ -209,9 +205,7 @@ describe('state management', () => {
 
   describe('cluster navigation', () => {
     it('should find next pending cluster', async () => {
-      const { createSession, getNextCluster } = await import(
-        '../../plugins/speck-reviewer/cli/src/state'
-      );
+      const { createSession, getNextCluster } = await import('../../plugins/reviewer/src/state');
 
       const session = createSession({
         prNumber: 142,
@@ -259,7 +253,7 @@ describe('state management', () => {
 
     it('should find previous cluster', async () => {
       const { createSession, getPreviousCluster } = await import(
-        '../../plugins/speck-reviewer/cli/src/state'
+        '../../plugins/reviewer/src/state'
       );
 
       const session = createSession({
@@ -307,9 +301,7 @@ describe('state management', () => {
     });
 
     it('should find cluster by name', async () => {
-      const { createSession, getClusterByName } = await import(
-        '../../plugins/speck-reviewer/cli/src/state'
-      );
+      const { createSession, getClusterByName } = await import('../../plugins/reviewer/src/state');
 
       const session = createSession({
         prNumber: 142,

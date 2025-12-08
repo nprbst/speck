@@ -1,5 +1,5 @@
 {
-  "name": "@speck/plugin",
+  "name": "@speck/speck-plugin",
   "version": "1.10.2",
   "description": "Speck - AI-powered spec-driven development plugin for Claude Code",
   "type": "module",

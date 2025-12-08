@@ -14,7 +14,7 @@
  *
  * Target → Version File → Tag Pattern:
  *   - speck:          package.json                                    → v*
- *   - speck-reviewer: plugins/speck-reviewer/.claude-plugin/plugin.json → speck-reviewer-v*
+ *   - speck-reviewer: plugins/reviewer/.claude-plugin/plugin.json → speck-reviewer-v*
  *   - marketplace:    .claude-plugin/marketplace.json (metadata.version) → marketplace-v*
  *   - common:         packages/common/package.json                    → common-v*
  *   - maintainer:     packages/maintainer/package.json                → maintainer-v*
@@ -120,7 +120,7 @@ function bumpVersion(current: string, bump: string): string {
 function getVersionFilePath(target: PluginTarget): string {
   switch (target) {
     case 'speck-reviewer':
-      return join(process.cwd(), 'plugins/speck-reviewer/.claude-plugin/plugin.json');
+      return join(process.cwd(), 'plugins/reviewer/.claude-plugin/plugin.json');
     case 'marketplace':
       return join(process.cwd(), '.claude-plugin/marketplace.json');
     case 'common':
@@ -420,17 +420,17 @@ async function updateVersionFile(newVersion: string, target: PluginTarget): Prom
 
   const updatedFiles = [filePath];
 
-  // For speck-reviewer, also update the CLI package.json
+  // For speck-reviewer, also update the plugin package.json
   if (target === 'speck-reviewer') {
-    const cliPackagePath = join(process.cwd(), 'plugins/speck-reviewer/cli/package.json');
-    if (existsSync(cliPackagePath)) {
-      const cliContent = await readFile(cliPackagePath, 'utf-8');
-      const cliJson = VersionFileSchema.parse(JSON.parse(cliContent));
-      const cliOldVersion = cliJson.version || '0.0.0';
-      (cliJson as Record<string, unknown>).version = newVersion;
-      await writeFile(cliPackagePath, JSON.stringify(cliJson, null, 2) + '\n', 'utf-8');
-      console.log(`✓ Updated cli/package.json: ${cliOldVersion} → ${newVersion}`);
-      updatedFiles.push(cliPackagePath);
+    const pluginPackagePath = join(process.cwd(), 'plugins/reviewer/package.json');
+    if (existsSync(pluginPackagePath)) {
+      const pluginContent = await readFile(pluginPackagePath, 'utf-8');
+      const pluginJson = VersionFileSchema.parse(JSON.parse(pluginContent));
+      const pluginOldVersion = pluginJson.version || '0.0.0';
+      (pluginJson as Record<string, unknown>).version = newVersion;
+      await writeFile(pluginPackagePath, JSON.stringify(pluginJson, null, 2) + '\n', 'utf-8');
+      console.log(`✓ Updated package.json: ${pluginOldVersion} → ${newVersion}`);
+      updatedFiles.push(pluginPackagePath);
     }
   }
 

@@ -3,7 +3,7 @@ import { readFile, readdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 
-const PLUGIN_ROOT = join(import.meta.dir, '../../plugins/speck-reviewer');
+const PLUGIN_ROOT = join(import.meta.dir, '../../plugins/reviewer');
 const PLUGIN_JSON_PATH = join(PLUGIN_ROOT, '.claude-plugin/plugin.json');
 
 interface PluginManifest {

@@ -93,10 +93,7 @@ async function main(): Promise<void> {
     }
 
     // Read speck-reviewer version
-    const reviewerPluginPath = join(
-      process.cwd(),
-      'plugins/speck-reviewer/.claude-plugin/plugin.json'
-    );
+    const reviewerPluginPath = join(process.cwd(), 'plugins/reviewer/.claude-plugin/plugin.json');
     let reviewerVersion = 'unknown';
     if (existsSync(reviewerPluginPath)) {
       const reviewerJson = PluginJsonSchema.parse(

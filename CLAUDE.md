@@ -78,10 +78,15 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 ├── templates/             # Handlebars templates for specs/plans/tasks
 └── scripts/               # Build and workflow automation scripts
 
-plugins/speck/             # Deployable Speck plugin
-├── scripts/               # CLI implementations
-├── commands/              # Slash command definitions
-└── skills/                # Skill definitions
+plugins/
+├── speck/                 # Main Speck plugin (@speck/speck-plugin)
+│   ├── scripts/           # CLI implementations
+│   ├── commands/          # Slash command definitions
+│   └── skills/            # Skill definitions
+└── reviewer/              # PR review plugin (@speck/reviewer-plugin)
+    ├── src/               # CLI source code
+    ├── commands/          # Slash command definitions
+    └── skills/            # Skill definitions
 
 packages/
 ├── common/                # Shared utilities (@speck/common)
@@ -164,4 +169,10 @@ bun test                  # Run all tests (unit, visual, a11y)
   Cloudflare Turnstile (spam prevention), Wrangler CLI
 
 <!-- MANUAL ADDITIONS START -->
+
+## Git Practices
+
+- **Always use `git mv` instead of `mv`** when moving or renaming tracked files.
+  This preserves git history and ensures proper tracking of file renames.
+
 <!-- MANUAL ADDITIONS END -->
