@@ -1,0 +1,13 @@
+{
+  "releases": [
+    {
+      "version": "v0.14.0",
+      "pullDate": "2025-12-08T05:16:45.765Z",
+      "commitSha": "main",
+      "status": "active",
+      "releaseDate": "2025-11-04T08:40:18Z",
+      "releaseNotes": "\r\n## What's Changed\r\n* docs: add Crush to supported AI tools in README by @TabishB in https://github.com/Fission-AI/OpenSpec/pull/235\r\n* fix: use change-id as fallback title instead of \"Untitled Change\" by @TabishB in https://github.com/Fission-AI/OpenSpec/pull/236\r\n* fix: prevent false 'already configured' detection for tools by @TabishB in https://github.com/Fission-AI/OpenSpec/pull/239\r\n* fix: recreate missing openspec template files in extend mode by @TabishB in https://github.com/Fission-AI/OpenSpec/pull/238\r\n* docs: add guidance for populating project-level context by @harikrishnan83 in https://github.com/Fission-AI/OpenSpec/pull/241\r\n* feat: add CoStrict AI assistant support  by @mini2s in https://github.com/Fission-AI/OpenSpec/pull/240\r\n* feat: add Qoder CLI support to configuration and documentation by @KUTEJiang in https://github.com/Fission-AI/OpenSpec/pull/261\r\n* feat: add  support to apply slash command by @TabishB in https://github.com/Fission-AI/OpenSpec/pull/244\r\n* feat: add Qwen Code support with slash command integration by @AndersHsueh in https://github.com/Fission-AI/OpenSpec/pull/250\r\n* chore: add changeset for AI assistants support and configuration improvements by @TabishB in https://github.com/Fission-AI/OpenSpec/pull/270\r\n* chore(release): version packages by @github-actions[bot] in https://github.com/Fission-AI/OpenSpec/pull/271\r\n\r\n## New Contributors\r\n* @mini2s made their first contribution in https://github.com/Fission-AI/OpenSpec/pull/240\r\n* @KUTEJiang made their first contribution in https://github.com/Fission-AI/OpenSpec/pull/261\r\n* @AndersHsueh made their first contribution in https://github.com/Fission-AI/OpenSpec/pull/250\r\n\r\n**Full Changelog**: https://github.com/Fission-AI/OpenSpec/compare/v0.13.0...v0.14.0"
+    }
+  ],
+  "latestVersion": "v0.14.0"
+}
