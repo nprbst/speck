@@ -115,8 +115,7 @@ describe('Migration Validation: check-prerequisites command', () => {
     // Command should produce JSON output (may succeed or fail based on branch)
     // If not on a feature branch, it returns an error JSON with NOT_ON_FEATURE_BRANCH
     const output = unified.stdout + unified.stderr;
-    const isValidJson =
-      output.includes('FEATURE_DIR') || output.includes('NOT_ON_FEATURE_BRANCH');
+    const isValidJson = output.includes('FEATURE_DIR') || output.includes('NOT_ON_FEATURE_BRANCH');
     expect(isValidJson).toBe(true);
   });
 });

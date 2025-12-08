@@ -16,7 +16,7 @@ import type {
   TransformationHistoryEntry,
   FactoringMapping,
   ArtifactType,
-} from '../../../../specs/001-speck-core-project/contracts/transformation-history';
+} from '../contracts/transformation-history';
 import {
   createEmptyHistory,
   createHistoryEntry,
@@ -24,7 +24,7 @@ import {
   getEntryByVersion,
   getLatestSuccessfulTransformation,
   validateHistory,
-} from '../../../../specs/001-speck-core-project/contracts/transformation-history';
+} from '../contracts/transformation-history';
 
 /**
  * Custom error for transformation history operations

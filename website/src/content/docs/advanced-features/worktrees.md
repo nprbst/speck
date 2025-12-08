@@ -62,7 +62,7 @@ Create or edit `.speck/config.json` in your repository:
 Or use the interactive setup wizard:
 
 ```bash
-bun .speck/scripts/worktree/cli.ts init
+speck worktree init
 ```
 
 ### 2. Create a Feature with Worktree
@@ -318,7 +318,7 @@ The handoff document is automatically updated when:
 You can manually regenerate the handoff document:
 
 ```bash
-bun .speck/scripts/worktree/cli.ts update-handoff
+speck worktree update-handoff
 ```
 
 ## User Stories
@@ -408,7 +408,7 @@ cd /Users/dev/my-app
 ### List All Worktrees
 
 ```bash
-bun .speck/scripts/worktree/cli.ts list
+speck worktree list
 ```
 
 **Output**:
@@ -420,13 +420,13 @@ Worktrees:
 
 **JSON output** (for scripting):
 ```bash
-bun .speck/scripts/worktree/cli.ts list --json
+speck worktree list --json
 ```
 
 ### Create Worktree Manually
 
 ```bash
-bun .speck/scripts/worktree/cli.ts create 004-analytics
+speck worktree create 004-analytics
 ```
 
 **Flags**:
@@ -438,7 +438,7 @@ bun .speck/scripts/worktree/cli.ts create 004-analytics
 ### Remove Worktree
 
 ```bash
-bun .speck/scripts/worktree/cli.ts remove 002-user-auth
+speck worktree remove 002-user-auth
 ```
 
 **Confirmation prompt**:
@@ -454,12 +454,12 @@ Continue? (yes/no):
 ### Cleanup Stale Worktrees
 
 ```bash
-bun .speck/scripts/worktree/cli.ts prune
+speck worktree prune
 ```
 
 **Dry run** (see what would be removed):
 ```bash
-bun .speck/scripts/worktree/cli.ts prune --dry-run
+speck worktree prune --dry-run
 ```
 
 ## Command Integration
@@ -481,7 +481,7 @@ Create a new feature specification with worktree:
 ## Troubleshooting
 
 **Common worktree issues:**
-- Insufficient disk space → Run `bun .speck/scripts/worktree/cli.ts prune` to clean up
+- Insufficient disk space → Run `speck worktree prune` to clean up
 - Worktree collision → Use `--reuse-worktree` flag or remove existing worktree
 - IDE launch failure → Verify `which code` works; worktree remains usable manually
 - Dependency installation failure → Check network; try manual `bun install`

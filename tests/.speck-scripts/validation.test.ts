@@ -30,7 +30,9 @@ describe('T072: CLI Interface Compatibility', () => {
     expect(successResult.exitCode).toBe(0);
 
     // Help flag should succeed
-    const helpResult = await $`bun plugins/speck/scripts/check-upstream.ts --help`.nothrow().quiet();
+    const helpResult = await $`bun plugins/speck/scripts/check-upstream.ts --help`
+      .nothrow()
+      .quiet();
     expect(helpResult.exitCode).toBe(0);
     expect(helpResult.stdout.toString()).toContain('Usage:');
   });
@@ -55,13 +57,16 @@ describe('T072: CLI Interface Compatibility', () => {
 
     if (!needsCleanup) {
       // Version already exists, just verify error handling
-      const result = await $`bun plugins/speck/scripts/pull-upstream.ts ${testVersion}`.nothrow().quiet();
+      const result = await $`bun plugins/speck/scripts/pull-upstream.ts ${testVersion}`
+        .nothrow()
+        .quiet();
       expect([0, 1]).toContain(result.exitCode);
       return;
     }
 
     // Pull the version
-    const pullResult = await $`bun plugins/speck/scripts/pull-upstream.ts ${testVersion} --json`.quiet();
+    const pullResult =
+      await $`bun plugins/speck/scripts/pull-upstream.ts ${testVersion} --json`.quiet();
     expect(pullResult.exitCode).toBe(0);
 
     const pullOutput = JSON.parse(pullResult.stdout.toString());

@@ -210,7 +210,7 @@ Error: Insufficient disk space
 **Solution**: Free up disk space or disable dependency auto-install:
 ```bash
 # Remove unused worktrees
-bun .speck/scripts/worktree/cli.ts prune
+speck worktree prune
 
 # Clear package manager cache
 bun pm cache rm --all
@@ -230,7 +230,7 @@ Error: Worktree directory already exists
 **Solution**: Remove existing worktree or use `--reuse-worktree` flag:
 ```bash
 # Remove existing worktree
-bun .speck/scripts/worktree/cli.ts remove 002-user-auth
+speck worktree remove 002-user-auth
 
 # Or reuse with flag
 --reuse-worktree

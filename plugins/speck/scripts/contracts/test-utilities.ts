@@ -5,7 +5,10 @@
  * and common/ utilities.
  */
 
-import type { GitHubRelease, RateLimitInfo } from './github-api';
+import type {
+  GitHubRelease,
+  RateLimitInfo,
+} from '../../../../packages/maintainer/src/contracts/github-api';
 import type { UpstreamRelease, ReleaseRegistry, ReleaseStatus } from './release-registry';
 import type { CliResult, ExitCode } from './cli-interface';
 

@@ -78,8 +78,17 @@ Auto-generated from all feature plans. Last updated: 2025-11-15
 ├── templates/             # Handlebars templates for specs/plans/tasks
 └── scripts/               # Build and workflow automation scripts
 
-.speck/
-└── scripts/               # Feature management scripts
+plugins/speck/             # Deployable Speck plugin
+├── scripts/               # CLI implementations
+├── commands/              # Slash command definitions
+└── skills/                # Skill definitions
+
+packages/
+├── common/                # Shared utilities (@speck/common)
+└── maintainer/            # Maintainer tools (@speck/maintainer)
+
+.speck/                    # User project config (runtime directory)
+└── config.json            # Worktree and IDE settings
 
 dist/plugin/               # Build output (002-claude-plugin-packaging)
 ├── .claude-plugin/        # Generated manifests

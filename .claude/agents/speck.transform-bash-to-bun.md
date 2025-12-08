@@ -9,7 +9,7 @@ interface compatibility.
 **Input**: Path to bash script(s) in `upstream/<version>/scripts/bash/`
 directory
 
-**Output**: Bun TypeScript implementation(s) in `.speck/scripts/` directory with
+**Output**: Bun TypeScript implementation(s) in `plugins/speck/scripts/` directory with
 transformation rationale
 
 ---
@@ -44,7 +44,7 @@ When invoked, you will receive:
 
 3. **For each changed script**:
    - **ALWAYS read the upstream bash script** to understand what changed
-   - Check if a `.ts` file already exists in `.speck/scripts/`
+   - Check if a `.ts` file already exists in `plugins/speck/scripts/`
    - If exists: **UPDATE** the existing file (preserve [SPECK-EXTENSION]
      markers)
    - If new: **CREATE** a new `.ts` file
@@ -146,7 +146,7 @@ A **breaking change** is any modification that would cause existing users or int
 
 **For each bash script being transformed**:
 
-1. **Check for existing TypeScript file**: If `.speck/scripts/<name>.ts` exists, this is an UPDATE
+1. **Check for existing TypeScript file**: If `plugins/speck/scripts/<name>.ts` exists, this is an UPDATE
 2. **If UPDATE**: Compare the OLD upstream bash (from PREVIOUS_VERSION) with NEW upstream bash (from UPSTREAM_VERSION)
    - If PREVIOUS_VERSION is "none", skip breaking change detection (first transformation)
    - Read both versions and analyze differences
@@ -171,7 +171,7 @@ A **breaking change** is any modification that would cause existing users or int
      - Old vs. new comparison for each breaking change
      - Impact assessment (which users/integrations affected)
    - **Present options to user**:
-     - **Option 1**: Skip this script (keep existing `.speck/scripts/<name>.ts` unchanged)
+     - **Option 1**: Skip this script (keep existing `plugins/speck/scripts/<name>.ts` unchanged)
      - **Option 2**: Attempt best-effort transformation with warnings (update code but document breaking changes)
      - **Option 3**: Abort entire transformation (exit without changes)
    - **Wait for user decision** before proceeding
@@ -313,7 +313,7 @@ process.exit(1);
 
 ### Priority Order (Highest to Lowest)
 
-1. **Existing TypeScript file extensions** (`.speck/scripts/<name>.ts`)
+1. **Existing TypeScript file extensions** (`plugins/speck/scripts/<name>.ts`)
    - These are Speck-specific customizations and MUST be preserved
    - Copy verbatim into new transformation
 2. **Source bash script extensions** (if no existing TypeScript file)
@@ -498,7 +498,7 @@ For each operation in the bash script:
 **CRITICAL**: Check for existing TypeScript file first to preserve
 SPECK-EXTENSION blocks and minimize changes.
 
-1. **Check for existing file**: Determine target path `.speck/scripts/<name>.ts`
+1. **Check for existing file**: Determine target path `plugins/speck/scripts/<name>.ts`
    (e.g., `check-prerequisites.sh` → `check-prerequisites.ts`)
 2. **Read existing file if present**:
    - Extract all `[SPECK-EXTENSION:START]` ... `[SPECK-EXTENSION:END]` blocks
@@ -539,7 +539,7 @@ SPECK-EXTENSION blocks and minimize changes.
 **CRITICAL**: You MUST create or update tests for the generated TypeScript
 implementation.
 
-1. **Determine test file path**: Map `.speck/scripts/<name>.ts` →
+1. **Determine test file path**: Map `plugins/speck/scripts/<name>.ts` →
    `tests/.speck-scripts/<name>.test.ts`
 2. **Check for existing tests**: If test file exists, modify it; otherwise
    create new file
@@ -558,7 +558,7 @@ import { describe, expect, test } from "bun:test";
 import { spawn } from "bun";
 
 describe("check-prerequisites.ts", () => {
-  const scriptPath = ".speck/scripts/check-prerequisites.ts";
+  const scriptPath = "plugins/speck/scripts/check-prerequisites.ts";
 
   test("--help flag displays usage", async () => {
     const proc = spawn(["bun", scriptPath, "--help"]);
@@ -684,7 +684,7 @@ process.exit(exitCode);
 After transformation, generate a markdown report summarizing:
 
 1. **Source file**: Path to bash script in `upstream/<version>/`
-2. **Output file**: Path to generated TypeScript in `.speck/scripts/`
+2. **Output file**: Path to generated TypeScript in `plugins/speck/scripts/`
 3. **Test file**: Path to generated/updated test file in `tests/.speck-scripts/`
 4. **Strategy used**: Pure TypeScript / Bun Shell API / Bun.spawn() breakdown
 5. **CLI compatibility**: Flags, exit codes, JSON schema preserved
@@ -701,7 +701,7 @@ After transformation, generate a markdown report summarizing:
 ## check-prerequisites.ts
 
 **Source**: `upstream/v1.0.0/scripts/bash/check-prerequisites.sh` **Output**:
-`.speck/scripts/check-prerequisites.ts` **Existing File**: Yes (updated) / No
+`plugins/speck/scripts/check-prerequisites.ts` **Existing File**: Yes (updated) / No
 (created new) **Test File**: `tests/.speck-scripts/check-prerequisites.test.ts`
 (3 tests updated) **Strategy**: 70% Pure TypeScript, 20% Bun Shell API, 10%
 sourced common functions
@@ -775,7 +775,7 @@ validation.
 
 **Resolution Options**:
 
-1. Skip this file - keep existing `.speck/scripts/check-prerequisites.ts`
+1. Skip this file - keep existing `plugins/speck/scripts/check-prerequisites.ts`
 2. Manual merge - halt transformation, ask user to merge manually
 3. Abort transformation - exit with error, no changes made
 
@@ -825,7 +825,7 @@ try {
 This agent is invoked by `/speck.transform-upstream` like this:
 
 ```typescript
-// In .speck/scripts/transform-upstream.ts
+// In plugins/speck/scripts/transform-upstream.ts
 import { spawnSync } from "bun";
 
 const agentResult = spawnSync(
@@ -834,7 +834,7 @@ const agentResult = spawnSync(
     env: {
       UPSTREAM_VERSION: "v1.0.0",
       SOURCE_SCRIPTS: "upstream/v1.0.0/scripts/bash/*.sh",
-      OUTPUT_DIR: ".speck/scripts/",
+      OUTPUT_DIR: "plugins/speck/scripts/",
     },
   },
 );
@@ -842,6 +842,6 @@ const agentResult = spawnSync(
 
 The agent should output:
 
-1. Generated TypeScript files in `.speck/scripts/`
+1. Generated TypeScript files in `plugins/speck/scripts/`
 2. Transformation report (markdown) to stdout
 3. Exit code 0 on success, 2 on conflict/error

@@ -7,19 +7,19 @@ spec-kit releases from the upstream repository.
 
 ## Your Task
 
-Execute the `.speck/scripts/check-upstream.ts` script and present the results to
+Execute the `packages/maintainer/src/check-upstream.ts` script and present the results to
 the user.
 
 ## Execution Steps
 
 1. Run the check-upstream script:
    ```bash
-   bun run .speck/scripts/check-upstream.ts
+   bun run packages/maintainer/src/check-upstream.ts
    ```
 
 2. If the user requested JSON output, run with --json flag:
    ```bash
-   bun run .speck/scripts/check-upstream.ts --json
+   bun run packages/maintainer/src/check-upstream.ts --json
    ```
 
 3. Present the results to the user:

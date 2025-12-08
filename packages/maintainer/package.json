@@ -1,0 +1,15 @@
+{
+  "name": "@speck/maintainer",
+  "version": "1.0.0",
+  "description": "Maintainer tools for syncing from upstream spec-kit",
+  "type": "module",
+  "bin": {
+    "check-upstream": "./src/check-upstream.ts",
+    "pull-upstream": "./src/pull-upstream.ts",
+    "transform-upstream": "./src/transform-upstream/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.2",
+    "typescript": "^5.3.3"
+  }
+}

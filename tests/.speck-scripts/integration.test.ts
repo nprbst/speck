@@ -102,7 +102,9 @@ describe('Integration: Full upstream sync pipeline', () => {
 
   test('pipeline validates version format', async () => {
     // Try to pull invalid version
-    const result = await $`bun plugins/speck/scripts/pull-upstream.ts invalid-version`.nothrow().quiet();
+    const result = await $`bun plugins/speck/scripts/pull-upstream.ts invalid-version`
+      .nothrow()
+      .quiet();
 
     expect(result.exitCode).toBe(1); // User error exit code
     expect(result.stderr.toString()).toContain('Invalid version');

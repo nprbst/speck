@@ -5,7 +5,7 @@ This directory contains the unified Speck CLI implementation with dual-mode oper
 ## Directory Structure
 
 ```
-.speck/scripts/
+plugins/speck/scripts/
 ├── speck.ts                  # Main dual-mode CLI entry point
 ├── build-hook.ts             # Build script for bundled hook
 ├── commands/                 # Command handler implementations
@@ -34,7 +34,7 @@ This directory contains the unified Speck CLI implementation with dual-mode oper
 The Speck CLI operates in two modes:
 
 ### CLI Mode (Standalone)
-- Invoked directly: `bun .speck/scripts/speck.ts <command> [args]`
+- Invoked directly: `bun plugins/speck/scripts/speck.ts <command> [args]`
 - Uses Commander.js for argument parsing
 - Outputs to stdout/stderr
 - Returns exit codes (0=success, non-zero=failure)
@@ -105,7 +105,7 @@ Heavy commands loaded on demand:
 **Flow**:
 1. Claude attempts to run: `speck-env`
 2. Hook intercepts via stdin JSON: `{"tool_name": "Bash", "tool_input": {"command": "speck-env"}}`
-3. Hook routes to CLI: `bun .speck/dist/speck-hook.js --hook`
+3. Hook routes to CLI: `bun plugins/speck/dist/speck-hook.js --hook`
 4. CLI executes command and returns JSON
 5. Hook wraps output: `{"hookSpecificOutput": {"updatedInput": {"command": "echo '...'"}}}`
 6. Claude executes wrapped command and sees output
@@ -145,7 +145,7 @@ To add a new virtual command (e.g., `speck-analyze`):
 **Step 1: Create Handler** (if needed)
 
 ```typescript
-// .speck/scripts/commands/analyze.ts
+// plugins/speck/scripts/commands/analyze.ts
 import type { CommandHandler } from "../lib/types";
 
 export const analyzeHandler: CommandHandler = async (args, context) => {
@@ -161,7 +161,7 @@ export const analyzeHandler: CommandHandler = async (args, context) => {
 **Step 2: Register Command**
 
 ```typescript
-// .speck/scripts/commands/index.ts
+// plugins/speck/scripts/commands/index.ts
 import { analyzeHandler } from "./analyze";
 
 export const registry: CommandRegistry = {
@@ -188,11 +188,11 @@ bun run build:hook
 
 ```bash
 # CLI mode
-bun .speck/scripts/speck.ts analyze
+bun plugins/speck/scripts/speck.ts analyze
 
 # Hook mode simulation
 echo '{"tool_name":"Bash","tool_input":{"command":"speck-analyze"}}' | \
-  bun .speck/dist/speck-hook.js
+  bun plugins/speck/dist/speck-hook.js
 ```
 
 **Total time**: <30 minutes (per SC-008)
@@ -210,7 +210,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"speck-analyze"}}' | \
 bun run build:hook
 ```
 
-Generates `.speck/dist/speck-hook.js` - a minified single-file bundle for optimal hook performance.
+Generates `plugins/speck/dist/speck-hook.js` - a minified single-file bundle for optimal hook performance.
 
 ### Run Tests
 ```bash
@@ -240,6 +240,15 @@ bun run lint
 | create-new-feature.ts | ✅ Migrated | `speck-create-new-feature` | Uses `lazyMain` pattern |
 | setup-plan.ts | ✅ Migrated | `speck-setup-plan` | Uses `lazyMain` pattern |
 | link-repo.ts | ✅ Migrated | `speck-link-repo` | Uses `lazyMain` pattern |
+
+## Maintainer Tools
+
+Maintainer tools for syncing from upstream spec-kit are located in a separate package:
+- **Location**: `packages/maintainer/`
+- **Scripts**: `check-upstream.ts`, `pull-upstream.ts`, `transform-upstream/`
+- **Purpose**: Development-only tools for maintaining the Speck plugin
+
+These tools are NOT included in the deployable plugin.
 
 ## Related Documentation
 

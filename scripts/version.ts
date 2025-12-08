@@ -9,13 +9,15 @@
  * Usage:
  *   bun run scripts/version.ts <patch|minor|major|1.2.3> [target] [flags]
  *
- * Targets: speck (default), speck-reviewer, marketplace, all
+ * Targets: speck (default), speck-reviewer, marketplace, common, maintainer, all
  * Flags: --no-git, --allow-dirty, --no-push, --no-changelog
  *
  * Target → Version File → Tag Pattern:
  *   - speck:          package.json                                    → v*
  *   - speck-reviewer: plugins/speck-reviewer/.claude-plugin/plugin.json → speck-reviewer-v*
  *   - marketplace:    .claude-plugin/marketplace.json (metadata.version) → marketplace-v*
+ *   - common:         packages/common/package.json                    → common-v*
+ *   - maintainer:     packages/maintainer/package.json                → maintainer-v*
  *
  * Examples:
  *   bun run scripts/version.ts patch                  # bumps speck
@@ -48,7 +50,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import { $ } from 'bun';
 
-type PluginTarget = 'speck' | 'speck-reviewer' | 'marketplace';
+type PluginTarget = 'speck' | 'speck-reviewer' | 'marketplace' | 'common' | 'maintainer';
 
 type BumpType = 'patch' | 'minor' | 'major';
 
@@ -110,6 +112,10 @@ function getVersionFilePath(target: PluginTarget): string {
       return join(process.cwd(), 'plugins/speck-reviewer/.claude-plugin/plugin.json');
     case 'marketplace':
       return join(process.cwd(), '.claude-plugin/marketplace.json');
+    case 'common':
+      return join(process.cwd(), 'packages/common/package.json');
+    case 'maintainer':
+      return join(process.cwd(), 'packages/maintainer/package.json');
     default:
       return join(process.cwd(), 'package.json');
   }
@@ -121,6 +127,10 @@ function getTagPrefix(target: PluginTarget): string {
       return 'speck-reviewer-v';
     case 'marketplace':
       return 'marketplace-v';
+    case 'common':
+      return 'common-v';
+    case 'maintainer':
+      return 'maintainer-v';
     default:
       return 'v';
   }
@@ -392,6 +402,8 @@ async function updateVersionFile(newVersion: string, target: PluginTarget): Prom
     speck: 'package.json',
     'speck-reviewer': 'plugin.json',
     marketplace: 'marketplace.json',
+    common: 'packages/common/package.json',
+    maintainer: 'packages/maintainer/package.json',
   };
   console.log(`✓ Updated ${fileNames[target]}: ${oldVersion} → ${newVersion}`);
 
@@ -453,6 +465,12 @@ function parseTarget(args: string[]): PluginTarget | 'all' | null {
   if (positionalArgs.includes('marketplace')) {
     return 'marketplace';
   }
+  if (positionalArgs.includes('common')) {
+    return 'common';
+  }
+  if (positionalArgs.includes('maintainer')) {
+    return 'maintainer';
+  }
   if (positionalArgs.includes('speck')) {
     return 'speck';
   }
@@ -467,9 +485,11 @@ async function promptForTarget(): Promise<PluginTarget | 'all' | null> {
   console.log('  1. speck');
   console.log('  2. speck-reviewer');
   console.log('  3. marketplace');
-  console.log('  4. all');
-  console.log('  5. exit');
-  process.stdout.write('\nChoice [1-5]: ');
+  console.log('  4. common');
+  console.log('  5. maintainer');
+  console.log('  6. all');
+  console.log('  7. exit');
+  process.stdout.write('\nChoice [1-7]: ');
 
   const response = await new Promise<string>((resolve) => {
     process.stdin.once('data', (data) => {
@@ -486,6 +506,10 @@ async function promptForTarget(): Promise<PluginTarget | 'all' | null> {
     case '3':
       return 'marketplace';
     case '4':
+      return 'common';
+    case '5':
+      return 'maintainer';
+    case '6':
       return 'all';
     default:
       return null;
@@ -561,7 +585,7 @@ async function main() {
 
   if (args.length === 0) {
     console.error('Usage: bun run scripts/version.ts <patch|minor|major|1.2.3> <target> [flags]');
-    console.error('\nTargets: speck, speck-reviewer, marketplace, all');
+    console.error('\nTargets: speck, speck-reviewer, marketplace, common, maintainer, all');
     console.error('\nFlags:');
     console.error('  --no-git        Skip all git operations');
     console.error('  --allow-dirty   Allow version bump with uncommitted changes');
@@ -598,6 +622,8 @@ async function main() {
       await bumpPlugin(bump, 'speck', skipGit, skipPush, allowDirty, skipChangelog);
       await bumpPlugin(bump, 'speck-reviewer', skipGit, skipPush, allowDirty, skipChangelog);
       await bumpPlugin(bump, 'marketplace', skipGit, skipPush, allowDirty, skipChangelog);
+      await bumpPlugin(bump, 'common', skipGit, skipPush, allowDirty, skipChangelog);
+      await bumpPlugin(bump, 'maintainer', skipGit, skipPush, allowDirty, skipChangelog);
     } else {
       await bumpPlugin(bump, target, skipGit, skipPush, allowDirty, skipChangelog);
     }
