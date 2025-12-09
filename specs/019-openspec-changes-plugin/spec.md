@@ -23,6 +23,42 @@ Each change folder contains:
 
 The workflow follows four stages: Draft Proposal → Review & Iterate → Implement Tasks → Archive (merge deltas back into source specs).
 
+### Plugin Structure
+
+The plugin is organized in `plugins/changes/` with the following structure:
+
+```
+plugins/changes/
+├── commands/                    # Slash commands (Markdown with YAML frontmatter)
+│   ├── speck-changes.propose.md
+│   ├── speck-changes.apply.md
+│   ├── speck-changes.archive.md
+│   ├── speck-changes.list.md
+│   ├── speck-changes.show.md
+│   ├── speck-changes.validate.md
+│   └── speck-changes.migrate.md
+├── scripts/                     # Bun TypeScript implementations
+│   ├── propose.ts
+│   ├── apply.ts
+│   ├── archive.ts
+│   ├── validate.ts
+│   ├── list.ts
+│   ├── show.ts
+│   └── migrate.ts
+├── skills/                      # AI guidance (extracted from AGENTS.md)
+│   └── changes-workflow/
+│       ├── SKILL.md             # Core workflow instructions
+│       ├── spec-format.md       # Delta format guidance
+│       └── troubleshooting.md   # Error recovery
+├── templates/                   # Artifact templates
+│   ├── proposal.md
+│   ├── design.md
+│   ├── tasks.md
+│   └── delta-spec.md
+└── agents/                      # Specialized agents
+    └── transform-openspec.md    # Upstream transformation
+```
+
 ## Clarifications
 
 ### Session 2025-12-07
@@ -33,18 +69,26 @@ The workflow follows four stages: Draft Proposal → Review & Iterate → Implem
 - Q: Should change proposals track explicit status beyond folder location? → A: Folder location only (`.speck/changes/` = active, `.speck/archive/` = archived)
 - Q: How should the plugin handle OpenSpec structure changes across versions? → A: Single semantic/LLM-driven transformation (matching speckit pattern); OpenSpec CLI must be installed in temp location to extract .md files since it lacks standalone command files
 
+### Session 2025-12-08
+
+- Q: Should the spec explicitly define the skills architecture with three extracted skill files? → A: Yes, add full skills architecture with 3 skill files and their responsibilities
+- Q: Should the spec define a transform agent with explicit responsibilities for handling upstream OpenSpec releases? → A: Yes, add agent specification with transformation responsibilities (AGENTS.md → skills, CLI → scripts, paths normalization)
+- Q: Which path convention should be canonical for specifications? → A: Split convention - specs at `specs/` (root), changes/archive at `.speck/` (runtime data)
+- Q: Should the spec define a delta-spec.md template for proper delta file format? → A: Yes, add template requirement with structure outline (sections, requirement format, scenario blocks)
+- Q: Which plugin directory name should be canonical? → A: `plugins/changes/` with explicit structure overview (commands/, scripts/, skills/, agents/, templates/)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Transform OpenSpec Release to Speck Plugin (Priority: P1)
 
-A Speck maintainer wants to add OpenSpec's change management capabilities as a plugin. They run `/speck-changes.check-upstream` to see available OpenSpec releases, then `/speck-changes.pull-upstream <version>` to fetch the release into `upstream/openspec/<version>/`. Finally, they run `/speck-changes.transform-upstream` to analyze the Node.js CLI and generate Bun TypeScript equivalents in `plugins/speck-changes/` plus corresponding `/speck-changes.*` commands.
+A Speck maintainer wants to add OpenSpec's change management capabilities as a plugin. They run `/speck-changes.check-upstream` to see available OpenSpec releases, then `/speck-changes.pull-upstream <version>` to fetch the release into `upstream/openspec/<version>/`. Finally, they run `/speck-changes.transform-upstream` to analyze the Node.js CLI and generate Bun TypeScript equivalents in `plugins/changes/` plus corresponding `/speck-changes.*` commands.
 
 **Why this priority**: This is the foundational transformation pipeline. Without it, there's no plugin - just manual integration of OpenSpec code.
 
 **Independent Test**: Run the three upstream commands, then verify:
 1. `upstream/openspec/<version>/` contains pristine OpenSpec source
 2. `upstream/openspec/releases.json` tracks the release metadata
-3. `plugins/speck-changes/scripts/` contains Bun TypeScript equivalents
+3. `plugins/changes/scripts/` contains Bun TypeScript equivalents
 4. `/speck-changes.*` commands exist and successfully execute
 5. Transformation report shows what changed and Claude's rationale
 
@@ -52,14 +96,14 @@ A Speck maintainer wants to add OpenSpec's change management capabilities as a p
 
 1. **Given** maintainer wants to see available releases, **When** they run `/speck-changes.check-upstream`, **Then** system queries OpenSpec GitHub repo and displays available release tags with versions, dates, and release notes summaries
 2. **Given** an OpenSpec release tag exists, **When** maintainer runs `/speck-changes.pull-upstream <version>`, **Then** system fetches upstream content and stores it pristine in `upstream/openspec/<version>/`, records metadata in `upstream/openspec/releases.json`, and creates/updates `upstream/openspec/latest` symlink
-3. **Given** upstream content pulled, **When** maintainer runs `/speck-changes.transform-upstream`, **Then** system launches transformation agents: (1) Node.js-to-Bun transformation agent analyzes source code and generates Bun TypeScript in `plugins/speck-changes/scripts/`, (2) command transformation agent creates `/speck-changes.*` commands in `plugins/speck-changes/commands/`
+3. **Given** upstream content pulled, **When** maintainer runs `/speck-changes.transform-upstream`, **Then** system launches transformation agents: (1) Node.js-to-Bun transformation agent analyzes source code and generates Bun TypeScript in `plugins/changes/scripts/`, (2) command transformation agent creates `/speck-changes.*` commands in `plugins/changes/commands/`
 4. **Given** both transformation agents complete, **When** all scripts and commands processed, **Then** transformation report documents scripts generated, commands created, and Claude's rationale
 
 ---
 
 ### User Story 2 - Create a Change Proposal (Priority: P1)
 
-A developer using Speck wants to propose a change to an existing feature. They run `/speck-changes.propose <change-name>` which creates a new change folder with `proposal.md`, `tasks.md`, and delta spec files based on the existing specs they're modifying.
+A developer using Speck wants to propose a change to an existing feature. They run `/speck-changes.propose <change-name>` which creates a new change folder with `proposal.md`, `tasks.md`, and delta files based on the existing specs they're modifying.
 
 **Why this priority**: This is the core user workflow - creating structured change proposals is the primary value of the plugin.
 
@@ -80,7 +124,7 @@ A developer using Speck wants to propose a change to an existing feature. They r
 
 ### User Story 3 - Review and Manage Changes (Priority: P2)
 
-A developer or team lead wants to see all active change proposals and their status. They run `/speck-changes.list` to view active changes, or `/speck-changes.show <name>` to see details of a specific change including its proposal, tasks, and delta specs.
+A developer or team lead wants to see all active change proposals and their status. They run `/speck-changes.list` to view active changes, or `/speck-changes.show <name>` to see details of a specific change including its proposal, tasks, and delta files.
 
 **Why this priority**: Visibility into active changes is essential for team coordination and decision-making.
 
@@ -112,7 +156,7 @@ A developer wants to ensure their change proposal is correctly formatted before 
 
 ### User Story 5 - Archive Completed Change (Priority: P2)
 
-After implementing a change and getting approval, the developer runs `/speck-changes.archive <name>` which merges the delta specs back into the source specs and moves the change folder to `.speck/archive/`.
+After implementing a change and getting approval, the developer runs `/speck-changes.archive <name>` which merges the delta files back into the source specs and moves the change folder to `.speck/archive/`.
 
 **Why this priority**: Archiving completes the change management cycle and updates the living specifications.
 
@@ -142,7 +186,7 @@ A developer has a validated change proposal and wants to implement it. They run 
 
 1. **Given** a change proposal exists with tasks, **When** user runs `/speck-changes.apply <name>`, **Then** system loads tasks from `.speck/changes/<name>/tasks.md` and presents them for implementation
 2. **Given** apply is running, **When** Claude completes a task, **Then** system marks the task as complete in `tasks.md` with `[x]`
-3. **Given** delta specs exist, **When** implementing related tasks, **Then** system provides delta context to Claude for accurate implementation
+3. **Given** delta files exist, **When** implementing related tasks, **Then** system provides delta context to Claude for accurate implementation
 4. **Given** all tasks are complete, **When** apply finishes, **Then** system suggests running `/speck-changes.archive <name>`
 
 ---
@@ -176,6 +220,76 @@ An existing OpenSpec user wants to migrate their project to Speck while preservi
 
 ### Functional Requirements
 
+#### Skills Architecture
+
+The plugin provides AI guidance through three skill files extracted from OpenSpec's AGENTS.md, located in `plugins/changes/skills/changes-workflow/`:
+
+- **FR-040**: System MUST provide `SKILL.md` skill containing core workflow instructions: TL;DR summary, three-stage workflow (Draft → Review → Implement → Archive), and pre-task checklist
+- **FR-041**: System MUST provide `spec-format.md` skill containing delta specification format: `## ADDED/MODIFIED/REMOVED Requirements` structure, requirement-scenario pairing, and RFC 2119 normative keyword usage
+- **FR-042**: System MUST provide `troubleshooting.md` skill containing validation error explanations, common mistakes, and recovery procedures for malformed proposals
+
+| Skill File | Source Sections from AGENTS.md | Purpose |
+|------------|-------------------------------|---------|
+| `SKILL.md` | TL;DR + Three-Stage Workflow + Before Any Task | Core workflow instructions |
+| `spec-format.md` | Spec File Format + Delta Operations + Creating Change Proposals | How to write delta files |
+| `troubleshooting.md` | Troubleshooting + Error Recovery + Validation Tips | Debugging and fixes |
+
+#### Templates
+
+The plugin provides templates in `plugins/changes/templates/` to ensure consistent artifact structure:
+
+- **FR-048**: System MUST provide `delta-spec.md` template for creating properly formatted delta specification files
+- **FR-049**: Delta-spec template MUST include sections for `## ADDED Requirements`, `## MODIFIED Requirements`, and `## REMOVED Requirements`
+- **FR-050**: Delta-spec template MUST demonstrate requirement-scenario structure with `### Requirement:` and `#### Scenario:` blocks using RFC 2119 normative keywords (SHALL, MUST, SHOULD)
+
+**Delta-spec Template Structure**:
+```markdown
+# Delta Specification: {{capability}}
+
+## ADDED Requirements
+### Requirement: [Name]
+The system SHALL...
+
+#### Scenario: [Name]
+- **WHEN** [condition]
+- **THEN** [outcome]
+
+## MODIFIED Requirements
+### Requirement: [Name]
+[Full replacement text - replaces existing requirement entirely]
+
+## REMOVED Requirements
+### Requirement: [Name]
+**Reason**: [Why this requirement is being removed]
+**Migration**: [How existing implementations should adapt]
+```
+
+#### Transform Agent
+
+The plugin provides a specialized agent for transforming upstream OpenSpec releases into Speck-native artifacts, located at `plugins/changes/agents/transform-openspec.md`:
+
+- **FR-043**: System MUST provide `transform-openspec` agent that orchestrates semantic transformation of upstream OpenSpec releases
+- **FR-044**: Transform agent MUST convert AGENTS.md content into the three skill files defined in FR-040 through FR-042
+- **FR-045**: Transform agent MUST convert Node.js CLI source files to Bun TypeScript scripts using established patterns (fs/promises → Bun.file, child_process → Bun Shell)
+- **FR-046**: Transform agent MUST normalize directory paths from OpenSpec conventions to Speck conventions (see Path Mapping table)
+- **FR-047**: Transform agent MUST preserve `<!-- SPECK-EXTENSION -->` blocks in existing files with absolute priority during transformation
+
+| Transformation | Source | Target |
+|---------------|--------|--------|
+| AI Instructions | `AGENTS.md` | `skills/changes-workflow/*.md` (3 files) |
+| CLI Commands | Node.js source files | `scripts/*.ts` (Bun TypeScript) |
+| Command Templates | Embedded .md in CLI | `commands/speck-changes.*.md` |
+| Directory Paths | `openspec/*` paths | See Path Mapping below |
+
+**Path Mapping** (OpenSpec → Speck):
+
+| OpenSpec Path | Speck Path | Rationale |
+|--------------|------------|-----------|
+| `openspec/specs/` | `specs/` | Specs at project root for visibility |
+| `openspec/changes/` | `.speck/changes/` | Runtime data in .speck |
+| `openspec/archive/` | `.speck/archive/` | Runtime data in .speck |
+| `openspec/project.md` | `.speck/project.md` | Project config in .speck |
+
 #### Upstream Sync & Transformation
 
 - **FR-001**: System MUST provide `/speck-changes.check-upstream` command that queries OpenSpec GitHub repo (Fission-AI/OpenSpec) and displays available release tags with versions, dates, and release notes
@@ -184,8 +298,8 @@ An existing OpenSpec user wants to migrate their project to Speck while preservi
 - **FR-004**: System MUST provide `/speck-changes.transform-upstream` command that orchestrates transformation of Node.js CLI to Bun TypeScript using specialized agents
 - **FR-004a**: Transformation MUST be fully semantic and LLM-driven (matching speckit transformation pattern), not config-based; incompatible upstream versions may require transformation updates
 - **FR-004b**: Pull-upstream MUST install OpenSpec CLI in a temp location and extract embedded .md template files, since OpenSpec lacks standalone command files
-- **FR-005**: Transformation agent MUST preserve SPECK-EXTENSION blocks from existing Bun TypeScript files with absolute priority
-- **FR-006**: System MUST generate or update tests for transformed scripts in `plugins/speck-changes/tests/`
+- **FR-005**: (See FR-047) Transform agent MUST preserve SPECK-EXTENSION blocks during transformation
+- **FR-006**: System MUST generate or update tests for transformed scripts in `plugins/changes/tests/`
 - **FR-007**: Transformation MUST run TypeScript compilation and ESLint validation on generated code before reporting success; maintainer performs manual review before committing
 - **FR-008**: Upstream commands MUST use `gh` CLI authentication when available (via `gh auth token`), falling back to unauthenticated GitHub API with 60 requests/hour limit
 
@@ -200,12 +314,12 @@ An existing OpenSpec user wants to migrate their project to Speck while preservi
 - **FR-015**: System MUST provide `/speck-changes.validate <name>` command that checks proposal structure, delta file formatting (ADDED/MODIFIED/REMOVED sections), and requirement syntax (FR-### IDs, scenario blocks, RFC 2119 normative keywords)
 - **FR-016**: System MUST provide `/speck-changes.apply <name>` command that loads tasks from `.speck/changes/<name>/tasks.md` and guides implementation
 - **FR-016a**: Apply command MUST mark tasks complete in `tasks.md` as they are finished (changing `[ ]` to `[x]`)
-- **FR-016b**: Apply command MUST provide delta spec context to Claude when implementing tasks related to spec changes
+- **FR-016b**: Apply command MUST provide delta file context to Claude when implementing tasks related to spec changes
 - **FR-017**: Apply command MUST suggest `/speck-changes.archive <name>` when all tasks are complete
 
 #### Archive & Merge
 
-- **FR-020**: System MUST provide `/speck-changes.archive <name>` command that merges delta specs into source specs
+- **FR-020**: System MUST provide `/speck-changes.archive <name>` command that merges delta files into source specs
 - **FR-021**: Archive MUST move completed change folder to `.speck/archive/<name>/` with timestamp
 - **FR-022**: Archive MUST warn if incomplete tasks exist and require `--force` flag to proceed
 - **FR-023**: System MUST detect conflicting changes when multiple proposals modify the same spec section

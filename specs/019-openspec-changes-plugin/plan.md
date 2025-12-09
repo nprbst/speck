@@ -64,7 +64,7 @@ specs/019-openspec-changes-plugin/
 ### Source Code (repository root)
 
 ```text
-plugins/speck-changes/                # Plugin root (follows plugins/speck, plugins/reviewer pattern)
+plugins/changes/                      # Plugin root (follows plugins/speck, plugins/reviewer pattern)
 ├── .claude-plugin/
 │   └── plugin.json                   # Plugin manifest
 ├── package.json                      # Dependencies (@speck/common)
@@ -97,7 +97,15 @@ plugins/speck-changes/                # Plugin root (follows plugins/speck, plug
 ├── templates/                        # Change proposal templates
 │   ├── proposal.md                   # Proposal template
 │   ├── tasks.md                      # Tasks template
-│   └── design.md                     # Optional design template
+│   ├── design.md                     # Optional design template
+│   └── delta-spec.md                 # Delta specification template
+├── skills/                           # AI guidance (extracted from AGENTS.md)
+│   └── changes-workflow/
+│       ├── SKILL.md                  # Core workflow instructions
+│       ├── spec-format.md            # Delta format guidance
+│       └── troubleshooting.md        # Error recovery
+├── agents/                           # Specialized agents
+│   └── transform-openspec.md         # Upstream transformation
 └── tests/                            # Plugin tests
     ├── check-upstream.test.ts
     ├── pull-upstream.test.ts
@@ -131,7 +139,7 @@ upstream/openspec/                    # Pristine upstream storage
 └── <change-name>/
 ```
 
-**Structure Decision**: Claude Code plugin structure following Principle VIII (command-implementation separation) and the refactored monorepo pattern established in `plugins/speck/` and `plugins/reviewer/`. Commands in `plugins/speck-changes/commands/` delegate to TypeScript scripts in `plugins/speck-changes/scripts/`. Shared utilities (GitHub API, logging, errors, file-ops) imported from `@speck/common`.
+**Structure Decision**: Claude Code plugin structure following Principle VIII (command-implementation separation) and the refactored monorepo pattern established in `plugins/speck/` and `plugins/reviewer/`. Commands in `plugins/changes/commands/` delegate to TypeScript scripts in `plugins/changes/scripts/`. Shared utilities (GitHub API, logging, errors, file-ops) imported from `@speck/common`.
 
 ## Complexity Tracking
 
