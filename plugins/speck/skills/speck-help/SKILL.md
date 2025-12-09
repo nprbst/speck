@@ -326,84 +326,19 @@ users need to **create or modify** files, guide them to these slash commands:
 
 ---
 
-## Plugin Extensibility
+## Plugin Help
 
-Speck follows a modular architecture where specialized capabilities are
-delivered as optional plugins. This keeps the core Speck plugin focused on
-specification workflows while enabling extensions for related tasks.
+Speck plugins have their own help skills:
 
-### Available Plugins
+- **speck-reviewer**: Ask "how do I review a PR" or "speck reviewer help"
+- **speck-changes**: Ask "how do I propose a change" or "speck changes help"
 
-| Plugin             | Command             | Purpose                                                             |
-| ------------------ | ------------------- | ------------------------------------------------------------------- |
-| **speck**          | `/speck.*`          | Core specification workflow (specify, plan, tasks, implement)       |
-| **speck-reviewer** | `/speck-reviewer.*` | AI-assisted PR review with cluster analysis and Speck-aware context |
-| **speck-changes**  | `/speck-changes.*`  | OpenSpec change management workflow (propose, validate, archive)    |
-
-### Installing Extension Plugins
-
-All Speck plugins are installed through the Claude Code plugin system:
+### Installing Plugins
 
 ```bash
-# Install speck-reviewer for PR reviews
 /plugin install speck-reviewer@speck-market
+/plugin install speck-changes@speck-market
 ```
-
-### speck-reviewer Plugin
-
-The speck-reviewer plugin adds structured PR review capabilities:
-
-- **Cluster-Based Review**: Groups related files for coherent review sessions
-- **Speck-Aware Context**: References spec requirements when available
-- **Comment Management**: Stage, refine, and batch-post review comments
-- **Session Persistence**: Resume interrupted reviews
-
-**When to use**: Use `/speck-reviewer:review` after creating a PR for a Speck
-feature. The plugin will automatically load any spec context for your branch.
-
-**Learn more**: See
-[plugin documentation](https://beta.speck.codes/docs/plugins/speck-reviewer) for
-full usage guide.
-
-### speck-changes Plugin
-
-The speck-changes plugin brings OpenSpec's structured change management workflow
-to Speck:
-
-**Change Management Commands**:
-
-| Command                          | Purpose                                            |
-| -------------------------------- | -------------------------------------------------- |
-| `/speck-changes.propose <name>`  | Create new change proposal with templates          |
-| `/speck-changes.list`            | List all active change proposals                   |
-| `/speck-changes.show <name>`     | Display change details and delta specs             |
-| `/speck-changes.validate <name>` | Validate proposal format and delta syntax          |
-| `/speck-changes.apply <name>`    | Implement tasks with Claude assistance             |
-| `/speck-changes.archive <name>`  | Merge deltas into specs and archive change         |
-| `/speck-changes.migrate`         | Import existing OpenSpec project to Speck          |
-
-**Upstream Management Commands** (maintainer use):
-
-| Command                           | Purpose                                           |
-| --------------------------------- | ------------------------------------------------- |
-| `/speck-changes.check-upstream`   | Query available OpenSpec releases                 |
-| `/speck-changes.pull-upstream`    | Fetch and store OpenSpec release                  |
-| `/speck-changes.transform-upstream` | Transform Node.js CLI to Bun TypeScript         |
-
-**Workflow Stages**:
-
-1. **Draft**: Create proposal with `/speck-changes.propose add-feature`
-2. **Review**: Validate format with `/speck-changes.validate add-feature`
-3. **Implement**: Execute tasks with `/speck-changes.apply add-feature`
-4. **Archive**: Merge and archive with `/speck-changes.archive add-feature`
-
-**When to use**: Use `/speck-changes.propose` when introducing new capabilities,
-making breaking changes, or updating architecture. The structured proposal
-workflow ensures changes are reviewed before implementation.
-
-**Learn more**: See
-[plugin documentation](https://beta.speck.codes/docs/plugins/speck-changes) for
-full usage guide.
 
 ---
 

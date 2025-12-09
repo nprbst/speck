@@ -1,9 +1,9 @@
 ---
-name: changes-workflow
-description: |
-  Guide for OpenSpec change management workflow. Use when working with change proposals,
-  implementing delta specifications, or archiving completed changes. Covers the full
-  lifecycle from drafting to archival.
+name: speck-changes-help
+description: >
+  Help with speck-changes plugin for OpenSpec change management. Use when
+  user asks about change proposals, delta specs, applying changes, archiving,
+  speck-changes CLI commands, or "how do I propose a change".
 ---
 
 # OpenSpec Changes Workflow
