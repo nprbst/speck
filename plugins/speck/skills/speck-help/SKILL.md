@@ -334,10 +334,11 @@ specification workflows while enabling extensions for related tasks.
 
 ### Available Plugins
 
-| Plugin             | Command    | Purpose                                                             |
-| ------------------ | ---------- | ------------------------------------------------------------------- |
-| **speck**          | `/speck.*` | Core specification workflow (specify, plan, tasks, implement)       |
-| **speck-reviewer** | `/review`  | AI-assisted PR review with cluster analysis and Speck-aware context |
+| Plugin             | Command             | Purpose                                                             |
+| ------------------ | ------------------- | ------------------------------------------------------------------- |
+| **speck**          | `/speck.*`          | Core specification workflow (specify, plan, tasks, implement)       |
+| **speck-reviewer** | `/speck-reviewer.*` | AI-assisted PR review with cluster analysis and Speck-aware context |
+| **speck-changes**  | `/speck-changes.*`  | OpenSpec change management workflow (propose, validate, archive)    |
 
 ### Installing Extension Plugins
 
@@ -362,6 +363,46 @@ feature. The plugin will automatically load any spec context for your branch.
 
 **Learn more**: See
 [plugin documentation](https://beta.speck.codes/docs/plugins/speck-reviewer) for
+full usage guide.
+
+### speck-changes Plugin
+
+The speck-changes plugin brings OpenSpec's structured change management workflow
+to Speck:
+
+**Change Management Commands**:
+
+| Command                          | Purpose                                            |
+| -------------------------------- | -------------------------------------------------- |
+| `/speck-changes.propose <name>`  | Create new change proposal with templates          |
+| `/speck-changes.list`            | List all active change proposals                   |
+| `/speck-changes.show <name>`     | Display change details and delta specs             |
+| `/speck-changes.validate <name>` | Validate proposal format and delta syntax          |
+| `/speck-changes.apply <name>`    | Implement tasks with Claude assistance             |
+| `/speck-changes.archive <name>`  | Merge deltas into specs and archive change         |
+| `/speck-changes.migrate`         | Import existing OpenSpec project to Speck          |
+
+**Upstream Management Commands** (maintainer use):
+
+| Command                           | Purpose                                           |
+| --------------------------------- | ------------------------------------------------- |
+| `/speck-changes.check-upstream`   | Query available OpenSpec releases                 |
+| `/speck-changes.pull-upstream`    | Fetch and store OpenSpec release                  |
+| `/speck-changes.transform-upstream` | Transform Node.js CLI to Bun TypeScript         |
+
+**Workflow Stages**:
+
+1. **Draft**: Create proposal with `/speck-changes.propose add-feature`
+2. **Review**: Validate format with `/speck-changes.validate add-feature`
+3. **Implement**: Execute tasks with `/speck-changes.apply add-feature`
+4. **Archive**: Merge and archive with `/speck-changes.archive add-feature`
+
+**When to use**: Use `/speck-changes.propose` when introducing new capabilities,
+making breaking changes, or updating architecture. The structured proposal
+workflow ensures changes are reviewed before implementation.
+
+**Learn more**: See
+[plugin documentation](https://beta.speck.codes/docs/plugins/speck-changes) for
 full usage guide.
 
 ---

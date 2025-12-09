@@ -24,6 +24,121 @@ import type { TransformationHistory, Artifact } from './lib/schemas';
 const logger = createScopedLogger('transform-upstream');
 
 /**
+ * Result of validation step
+ */
+export type ValidationResult =
+  | { ok: true; message: string }
+  | { ok: false; errors: Array<{ file: string; line?: number; message: string }> };
+
+/**
+ * Run TypeScript type checking on generated files (FR-007, Constitution IX)
+ */
+export async function runTypeCheck(rootDir: string): Promise<ValidationResult> {
+  try {
+    const proc = Bun.spawn(['bun', 'run', 'typecheck'], {
+      cwd: rootDir,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+
+    const exitCode = await proc.exited;
+    const stdout = await new Response(proc.stdout).text();
+    const stderr = await new Response(proc.stderr).text();
+    const output = stdout + stderr;
+
+    if (exitCode !== 0) {
+      // Parse TypeScript errors with file:line references
+      const errors: Array<{ file: string; line?: number; message: string }> = [];
+      const errorRegex = /^(.+\.ts)\((\d+),\d+\):\s*error\s+TS\d+:\s*(.+)$/gm;
+      let match;
+      while ((match = errorRegex.exec(output)) !== null) {
+        errors.push({
+          file: match[1] as string,
+          line: parseInt(match[2] as string, 10),
+          message: match[3] as string,
+        });
+      }
+
+      // If we couldn't parse specific errors, include the full output
+      if (errors.length === 0) {
+        errors.push({ file: 'unknown', message: output.trim() });
+      }
+
+      return { ok: false, errors };
+    }
+
+    return { ok: true, message: 'TypeScript type checking passed' };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return { ok: false, errors: [{ file: 'typecheck', message }] };
+  }
+}
+
+/**
+ * Run ESLint on generated files (FR-007, Constitution IX)
+ */
+export async function runLint(rootDir: string): Promise<ValidationResult> {
+  try {
+    const proc = Bun.spawn(['bun', 'run', 'lint'], {
+      cwd: rootDir,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+
+    const exitCode = await proc.exited;
+    const stdout = await new Response(proc.stdout).text();
+    const stderr = await new Response(proc.stderr).text();
+    const output = stdout + stderr;
+
+    if (exitCode !== 0) {
+      // Parse ESLint errors with file:line references
+      const errors: Array<{ file: string; line?: number; message: string }> = [];
+      const errorRegex = /^(.+\.ts):(\d+):\d+:\s*(.+)$/gm;
+      let match;
+      while ((match = errorRegex.exec(output)) !== null) {
+        errors.push({
+          file: match[1] as string,
+          line: parseInt(match[2] as string, 10),
+          message: match[3] as string,
+        });
+      }
+
+      // If we couldn't parse specific errors, include the full output
+      if (errors.length === 0 && output.includes('error')) {
+        errors.push({ file: 'unknown', message: output.trim().slice(0, 500) });
+      }
+
+      if (errors.length > 0) {
+        return { ok: false, errors };
+      }
+    }
+
+    return { ok: true, message: 'ESLint validation passed' };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return { ok: false, errors: [{ file: 'lint', message }] };
+  }
+}
+
+/**
+ * Run all validation checks (FR-007)
+ * Only reports success if both TypeScript and ESLint pass
+ */
+export async function runValidation(
+  rootDir: string
+): Promise<{ typecheck: ValidationResult; lint: ValidationResult; allPassed: boolean }> {
+  logger.info('Running TypeScript type checking...');
+  const typecheck = await runTypeCheck(rootDir);
+
+  logger.info('Running ESLint validation...');
+  const lint = await runLint(rootDir);
+
+  const allPassed = typecheck.ok && lint.ok;
+
+  return { typecheck, lint, allPassed };
+}
+
+/**
  * Represents a file that can be transformed
  */
 export interface TransformableFile {
@@ -45,7 +160,13 @@ export type TransformResult =
  * Result of transform-upstream command
  */
 export type TransformUpstreamResult =
-  | { ok: true; version: string; artifacts: Artifact[]; message: string }
+  | {
+      ok: true;
+      version: string;
+      artifacts: Artifact[];
+      validation?: { typecheck: ValidationResult; lint: ValidationResult; allPassed: boolean };
+      message: string;
+    }
   | { ok: false; error: string };
 
 /**
@@ -245,11 +366,51 @@ export async function transformUpstream(options: {
     });
   }
 
+  // Run validation on generated code (FR-007, Constitution IX)
+  let validation:
+    | { typecheck: ValidationResult; lint: ValidationResult; allPassed: boolean }
+    | undefined;
+  if (!dryRun && artifacts.length > 0) {
+    validation = await runValidation(rootDir);
+
+    if (!validation.allPassed) {
+      // Log validation errors with file:line references
+      const errors: string[] = [];
+      if (!validation.typecheck.ok) {
+        for (const err of validation.typecheck.errors) {
+          const location = err.line ? `${err.file}:${err.line}` : err.file;
+          errors.push(`[typecheck] ${location}: ${err.message}`);
+        }
+      }
+      if (!validation.lint.ok) {
+        for (const err of validation.lint.errors) {
+          const location = err.line ? `${err.file}:${err.line}` : err.file;
+          errors.push(`[lint] ${location}: ${err.message}`);
+        }
+      }
+
+      logger.warn('Validation failed. Maintainer review required before committing.');
+      for (const error of errors.slice(0, 10)) {
+        logger.warn(`  ${error}`);
+      }
+      if (errors.length > 10) {
+        logger.warn(`  ... and ${errors.length - 10} more errors`);
+      }
+    }
+  }
+
+  const validationStatus =
+    validation?.allPassed === true
+      ? ' (✓ validation passed)'
+      : validation?.allPassed === false
+        ? ' (⚠ validation failed - review required)'
+        : '';
+
   const message = dryRun
     ? `[DRY RUN] Would transform ${artifacts.length} files from ${version}`
-    : `Transformed ${artifacts.length} files from ${version}`;
+    : `Transformed ${artifacts.length} files from ${version}${validationStatus}`;
 
-  return { ok: true, version, artifacts, message };
+  return { ok: true, version, artifacts, validation, message };
 }
 
 /**
@@ -311,6 +472,25 @@ Example:
       console.log('\nTransformed files:');
       for (const artifact of result.artifacts) {
         console.log(`  ${artifact.source} -> ${artifact.target}`);
+      }
+    }
+
+    // Display validation summary
+    if (result.validation) {
+      console.log('\nValidation:');
+      if (result.validation.typecheck.ok) {
+        console.log('  ✓ TypeScript type checking passed');
+      } else {
+        console.log('  ✗ TypeScript type checking failed');
+      }
+      if (result.validation.lint.ok) {
+        console.log('  ✓ ESLint validation passed');
+      } else {
+        console.log('  ✗ ESLint validation failed');
+      }
+
+      if (!result.validation.allPassed) {
+        console.log('\n⚠ Maintainer review required before committing (per FR-007)');
       }
     }
   }

@@ -142,13 +142,13 @@ your-project/
 
 ```bash
 # Run plugin tests
-bun test tests/.speck-plugins/speck-changes/
+bun test plugins/changes/tests/
 
 # Run specific test file
-bun test tests/.speck-plugins/speck-changes/propose.test.ts
+bun test plugins/changes/tests/propose.test.ts
 
 # Run with coverage
-bun test --coverage tests/.speck-plugins/speck-changes/
+bun test --coverage plugins/changes/tests/
 ```
 
 ## Troubleshooting

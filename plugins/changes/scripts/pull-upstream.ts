@@ -250,6 +250,20 @@ export async function pullUpstream(
       await cp(claudeCommandsPath, join(initOutputDir, '.claude', 'commands', 'openspec'), {
         recursive: true,
       });
+
+      // Step 5a: Extract templates to dedicated templates/ directory (FR-004b)
+      const templatesDir = join(versionDir, 'templates');
+      await mkdir(templatesDir, { recursive: true });
+      logger.info('Extracting templates to templates/ directory...');
+
+      // Copy command templates for reference during transformation
+      const templateFiles = ['proposal.md', 'apply.md', 'archive.md'];
+      for (const file of templateFiles) {
+        const srcPath = join(claudeCommandsPath, file);
+        if (existsSync(srcPath)) {
+          await cp(srcPath, join(templatesDir, file));
+        }
+      }
     } else {
       logger.warn('No .claude/commands/openspec/ found after init');
     }
@@ -351,8 +365,9 @@ This command will:
   2. Run: bun openspec init --tools claude
   3. Copy the npm package to upstream/openspec/<version>/package/
   4. Copy generated commands to upstream/openspec/<version>/init-output/
-  5. Move AGENTS.md to upstream/openspec/<version>/init-output/
-  6. Copy openspec/AGENTS.md and project.md to upstream/openspec/<version>/init-output/openspec/
+  5. Extract command templates to upstream/openspec/<version>/templates/ (FR-004b)
+  6. Move AGENTS.md to upstream/openspec/<version>/init-output/
+  7. Copy openspec/AGENTS.md and project.md to upstream/openspec/<version>/init-output/openspec/
 
 Example:
   bun plugins/changes/scripts/pull-upstream.ts 0.16.0

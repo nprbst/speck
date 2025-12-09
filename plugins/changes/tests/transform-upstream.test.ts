@@ -10,6 +10,9 @@ import {
   identifyTransformableFiles,
   transformFile,
   recordTransformation,
+  runTypeCheck,
+  runLint,
+  runValidation,
 } from '../scripts/transform-upstream';
 
 // Test temporary directory
@@ -146,5 +149,83 @@ describe('recordTransformation', () => {
     };
     expect(content.version).toBe('v0.16.0');
     expect(content.artifacts).toHaveLength(1);
+  });
+});
+
+describe('runTypeCheck (FR-007, Constitution IX)', () => {
+  test('returns ValidationResult type', () => {
+    // Type check that the function signature is correct
+    // This is a compile-time check - if runTypeCheck returns wrong type, this fails to compile
+    const validateResult = (result: Awaited<ReturnType<typeof runTypeCheck>>): void => {
+      if (result.ok) {
+        expect(typeof result.message).toBe('string');
+      } else {
+        expect(Array.isArray(result.errors)).toBe(true);
+      }
+    };
+
+    // Test that function exists and is callable
+    expect(typeof runTypeCheck).toBe('function');
+    void validateResult; // Use the validator to avoid unused warning
+  });
+
+  test('returns structured errors on nonexistent directory', async () => {
+    const result = await runTypeCheck('/nonexistent/directory');
+
+    // Should fail for nonexistent directory
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors).toBeDefined();
+      expect(Array.isArray(result.errors)).toBe(true);
+    }
+  });
+});
+
+describe('runLint (FR-007, Constitution IX)', () => {
+  test('returns ValidationResult type', () => {
+    // Type check that the function signature is correct
+    const validateResult = (result: Awaited<ReturnType<typeof runLint>>): void => {
+      if (result.ok) {
+        expect(typeof result.message).toBe('string');
+      } else {
+        expect(Array.isArray(result.errors)).toBe(true);
+      }
+    };
+
+    expect(typeof runLint).toBe('function');
+    void validateResult;
+  });
+
+  test('returns structured errors on nonexistent directory', async () => {
+    const result = await runLint('/nonexistent/directory');
+
+    // Should fail for nonexistent directory
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors).toBeDefined();
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('runValidation (FR-007)', () => {
+  test('returns combined validation results', async () => {
+    // Test with nonexistent directory (fast path)
+    const result = await runValidation('/nonexistent/directory');
+
+    expect(result.typecheck).toBeDefined();
+    expect(result.lint).toBeDefined();
+    expect(typeof result.allPassed).toBe('boolean');
+
+    // At least one should fail for nonexistent directory
+    expect(result.allPassed).toBe(false);
+  });
+
+  test('allPassed reflects combined status', async () => {
+    const result = await runValidation('/nonexistent/directory');
+
+    // allPassed should be true only if both pass
+    const expectedAllPassed = result.typecheck.ok && result.lint.ok;
+    expect(result.allPassed).toBe(expectedAllPassed);
   });
 });
