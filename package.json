@@ -18,6 +18,7 @@
     "build": "bun build plugins/speck/cli/index.ts --outdir dist/cli --target bun",
     "build:standalone": "bun build plugins/speck/cli/index.ts --compile --outfile speck",
     "build-plugin": "bun run scripts/build-plugin.ts",
+    "copy-plugin": "bun run scripts/copy-plugin.ts",
     "publish-plugin": "bun run scripts/publish-plugin.ts",
     "version:patch": "bun run scripts/version.ts patch",
     "version:minor": "bun run scripts/version.ts minor",
