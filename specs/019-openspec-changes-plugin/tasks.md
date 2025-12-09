@@ -2,8 +2,15 @@
 
 **Input**: Design documents from `/specs/019-openspec-changes-plugin/`
 **Prerequisites**: plan.md (required), spec.md (required), research.md, data-model.md, quickstart.md
+**Last Analysis**: 2025-12-08 via `/speck:analyze` | **Progress**: 52/63 tasks (82.5%)
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
+
+**Remaining Work** (see plan.md "Analysis Findings" for details):
+- Foundation: T011a-T011f (skills, agents, templates)
+- Upstream: T014a (OpenSpec CLI template extraction)
+- Quality: T019, T019a (validation, tests)
+- Documentation: T051, T052, T053 (skill docs, website, quickstart validation)
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -52,11 +59,22 @@ import { Logger, SpeckError, fileOps, output } from '@speck/common';
 - [x] T010 [P] Create tasks template at `plugins/changes/templates/tasks.md`
 - [x] T011 [P] Create design template at `plugins/changes/templates/design.md`
 - [ ] T011a [P] Create delta-spec template at `plugins/changes/templates/delta-spec.md` (FR-048, FR-049, FR-050)
+  - Use structure from spec.md L246-265: `## ADDED/MODIFIED/REMOVED Requirements` sections
+  - Include `### Requirement:` and `#### Scenario:` block examples with RFC 2119 keywords (SHALL, MUST, SHOULD)
+  - Template variables: `{{capability}}`, `{{requirement_name}}`, `{{scenario_name}}`
 - [ ] T011b [P] Create skills directory at `plugins/changes/skills/changes-workflow/`
 - [ ] T011c [P] Create SKILL.md skill at `plugins/changes/skills/changes-workflow/SKILL.md` (FR-040)
+  - Content: TL;DR summary, three-stage workflow (Draft → Review → Implement → Archive), pre-task checklist
+  - Source: Extract from OpenSpec AGENTS.md sections per spec.md L231-236
 - [ ] T011d [P] Create spec-format.md skill at `plugins/changes/skills/changes-workflow/spec-format.md` (FR-041)
+  - Content: Delta specification format, `## ADDED/MODIFIED/REMOVED` structure, requirement-scenario pairing, RFC 2119 keywords
+  - Source: Extract from OpenSpec AGENTS.md "Spec File Format + Delta Operations + Creating Change Proposals"
 - [ ] T011e [P] Create troubleshooting.md skill at `plugins/changes/skills/changes-workflow/troubleshooting.md` (FR-042)
-- [ ] T011f [P] Create agents directory and transform-openspec agent at `plugins/changes/agents/transform-openspec.md` (FR-043)
+  - Content: Validation error explanations, common mistakes, recovery procedures for malformed proposals
+  - Source: Extract from OpenSpec AGENTS.md "Troubleshooting + Error Recovery + Validation Tips"
+- [ ] T011f [P] Create agents directory and transform-openspec agent at `plugins/changes/agents/transform-openspec.md` (FR-043-047)
+  - Responsibilities: AGENTS.md → skills (3 files), CLI → scripts (Bun TypeScript), path normalization (spec.md L284-291)
+  - Must preserve `<!-- SPECK-EXTENSION -->` blocks with absolute priority (FR-047)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -80,13 +98,23 @@ import { Logger, SpeckError, fileOps, output } from '@speck/common';
 - [x] T014-TEST [TEST] [P] [US1] Write tests for pull-upstream in `plugins/changes/tests/pull-upstream.test.ts`
 - [x] T014 [P] [US1] Implement pull-upstream script in `plugins/changes/scripts/pull-upstream.ts` including `upstream/openspec/latest` symlink creation (red-green-refactor)
 - [ ] T014a [US1] Install OpenSpec CLI in temp location and extract embedded template files (proposal.md, tasks.md, design.md) from CLI source (FR-004b)
+  - Locate embedded templates in OpenSpec CLI source code (search for template string literals)
+  - Extract to `upstream/openspec/<version>/templates/` for reference during transformation
+  - Templates serve as source-of-truth for transform agent skill generation
 - [x] T015 [P] [US1] Create pull-upstream command in `plugins/changes/commands/pull-upstream.md`
 - [x] T016-TEST [TEST] [US1] Write tests for transform-upstream in `plugins/changes/tests/transform-upstream.test.ts`
 - [x] T016 [US1] Implement transform-upstream script in `plugins/changes/scripts/transform-upstream.ts` (red-green-refactor)
 - [x] T017 [US1] Create transform-upstream command in `plugins/changes/commands/transform-upstream.md`
 - [x] T018 [US1] Implement SPECK-EXTENSION block preservation logic in transform-upstream.ts
-- [ ] T019 [US1] Add TypeScript compilation and ESLint validation in transform-upstream.ts (FR-007)
-- [ ] T019a [US1] Generate test files for each transformed script (propose, list, show, validate, apply, archive, migrate) in `plugins/changes/tests/` covering core functionality and error paths (FR-006)
+- [ ] T019 [US1] Add TypeScript compilation and ESLint validation in transform-upstream.ts (FR-007, Constitution IX)
+  - After code generation, run `bun run typecheck` on generated files
+  - Run `bun run lint` on generated files
+  - Report errors with file:line references; only report success if both pass
+  - Maintainer performs manual review before committing (per FR-007)
+- [ ] T019a [US1] Generate test files for each transformed script in `plugins/changes/tests/` (FR-006)
+  - NOTE: Core tests already exist via TDD workflow (T021-TEST through T054-TEST)
+  - This task covers any additional tests needed for transformation-specific behavior
+  - Focus on error paths and edge cases not covered by existing tests
 - [x] T020 [US1] Create transformation history tracking in `plugins/changes/transform-history.json`
 
 **Checkpoint**: User Story 1 complete - upstream sync and transformation pipeline functional
@@ -229,8 +257,19 @@ import { Logger, SpeckError, fileOps, output } from '@speck/common';
 - [x] T049 [P] Create mock-releases fixture at `plugins/changes/tests/fixtures/mock-releases/` (tests create fixtures inline)
 - [x] T050 Run all tests and verify passes (134 tests pass)
 - [ ] T051 Update speck-help skill with new `/speck-changes.*` commands (Constitution XII)
+  - Location: `.claude/skills/speck-help/SKILL.md` or equivalent skill file
+  - Add section: "## OpenSpec Changes Plugin Commands"
+  - Document all 10 commands: check-upstream, pull-upstream, transform-upstream, propose, list, show, validate, apply, archive, migrate
+  - Include usage examples and common workflows
 - [ ] T052 Create plugin documentation at `website/src/content/docs/plugins/speck-changes.md` (Constitution X)
+  - Sections: Overview, Installation, Command Reference (all 10 commands), Workflow Guide, Migration Guide
+  - Workflow Guide: propose → validate → apply → archive lifecycle
+  - Migration Guide: OpenSpec users transitioning to Speck
+  - Verify with `bun run website:build` and `bun run website:dev`
 - [ ] T053 Run quickstart.md validation - verify all commands work as documented
+  - Execute each command example from quickstart.md
+  - Verify output matches documentation
+  - Update quickstart.md if any discrepancies found
 
 ---
 

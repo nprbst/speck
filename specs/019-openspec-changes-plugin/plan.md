@@ -164,6 +164,44 @@ No violations requiring justification. The project structure follows established
 - Mock GitHub API responses for upstream tests
 - Temporary directories for change proposal tests
 
+## Analysis Findings (from /speck:analyze)
+
+**Analysis Date**: 2025-12-08 | **Tasks Complete**: 52/63 (82.5%)
+
+### Blocking Items Before Feature Completion
+
+| Task | Requirement | Constitution | Priority |
+|------|-------------|--------------|----------|
+| T019 | FR-007 (TypeScript/ESLint validation) | IX (Preflight Gate) | HIGH |
+| T051 | - | XII (Skill Synchronization) | HIGH |
+| T052 | - | X (Website Documentation) | HIGH |
+
+### Foundation Tasks (Should Complete)
+
+| Task | Requirements | Notes |
+|------|--------------|-------|
+| T011a | FR-048, FR-049, FR-050 | Delta-spec template |
+| T011b-T011e | FR-040, FR-041, FR-042 | Skills (3 files) |
+| T011f | FR-043-047 | Transform agent |
+| T014a | FR-004b | OpenSpec CLI template extraction |
+| T019a | FR-006 | Additional test coverage |
+
+### Recommended Completion Order
+
+1. **Foundation** (T011a-T011f) - establishes skills/agents/templates for transform workflow
+2. **Upstream** (T014a) - enables full OpenSpec template extraction
+3. **Quality** (T019, T019a) - satisfies Constitution IX
+4. **Documentation** (T051, T052, T053) - satisfies Constitution X, XII
+
+### Coverage Summary
+
+- All 50 functional requirements have task coverage
+- 39 requirements fully implemented (78%)
+- 11 requirements pending implementation (22%)
+- No critical issues, 5 HIGH, 6 MEDIUM, 2 LOW
+
+---
+
 ## Phase 0: Research Findings
 
 See [research.md](./research.md) for:
