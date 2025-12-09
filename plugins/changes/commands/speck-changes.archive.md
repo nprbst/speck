@@ -42,5 +42,5 @@ Archive a completed change proposal, merging delta specs back into source specs.
 ## Implementation
 
 ```bash
-bun plugins/changes/scripts/archive.ts $ARGUMENTS
+bun ${CLAUDE_PLUGIN_ROOT}/scripts/archive.js $ARGUMENTS
 ```

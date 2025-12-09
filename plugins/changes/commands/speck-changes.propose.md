@@ -34,7 +34,7 @@ Create a new change proposal with structured templates.
 Run the propose script:
 
 ```bash
-bun ${CLAUDE_PLUGIN_ROOT}/scripts/propose.ts $ARGUMENTS
+bun ${CLAUDE_PLUGIN_ROOT}/scripts/propose.js $ARGUMENTS
 ```
 
 ## What This Creates

@@ -33,5 +33,5 @@ Validate the structure and formatting of a change proposal.
 ## Implementation
 
 ```bash
-bun plugins/changes/scripts/validate.ts $ARGUMENTS
+bun ${CLAUDE_PLUGIN_ROOT}/scripts/validate.js $ARGUMENTS
 ```

@@ -31,7 +31,7 @@ Load a change proposal's tasks and guide implementation with Claude assistance.
 ## Execute
 
 ```bash
-bun ${CLAUDE_PLUGIN_ROOT}/scripts/apply.ts $ARGUMENTS
+bun ${CLAUDE_PLUGIN_ROOT}/scripts/apply.js $ARGUMENTS
 ```
 
 ## Output
