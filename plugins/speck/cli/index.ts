@@ -22,6 +22,7 @@
 import { Command } from 'commander';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
+import { findPluginBySubcommand, executePluginCommand, getPluginSubcommands } from './plugin-loader';
 
 /**
  * Command module interface - all commands export main(args) => Promise<number>
@@ -357,9 +358,19 @@ function createProgram(): Command {
       }
     });
 
-  // Handle unknown commands
-  program.on('command:*', (operands: string[]) => {
-    console.error(`error: unknown command '${operands[0]}'`);
+  // Handle unknown commands - check if it's a plugin subcommand first
+  program.on('command:*', async (operands: string[]) => {
+    const subcommand = operands[0];
+
+    // Check if this is a plugin subcommand
+    const plugin = await findPluginBySubcommand(subcommand ?? '');
+    if (plugin) {
+      // This shouldn't happen since we check early, but handle it gracefully
+      const exitCode = await executePluginCommand(plugin, operands.slice(1), {});
+      process.exit(exitCode);
+    }
+
+    console.error(`error: unknown command '${subcommand}'`);
     console.error("Run 'speck --help' to see available commands.");
     process.exit(1);
   });
@@ -368,10 +379,49 @@ function createProgram(): Command {
 }
 
 /**
+ * Add plugin commands section to help output
+ */
+async function addPluginHelpText(program: Command): Promise<void> {
+  const plugins = await getPluginSubcommands();
+  if (plugins.length === 0) return;
+
+  const lines = ['\nPlugin Commands:'];
+  for (const p of plugins) {
+    const padding = ' '.repeat(Math.max(0, 18 - p.subcommand.length));
+    lines.push(`  ${p.subcommand}${padding}${p.description} (${p.pluginName})`);
+  }
+  lines.push("\nRun 'speck <plugin> --help' for plugin-specific commands.");
+
+  program.addHelpText('after', lines.join('\n'));
+}
+
+/**
  * Main entry point
  */
 async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  const firstArg = args[0];
+
+  // Early plugin routing (before Commander parsing)
+  // Check if first non-flag argument is a plugin subcommand
+  if (firstArg && !firstArg.startsWith('-')) {
+    const plugin = await findPluginBySubcommand(firstArg);
+    if (plugin) {
+      // Extract global flags for propagation
+      const json = args.includes('--json');
+      const hook = args.includes('--hook');
+
+      // Execute plugin command with remaining args
+      const exitCode = await executePluginCommand(plugin, args.slice(1), { json, hook });
+      process.exit(exitCode);
+    }
+  }
+
+  // Standard Commander handling for core commands
   const program = createProgram();
+
+  // Add plugin commands to help output (must await before showing help)
+  await addPluginHelpText(program);
 
   // Show help if no arguments provided
   if (process.argv.length === 2) {

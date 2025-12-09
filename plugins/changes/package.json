@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "description": "OpenSpec change management workflow plugin for Claude Code",
   "type": "module",
+  "bin": {
+    "speck-changes": "./dist/speck-changes.js"
+  },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "bun build src/index.ts --outfile dist/speck-changes.js --target bun",
+    "build:standalone": "bun build src/index.ts --compile --outfile dist/speck-changes"
   },
   "dependencies": {
     "@speck/common": "workspace:*",

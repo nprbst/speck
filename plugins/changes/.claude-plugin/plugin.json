@@ -15,5 +15,10 @@
     "specification",
     "delta",
     "proposals"
-  ]
+  ],
+  "cli": {
+    "subcommand": "changes",
+    "description": "OpenSpec change management workflow",
+    "entrypoint": "dist/speck-changes.js"
+  }
 }
