@@ -1,45 +1,39 @@
 ---
-description: Install speck-review CLI globally and configure auto-allow permissions
+description: Configure auto-allow permissions for speck reviewer PR reviews
 ---
 
 ## Speck-Reviewer Initialization
 
-This command installs the `speck-review` CLI globally and configures auto-allow permissions for seamless PR reviews.
+This command configures auto-allow permissions for seamless PR reviews using `speck reviewer <command>`.
 
 ### What This Does
 
-1. Creates `~/.local/bin` directory if it doesn't exist
-2. Creates symlink at `~/.local/bin/speck-review` pointing to the bootstrap script
-3. Configures auto-allow permissions for GitHub CLI and speck-review commands
-4. Adds `review-state.json` to `.speck/.gitignore`
-5. Verifies the installation
+1. Verifies the `speck` CLI is installed and accessible
+2. Configures auto-allow permissions for GitHub CLI commands
+3. Adds `review-state.json` to `.speck/.gitignore`
 
 ### Prerequisites
 
-- Bun runtime installed (https://bun.sh)
+- Speck CLI installed globally (`speck --version`)
 - GitHub CLI installed and authenticated (`gh auth login`)
 
-### Installation Steps
+### Verification Steps
 
-Run these commands in order:
+Run these commands to verify prerequisites:
 
 ```bash
-# 1. Verify plugin is built (dist/ should exist)
-ls "${CLAUDE_PLUGIN_ROOT}/dist/speck-review.js" || echo "Warning: Plugin not built yet"
+# 1. Verify speck CLI is installed
+speck --version
 
-# 2. Create ~/.local/bin if it doesn't exist
-mkdir -p ~/.local/bin
-
-# 3. Create symlink to bootstrap.sh
-ln -sf "${CLAUDE_PLUGIN_ROOT}/src/cli/bootstrap.sh" ~/.local/bin/speck-review
-
-# 4. Verify installation
-speck-review version
+# 2. Verify GitHub CLI is authenticated
+gh auth status
 ```
+
+If `speck --version` fails, install Speck first using `/speck:init`.
 
 ### Auto-Allow Permissions
 
-After CLI installation succeeds, configure auto-allow permissions by adding these entries to `.claude/settings.local.json` in the repository root. Create the file if it doesn't exist.
+Configure auto-allow permissions by adding these entries to `.claude/settings.local.json` in the repository root. Create the file if it doesn't exist.
 
 **Required permissions:**
 ```json
@@ -52,7 +46,7 @@ After CLI installation succeeds, configure auto-allow permissions by adding thes
       "Bash(gh pr diff:*)",
       "Bash(gh api:*)",
       "Bash(gh auth status:*)",
-      "Bash(speck-review:*)"
+      "Bash(speck reviewer:*)"
     ]
   }
 }
@@ -72,30 +66,28 @@ Add `review-state.json` to `.speck/.gitignore` to prevent committing machine-spe
 review-state.json
 ```
 
-### PATH Configuration
+### Usage
 
-If `speck-review version` fails with "command not found", add `~/.local/bin` to your PATH.
+After initialization, use the unified CLI to review PRs:
 
-**For zsh** (`~/.zshrc`):
 ```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
+# List open PRs
+speck reviewer list
 
-**For bash** (`~/.bashrc`):
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
+# Analyze a specific PR
+speck reviewer analyze 123
 
-Then reload your shell: `source ~/.zshrc` or `source ~/.bashrc`
+# Show review state
+speck reviewer state show
+```
 
 ### Verification
 
-After installation, verify the CLI is working:
+After setup, verify everything is working:
 
 ```bash
-which speck-review
-speck-review help
+speck reviewer help
 gh auth status
 ```
 
-If `which speck-review` returns `~/.local/bin/speck-review`, the installation was successful.
+The `speck reviewer` command routes to the speck-reviewer plugin automatically.

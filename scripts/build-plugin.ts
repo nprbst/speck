@@ -540,7 +540,6 @@ interface SpeckReviewerCounts {
   commands: number;
   skills: number;
   cli: boolean;
-  bootstrap: boolean;
 }
 
 /**
@@ -551,7 +550,6 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
     commands: 0,
     skills: 0,
     cli: false,
-    bootstrap: false,
   };
 
   const reviewerSourceDir = join(config.sourceRoot, 'plugins/reviewer');
@@ -576,18 +574,6 @@ async function buildSpeckReviewerPlugin(): Promise<SpeckReviewerCounts> {
     await ensureDir(cliDestDir);
     bundleScript(cliSourcePath, join(cliDestDir, 'speck-review.js'), 'speck-review CLI');
     counts.cli = true;
-  }
-
-  // 1.5. Copy bootstrap.sh for global CLI installation
-  const bootstrapSourcePath = join(reviewerSourceDir, 'src/bootstrap.sh');
-  if (existsSync(bootstrapSourcePath)) {
-    const srcCliDir = join(reviewerOutputDir, 'src/cli');
-    await ensureDir(srcCliDir);
-    const bootstrapDestPath = join(srcCliDir, 'bootstrap.sh');
-    await copyFile(bootstrapSourcePath, bootstrapDestPath);
-    // Make executable
-    await chmod(bootstrapDestPath, 0o755);
-    counts.bootstrap = true;
   }
 
   // 2. Copy plugin.json
@@ -626,7 +612,7 @@ interface SpeckChangesCounts {
   agents: number;
   skills: number;
   templates: number;
-  scripts: number;
+  cli: boolean;
 }
 
 /**
@@ -638,7 +624,7 @@ async function buildSpeckChangesPlugin(): Promise<SpeckChangesCounts> {
     agents: 0,
     skills: 0,
     templates: 0,
-    scripts: 0,
+    cli: false,
   };
 
   const changesSourceDir = join(config.sourceRoot, 'plugins/changes');
@@ -656,13 +642,22 @@ async function buildSpeckChangesPlugin(): Promise<SpeckChangesCounts> {
   }
   await ensureDir(changesOutputDir);
 
-  // 1. Copy plugin.json
+  // 1. Bundle unified CLI to single JS file
+  const cliSourcePath = join(changesSourceDir, 'src/index.ts');
+  if (existsSync(cliSourcePath)) {
+    const cliDestDir = join(changesOutputDir, 'dist');
+    await ensureDir(cliDestDir);
+    bundleScript(cliSourcePath, join(cliDestDir, 'speck-changes.js'), 'speck-changes CLI');
+    counts.cli = true;
+  }
+
+  // 2. Copy plugin.json
   const pluginJsonSourceDir = join(changesSourceDir, '.claude-plugin');
   if (existsSync(pluginJsonSourceDir)) {
     await copyDir(pluginJsonSourceDir, join(changesOutputDir, '.claude-plugin'));
   }
 
-  // 2. Copy commands (stripping speck-changes. prefix from filenames)
+  // 3. Copy commands (stripping speck-changes. prefix from filenames)
   const commandsSourceDir = join(changesSourceDir, 'commands');
   if (existsSync(commandsSourceDir)) {
     const commandsDestDir = join(changesOutputDir, 'commands');
@@ -683,7 +678,7 @@ async function buildSpeckChangesPlugin(): Promise<SpeckChangesCounts> {
     }
   }
 
-  // 3. Copy agents
+  // 4. Copy agents
   const agentsSourceDir = join(changesSourceDir, 'agents');
   if (existsSync(agentsSourceDir)) {
     const agentsDestDir = join(changesOutputDir, 'agents');
@@ -692,7 +687,7 @@ async function buildSpeckChangesPlugin(): Promise<SpeckChangesCounts> {
     counts.agents = files.filter((f) => f.endsWith('.md')).length;
   }
 
-  // 4. Copy skills (directory-based structure)
+  // 5. Copy skills (directory-based structure)
   const skillsSourceDir = join(changesSourceDir, 'skills');
   if (existsSync(skillsSourceDir)) {
     const skillsDestDir = join(changesOutputDir, 'skills');
@@ -701,7 +696,7 @@ async function buildSpeckChangesPlugin(): Promise<SpeckChangesCounts> {
     counts.skills = entries.filter((e) => e.isDirectory()).length;
   }
 
-  // 5. Copy templates
+  // 6. Copy templates
   const templatesSourceDir = join(changesSourceDir, 'templates');
   if (existsSync(templatesSourceDir)) {
     const templatesDestDir = join(changesOutputDir, 'templates');
@@ -710,38 +705,9 @@ async function buildSpeckChangesPlugin(): Promise<SpeckChangesCounts> {
     counts.templates = files.filter((f) => f.endsWith('.md')).length;
   }
 
-  // 6. Bundle and copy scripts
-  const scriptsSourceDir = join(changesSourceDir, 'scripts');
-  if (existsSync(scriptsSourceDir)) {
-    const scriptsDestDir = join(changesOutputDir, 'scripts');
-    await ensureDir(scriptsDestDir);
-
-    // Bundle each script individually
-    const scriptFiles = await readdir(scriptsSourceDir);
-    for (const file of scriptFiles) {
-      if (file.endsWith('.ts') && !file.includes('.test.')) {
-        const sourcePath = join(scriptsSourceDir, file);
-        const destPath = join(scriptsDestDir, file.replace('.ts', '.js'));
-        bundleScript(sourcePath, destPath, `speck-changes/${file}`);
-        counts.scripts++;
-      }
-    }
-
-    // Also copy the lib directory (bundled scripts may need shared code)
-    const libSourceDir = join(scriptsSourceDir, 'lib');
-    if (existsSync(libSourceDir)) {
-      const libDestDir = join(scriptsDestDir, 'lib');
-      await ensureDir(libDestDir);
-      const libFiles = await readdir(libSourceDir);
-      for (const file of libFiles) {
-        if (file.endsWith('.ts') && !file.includes('.test.')) {
-          const sourcePath = join(libSourceDir, file);
-          const destPath = join(libDestDir, file.replace('.ts', '.js'));
-          bundleScript(sourcePath, destPath, `speck-changes/lib/${file}`);
-        }
-      }
-    }
-  }
+  // Note: Individual scripts are NOT bundled separately.
+  // All commands invoke the unified CLI (dist/speck-changes.js) via `speck changes <cmd>`.
+  // This eliminates redundant bundling and reduces plugin size from ~1.6MB to ~200KB.
 
   return counts;
 }
@@ -992,8 +958,8 @@ function validateRequiredFiles(): void {
         path: join(marketplaceRoot, 'speck-changes/.claude-plugin'),
         name: 'speck-changes/.claude-plugin',
       },
-      { path: join(marketplaceRoot, 'speck-changes/commands'), name: 'speck-changes/commands' },
-      { path: join(marketplaceRoot, 'speck-changes/scripts'), name: 'speck-changes/scripts' }
+      { path: join(marketplaceRoot, 'speck-changes/commands'), name: 'speck-changes/commands' }
+      // Note: scripts/ directory no longer required - commands invoke unified CLI via `speck changes`
     );
   }
 
@@ -1025,15 +991,54 @@ function validateRequiredFiles(): void {
 
   // Speck-changes plugin required files (if source exists)
   if (existsSync(changesSourceDir)) {
-    requiredFiles.push({
-      path: join(marketplaceRoot, 'speck-changes/.claude-plugin/plugin.json'),
-      name: 'speck-changes/plugin.json',
-    });
+    requiredFiles.push(
+      {
+        path: join(marketplaceRoot, 'speck-changes/.claude-plugin/plugin.json'),
+        name: 'speck-changes/plugin.json',
+      },
+      {
+        path: join(marketplaceRoot, 'speck-changes/dist/speck-changes.js'),
+        name: 'speck-changes CLI bundle',
+      }
+    );
   }
 
   for (const file of requiredFiles) {
     if (!existsSync(file.path)) {
       throw new Error(`Required file missing: ${file.name}`);
+    }
+  }
+}
+
+/**
+ * Validate CLI entrypoints for plugins that declare them
+ */
+async function validateCLIEntrypoints(): Promise<void> {
+  const marketplaceRoot = join(config.outputDir, '..');
+
+  const pluginsToCheck = [
+    { dir: join(marketplaceRoot, 'speck-reviewer'), name: 'speck-reviewer' },
+    { dir: join(marketplaceRoot, 'speck-changes'), name: 'speck-changes' },
+  ];
+
+  for (const plugin of pluginsToCheck) {
+    if (!existsSync(plugin.dir)) continue;
+
+    const pluginJsonPath = join(plugin.dir, '.claude-plugin/plugin.json');
+    if (!existsSync(pluginJsonPath)) continue;
+
+    const content = await readFile(pluginJsonPath, 'utf-8');
+    const manifest = PluginJsonSchema.parse(JSON.parse(content));
+
+    if (manifest.cli) {
+      const entrypointPath = join(plugin.dir, manifest.cli.entrypoint);
+      if (!existsSync(entrypointPath)) {
+        throw buildFailedError(
+          `CLI entrypoint missing for ${plugin.name}`,
+          `Declared entrypoint "${manifest.cli.entrypoint}" does not exist at ${entrypointPath}`,
+          `Ensure the plugin CLI is built before packaging (check src/index.ts exists and build script runs)`
+        );
+      }
     }
   }
 }
@@ -1046,6 +1051,7 @@ async function validatePackage(): Promise<void> {
   await validateManifests();
   await validateCommands();
   await validateAgents();
+  await validateCLIEntrypoints();
   await validatePackageSize();
 }
 
@@ -1115,9 +1121,6 @@ async function main(): Promise<void> {
     if (reviewerCounts.cli) {
       console.log(`   ✓ Bundled CLI`);
     }
-    if (reviewerCounts.bootstrap) {
-      console.log(`   ✓ Copied bootstrap.sh`);
-    }
     console.log(`   ✓ Copied ${reviewerCounts.commands} commands`);
     console.log(`   ✓ Copied ${reviewerCounts.skills} skills`);
     console.log('');
@@ -1125,6 +1128,9 @@ async function main(): Promise<void> {
     // Build speck-changes plugin
     console.log('📁 Building speck-changes plugin...');
     const changesCounts = await buildSpeckChangesPlugin();
+    if (changesCounts.cli) {
+      console.log(`   ✓ Bundled CLI`);
+    }
     console.log(`   ✓ Copied ${changesCounts.commands} commands`);
     if (changesCounts.agents > 0) {
       console.log(`   ✓ Copied ${changesCounts.agents} agents`);
@@ -1135,7 +1141,6 @@ async function main(): Promise<void> {
     if (changesCounts.templates > 0) {
       console.log(`   ✓ Copied ${changesCounts.templates} templates`);
     }
-    console.log(`   ✓ Bundled ${changesCounts.scripts} scripts`);
     console.log('');
 
     // T029-T035, T042: Generate documentation

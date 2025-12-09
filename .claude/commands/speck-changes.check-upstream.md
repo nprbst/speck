@@ -26,7 +26,7 @@ Query the npm registry for available @fission-ai/openspec versions.
 Run the check-upstream script to query npm versions:
 
 ```bash
-bun ${CLAUDE_PLUGIN_ROOT}/scripts/check-upstream.ts $ARGUMENTS
+speck changes check-upstream $ARGUMENTS
 ```
 
 ## Present Results

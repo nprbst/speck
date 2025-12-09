@@ -47,5 +47,5 @@ Migrate an existing OpenSpec project to Speck format.
 ## Implementation
 
 ```bash
-bun ${CLAUDE_PLUGIN_ROOT}/scripts/migrate.js $ARGUMENTS
+speck changes migrate $ARGUMENTS
 ```

@@ -27,7 +27,7 @@ Transform pulled OpenSpec CLI source code from Node.js to Bun TypeScript.
 Run the transform-upstream script:
 
 ```bash
-bun ${CLAUDE_PLUGIN_ROOT}/scripts/transform-upstream.ts $ARGUMENTS
+speck changes transform-upstream $ARGUMENTS
 ```
 
 ## What This Does

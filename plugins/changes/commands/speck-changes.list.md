@@ -24,7 +24,7 @@ Display all active change proposals.
 ## Execute
 
 ```bash
-bun ${CLAUDE_PLUGIN_ROOT}/scripts/list.js $ARGUMENTS
+speck changes list $ARGUMENTS
 ```
 
 ## Output

@@ -33,7 +33,7 @@ Install a specific OpenSpec version from npm and capture the generated artifacts
 Run the pull-upstream script:
 
 ```bash
-bun ${CLAUDE_PLUGIN_ROOT}/scripts/pull-upstream.ts $ARGUMENTS
+speck changes pull-upstream $ARGUMENTS
 ```
 
 ## What This Does

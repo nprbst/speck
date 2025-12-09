@@ -30,7 +30,7 @@ Display detailed information about a change proposal.
 ## Execute
 
 ```bash
-bun ${CLAUDE_PLUGIN_ROOT}/scripts/show.js $ARGUMENTS
+speck changes show $ARGUMENTS
 ```
 
 ## Output
