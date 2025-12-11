@@ -158,9 +158,9 @@ function createSpeckDirectory(repoRoot: string): { created: boolean; path: strin
  * Get the path to bootstrap.sh
  *
  * When running from:
- * - Development: .speck/scripts/commands/init.ts → src/cli/bootstrap.sh
- * - Plugin bundle: dist/speck-cli.js → src/cli/bootstrap.sh (same relative structure)
- * - Plugin install: ~/.claude/plugins/.../speck/dist/speck-cli.js → src/cli/bootstrap.sh
+ * - Development: plugins/speck/scripts/commands/init.ts → plugins/speck/cli/bootstrap.sh
+ * - Plugin bundle: dist/speck-cli.js → cli/bootstrap.sh (bundled output)
+ * - Plugin install: ~/.claude/plugins/.../speck/dist/speck-cli.js → ../cli/bootstrap.sh
  */
 function getBootstrapPath(): string {
   const scriptPath = new URL(import.meta.url).pathname;
@@ -168,12 +168,10 @@ function getBootstrapPath(): string {
 
   // Check multiple possible locations
   const candidates = [
-    // From bundled CLI at dist/speck-cli.js → ../src/cli/bootstrap.sh
-    resolve(scriptDir, '../src/cli/bootstrap.sh'),
-    // From dev at .speck/scripts/commands/init.ts → ../../../src/cli/bootstrap.sh
-    resolve(scriptDir, '../../../src/cli/bootstrap.sh'),
-    // From plugin install: look for src/cli/bootstrap.sh relative to plugin root
-    resolve(scriptDir, '../../src/cli/bootstrap.sh'),
+    // From bundled CLI at dist/speck-cli.js → ../cli/bootstrap.sh
+    resolve(scriptDir, '../cli/bootstrap.sh'),
+    // From dev at plugins/speck/scripts/commands/init.ts → ../../cli/bootstrap.sh
+    resolve(scriptDir, '../../cli/bootstrap.sh'),
   ];
 
   for (const candidate of candidates) {
@@ -183,7 +181,7 @@ function getBootstrapPath(): string {
   }
 
   // Fall back to first candidate (will fail with helpful error)
-  return candidates[0] ?? resolve(scriptDir, '../src/cli/bootstrap.sh');
+  return candidates[0] ?? resolve(scriptDir, '../cli/bootstrap.sh');
 }
 
 /**

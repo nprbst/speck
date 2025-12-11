@@ -42,8 +42,8 @@ done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 
 # Find the bundled CLI relative to bootstrap.sh
-# Plugin structure: speck/src/cli/bootstrap.sh → speck/dist/speck-cli.js
-ENTRYPOINT="${SCRIPT_DIR}/../../dist/speck-cli.js"
+# Plugin structure: speck/cli/bootstrap.sh → speck/dist/speck-cli.js
+ENTRYPOINT="${SCRIPT_DIR}/../dist/speck-cli.js"
 
 if [[ ! -f "$ENTRYPOINT" ]]; then
     echo "Error: Could not find speck CLI at: $ENTRYPOINT"
