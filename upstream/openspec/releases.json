@@ -1,0 +1,23 @@
+{
+  "releases": [
+    {
+      "version": "0.16.0",
+      "pullDate": "2025-12-08T06:22:27.455Z",
+      "status": "active",
+      "npmPublishDate": "2025-11-21T11:59:09.253Z"
+    },
+    {
+      "version": "0.15.0",
+      "pullDate": "2025-12-08T06:22:03.735Z",
+      "status": "superseded",
+      "npmPublishDate": "2025-11-14T05:32:52.817Z"
+    },
+    {
+      "version": "0.14.0",
+      "pullDate": "2025-12-08T06:21:01.138Z",
+      "status": "superseded",
+      "npmPublishDate": "2025-11-04T08:40:16.574Z"
+    }
+  ],
+  "latestVersion": "0.16.0"
+}

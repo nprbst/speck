@@ -15,5 +15,10 @@
     "github",
     "spec-aware",
     "pr-review"
-  ]
+  ],
+  "cli": {
+    "subcommand": "reviewer",
+    "description": "AI-powered PR review with Speck-aware context",
+    "entrypoint": "dist/speck-review.js"
+  }
 }

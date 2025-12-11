@@ -1,6 +1,9 @@
 ---
-name: pr-review
-description: Review GitHub pull requests with VSCode integration. Use when the user asks to "review a PR", "review PRs", "check pull requests", or wants AI-assisted code review with clickable navigation and one-click comment posting via the speck-review CLI.
+name: speck-reviewer-help
+description: >
+  Help with speck-reviewer plugin for PR reviews. Use when user asks about
+  PR analysis, review workflows, comment management, cluster-based review,
+  speck-review CLI commands, or "how do I review a PR".
 ---
 
 # PR Review Skill

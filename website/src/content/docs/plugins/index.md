@@ -27,9 +27,10 @@ plugin, making installation seamless.
 
 ## Available Plugins
 
-| Plugin                                     | Purpose                                     | Status    |
-| ------------------------------------------ | ------------------------------------------- | --------- |
-| [speck-reviewer](./plugins/speck-reviewer) | AI-assisted PR review with cluster analysis | Available |
+| Plugin                                     | Purpose                                              | Status    |
+| ------------------------------------------ | ---------------------------------------------------- | --------- |
+| [speck-reviewer](./plugins/speck-reviewer) | AI-assisted PR review with cluster analysis          | Available |
+| [speck-changes](./plugins/speck-changes)   | OpenSpec change management with proposal-based workflow | Available |
 
 ## Installation
 
@@ -67,5 +68,6 @@ the full specification.
 ## Next Steps
 
 - [Install Speck Reviewer](./plugins/speck-reviewer) - AI-assisted PR review
+- [Install Speck Changes](./plugins/speck-changes) - Change management workflow
 - [Quick Start Guide](/getting-started/quick-start) - Get started with core
   Speck

@@ -3,27 +3,29 @@
 /**
  * Version and Changelog Management Script
  *
- * Bumps version in package.json (speck), plugin.json (speck-reviewer), or
+ * Bumps version in package.json (speck), plugin.json (reviewer/changes), or
  * marketplace.json (marketplace), generates changelog entry, and creates git tag.
  *
  * Usage:
  *   bun run scripts/version.ts <patch|minor|major|1.2.3> [target] [flags]
  *
- * Targets: speck (default), speck-reviewer, marketplace, common, maintainer, all
+ * Targets: speck (default), reviewer, changes, marketplace, common, maintainer, all
  * Flags: --no-git, --allow-dirty, --no-push, --no-changelog
  *
  * Target → Version File → Tag Pattern:
- *   - speck:          package.json                                    → v*
- *   - speck-reviewer: plugins/reviewer/.claude-plugin/plugin.json → speck-reviewer-v*
- *   - marketplace:    .claude-plugin/marketplace.json (metadata.version) → marketplace-v*
- *   - common:         packages/common/package.json                    → common-v*
- *   - maintainer:     packages/maintainer/package.json                → maintainer-v*
+ *   - speck:       package.json                                    → v*
+ *   - reviewer:    plugins/reviewer/.claude-plugin/plugin.json     → reviewer-v*
+ *   - changes:     plugins/changes/.claude-plugin/plugin.json      → changes-v*
+ *   - marketplace: .claude-plugin/marketplace.json (metadata.version) → marketplace-v*
+ *   - common:      packages/common/package.json                    → common-v*
+ *   - maintainer:  packages/maintainer/package.json                → maintainer-v*
  *
  * Examples:
  *   bun run scripts/version.ts patch                  # bumps speck
- *   bun run scripts/version.ts patch speck-reviewer   # bumps speck-reviewer
+ *   bun run scripts/version.ts patch reviewer         # bumps reviewer
+ *   bun run scripts/version.ts patch changes          # bumps changes
  *   bun run scripts/version.ts patch marketplace      # bumps marketplace
- *   bun run scripts/version.ts patch all              # bumps all three
+ *   bun run scripts/version.ts patch all              # bumps all
  *
  * Changelog Generation Flow:
  *   1. Find previous version tag for target
@@ -63,7 +65,7 @@ const VersionFileSchema = z
   })
   .passthrough();
 
-type PluginTarget = 'speck' | 'speck-reviewer' | 'marketplace' | 'common' | 'maintainer';
+type PluginTarget = 'speck' | 'reviewer' | 'changes' | 'marketplace' | 'common' | 'maintainer';
 
 // Changelog types
 interface RawCommit {
@@ -119,8 +121,10 @@ function bumpVersion(current: string, bump: string): string {
 
 function getVersionFilePath(target: PluginTarget): string {
   switch (target) {
-    case 'speck-reviewer':
+    case 'reviewer':
       return join(process.cwd(), 'plugins/reviewer/.claude-plugin/plugin.json');
+    case 'changes':
+      return join(process.cwd(), 'plugins/changes/.claude-plugin/plugin.json');
     case 'marketplace':
       return join(process.cwd(), '.claude-plugin/marketplace.json');
     case 'common':
@@ -134,8 +138,10 @@ function getVersionFilePath(target: PluginTarget): string {
 
 function getTagPrefix(target: PluginTarget): string {
   switch (target) {
-    case 'speck-reviewer':
-      return 'speck-reviewer-v';
+    case 'reviewer':
+      return 'reviewer-v';
+    case 'changes':
+      return 'changes-v';
     case 'marketplace':
       return 'marketplace-v';
     case 'common':
@@ -169,13 +175,21 @@ function parseConventionalCommit(subject: string): ParsedCommit | null {
 async function getPreviousTag(target: PluginTarget): Promise<string | null> {
   const tagPrefix = getTagPrefix(target);
 
+  // Legacy tag prefixes for backwards compatibility
+  const legacyPrefixes: Record<string, string> = {
+    'reviewer-v': 'speck-reviewer-v',
+  };
+  const legacyPrefix = legacyPrefixes[tagPrefix];
+
   try {
     // Get all tags sorted by version (descending), then filter by prefix
     const result = await $`git tag --sort=-version:refname`.text();
     const allTags = result.trim().split('\n').filter(Boolean);
 
-    // Filter to only tags matching our prefix
-    const tags = allTags.filter((tag) => tag.startsWith(tagPrefix));
+    // Filter to only tags matching our prefix (or legacy prefix)
+    const tags = allTags.filter(
+      (tag) => tag.startsWith(tagPrefix) || (legacyPrefix && tag.startsWith(legacyPrefix))
+    );
 
     // Return the most recent tag (first in sorted list)
     return tags.length > 0 ? tags[0]! : null;
@@ -411,7 +425,8 @@ async function updateVersionFile(newVersion: string, target: PluginTarget): Prom
 
   const fileNames: Record<PluginTarget, string> = {
     speck: 'package.json',
-    'speck-reviewer': 'plugin.json',
+    reviewer: 'plugin.json',
+    changes: 'plugin.json',
     marketplace: 'marketplace.json',
     common: 'packages/common/package.json',
     maintainer: 'packages/maintainer/package.json',
@@ -420,8 +435,8 @@ async function updateVersionFile(newVersion: string, target: PluginTarget): Prom
 
   const updatedFiles = [filePath];
 
-  // For speck-reviewer, also update the plugin package.json
-  if (target === 'speck-reviewer') {
+  // For reviewer, also update the plugin package.json
+  if (target === 'reviewer') {
     const pluginPackagePath = join(process.cwd(), 'plugins/reviewer/package.json');
     if (existsSync(pluginPackagePath)) {
       const pluginContent = await readFile(pluginPackagePath, 'utf-8');
@@ -470,8 +485,11 @@ async function checkGitStatus(skipGit: boolean, allowDirty: boolean): Promise<bo
 function parseTarget(args: string[]): PluginTarget | 'all' | null {
   // Look for known target names in positional args (not flags)
   const positionalArgs = args.filter((arg) => !arg.startsWith('--'));
-  if (positionalArgs.includes('speck-reviewer')) {
-    return 'speck-reviewer';
+  if (positionalArgs.includes('reviewer')) {
+    return 'reviewer';
+  }
+  if (positionalArgs.includes('changes')) {
+    return 'changes';
   }
   if (positionalArgs.includes('marketplace')) {
     return 'marketplace';
@@ -494,13 +512,14 @@ function parseTarget(args: string[]): PluginTarget | 'all' | null {
 async function promptForTarget(): Promise<PluginTarget | 'all' | null> {
   console.log('\n⚠️  No target specified. Which target(s) to bump?');
   console.log('  1. speck');
-  console.log('  2. speck-reviewer');
-  console.log('  3. marketplace');
-  console.log('  4. common');
-  console.log('  5. maintainer');
-  console.log('  6. all');
-  console.log('  7. exit');
-  process.stdout.write('\nChoice [1-7]: ');
+  console.log('  2. reviewer');
+  console.log('  3. changes');
+  console.log('  4. marketplace');
+  console.log('  5. common');
+  console.log('  6. maintainer');
+  console.log('  7. all');
+  console.log('  8. exit');
+  process.stdout.write('\nChoice [1-8]: ');
 
   const response = await new Promise<string>((resolve) => {
     process.stdin.once('data', (data) => {
@@ -513,14 +532,16 @@ async function promptForTarget(): Promise<PluginTarget | 'all' | null> {
     case '1':
       return 'speck';
     case '2':
-      return 'speck-reviewer';
+      return 'reviewer';
     case '3':
-      return 'marketplace';
+      return 'changes';
     case '4':
-      return 'common';
+      return 'marketplace';
     case '5':
-      return 'maintainer';
+      return 'common';
     case '6':
+      return 'maintainer';
+    case '7':
       return 'all';
     default:
       return null;
@@ -596,17 +617,18 @@ async function main(): Promise<void> {
 
   if (args.length === 0) {
     console.error('Usage: bun run scripts/version.ts <patch|minor|major|1.2.3> <target> [flags]');
-    console.error('\nTargets: speck, speck-reviewer, marketplace, common, maintainer, all');
+    console.error('\nTargets: speck, reviewer, changes, marketplace, common, maintainer, all');
     console.error('\nFlags:');
     console.error('  --no-git        Skip all git operations');
     console.error('  --allow-dirty   Allow version bump with uncommitted changes');
     console.error('  --no-push       Create commit and tag but do not push');
     console.error('  --no-changelog  Skip automatic changelog generation');
     console.error('\nExamples:');
-    console.error('  bun run scripts/version.ts patch speck           # bump speck');
-    console.error('  bun run scripts/version.ts patch speck-reviewer  # bump speck-reviewer');
-    console.error('  bun run scripts/version.ts patch marketplace     # bump marketplace');
-    console.error('  bun run scripts/version.ts patch all             # bump all targets');
+    console.error('  bun run scripts/version.ts patch speck       # bump speck');
+    console.error('  bun run scripts/version.ts patch reviewer    # bump reviewer');
+    console.error('  bun run scripts/version.ts patch changes     # bump changes');
+    console.error('  bun run scripts/version.ts patch marketplace # bump marketplace');
+    console.error('  bun run scripts/version.ts patch all         # bump all targets');
     process.exit(1);
   }
 
@@ -631,7 +653,8 @@ async function main(): Promise<void> {
     if (target === 'all') {
       console.log('\n📦 Bumping all targets...\n');
       await bumpPlugin(bump, 'speck', skipGit, skipPush, allowDirty, skipChangelog);
-      await bumpPlugin(bump, 'speck-reviewer', skipGit, skipPush, allowDirty, skipChangelog);
+      await bumpPlugin(bump, 'reviewer', skipGit, skipPush, allowDirty, skipChangelog);
+      await bumpPlugin(bump, 'changes', skipGit, skipPush, allowDirty, skipChangelog);
       await bumpPlugin(bump, 'marketplace', skipGit, skipPush, allowDirty, skipChangelog);
       await bumpPlugin(bump, 'common', skipGit, skipPush, allowDirty, skipChangelog);
       await bumpPlugin(bump, 'maintainer', skipGit, skipPush, allowDirty, skipChangelog);

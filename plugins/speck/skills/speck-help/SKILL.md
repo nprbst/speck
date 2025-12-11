@@ -326,43 +326,19 @@ users need to **create or modify** files, guide them to these slash commands:
 
 ---
 
-## Plugin Extensibility
+## Plugin Help
 
-Speck follows a modular architecture where specialized capabilities are
-delivered as optional plugins. This keeps the core Speck plugin focused on
-specification workflows while enabling extensions for related tasks.
+Speck plugins have their own help skills:
 
-### Available Plugins
+- **speck-reviewer**: Ask "how do I review a PR" or "speck reviewer help"
+- **speck-changes**: Ask "how do I propose a change" or "speck changes help"
 
-| Plugin             | Command    | Purpose                                                             |
-| ------------------ | ---------- | ------------------------------------------------------------------- |
-| **speck**          | `/speck.*` | Core specification workflow (specify, plan, tasks, implement)       |
-| **speck-reviewer** | `/review`  | AI-assisted PR review with cluster analysis and Speck-aware context |
-
-### Installing Extension Plugins
-
-All Speck plugins are installed through the Claude Code plugin system:
+### Installing Plugins
 
 ```bash
-# Install speck-reviewer for PR reviews
 /plugin install speck-reviewer@speck-market
+/plugin install speck-changes@speck-market
 ```
-
-### speck-reviewer Plugin
-
-The speck-reviewer plugin adds structured PR review capabilities:
-
-- **Cluster-Based Review**: Groups related files for coherent review sessions
-- **Speck-Aware Context**: References spec requirements when available
-- **Comment Management**: Stage, refine, and batch-post review comments
-- **Session Persistence**: Resume interrupted reviews
-
-**When to use**: Use `/speck-reviewer:review` after creating a PR for a Speck
-feature. The plugin will automatically load any spec context for your branch.
-
-**Learn more**: See
-[plugin documentation](https://beta.speck.codes/docs/plugins/speck-reviewer) for
-full usage guide.
 
 ---
 

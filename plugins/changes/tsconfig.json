@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@speck/common": ["../../packages/common/src"],
+      "@speck/common/*": ["../../packages/common/src/*"]
+    }
+  },
+  "include": [
+    "scripts/**/*",
+    "tests/**/*",
+    "../../packages/common/src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

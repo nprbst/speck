@@ -1,0 +1,1 @@
+../../plugins/changes/commands/speck-changes.validate.md

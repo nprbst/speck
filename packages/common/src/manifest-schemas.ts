@@ -25,6 +25,25 @@ export const PackageJsonSchema = z
 export type PackageJson = z.infer<typeof PackageJsonSchema>;
 
 // =============================================================================
+// Plugin CLI Schema
+// =============================================================================
+
+/**
+ * CLI subcommand declaration for plugins
+ * Plugins can expose CLI functionality via the core `speck` command
+ */
+export const PluginCLISchema = z.object({
+  /** Subcommand name (e.g., "reviewer" for `speck reviewer`) */
+  subcommand: z.string(),
+  /** Short description shown in help output */
+  description: z.string(),
+  /** Path to CLI entrypoint relative to plugin root (e.g., "dist/speck-review.js") */
+  entrypoint: z.string(),
+});
+
+export type PluginCLI = z.infer<typeof PluginCLISchema>;
+
+// =============================================================================
 // Plugin.json Schema
 // =============================================================================
 
@@ -37,6 +56,8 @@ export const PluginJsonSchema = z
     description: z.string(),
     version: z.string(),
     author: z.unknown().optional(),
+    /** Optional CLI subcommand declaration */
+    cli: PluginCLISchema.optional(),
   })
   .passthrough();
 

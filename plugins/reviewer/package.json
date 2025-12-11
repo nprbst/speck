@@ -8,7 +8,8 @@
     "speck-review": "dist/speck-review"
   },
   "scripts": {
-    "build": "bun build src/index.ts --compile --outfile dist/speck-review",
+    "build": "bun build src/index.ts --outfile dist/speck-review.js --target bun",
+    "build:standalone": "bun build src/index.ts --compile --outfile dist/speck-review",
     "dev": "bun run src/index.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit"

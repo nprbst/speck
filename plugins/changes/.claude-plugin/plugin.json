@@ -1,0 +1,24 @@
+{
+  "name": "speck-changes",
+  "description": "OpenSpec change management workflow for Speck - create, validate, and archive structured change proposals",
+  "version": "1.0.0",
+  "author": {
+    "name": "Nathan Prabst",
+    "email": "nathan@example.com"
+  },
+  "homepage": "https://github.com/nprbst/speck",
+  "repository": "https://github.com/nprbst/speck",
+  "license": "MIT",
+  "keywords": [
+    "openspec",
+    "change-management",
+    "specification",
+    "delta",
+    "proposals"
+  ],
+  "cli": {
+    "subcommand": "changes",
+    "description": "OpenSpec change management workflow",
+    "entrypoint": "dist/speck-changes.js"
+  }
+}

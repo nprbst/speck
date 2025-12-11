@@ -1,0 +1,1 @@
+../../plugins/reviewer/commands/init.md
